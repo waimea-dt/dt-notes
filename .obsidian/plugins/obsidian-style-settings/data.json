@@ -1,4 +1,7 @@
 {
   "things-style@@h1-weight": 400,
-  "things-style@@h2-weight": 400
+  "things-style@@h2-weight": 400,
+  "things-style@@h2-color": "#F0C775",
+  "things-style@@h3-color": "#EEEEEE",
+  "things-style@@active-line": true
 }

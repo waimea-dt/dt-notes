@@ -34,7 +34,7 @@ pre[class*="language-"] {
 }
 
 body {
-    --nav-item-color-active: #b0eb00;
+    --nav-item-color-active: #5cbeff;
     --nav-item-color-hover: var(--nav-item-color-active);
 }
 
