@@ -1,0 +1,221 @@
+{
+  "main": {
+    "id": "2d8d67190c1a3fe4",
+    "type": "split",
+    "children": [
+      {
+        "id": "f9156c23149c3f7f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c7a28985d227fb41",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/web/index.md",
+                "mode": "source",
+                "source": true,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "index"
+            },
+            "group": "47f710b5abc1a33d"
+          }
+        ]
+      },
+      {
+        "id": "ca3dd701ca683ec3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f17f19b798e575bc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "docs/web/index.md",
+                "mode": "preview",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "index"
+            },
+            "group": "47f710b5abc1a33d"
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "fa8121acbbf5d69a",
+    "type": "split",
+    "children": [
+      {
+        "id": "b96421bea18c6d76",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "01b545b0b9af80f6",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "3ee1706a5c4d1072",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "e180fc1c9e5271a6",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "aaabc0f78134bfb6",
+    "type": "split",
+    "children": [
+      {
+        "id": "28c7282ce0ba639a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fe950833f77e4a3d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/glossary.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for glossary"
+            }
+          },
+          {
+            "id": "58a33b50ed1703c1",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/glossary.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from glossary"
+            }
+          },
+          {
+            "id": "3b0ce339dd8864e2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "704c3cc690bbe599",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/glossary.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of glossary"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "c7a28985d227fb41",
+  "lastOpenFiles": [
+    "docs/index.md",
+    "docs/nav.md",
+    "docs/glossary.md",
+    "docs/tags.md",
+    "docs/_includes/abbreviations.md",
+    "docs/courses.md",
+    "README.md"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "livePreview": true,
+  "useTab": false,
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "relative",
+  "useMarkdownLinks": true,
+  "attachmentFolderPath": "./_assets",
+  "userIgnoreFilters": [
+    "/_[jJ][aA][vV][aA][sS][cC][rR][iI][pP][tT][sS]/",
+    "/_[sS][tT][yY][lL][eE][sS][hH][eE][eE][tT][sS]/",
+    "/[sS][iI][tT][eE]/"
+  ]
+}

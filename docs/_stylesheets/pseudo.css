@@ -1,0 +1,31 @@
+[data-md-color-scheme="slate"] .language-pseudo {
+    --terminator-col: #ff8a65;
+    --action-col:     #4fc3f7;
+    --in-out-col:     #c378e6;
+    --decision-col:   #aed581;
+    --comment-col:    #666;
+}
+
+[data-md-color-scheme="default"] .language-pseudo {
+    --terminator-col: #c64e2a;
+    --action-col:     #2091c6;
+    --in-out-col:     #9740bf;
+    --decision-col:   #619c1f;
+    --comment-col:    #999;
+}
+
+.language-pseudo {
+    --comment-col:    #666;
+    --loop-col:       var(--decision-col);
+}
+
+
+.language-pseudo .comment  { color: var(--comment-col); }
+.language-pseudo .block    { color: var(--terminator-col); }
+.language-pseudo .function { color: var(--terminator-col); }
+.language-pseudo .action   { color: var(--action-col); }
+.language-pseudo .decision { color: var(--decision-col); }
+.language-pseudo .loop     { color: var(--loop-col); }
+.language-pseudo .input    { color: var(--in-out-col); }
+.language-pseudo .output   { color: var(--in-out-col); }
+

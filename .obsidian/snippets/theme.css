@@ -1,0 +1,49 @@
+.inline-title {
+    color: inherit;
+}
+
+h1, .markdown-rendered h1 {
+    margin-bottom: 1.2em;
+}
+
+h1, .markdown-rendered h1,
+h2, .markdown-rendered h2,
+h3, .markdown-rendered h3,
+h4, .markdown-rendered h4 {
+    font-weight: normal;
+}
+
+h3, .markdown-rendered h3,
+h4, .markdown-rendered h4 {
+    font-style: italic;
+}
+
+dl dt {
+    color: #FFEB3B;
+    font-weight: 400;
+}
+
+.callout {
+    border: 1px solid rgb(var(--callout-color));
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+    border: 1px solid #7777;
+    background-color: #141617;
+}
+
+body {
+    --nav-item-color-active: #b0eb00;
+    --nav-item-color-hover: var(--nav-item-color-active);
+}
+
+.tree-item-self.is-active {
+    --icon-color: var(--nav-item-color-active);
+    --icon-opacity: 1;
+}
+
+.nav-file-title,
+.nav-folder-title {
+    font-size: calc(1.2 * var(--nav-item-size));
+}

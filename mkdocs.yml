@@ -1,0 +1,216 @@
+site_name: Digital Tech. @ Waimea College
+# copyright: Copyright &copy; 2024 Waimea College
+site_url: https://waimea-cpy.github.io/mkdocs-material-test
+
+
+# Theme ------------------------------------------------
+
+theme:
+
+  # Use the Material theme
+  name: material
+
+  # Icons
+  logo: _assets/macintosh.svg
+  favicon: _assets/macintosh-face.svg
+
+  # Fonts
+  font:
+    text: Inter
+    code: JetBrains Mono
+
+  # Colour palettes
+  palette:
+    # Palette toggle for light mode
+    - media:   "(prefers-color-scheme: light)"
+      scheme:  default
+      toggle:
+        icon:  material/weather-night
+        name:  Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media:   "(prefers-color-scheme: dark)"
+      scheme:  slate
+      toggle:
+        icon:  material/weather-sunny
+        name:  Switch to light mode
+
+  # Theme features
+  features:
+    - header.autohide         # Hide header on scroll
+
+    - search.suggest          # Suggest as search, right to accept
+
+    - toc.follow              # Track TOC as scroll thru page
+    - toc.integrate           # Place TOC within nav
+
+    - navigation.top          # Back to top button
+    - navigation.footer       # Next/prev links in footer
+    - navigation.indexes      # Use index.md files for folder pages
+    - navigation.tracking     # Track the TOC position in URL
+
+    - content.code.annotate   # Allow code annotations
+    - content.code.copy       # Add a code copy button
+
+    - content.tooltips        # tooltips based on titles
+
+  # Icons for features
+  icon:
+    annotation: material/plus-circle-outline
+
+    tag:
+      web:     material/web
+      html:    material/code-tags
+      js:      material/language-javascript
+      css:     material/code-braces
+
+      python:  material/language-python
+      kotlin:  material/language-kotlin
+      scratch: material/toy-brick
+
+
+# Load additional CSS ------------------------------------------------
+
+extra_css:
+  - _stylesheets/theme.css
+  - _stylesheets/code.css
+  - _stylesheets/pseudo.css
+  - _stylesheets/scratch.css
+  - _stylesheets/mermaid.css
+
+extra_javascript:
+  - _javascripts/ui.js
+  - _javascripts/code.js
+  - _javascripts/pseudo.js
+  - _javascripts/scratch.js
+  - _javascripts/mermaid.mjs
+
+
+# Extensions ------------------------------------------------
+
+markdown_extensions:
+
+  # Table of contents
+  - toc:
+      toc_depth: 3
+
+  # Allows attributes to be added to any MD block
+  - attr_list
+
+  # Allows for MD to be parsed within HTML blocks
+  - md_in_html
+
+  # Allows inclusion of other files into a MD file
+  - pymdownx.snippets:
+      auto_append:
+        - docs/_includes/abbreviations.md
+
+  # Code highlighting
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      linenums_style: pymdownx-inline
+      pygments_lang_class: true
+
+  # Extends the functionality of code blocks using ```...```
+  - pymdownx.superfences:
+      custom_fences:
+        - name: scratch
+          class: language-scratch
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: pseudo
+          class: language-pseudo
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: mermaid
+          class: language-mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+  # Callouts / admonitions using !!!... blocks
+  - admonition
+
+  # Tabbed content using ===... blocks
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+
+  # Collapsible content blocks using ???... blocks, or ???+ for initially open
+  - pymdownx.details
+
+  # Captions via ///.../// blocks
+  - pymdownx.blocks.caption:
+      types:
+        - name: caption
+        - name: speech-caption
+          classes: speech
+
+  # Allows definition lists via : ... blocks
+  - def_list
+
+  # Superscript using ^...^
+  - pymdownx.caret
+  # Subscript using ~...~ or text deletion using ~~...~~
+  - pymdownx.tilde
+
+  # Highlighting of text using ==...==
+  - pymdownx.mark
+
+  # Show keyboard keys using ++...++
+  - pymdownx.keys
+
+  # Auto-replaces (c), -->, etc.
+  - pymdownx.smartsymbols
+
+  # Emoji using :...:
+  - pymdownx.emoji:
+      emoji_index:     !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+  # Automatic abbreviations for defs in abbreviations.md, auto-included via snippets
+  - abbr
+
+
+
+# Plugins ------------------------------------------------
+
+plugins:
+
+  # Tagging
+  - tags:
+      tags_file: tags.md
+
+  # Text search
+  - search
+
+  # Run code within MD files
+  - markdown-exec
+
+  # Image lightbox
+  - glightbox:
+      width: 100%
+      background: none
+      shadow: false
+      skip_classes:
+        - no-lightbox
+
+  # Separate nav file, rather than defining the nav within this file
+  - literate-nav:
+      nav_file: nav.md
+
+
+
+# Extras ------------------------------------------------
+
+extra:
+
+  # Turn of 'made using...'
+  generator: false
+
+  # Tag identifiers for icons
+  tags:
+    webdev:  web
+    html:    html
+    css:     css
+    python:  python
+    kotlin:  kotlin
+    scratch: scratch
+    gui:     gui
+

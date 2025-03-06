@@ -1,0 +1,8 @@
+{
+  "cssTheme": "Things",
+  "accentColor": "#374d6d",
+  "baseFontSizeAction": true,
+  "enabledCssSnippets": [
+    "theme"
+  ]
+}

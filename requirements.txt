@@ -1,0 +1,5 @@
+pymdown-extensions
+mkdocs-literate-nav
+mkdocs-material
+markdown-exec[ansi]
+mkdocs-glightbox
