@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/courses.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": true,
                 "backlinks": true,
@@ -28,7 +28,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "courses"
+              "title": "README"
             },
             "group": "47f710b5abc1a33d"
           }
@@ -44,7 +44,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/courses.md",
+                "file": "README.md",
                 "mode": "preview",
                 "source": false,
                 "backlinks": true,
@@ -59,7 +59,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "courses"
+              "title": "README"
             },
             "group": "47f710b5abc1a33d"
           }
@@ -212,15 +212,15 @@
       "iconic:Open rulebook": false
     }
   },
-  "active": "c7a28985d227fb41",
+  "active": "01b545b0b9af80f6",
   "lastOpenFiles": [
+    "docs/courses.md",
     "docs/web/index.md",
     "docs/index.md",
     "docs/nav.md",
     "docs/glossary.md",
     "docs/tags.md",
     "docs/_includes/abbreviations.md",
-    "docs/courses.md",
     "README.md"
   ]
 }

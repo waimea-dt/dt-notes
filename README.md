@@ -13,7 +13,9 @@ Docs are [here](https://squidfunk.github.io/mkdocs-material/reference/)
 
 ## Hosted
 
-Hosted at [https://waimea-cpy.github.io/dt-notes](https://waimea-cpy.github.io/dt-notes), built via GitHub Actions using [this config](https://squidfunk.github.io/mkdocs-material/publishing-your-site/#with-github-actions)
+Hosted at [https://waimea-dt.github.io/dt-notes](https://waimea-dt.github.io/dt-notes)
+
+Built via GitHub Actions using [this config](https://squidfunk.github.io/mkdocs-material/publishing-your-site/#with-github-actions)
 
 ## Local Dev.
 
