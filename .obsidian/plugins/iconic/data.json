@@ -1,0 +1,131 @@
+{
+  "biggerIcons": "mobile",
+  "clickableIcons": "desktop",
+  "showAllFileIcons": false,
+  "showAllFolderIcons": false,
+  "minimalFolderIcons": false,
+  "showItemName": "desktop",
+  "biggerSearchResults": "mobile",
+  "maxSearchResults": 50,
+  "colorPicker1": "list",
+  "colorPicker2": "rgb",
+  "uncolorHover": false,
+  "uncolorDrag": false,
+  "uncolorSelect": false,
+  "uncolorQuick": false,
+  "rememberDeletedItems": false,
+  "dialogState": {
+    "iconMode": true,
+    "emojiMode": false,
+    "rulePage": "file"
+  },
+  "appIcons": {},
+  "tabIcons": {},
+  "fileIcons": {
+    "docs/3d": {
+      "icon": "lucide-box",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/algos": {
+      "icon": "lucide-git-branch",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/animation": {
+      "icon": "lucide-play-square",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/courses.md": {
+      "icon": "lucide-graduation-cap"
+    },
+    "docs/cs": {
+      "icon": "lucide-cpu",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/db": {
+      "icon": "lucide-database",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/design": {
+      "icon": "lucide-palette",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/glossary.md": {
+      "icon": "lucide-text-search"
+    },
+    "docs/graphics": {
+      "icon": "lucide-image",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/index.md": {
+      "icon": "lucide-home"
+    },
+    "docs/kotlin": {
+      "icon": "lucide-braces",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/nav.md": {
+      "icon": "lucide-compass"
+    },
+    "docs/process": {
+      "icon": "lucide-recycle",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/python": {
+      "icon": "lucide-notebook-text",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/scratch": {
+      "icon": "lucide-toy-brick",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/tags.md": {
+      "icon": "lucide-tags"
+    },
+    "docs/tools": {
+      "icon": "lucide-wrench",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/ui": {
+      "icon": "lucide-layout",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    },
+    "docs/web": {
+      "icon": "lucide-globe",
+      "unsynced": [
+        "e5652af18e4815c8"
+      ]
+    }
+  },
+  "bookmarkIcons": {},
+  "tagIcons": {},
+  "propertyIcons": {},
+  "ribbonIcons": {},
+  "fileRules": [],
+  "folderRules": []
+}
