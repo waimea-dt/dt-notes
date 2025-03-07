@@ -3,3 +3,4 @@ mkdocs-literate-nav
 mkdocs-material
 markdown-exec[ansi]
 mkdocs-glightbox
+mkdocs-callouts

@@ -68,6 +68,11 @@ class Math:
 
 It is commonly the case with technologies that you can get the best insight about how they work by watching them fail.
 
+```python
+for i in range(10):
+    print(f"Num: {i}")
+```
+
 ```python exec="on"
 print("``` title='Output'")
 for i in range(10):
@@ -131,8 +136,8 @@ I've seen things you people wouldn't believe... Attack ships on fire off the sho
 
 What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
 
-!!! Info
-    The closer men came to perfecting for themselves a paradise, the more impatient they seemed to become with it, and with themselves as well. In the moment when I truly understand my enemy, understand him well enough to defeat him, then in that very moment I also love him.
+> [!Info]
+> The closer men came to perfecting for themselves a paradise, the more impatient they seemed to become with it, and with themselves as well. In the moment when I truly understand my enemy, understand him well enough to defeat him, then in that very moment I also love him.
 
 <div class="grid cards" markdown>
 
@@ -176,8 +181,8 @@ What's hard, in hacking as in fiction, is not writing, it's deciding what to wri
 
 What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
 
-!!! Warning
-    As nightmarishly lethal, memetically programmed death-machines went, these were the nicest you could ever hope to meet. It is commonly the case with technologies that you can get the best insight about how they work by watching them fail.
+> [!Warning]
+> As nightmarishly lethal, memetically programmed death-machines went, these were the nicest you could ever hope to meet. It is commonly the case with technologies that you can get the best insight about how they work by watching them fail.
 
 ![Image title](https://dummyimage.com/300x200/)
 
@@ -187,8 +192,8 @@ It is exciting to discover electrons and figure out the equations that govern th
 
 What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
 
-!!! Note "Woah!"
-    An Outside Context Problem was the sort of thing most civilisations encountered just once, and which they tended to encounter rather in the same way a sentence encountered a full stop. I will allow my fear to pass through me and around me and when it is gone, I will turn and look, and only myself will remain.
+> [!Note] Woah!
+> An Outside Context Problem was the sort of thing most civilisations encountered just once, and which they tended to encounter rather in the same way a sentence encountered a full stop. I will allow my fear to pass through me and around me and when it is gone, I will turn and look, and only myself will remain.
 
 ![Image title](https://dummyimage.com/300x200/){ align=left }
 
@@ -196,34 +201,33 @@ What's hard, in hacking as in fiction, is not writing, it's deciding what to wri
 
 ## More
 
-!!! Example inline end
-    That is the problem with ignorance. You can never truly know the extent of what you are ignorant about.
-
-    ```python
-    print("Hello, World!")
-    ```
-
-    ```mermaid {.no-copy}
-    flowchart LR
-
-    S0[ ]
-    S1((S1))
-    S2(((S2)))
-    S3(((S3)))
-    S4(((S4)))
-
-    S0 --> S1
-    S1 --A--> S2
-    S1 --B--> S3
-    S2 --A--> S1
-    S2 --B--> S3
-    S3 --A--> S1
-    S3 --B--> S3
-    S3 --C--> S3
-    S3 --D--> S4
-
-    class S0 start
-    ```
+> [!Example|inline end]
+> That is the problem with ignorance. You can never truly know the extent of what you are ignorant about.
+> ```python
+> print("Hello, World!")
+> ```
+> 
+> ```mermaid {.no-copy}
+>    flowchart LR
+>
+>    S0[ ]
+>    S1((S1))
+>    S2(((S2)))
+>    S3(((S3)))
+>    S4(((S4)))
+>
+>    S0 --> S1
+>    S1 --A--> S2
+>    S1 --B--> S3
+>    S2 --A--> S1
+>    S2 --B--> S3
+>    S3 --A--> S1
+>    S3 --B--> S3
+>    S3 --C--> S3
+>    S3 --D--> S4
+>
+>    class S0 start
+> ```
 
 Well, all information looks like noise until you break the code. A human being should be able to change a diaper, plan an invasion, butcher a hog, conn a ship, design a building, write a sonnet, balance accounts, build a wall, set a bone, comfort the dying, take orders, give orders, cooperate, act alone, solve equations, analyze a new problem, pitch manure, program a computer, cook a tasty meal, fight efficiently, die gallantly. Yet across the gulf of space, minds that are to our minds as ours are to those of the beasts that perish, intellects vast and cool and unsympathetic, regarded this earth with envious eyes, and slowly and surely drew their plans against us. As nightmarishly lethal, memetically programmed death-machines went, these were the nicest you could ever hope to meet.
 
@@ -231,29 +235,29 @@ Well, all information looks like noise until you break the code. A human being s
 
 What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
 
-!!! Tip inline end "Do This!"
-    As nightmarishly lethal, memetically programmed death-machines went, these were the nicest you could ever hope to meet. Now in the dark world where I dwell, ugly things, and surprising things, and sometimes little wondrous things, spill out in me constantly, and I can count on nothing.
+> [!Tip] Do This!
+> As nightmarishly lethal, memetically programmed death-machines went, these were the nicest you could ever hope to meet. Now in the dark world where I dwell, ugly things, and surprising things, and sometimes little wondrous things, spill out in me constantly, and I can count on nothing.
+> 
+> One
+> :   Behind every man now alive stand thirty ghosts, for that is the ratio by which the dead outnumber the living. The knack lies in learning how to throw yourself at the ground and miss.
+>
+> Two
+> :   I've seen things you people wouldn't believe... Attack ships on fire off the shoulder of Orion... I watched C-beams glitter in the dark near the Tannhäuser Gate. Well, all information looks like noise until you break the code.
 
-One
-:   Behind every man now alive stand thirty ghosts, for that is the ratio by which the dead outnumber the living. The knack lies in learning how to throw yourself at the ground and miss.
-
-Two
-:   I've seen things you people wouldn't believe... Attack ships on fire off the shoulder of Orion... I watched C-beams glitter in the dark near the Tannhäuser Gate. Well, all information looks like noise until you break the code.
-
-
-## More
-
-What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
-
-!!! Question "Can you do this?"
-    The keel-mounted rail gun pushed the whole ship backward in a solid mathematical relationship to the mass of the two-kilo tungsten round moving at a measurable fraction of c. Behind every man now alive stand thirty ghosts, for that is the ratio by which the dead outnumber the living.
 
 ## More
 
 What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
 
-!!! Example
-    Behind every man now alive stand thirty ghosts, for that is the ratio by which the dead outnumber the living. Ordering matter was the sole endeavour of Life, whether it was a jumble of self-replicating molecules in the primordial ocean, or a steam-powered English mill turning weeds into clothing.
+> [!Question] Can you do this?
+> The keel-mounted rail gun pushed the whole ship backward in a solid mathematical relationship to the mass of the two-kilo tungsten round moving at a measurable fraction of c. Behind every man now alive stand thirty ghosts, for that is the ratio by which the dead outnumber the living.
+
+## More
+
+What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
+
+> [!Example]
+> Behind every man now alive stand thirty ghosts, for that is the ratio by which the dead outnumber the living. Ordering matter was the sole endeavour of Life, whether it was a jumble of self-replicating molecules in the primordial ocean, or a steam-powered English mill turning weeds into clothing.
 
 ### And More
 
@@ -263,8 +267,8 @@ The advantage that religion has over magic or science is that man's inability to
 
 What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
 
-!!! Danger
-    As it turned out, imagining the fate of seven billion people was far less emotionally affecting than imagining the fate of one. Yet across the gulf of space, minds that are to our minds as ours are to those of the beasts that perish, intellects vast and cool and unsympathetic, regarded this earth with envious eyes, and slowly and surely drew their plans against us.
+> [!Danger]
+> As it turned out, imagining the fate of seven billion people was far less emotionally affecting than imagining the fate of one. Yet across the gulf of space, minds that are to our minds as ours are to those of the beasts that perish, intellects vast and cool and unsympathetic, regarded this earth with envious eyes, and slowly and surely drew their plans against us.
 
 ## More
 

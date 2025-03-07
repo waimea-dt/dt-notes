@@ -1,6 +1,6 @@
 site_name: Digital Tech. @ Waimea College
 # copyright: Copyright &copy; 2024 Waimea College
-site_url: https://waimea-cpy.github.io/mkdocs-material-test
+site_url: https://waimea-dt.github.io/dt-notes
 
 
 # Theme ------------------------------------------------
@@ -194,6 +194,9 @@ plugins:
   # Separate nav file, rather than defining the nav within this file
   - literate-nav:
       nav_file: nav.md
+
+  # Convert Obsidian callouts to admonitions
+  - callouts
 
 
 

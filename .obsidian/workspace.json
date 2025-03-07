@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "README.md",
+                "file": "docs/web/css/basics.md",
                 "mode": "source",
                 "source": true,
                 "backlinks": true,
@@ -28,7 +28,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "README"
+              "title": "basics"
             },
             "group": "47f710b5abc1a33d"
           }
@@ -44,7 +44,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "README.md",
+                "file": "docs/web/css/basics.md",
                 "mode": "preview",
                 "source": false,
                 "backlinks": true,
@@ -59,7 +59,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "README"
+              "title": "basics"
             },
             "group": "47f710b5abc1a33d"
           }
@@ -95,7 +95,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "!",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -116,7 +116,8 @@
               "title": "Bookmarks"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -212,15 +213,15 @@
       "iconic:Open rulebook": false
     }
   },
-  "active": "01b545b0b9af80f6",
+  "active": "3ee1706a5c4d1072",
   "lastOpenFiles": [
+    "docs/index.md",
+    "README.md",
     "docs/courses.md",
     "docs/web/index.md",
-    "docs/index.md",
     "docs/nav.md",
     "docs/glossary.md",
     "docs/tags.md",
-    "docs/_includes/abbreviations.md",
-    "README.md"
+    "docs/_includes/abbreviations.md"
   ]
 }
