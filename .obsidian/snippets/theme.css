@@ -189,6 +189,8 @@ body {
 
 
 
+/* Simulate MkDocs Admonitions *************************/
+
 .callout {
     border-color: rgba(var(--callout-color), var(--callout-border-opacity));
     background-color: #0003;
