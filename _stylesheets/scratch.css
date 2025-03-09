@@ -1,0 +1,335 @@
+:root {
+    --scratch-back:    #eceff1;
+
+    --stage-back:      #eceff1;
+    --stage-border:    #546e7a;
+
+    --block-unknown:   #888;
+    --border-unknown:  #666;
+
+    --block-move:      #4C97FF;
+    --border-move:     #3373CC;
+    --block-look:      #9966ff;
+    --border-look:     #774dcb;
+    --block-ctrl:      #ffab19;
+    --border-ctrl:     #cf8b17;
+    --block-ctrl-alt:  #e39817;
+    --border-ctrl-alt: #b87b13;
+    --block-evnt:      #ffbf00;
+    --border-evnt:     #cc9900;
+    --block-sens:      #5cb1d6;
+    --border-sens:     #2e8eb8;
+    --block-oper:      #59c059;
+    --border-oper:     #389438;
+    --block-oper-alt:  #51b051;
+    --border-oper-alt: #369136;
+    --block-vars:      #ff8c1a;
+    --border-vars:     #db6e00;
+    --block-sond:      #cf63cf;
+    --border-sond:     #bd42bd;
+
+    --block-text:      #fff;
+
+    --value-back:      #fff;
+    --value-text:      #000;
+
+    --border-col:      #0004;
+    --block-radius:    0.3em;
+    --border-width:    1px;
+    --border-style:    solid;
+
+    --shading-low:     #00000008;
+    --shading:         #0002;
+    --shadow:          0 0.1em 0.15em #0004;
+
+    --question-back:   #fff;
+    --question-accent: #4d97ff;
+    --question-glow:   #4d97ff60;
+    --question-text:   #222;
+}
+
+
+/*** CONTAINERS **********************************************************/
+
+.md-typeset .language-scratch code,
+.md-typeset code.language-scratch {
+    background: transparent;
+    padding: 1rem 0;
+    white-space: normal;
+    font-family: sans-serif;
+    font-size: 0.8rem;
+}
+
+.md-typeset code.language-scratch {
+    display: inline-block;
+    margin-inline: 0.5em;
+    line-height: 1.1;
+}
+
+
+/*** BLOCKS **********************************************************/
+
+.language-scratch .block {
+    --back-col: var(--block-unknown);
+    --bord-col: var(--border-unknown);
+    padding: 0.4em 0.6em;
+    width: max-content;
+    min-width: 5em;
+    min-height: 2.85em;
+    border-radius: var(--block-radius);
+    color: var(--block-text);
+    position: relative;
+    background-color: var(--back-col);
+    border: var(--border-width) var(--border-style) var(--bord-col);
+}
+
+.language-scratch .block,
+.language-scratch .block header {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
+}
+
+:not(pre) > .language-scratch .block {
+    /* padding: 0.3em 0.5em; */
+}
+
+
+/*** CONTAINER BLOCKS **********************************************************/
+
+.language-scratch .block.container {
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    min-height: 7em;
+    min-width: 10em;
+    padding: 0;
+    background-color: transparent;
+    background-image: linear-gradient( to right, var(--back-col) 1em, transparent 1rem );
+    border-right: none;
+}
+
+.language-scratch .block header,
+.language-scratch .block footer {
+    position: relative;
+    width: 100%;
+    padding: 0.5em;
+    border: var(--border-width) var(--border-style) var(--border-unknown);
+    border-left: none;
+    border-radius: var(--block-radius);
+    border-color: var(--bord-col);
+    background-color: var(--back-col);
+    border: none;
+}
+
+.language-scratch .block header {
+    border-bottom: none;
+}
+
+.language-scratch .block footer {
+    padding: 0.2em;
+    line-height: 1;
+    min-height: 2em;
+    text-align: right;
+    border-top: none;
+}
+
+.language-scratch .block.splitter {
+    width: 100%;
+    border-radius: 0 var(--block-radius) var(--block-radius) 0;
+    position: relative;
+    left: calc(0px - var(--border-width));
+    left: -1em;
+    border: none;
+}
+
+.language-scratch .block.container .block {
+    margin-left: calc( 1em + 1px );
+}
+
+
+/*** STARTING BLOCKS **********************************************************/
+
+.language-scratch .block.starter {
+    margin-top: 1.25em;
+    min-height: 3em;
+}
+
+.language-scratch .block.starter::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: -1.15em;
+    left: 0;
+    height: 2.5em;
+    width: 6em;
+    background-image: linear-gradient( var(--back-col) 60%, transparent 60% );
+    border-radius: 50% 50% 0 0;
+    border-top: var(--border-width) var(--border-style) var(--bord-col);
+    z-index: 2;
+}
+
+
+/*** BLOCK CONNECTORS **********************************************************/
+
+.language-scratch .block:not(:is(.gap, .final))::after,
+.language-scratch .block header::after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: -0.5em;
+    left: 1em;
+    height: 0.5em;
+    width: 1.5em;
+    background-color: var(--back-col);
+    border-radius: 0 0 var(--block-radius) var(--block-radius);
+    border: var(--border-width) var(--border-style) var(--bord-col);
+    border-top: none;
+    z-index: 1;
+}
+
+.language-scratch .block header::after,
+.language-scratch .block.splitter::after {
+    left: 2.2em;
+}
+
+
+/*** SUB BLOCKS **********************************************************/
+
+.language-scratch .sub-block {
+    --back-col: var(--block-unknown);
+    --bord-col: var(--border-unknown);
+    display: inline-flex;
+    gap: 0.5em;
+    align-items: center;
+    padding: 0.3em 0.5em;
+    color: var(--block-text);
+    background-color: var(--back-col);
+    border: var(--border-width) var(--border-style) var(--bord-col);
+}
+
+.language-scratch .sub-block.logic {
+    --taper: 1em;
+    --offset: 3%;
+
+    padding: 0.3em 1.5em;
+    clip-path: polygon(
+        calc(var(--offset) + var(--taper)) 0%,
+        calc(100% - var(--offset) - var(--taper)) 0%,
+        100% 50%,
+        calc(100% - var(--offset) - var(--taper)) 100%,
+        calc(var(--offset) + var(--taper)) 100%,
+        0% 50%
+    );
+
+    /* super-cludgy way of adding 'borders' to a clip-path shape, using gradients that can just be seen */
+    --border-start: calc((var(--offset) + var(--taper)) * 0.7);
+    --border-end: calc(var(--border-start) + (2 * var(--border-width)));
+    background-image: linear-gradient(45deg,  var(--bord-col) var(--border-start), var(--back-col) var(--border-end), transparent 25%),
+                      linear-gradient(135deg, var(--bord-col) var(--border-start), var(--back-col) var(--border-end), transparent 25%),
+                      linear-gradient(225deg, var(--bord-col) var(--border-start), var(--back-col) var(--border-end), transparent 25%),
+                      linear-gradient(315deg, var(--bord-col) var(--border-start), var(--back-col) var(--border-end), transparent 25%);
+}
+
+
+.language-scratch .sub-block.operator.logic.boolean {
+    padding: 0.3em 0.5em;
+}
+
+.language-scratch .sub-block.operator:not(.logic) {
+    border-radius: 3em;
+}
+
+.language-scratch .sub-block.operator.function {
+    padding: 0.3em 0.5em 0.3em 0.8em;
+}
+
+
+/*** DATA CONTAINERS **********************************************************/
+
+.language-scratch img {
+    display: inline-block;
+    height: 1.4em;
+    width: 1.4em;
+}
+
+.language-scratch .value {
+    display: inline-flex;
+    gap: 0.5em;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2em 0.6em;
+    min-width: 2.8em;
+    border-radius: 2em;
+    border: var(--border-width) var(--border-style) var(--bord-col);
+    background-color: var(--value-back);
+    color: var(--value-text);
+}
+
+.language-scratch .value:is(.variable, .looks, .motion, .sensing, .colour):not(.menu) {
+    padding: 0.4em 0.7em;
+}
+
+.language-scratch .menu {
+    display: inline-block;
+    position: relative;
+    padding: 0.2em 1.6em 0.2em 0.6em;
+    border-radius: var(--block-radius);
+    border: var(--border-width) var(--border-style) var(--bord-col);
+    background-color: var(--shading-low);
+    color: var(--block-text);
+}
+
+.language-scratch :is(.sensing, .value.sensing) .menu {
+    border-radius: 2em;
+}
+
+.language-scratch .menu::after {
+    content: '▼';
+    position: absolute;
+    right: 0.4em;
+    top: 0.2em;
+}
+
+.language-scratch .value.colour {
+    background-color: var(--back-col);
+}
+
+
+/*** GAPS **********************************************************/
+
+.language-scratch .gap {
+    background: none;
+    border: none;
+    height: 2em;
+}
+
+
+
+/*** BLOCK COLOURS **********************************************************/
+
+.language-scratch .value.motion   { color: var(--block-text); background-color: var(--block-move); }
+.language-scratch .value.looks    { color: var(--block-text); background-color: var(--block-look); }
+.language-scratch .value.sensing  { color: var(--block-text); background-color: var(--block-sens); }
+.language-scratch .value.variable { color: var(--block-text); background-color: var(--block-vars); }
+
+.language-scratch .block.motion       { --back-col: var(--block-move); --bord-col: var(--border-move); }
+.language-scratch .block.looks        { --back-col: var(--block-look); --bord-col: var(--border-look); }
+.language-scratch .block.control      { --back-col: var(--block-ctrl); --bord-col: var(--border-ctrl); }
+.language-scratch .block.events       { --back-col: var(--block-evnt); --bord-col: var(--border-evnt); }
+.language-scratch .block.sensing      { --back-col: var(--block-sens); --bord-col: var(--border-sens); }
+.language-scratch .block.operators    { --back-col: var(--block-oper); --bord-col: var(--border-oper); }
+.language-scratch .block.variables    { --back-col: var(--block-vars); --bord-col: var(--border-vars); }
+.language-scratch .block.sounds       { --back-col: var(--block-sond); --bord-col: var(--border-sond); }
+
+.language-scratch .sub-block.operator { --back-col: var(--block-oper); --bord-col: var(--border-oper); }
+.language-scratch .sub-block.sensing  { --back-col: var(--block-sens); --bord-col: var(--border-sens); }
+
+/* Nested blocks of same type */
+
+.language-scratch .block.control > .block.control:not(.splitter)                  { --back-col: var(--block-ctrl-alt); --bord-col: var(--border-ctrl-alt); }
+.language-scratch .block.control > .block.control > .block.control:not(.splitter) { --back-col: var(--block-ctrl);     --bord-col: var(--border-ctrl); }
+
+.language-scratch .sub-block.operator > .sub-block.operator                       { --back-col: var(--block-oper-alt); --bord-col: var(--border-oper-alt); }
+.language-scratch .sub-block.operator > .sub-block.operator > .sub-block.operator { --back-col: var(--block-oper);     --bord-col: var(--border-oper); }

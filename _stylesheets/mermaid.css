@@ -1,0 +1,250 @@
+.language-mermaid {
+    --font-family: system-ui, Helvetica, Arial, sans-serif;
+
+    --node-back:         #4fc3f7;
+    --node-border:       #0288d1;
+    --terminator-back:   #ff8a65;
+    --terminator-border: #e64a19;
+    --decision-back:     #aed581;
+    --decision-border:   #689f38;
+    --join-back:         #fff176;
+    --join-border:       #fdd835;
+    --in-out-back:       #d483e2;
+    --in-out-border:     #9740bc;
+    --data-back:         #df7cc1;
+    --data-border:       #ca2799;
+
+    --node-text:   #000;
+
+    --line-col:    #999;
+    --label-text:  var(--md-default-fg-color);
+    --label-back:  var(--md-default-bg-color);
+
+    --tone-light:  #eee;
+    --tone-dark:   #111;
+
+    --line-normal: 2;
+    --line-thick:  3;
+}
+
+
+pre.language-mermaid,
+code.language-mermaid {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+pre.language-mermaid code,
+code.language-mermaid {
+    background: none;
+    padding: 0;
+}
+
+pre.language-mermaid code svg,
+code.language-mermaid svg {
+    display: block;
+    margin-inline: auto;
+}
+
+
+/*** ERROR ***************************************************/
+
+.language-mermaid .error-icon {
+    fill: var(--tone-light);
+}
+
+.language-mermaid .error-text {
+    fill: var(--tone-dark);
+    stroke: var(--tone-dark);
+}
+
+
+/*** BLOCKS ***************************************************/
+
+.language-mermaid .node rect,
+.language-mermaid .node circle,
+.language-mermaid .node ellipse,
+.language-mermaid .node polygon,
+.language-mermaid .node path {
+    fill: var(--node-back) !important;
+    stroke: var(--node-border) !important;
+    stroke-width: var(--line-thick) !important;
+}
+
+/* Plain rectangles */
+.language-mermaid .node rect:not([rx]) {
+    fill: var(--node-back) !important;
+    stroke: var(--node-border) !important;
+}
+
+/* Rounded rectangles */
+.language-mermaid .node rect[rx] {
+    fill: var(--terminator-back) !important;
+    stroke: var(--terminator-border) !important;
+}
+
+/* Questions */
+.language-mermaid .node polygon {
+    fill: var(--decision-back) !important;
+    stroke: var(--decision-border) !important;
+}
+
+/* IO */
+.language-mermaid .node.in-out polygon {
+    fill: var(--in-out-back) !important;
+    stroke: var(--in-out-border) !important;
+}
+
+/* Circles */
+.language-mermaid .node circle {
+    fill: var(--md-default-bg-color) !important;
+    stroke: var(--join-border) !important;
+}
+
+.language-mermaid .node circle:last-of-type {
+    fill: var(--join-back) !important;
+}
+
+/* Database */
+.language-mermaid .node path {
+    fill: var(--data-back) !important;
+    stroke: var(--data-border) !important;
+}
+
+/* Invisible start node for FSA */
+.language-mermaid .node.start {
+    display: none;
+}
+
+/* Labels */
+.language-mermaid .node .label {
+    text-align: center;
+}
+
+.language-mermaid .label {
+    font-family: var(--font-family);
+}
+
+.language-mermaid .label text,
+.language-mermaid span {
+    fill: var(--node-text) !important;
+    color: var(--node-text) !important;
+}
+
+
+/*** LINES ***************************************************/
+
+.language-mermaid .edgePath .path {
+    stroke: var(--line-col) !important;
+    stroke-width: var(--line-thick) !important;
+}
+
+.language-mermaid .arrowheadPath {
+    fill: var(--line-col) !important;
+}
+
+.language-mermaid .edge-thickness-normal { stroke-width: var(--line-normal); }
+.language-mermaid .edge-thickness-thick  { stroke-width: var(--line-thick); }
+
+.language-mermaid .edge-pattern-solid  { stroke-dasharray: 0; }
+.language-mermaid .edge-pattern-dashed { stroke-dasharray: 3; }
+.language-mermaid .edge-pattern-dotted { stroke-dasharray: 2; }
+
+
+/*** LINE ENDS ***************************************************/
+
+.language-mermaid .marker {
+    fill: var(--line-col) !important;
+    stroke: var(--line-col) !important;
+    scale: 1.5;
+}
+
+.language-mermaid .marker path {
+    stroke-width: var(--line-normal) !important;
+}
+
+.language-mermaid .marker.cross {
+    stroke: var(--node-back) !important;
+}
+
+
+/*** LINES ***************************************************/
+
+.language-mermaid .flowchart-link {
+    stroke: var(--line-col) !important;
+    stroke-width: var(--line-normal) !important;
+    fill: none;
+}
+
+.language-mermaid .node.clickable {
+    cursor:pointer;
+}
+
+.language-mermaid #flowchart-pointEnd {
+    stroke: var(--line-col) !important;
+}
+
+
+/*** LINE LABELS ***************************************************/
+
+.language-mermaid .edgeLabel {
+    display: block;
+    text-align: center;
+    background-color: var(--label-back) !important;
+    color: var(--label-text) !important;
+    border-radius: 0.5em;
+    padding: 0 0.5em;
+}
+
+.language-mermaid .labelBkg,
+.language-mermaid .edgeLabel p {
+    background-color: transparent !important;
+}
+
+
+/*** GROUPS ***************************************************/
+
+.language-mermaid .cluster rect {
+    fill: var(--tone-light);
+    stroke: var(--tone-light);
+    stroke-width: var(--line-normal);
+}
+
+.language-mermaid .cluster-label text {
+    fill: var(--tone-dark);
+}
+
+.language-mermaid .cluster-label span {
+    color: var(--tone-dark);
+}
+
+.language-mermaid .cluster text {
+    fill: var(--tone-dark);
+}
+
+.language-mermaid .cluster span {
+    color: var(--tone-dark);
+}
+
+
+/*** MISC ***************************************************/
+
+.language-mermaid div.mermaidTooltip {
+    position: absolute;
+    text-align: center;
+    max-width: 12em;
+    padding: 0.25em;
+    font-family: var(--font-family);
+    font-size: 0.8em;
+    background: var(--tone-light);
+    border: 1px solid undefined;
+    border-radius: 0.25em;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.language-mermaid :root {
+    --mermaid-font-family: var(--font-family);
+}
+

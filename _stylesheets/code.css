@@ -1,0 +1,116 @@
+[data-md-color-scheme="slate"] {
+    --md-code-fg-color:             #ABB2BF;
+    --md-code-bg-color:             hsla(204, 0%, 0%, 0.9);
+
+    --md-code-hl-number-color:      #D19A66;
+    --md-code-hl-special-color:     #56B6C2;
+    --md-code-hl-function-color:    #61AFEF;
+    --md-code-hl-constant-color:    #E5C07B;
+    --md-code-hl-keyword-color:     #C678DD;
+    --md-code-hl-string-color:      #98C379;
+    --md-code-hl-name-color:        #E06C75;
+    --md-code-hl-operator-color:    #56B6C2;
+    --md-code-hl-punctuation-color: #ABB2BF;
+    --md-code-hl-comment-color:     #7F848E;
+    --md-code-hl-generic-color:     #ABB2BF;
+    --md-code-hl-variable-color:    #ABB2BF;
+
+    --md-code-hl-color:             hsla(204, 80%, 57%, 1.0);
+    --md-code-hl-color--light:      hsla(204, 80%, 57%, 0.2);
+
+    --md-code-indent1-color:        hsla(204, 40%, 57%, 0.6);
+    --md-code-indent1-color--light: hsla(204, 40%, 57%, 0.2);
+    --md-code-indent2-color:        hsla(140, 40%, 57%, 0.6);
+    --md-code-indent2-color--light: hsla(140, 40%, 57%, 0.2);
+    --md-code-indent3-color:        hsla(76,  40%, 57%, 0.6);
+    --md-code-indent3-color--light: hsla(76,  40%, 57%, 0.2);
+    --md-code-indent4-color:        hsla(12,  40%, 57%, 0.6);
+    --md-code-indent4-color--light: hsla(12,  40%, 57%, 0.2);
+}
+
+
+
+[data-md-color-scheme="default"] {
+    --md-code-fg-color:             #3b3e42;
+    --md-code-bg-color:             hsla(204, 50%, 50%, 0.1);
+
+    --md-code-hl-number-color:      #b8671c;
+    --md-code-hl-special-color:     #1a93a3;
+    --md-code-hl-function-color:    #1d79c5;
+    --md-code-hl-constant-color:    #c2881d;
+    --md-code-hl-keyword-color:     #921cb6;
+    --md-code-hl-string-color:      #53a11b;
+    --md-code-hl-name-color:        #bb1a28;
+    --md-code-hl-operator-color:    #1490a0;
+    --md-code-hl-punctuation-color: #3b3e42;
+    --md-code-hl-comment-color:     #848891;
+    --md-code-hl-generic-color:     #3b3e42;
+    --md-code-hl-variable-color:    #5b5f66;
+
+    --md-code-hl-color:             hsla(204, 80%, 57%, 1.0);
+    --md-code-hl-color--light:      hsla(204, 80%, 57%, 0.2);
+
+    --md-code-indent1-color:        hsla(204, 40%, 45%, 0.6);
+    --md-code-indent1-color--light: hsla(204, 40%, 45%, 0.2);
+    --md-code-indent2-color:        hsla(140, 40%, 45%, 0.6);
+    --md-code-indent2-color--light: hsla(140, 40%, 45%, 0.2);
+    --md-code-indent3-color:        hsla(76,  40%, 45%, 0.6);
+    --md-code-indent3-color--light: hsla(76,  40%, 45%, 0.2);
+    --md-code-indent4-color:        hsla(12,  40%, 45%, 0.6);
+    --md-code-indent4-color--light: hsla(12,  40%, 45%, 0.2);
+}
+
+
+.highlighttable .linenodiv pre,
+.highlight [data-linenos]::before {
+    background-color: transparent;
+    color: var(--md-default-fg-color--lighter);
+}
+
+
+.highlight .hll [data-linenos]::before {
+    color: var(--md-default-fg-color);
+}
+
+
+.highlight .hll {
+    box-shadow: 4px 0 0 0 var(--md-code-hl-color) inset;
+}
+
+.highlight.show-indent .w,
+.highlight.show-indent .whitespace {
+        background-image: linear-gradient(
+        to right,
+
+        var(--md-code-indent1-color--light) 0,
+        var(--md-code-indent1-color--light) calc(4ch - 5px),
+        var(--md-code-indent1-color)        calc(4ch - 5px),
+        var(--md-code-indent1-color)        calc(4ch - 3px),
+        transparent                         calc(4ch - 3px),
+        transparent                         4ch,
+
+        var(--md-code-indent2-color--light) 4ch,
+        var(--md-code-indent2-color--light) calc(8ch - 5px),
+        var(--md-code-indent2-color)        calc(8ch - 5px),
+        var(--md-code-indent2-color)        calc(8ch - 3px),
+        transparent                         calc(8ch - 3px),
+        transparent                         8ch,
+
+        var(--md-code-indent3-color--light) 4ch,
+        var(--md-code-indent3-color--light) calc(12ch - 5px),
+        var(--md-code-indent3-color)        calc(12ch - 5px),
+        var(--md-code-indent3-color)        calc(12ch - 3px),
+        transparent                         calc(12ch - 3px),
+        transparent                         12ch,
+
+        var(--md-code-indent4-color--light) 4ch,
+        var(--md-code-indent4-color--light) calc(16ch - 5px),
+        var(--md-code-indent4-color)        calc(16ch - 5px),
+        var(--md-code-indent4-color)        calc(16ch - 3px),
+        transparent                         calc(16ch - 3px),
+        transparent                         16ch,
+
+        transparent 100%
+    );
+}
+
