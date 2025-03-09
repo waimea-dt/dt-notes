@@ -5,7 +5,7 @@ hide:  footer
 
 # DT Courses at Waimea College
 
-![Mac thinking](_assets/macintosh-surprised.svg){ .no-lightbox }
+![Mac thinking](macintosh-surprised.svg){ .no-lightbox }
 
 /// speech-caption
 Woah! So many cool **Digital Technologies** courses to do at *Waimea College*!

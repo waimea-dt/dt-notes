@@ -6,8 +6,8 @@ hide:  footer
 
 # Welcome!
 
-![Mac Hello](_assets/macintosh-happy.svg){ .no-lightbox }
-
+![Mac Hello](macintosh-happy.svg){ .no-lightbox }
+ 
 /// speech-caption
 HELLO, HUMAN!
 

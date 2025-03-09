@@ -1,0 +1,33 @@
+{
+  "mark": [
+    {
+      "regex": "{{open:\\^}}(\\S+){{close:\\^}}",
+      "class": "superscript",
+      "hide": true
+    },
+    {
+      "regex": "{{open:~}}(\\S){{close:~}}",
+      "class": "subscript",
+      "hide": true
+    },
+    {
+      "regex": "{{open:\\+\\+\"?}}([a-zA-Z0-9]+){{close:\"?\\+\\+}}",
+      "class": "key",
+      "hide": true,
+      "flags": [
+        "g",
+        "i"
+      ],
+      "viewMode": {
+        "reading": true,
+        "source": true,
+        "live": true,
+        "codeBlock": false
+      }
+    }
+  ],
+  "pattern": {
+    "open": "{{open:(.*?)}}",
+    "close": "{{close:(.*?)}}"
+  }
+}

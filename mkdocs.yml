@@ -167,6 +167,8 @@ markdown_extensions:
   # Automatic abbreviations for defs in abbreviations.md, auto-included via snippets
   - abbr
 
+  # Embed media just like Obsidian does
+  - obsidian_media_mkdocs
 
 
 # Plugins ------------------------------------------------
@@ -198,6 +200,9 @@ plugins:
   # Convert Obsidian callouts to admonitions
   - callouts
 
+  # Obsidian compatibility
+  - obsidian-bridge
+  - obsidian-support
 
 
 # Extras ------------------------------------------------
