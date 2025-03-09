@@ -1,3 +1,36 @@
+body {
+    --nav-item-color-active: #5cbeff;
+    --nav-item-color-hover: var(--nav-item-color-active);
+
+    --background-modifier-border: #7777;
+
+    --callout-border-opacity: 0.6;
+
+    --back-dark: #0003;
+    --back-darker: #0006;
+}
+
+
+/* Nav *************************/
+
+.tree-item-self.is-active {
+    --icon-color: var(--nav-item-color-active);
+    --icon-opacity: 1;
+}
+
+.nav-file-title,
+.nav-folder-title {
+    font-size: calc(1.2 * var(--nav-item-size));
+}
+
+.iconic-icon,
+.tree-item-self .tree-item-icon {
+    color: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 1);
+}
+
+
+/* Headings *************************/
+
 .inline-title {
     color: inherit;
 }
@@ -18,38 +51,32 @@ h4, .markdown-rendered h4 {
     font-style: italic;
 }
 
+
+/* Lists *************************/
+
 dl dt {
     color: #FFEB3B;
     font-weight: 400;
 }
 
-.callout {
-    border: 1px solid rgb(var(--callout-color));
-}
+
+/* Code *************************/
 
 :not(pre) > code[class*="language-"],
 pre[class*="language-"] {
-    border: 1px solid #7777;
-    background-color: #141617;
+    border: 1px solid var(--background-modifier-border);;
+    background-color: var(--back-darker);
 }
 
-body {
-    --nav-item-color-active: #5cbeff;
-    --nav-item-color-hover: var(--nav-item-color-active);
-}
 
-.tree-item-self.is-active {
-    --icon-color: var(--nav-item-color-active);
-    --icon-opacity: 1;
-}
-
-.nav-file-title,
-.nav-folder-title {
-    font-size: calc(1.2 * var(--nav-item-size));
-}
+/* Tables *************************/
 
 .markdown-rendered table {
-    background-color: #0003;
+    background-color: var(--back-darker);
+}
+
+.markdown-rendered table thead {
+    background-color: var(--back-darker);
 }
 
 
@@ -78,10 +105,10 @@ body {
 
 
 .key {
-    background-color: #0003;
+    background-color: var(--back-darker);
     border-radius: 0.4rem;
-    border: 1px solid #666;
-    box-shadow: 0 2px 0 #666;
+    border: 1px solid var(--background-modifier-border);;
+    box-shadow: 0 2px 0 var(--background-modifier-border);;
     padding: 0.2em 0.5em;
     vertical-align: middle;
 }
@@ -112,7 +139,7 @@ body {
     list-style: none;
     padding: 0;
     border: 1px solid var(--background-modifier-border);
-    background-color: #0003;
+    background-color: var(--back-darker);
     padding: 1rem 0;
     margin: 0;
 }
@@ -123,6 +150,7 @@ body {
 
 .el-div:has(.grid.cards) + .el-ul ul li > hr {
     margin: 0;
+    height: 1px;
 }
 
 .markdown-rendered div + div > :is(h1,h2,h3,h4,h5,h6) {
@@ -142,7 +170,7 @@ body {
 .html-tab {
     border-left: 1px solid var(--background-modifier-border);
     border-top: 1px solid var(--background-modifier-border);
-    background-color: #0003;
+    background-color: var(--back-dark);
     padding: 1rem;
     margin: 0;
 }
@@ -154,6 +182,7 @@ body {
 .html-tab.html-tab-active {
     border-top: 4px solid hsla(var(--accent-h), var(--accent-s), var(--accent-l), 1);
     border-bottom: none;
+    background-color: var(--back-darker);
 }
 
 .html-tab.html-tab-active > p {
@@ -179,7 +208,7 @@ body {
 
 .html-tab-content {
     border: 1px solid var(--background-modifier-border);
-    background-color: #0003;
+    background-color: var(--back-darker);
     padding: 0 1rem;
 }
 
@@ -192,7 +221,7 @@ body {
 /* Simulate MkDocs Admonitions *************************/
 
 .callout {
-    border-color: rgba(var(--callout-color), var(--callout-border-opacity));
-    background-color: #0003;
+    border: 1px solid rgba(var(--callout-color), var(--callout-border-opacity));
+    background-color: var(--back-darker);
     mix-blend-mode: normal;
 }

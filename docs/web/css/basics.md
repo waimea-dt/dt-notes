@@ -41,7 +41,7 @@ Or...
 [Subscribe to our newsletter :fontawesome-solid-paper-plane:](#){ .md-button .md-button--primary }
 
 
-```py linenums="1"
+```python linenums="1"
 print("Hello, world!") # (1)!
 
 from typing import Iterator
@@ -65,7 +65,7 @@ print(f"The answer is {result}")
 
 The knack lies in learning how to throw yourself at the ground and miss.
 
-```py {.show-indent}
+```python {.show-indent}
 class Math:
     @staticmethod
     def fib(n: int) -> Iterator[int]:

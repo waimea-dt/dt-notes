@@ -14,7 +14,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/web/css/basics.md",
+                "file": "docs/index.md",
                 "mode": "source",
                 "source": true,
                 "backlinks": true,
@@ -29,7 +29,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "basics"
+              "title": "index"
             },
             "group": "47f710b5abc1a33d"
           }
@@ -46,7 +46,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/web/css/basics.md",
+                "file": "docs/index.md",
                 "mode": "preview",
                 "source": false,
                 "backlinks": true,
@@ -61,7 +61,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "basics"
+              "title": "index"
             },
             "group": "47f710b5abc1a33d"
           }
@@ -97,7 +97,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "```py ",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -214,17 +214,17 @@
       "iconic:Open rulebook": false
     }
   },
-  "active": "f17f19b798e575bc",
+  "active": "c7a28985d227fb41",
   "lastOpenFiles": [
-    "docs/web/css/about.md",
-    "docs/web/css/basics.md",
+    "docs/nav.md",
     "docs/index.md",
+    "docs/web/css/basics.md",
+    "docs/web/css/about.md",
     "docs/courses.md",
     "docs/tools/editors/vscode.md",
     "docs/tools/editors/intellij.md",
     "README.md",
     "docs/web/index.md",
-    "docs/nav.md",
     "docs/glossary.md",
     "docs/tags.md",
     "docs/_includes/abbreviations.md"
