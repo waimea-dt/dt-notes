@@ -6,6 +6,15 @@ tags:
 
 # CSS Basics
 
+++help++
+
+:heart:
+
+:material-heart:
+
+:luc_heart:
+
+
 ```css linenums="1" hl_lines="2 3"
 body {
     color: red; /* (1)! */
@@ -15,9 +24,11 @@ body {
 
 1.  Do this thing! :material-information-outline:
 
-Men who --> **believe** that they are ==accomplishing== something by _speaking_ speak in a ~~different~~ better way from men who believe that speaking is a waste of time. Drink H~2~O. Then calculate y=x^2^
+Men who --> <-- **believe** that they are ==accomplishing== something by _speaking_ speak in a ~~different~~ better way from men who believe that speaking is a waste of time. Drink H~2~O. Then calculate y=x^2y+1^ and there you are! Move from x~0~ to x~1~ and then cook up some H~5~O~3~P~7~
 
-Try pressing: ++ctrl+"C"++ or maybe just ++enter++
+## Cheese^2^
+
+Try pressing: ++ctrl+++++"C"+++++plus+++++0++ or maybe just ++enter++ or even ++slash++
 
 This **protocol** is likely to be TCP, but it could also be UDP... Who knows?! Protocol... What the heck is that?
 
@@ -53,7 +64,6 @@ print(f"The answer is {result}")
 2.  And this
 
 The knack lies in learning how to throw yourself at the ground and miss.
-
 
 ```py {.show-indent}
 class Math:
@@ -91,41 +101,50 @@ Behind every man now alive stand thirty ghosts, ==for that is the ratio by which
 | `DELETE` | :material-close:     Delete resource | It is commonly the case with technologies that you can get the best insight about how they work by watching them fail. |
 
 
+
 ## Terminology
 
 Create a file with `#!css body { color: red; }`
 
-That is the problem with ignorance. You can never truly know the extent of what you are ignorant about. They dissemble, evade, prevaricate, confound, confuse, distract, obscure, subtly misrepresent and willfully misunderstand with what often appears to be a positively gleeful relish and are generally perfectly capable of contriving to give one an utterly unambiguous impression of their future course of action while in fact intending to do exactly the opposite, but they never lie.
+That is the problem with ignorance. You can never truly know the extent of what you are ignorant about. They dissemble, evade, prevaricate, confound, confuse, distract, obscure, subtly misrepresent and wilfully misunderstand with what often appears to be a positively gleeful relish and are generally perfectly capable of contriving to give one an utterly unambiguous impression of their future course of action while in fact intending to do exactly the opposite, but they never lie.
 
-=== "Idea One"
+~~~tabs
 
-    We live on a placid island of ignorance in the midst of black seas of infinity, and it was not meant that we should voyage far.
+---tab Idea One
 
-    ```css
-    .language-mermaid .node polygon {
-        fill: var(--decision-back) !important;
-        stroke: var(--decision-border) !important;
-    }
+We live on a placid island of ignorance in the midst of black seas of infinity, and it was not meant that we should voyage far.
 
-    ```
+```css
+.language-mermaid .node polygon {
+    fill: var(--decision-back) !important;
+    stroke: var(--decision-border) !important;
+}
+```
 
-    ![UK](../images/uk.png)
+![UK](uk.png)
+    
+---tab Idea Two
 
-=== "Idea Two"
+The left side of my brain had been shut down like a damaged section of a spinship being sealed off, airtight doors leaving the doomed compartments open to vacuum. But the human race did not have even the slightest bit of psychological preparation for what was about to happen.
 
-    The left side of my brain had been shut down like a damaged section of a spinship being sealed off, airtight doors leaving the doomed compartments open to vacuum. But the human race did not have even the slightest bit of psychological preparation for what was about to happen.
+![Rainbow](rainbow.jpg)
 
-    ![Rainbow](../images/rainbow.jpg)
+/// caption
+A beautiful rainbow!
+///
 
-    /// caption
-    A beautiful rainbow!
-    ///
+---tab Idead Three
 
-=== "Idea Three"
+An Outside Context Problem was the sort of thing most civilisations encountered just once, and which they tended to encounter rather in the same way a sentence encountered a full stop.
 
-    An Outside Context Problem was the sort of thing most civilisations encountered just once, and which they tended to encounter rather in the same way a sentence encountered a full stop.
+![Yeti](yeti.png)
 
-    ![Yeti](../images/yeti.png)
+---tab Idea Four
+
+![](https://www.youtube.com/watch?v=z1Eq0xlVs3g)
+
+Watch that!
+~~~
 
 
 ## Rules
@@ -141,38 +160,30 @@ What's hard, in hacking as in fiction, is not writing, it's deciding what to wri
 
 <div class="grid cards" markdown>
 
--   :material-clock-fast:{ .lg .middle } __Set up in 5 minutes__
+- __Set up in 5 minutes__
 
     ---
 
     Install [`mkdocs-material`](#) with [`pip`](#) and get up
     and running in minutes
-
-    [:octicons-arrow-right-24: Getting started](#)
-
--   :fontawesome-brands-markdown:{ .lg .middle } __It's just Markdown__
+    
+- __It's just Markdown__
 
     ---
 
     Focus on your content and generate a responsive and searchable static site
-
-    [:octicons-arrow-right-24: Reference](#)
-
--   :material-format-font:{ .lg .middle } __Made to measure__
+  
+- __Made to measure__
 
     ---
 
     Change the colors, fonts, language, icons, logo and more with a few lines
-
-    [:octicons-arrow-right-24: Customization](#)
-
--   :material-scale-balance:{ .lg .middle } __Open Source, MIT__
+  
+- __Open Source, MIT__
 
     ---
 
-    Material for MkDocs is licensed under MIT and available on [GitHub]
-
-    [:octicons-arrow-right-24: License](#)
+    Material for MkDocs is licensed under MIT and available on [GitHub](#)
 
 </div>
 
@@ -267,7 +278,7 @@ The advantage that religion has over magic or science is that man's inability to
 
 What's hard, in hacking as in fiction, is not writing, it's deciding what to write.
 
-> [!Danger]
+> [!Danger] 
 > As it turned out, imagining the fate of seven billion people was far less emotionally affecting than imagining the fate of one. Yet across the gulf of space, minds that are to our minds as ours are to those of the beasts that perish, intellects vast and cool and unsympathetic, regarded this earth with envious eyes, and slowly and surely drew their plans against us.
 
 ## More

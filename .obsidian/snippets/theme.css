@@ -47,3 +47,150 @@ body {
 .nav-folder-title {
     font-size: calc(1.2 * var(--nav-item-size));
 }
+
+.markdown-rendered table {
+    background-color: #0003;
+}
+
+
+/* CUSTOM BLOCKS via REGEX *************************/
+
+.superscript {
+    vertical-align: super;
+    font-size: 0.8em;
+}
+
+.subscript {
+    vertical-align: sub;
+    font-size: 0.8em;
+}
+
+/* Fix editor bug where class applied twice */
+.superscript .superscript {
+    vertical-align: unset;
+    font-size: unset;
+}
+
+.subscript .subscript {
+    vertical-align: unset;
+    font-size: unset;
+}
+
+
+.key {
+    background-color: #0003;
+    border-radius: 0.4rem;
+    border: 1px solid #666;
+    box-shadow: 0 2px 0 #666;
+    padding: 0.2em 0.5em;
+    vertical-align: middle;
+}
+
+.key .key {
+    background-color: unset;
+    border: unset;
+    box-shadow: unset;
+    padding: unset;
+    vertical-align: unset;
+}
+
+
+/* Simulate MkDocs Grid Cards *************************/
+
+.el-div:has(.grid.cards) + .el-ul ul {
+    display: grid;
+    grid-gap: 0.8rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    margin: 1em 0;
+}
+
+.el-div:has(.grid.cards) + .el-ul ul .list-bullet {
+    display: none;
+}
+
+.el-div:has(.grid.cards) + .el-ul ul li {
+    list-style: none;
+    padding: 0;
+    border: 1px solid var(--background-modifier-border);
+    background-color: #0003;
+    padding: 1rem 0;
+    margin: 0;
+}
+
+.el-div:has(.grid.cards) + .el-ul ul li > *:not(hr) {
+    padding: 0 1rem;
+}
+
+.el-div:has(.grid.cards) + .el-ul ul li > hr {
+    margin: 0;
+}
+
+.markdown-rendered div + div > :is(h1,h2,h3,h4,h5,h6) {
+    margin-top: var(--heading-spacing);
+}
+
+
+
+/* Simulate MkDocs Tabs *************************/
+
+.html-tabs {
+    margin: 0;
+    border: 0;
+    font-size: unset;
+}
+
+.html-tab {
+    border-left: 1px solid var(--background-modifier-border);
+    border-top: 1px solid var(--background-modifier-border);
+    background-color: #0003;
+    padding: 1rem;
+    margin: 0;
+}
+
+.html-tab:last-child {
+    border-right: 1px solid var(--background-modifier-border);
+}
+
+.html-tab.html-tab-active {
+    border-top: 4px solid hsla(var(--accent-h), var(--accent-s), var(--accent-l), 1);
+    border-bottom: none;
+}
+
+.html-tab.html-tab-active > p {
+    color: var(--text-normal);
+}
+
+.html-tab:not(.html-tab-active) > p {
+    opacity: 0.5;
+}
+
+.html-tab:not(.html-tab-active):hover > p {
+    opacity: 1;
+}
+
+.html-tab > p {
+    margin: 0;
+}
+
+.html-tabs br + br,
+.html-tab-content br + br {
+    display: none;
+}
+
+.html-tab-content {
+    border: 1px solid var(--background-modifier-border);
+    background-color: #0003;
+    padding: 0 1rem;
+}
+
+.html-tab-content > div > pre:has(code:empty) {
+    display: none;
+}
+
+
+
+.callout {
+    border-color: rgba(var(--callout-color), var(--callout-border-opacity));
+    background-color: #0003;
+    mix-blend-mode: normal;
+}

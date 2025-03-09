@@ -628,6 +628,10 @@ body * {
 
 /* #region iFrames ------------------------------ */
 
+.md-typeset figure:has(iframe) {
+    width: auto;
+}
+
 .md-content iframe {
     width: 100%;
     aspect-ratio: 4/3;

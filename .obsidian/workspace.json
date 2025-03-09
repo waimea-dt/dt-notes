@@ -6,6 +6,7 @@
       {
         "id": "f9156c23149c3f7f",
         "type": "tabs",
+        "dimension": 48.90939597315436,
         "children": [
           {
             "id": "c7a28985d227fb41",
@@ -37,6 +38,7 @@
       {
         "id": "ca3dd701ca683ec3",
         "type": "tabs",
+        "dimension": 51.09060402684564,
         "children": [
           {
             "id": "f17f19b798e575bc",
@@ -95,7 +97,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "!",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -116,8 +118,7 @@
               "title": "Bookmarks"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -213,11 +214,15 @@
       "iconic:Open rulebook": false
     }
   },
-  "active": "3ee1706a5c4d1072",
+  "active": "f17f19b798e575bc",
   "lastOpenFiles": [
+    "docs/web/css/about.md",
+    "docs/web/css/basics.md",
     "docs/index.md",
-    "README.md",
     "docs/courses.md",
+    "docs/tools/editors/vscode.md",
+    "docs/tools/editors/intellij.md",
+    "README.md",
     "docs/web/index.md",
     "docs/nav.md",
     "docs/glossary.md",

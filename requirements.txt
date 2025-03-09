@@ -4,3 +4,5 @@ mkdocs-material
 markdown-exec[ansi]
 mkdocs-glightbox
 mkdocs-callouts
+mkdocs-obsidian-bridge
+mkdocs-obsidian-support-plugin
