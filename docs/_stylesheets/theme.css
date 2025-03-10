@@ -1321,3 +1321,18 @@ figure.speech figcaption em {
 }
 
 /* #endregion */
+
+
+
+.md-typeset img[alt] {
+    border: 3px solid yellow;
+}
+
+.md-typeset img[alt]::after {
+    content: attr(alt);
+    content: "BOO";
+    display: block;
+    background-color: red;
+    color: white;
+
+}
