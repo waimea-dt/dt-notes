@@ -84,6 +84,8 @@ extra_javascript:
   - _javascripts/pseudo.js
   - _javascripts/scratch.js
   - _javascripts/mermaid.mjs
+  - https://unpkg.com/kotlin-playground@1
+  - _javascripts/kotlin.js
 
 
 # Extensions ------------------------------------------------
