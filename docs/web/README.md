@@ -4,9 +4,9 @@
 
 ![Mac](../_assets/macs/macintosh-happy.svg)
 
-Welcome to the World Wide Web!
+Welcome to the Web!
 
-**Web Development** is how we build the websites and apps people use every day.
+**Web Development** is how we build *websites* and online *apps*
 
 </speak>
 

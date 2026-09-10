@@ -30,11 +30,17 @@
           </g>
         </g>
       </g>
-      <g transform="translate(47 42.5)">
-        <rect width="86.827" height="74.278" />
-        <path d="M0 10.5962C0 4.74405 4.77417 0 10.6634 0C16.5527 0 21.3268 4.74405 21.3268 10.5962C21.3268 16.4482 16.5527 21.1923 10.6634 21.1923C4.77417 21.1923 0 16.4482 0 10.5962C0 10.5962 0 10.5962 0 10.5962Z" fill="#000000" fill-rule="evenodd" />
-        <path d="M26.6585 35.2777C41.3816 35.2777 53.317 23.4175 53.317 8.78725C53.317 -5.84299 42.1795 2.21262 27.4564 2.21262C12.7333 2.21262 1.90735e-06 -5.84299 1.90735e-06 8.78725C1.90735e-06 23.4175 11.9354 35.2777 26.6585 35.2777C26.6585 35.2777 26.6585 35.2777 26.6585 35.2777C26.6585 35.2777 26.6585 35.2777 26.6585 35.2777Z" fill="#000000" fill-rule="evenodd" transform="translate(16.5 39)" />
-        <path d="M0 10.5962C0 4.74405 4.77416 0 10.6634 0C16.5527 0 21.3268 4.74405 21.3268 10.5962C21.3268 16.4482 16.5527 21.1923 10.6634 21.1923C4.77416 21.1923 0 16.4482 0 10.5962C0 10.5962 0 10.5962 0 10.5962Z" fill="#000000" fill-rule="evenodd" transform="translate(65.5 0)" />
+      <g transform="translate(43 42)">
+        <rect width="86.827" height="74.278" transform="translate(4 0)" />
+        <path d="M0 10.5962C0 4.74405 4.77417 0 10.6634 0C16.5527 0 21.3268 4.74405 21.3268 10.5962C21.3268 16.4482 16.5527 21.1923 10.6634 21.1923C4.77417 21.1923 0 16.4482 0 10.5962C0 10.5962 0 10.5962 0 10.5962Z" fill="#000000" fill-rule="evenodd" transform="translate(4 0)" />
+        <path d="M0 10.5962C0 4.74405 4.77416 0 10.6634 0C16.5527 0 21.3268 4.74405 21.3268 10.5962C21.3268 16.4482 16.5527 21.1923 10.6634 21.1923C4.77416 21.1923 0 16.4482 0 10.5962C0 10.5962 0 10.5962 0 10.5962Z" fill="#000000" fill-rule="evenodd" transform="translate(69.5 0)" />
+        <path d="M15.5 0L78.5 0C87.0616 0 94 6.93842 94 15.5L94 15.5C94 24.0616 87.0616 31 78.5 31L15.5 31C6.93842 31 0 24.0616 0 15.5L0 15.5C0 6.93842 6.93842 0 15.5 0L15.5 0Z" fill="#FFFFFF" stroke-width="6" stroke="#000000" transform="translate(0 37)" />
+        <line x1="0" y1="0" x2="0" y2="31" fill="none" stroke-width="6" stroke="#000000" stroke-linecap="round" transform="translate(47 37)" />
+        <line x1="0" y1="0" x2="0" y2="31" fill="none" stroke-width="6" stroke="#000000" stroke-linecap="round" transform="translate(31 37)" />
+        <line x1="0" y1="0" x2="0" y2="31" fill="none" stroke-width="6" stroke="#000000" stroke-linecap="round" transform="translate(15 37)" />
+        <line x1="0" y1="0" x2="0" y2="31" fill="none" stroke-width="6" stroke="#000000" stroke-linecap="round" transform="translate(63 37)" />
+        <line x1="0" y1="0" x2="0" y2="31" fill="none" stroke-width="6" stroke="#000000" stroke-linecap="round" transform="translate(79 37)" />
+        <line x1="0" y1="0" x2="92" y2="0" fill="none" stroke-width="6" stroke="#000000" stroke-linecap="square" transform="translate(0.5 52.5)" />
       </g>
     </g>
   </g>

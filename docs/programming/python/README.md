@@ -2,7 +2,7 @@
 
 <speak>
 
-![Mac](../../_assets/macs/macintosh-idea.svg)
+![Mac](../../_assets/macs/macintosh-surprised.svg)
 
 Named after Monty Python, not the snake!
 
