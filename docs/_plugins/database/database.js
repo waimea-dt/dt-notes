@@ -123,6 +123,14 @@
         return true
     }
 
+    // Detects an optional visual divider row (e.g. "--- | ---") between fieldnames and data
+    function isDividerRow(row) {
+        if (!row) return false
+        const cells = row.querySelectorAll('td')
+        if (cells.length === 0) return false
+        return Array.from(cells).every(cell => /^:?-+:?$/.test(cell.textContent.trim()))
+    }
+
     // -------------------------------------------------------------------------
     // Schema Tables Processing
     // -------------------------------------------------------------------------
@@ -286,8 +294,10 @@
             // Merge header row
             headRow.innerHTML = `<th colspan="${numCols}">${cleanName}</th>`
 
-            // Remove divider row and move fieldname row
-            bodyRows[1].remove()
+            // Remove optional divider row (all-dashes cells) and move fieldname row
+            if (isDividerRow(bodyRows[1])) {
+                bodyRows[1].remove()
+            }
             const fieldnameRow = bodyRows[0]
             headRow.after(fieldnameRow)
             fieldnameRow.dataset.rowNum = '1'

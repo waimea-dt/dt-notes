@@ -11,6 +11,7 @@
 - <i data-lucide="database"></i> Databases
     - [<i data-lucide="circle-question-mark"></i> What is a Database?](/db/db.md)
     - [<i data-lucide="square-split-horizontal"></i> Database Normalisation](/db/normal.md)
+    - [<i data-lucide="link"></i> Table Relationships](/db/relationship.md)
     - [<i data-lucide="database-zap"></i> What is a 'CRUD' App?](/db/crud.md)
 
 - <i data-lucide="database-search"></i> SQL Intro
@@ -20,7 +21,8 @@
 
 - <i data-lucide="table"></i> Creating Tables: **CREATE**
     - [<i data-lucide="grid-2x2-plus"></i> Creating a Table](/db/sql/create.md)
-    - [<i data-lucide="link"></i> Foreign Keys](/db/sql/foreign.md)
+    - [<i data-lucide="key"></i> Foreign Keys](/db/sql/foreign.md)
+    - [<i data-lucide="link"></i> Many-to-Many Link Tables](/db/sql/linking.md)
 
 - <i data-lucide="between-horizontal-start"></i> Creating Records: **INSERT**
     - [<i data-lucide="between-horizontal-start"></i> INSERT Queries](/db/sql/insert.md)

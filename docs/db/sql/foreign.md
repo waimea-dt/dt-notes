@@ -1,8 +1,8 @@
-# Linking Tables with Foreign Keys
+# Joining Tables with Foreign Keys
 
 ## The FOREIGN KEY Constraint
 
-A **foreign key** links one table to another and ensures **referential integrity**. The syntax is:
+A **foreign key** links one table to another, giving a **one-to-many** relationship, and ensures **referential integrity**. The syntax is:
 
 ```sql
 CREATE TABLE table_name (
@@ -17,6 +17,39 @@ CREATE TABLE table_name (
 
 
 ## Example - Creating Linked Tables
+
+Let's say we want a table of **teams** linked to a table of **players**, a one-to-many relationship (each team has many players, each player plays for one team):
+
+<db-relationship>
+
+- teams
+    - one-to-many !!
+- players
+
+</db-relationship>
+
+The schema might look like this, the players table containing a **foreign key** that creates a link to the teams table:
+
+<db-schema>
+
+| teams |       |         |
+| ----- | ----- | ------- |
+| PK    | id    | INTEGER |
+|       | name  | TEXT    |
+|       | notes | TEXT    |
+
+
+| players |         |         |
+| ------- | ------- | ------- |
+| PK      | id      | INTEGER |
+|         | name    | TEXT    |
+|         | rank    | INTEGER |
+|         | class   | TEXT    |
+| FK !!!  | team_id | INTEGER |
+
+</db-schema>
+
+## The SQL
 
 Create the parent table first:
 

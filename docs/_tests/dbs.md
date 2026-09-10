@@ -572,7 +572,7 @@
 
 <db-relationship>
 
-- customers !!
+- customers !!!
     - one-to-many
 - orders
     - many-to-many
@@ -586,7 +586,7 @@
 - customers
     - one-to-many
 - orders
-    - many-to-many !!
+    - many-to-many !!!
 - products
 
 </db-relationship>
@@ -598,7 +598,7 @@
     - 1:m
 - orders
     - 1:m !!
-- contains !!
+- contains !!!
     - m:1 !!
 - products
 
@@ -609,7 +609,7 @@
 
 <db-relationship>
 
-- customers !!
+- customers !!!
     - one-to-many
 - orders --
     - many-to-many
@@ -624,7 +624,7 @@
     - one-to-many
 - orders ++
     - many-to-many
-- products !!
+- products !!!
 
 </db-relationship>
 
@@ -690,7 +690,7 @@ Fix...
     - 1:m
 - orders
     - 1:m !!
-- contains ++ !!
+- contains ++ !!!
     - m:1 !!
 - products --
 

@@ -14,6 +14,13 @@
     --schema-table-color3:              var(--palette-color-3-dark);
     --schema-table-color4:              var(--palette-color-4-dark);
 
+    --schema-table-border-color:        var(--theme-color-4);
+
+    --schema-table-border-color1:       var(--palette-color-1);
+    --schema-table-border-color2:       var(--palette-color-2);
+    --schema-table-border-color3:       var(--palette-color-3);
+    --schema-table-border-color4:       var(--palette-color-4);
+
     --schema-highlight-color:           var(--highlight-color);
 
     --schema-table-color--dark:         color-mix(in srgb, var(--schema-table-color),  var(--color-mono-min) 70%);
@@ -46,6 +53,8 @@
     --schema-rel-size:                  4em;
     --schema-rel-width:                 var(--schema-border-width);
     --schema-rel-width--high:           var(--schema-focus-width);
+    --schema-rel-link-color:            var(--theme-color-4);
+    --schema-rel-link-width:            calc(2 * var(--schema-border-width));
 }
 
 /* Scroll container */
@@ -104,14 +113,46 @@
 /* TABLES ==================================================================== */
 
 /* Table color variations */
-[data-table-num="1"] { --schema-table-color: var(--schema-table-color1); --schema-table-color--dark: var(--schema-table-color1--dark); }
-[data-table-num="2"] { --schema-table-color: var(--schema-table-color2); --schema-table-color--dark: var(--schema-table-color2--dark); }
-[data-table-num="3"] { --schema-table-color: var(--schema-table-color3); --schema-table-color--dark: var(--schema-table-color3--dark); }
-[data-table-num="4"] { --schema-table-color: var(--schema-table-color4); --schema-table-color--dark: var(--schema-table-color4--dark); }
+[data-table-num="1"] {
+    --schema-table-color:        var(--schema-table-color1);
+    --schema-table-border-color: var(--schema-table-border-color1);
+    --schema-table-color--dark:  var(--schema-table-color1--dark);
+    --table-hover-row-color:     var(--schema-table-color1--dark) !important;
+    --table-hover-cell-color:    var(--schema-table-color1) !important;
+    --table-border-color:        var(--schema-table-border-color1) !important;
+}
+[data-table-num="2"] {
+    --table-border-color:        var(--schema-table-border-color2) !important;
+    --schema-table-color:        var(--schema-table-color2);
+    --schema-table-border-color: var(--schema-table-border-color2);
+    --schema-table-color--dark:  var(--schema-table-color2--dark);
+    --table-hover-row-color:     var(--schema-table-color2--dark) !important;
+    --table-hover-cell-color:    var(--schema-table-color2) !important;
+    --table-border-color:        var(--schema-table-border-color2) !important;
+}
+[data-table-num="3"] {
+    --table-border-color:        var(--schema-table-border-color3) !important;
+    --schema-table-color:        var(--schema-table-color3);
+    --schema-table-border-color: var(--schema-table-border-color3);
+    --schema-table-color--dark:  var(--schema-table-color3--dark);
+    --table-hover-row-color:     var(--schema-table-color3--dark) !important;
+    --table-hover-cell-color:    var(--schema-table-color3) !important;
+    --table-border-color:        var(--schema-table-border-color3) !important;
+}
+[data-table-num="4"] {
+    --table-border-color:        var(--schema-table-border-color4) !important;
+    --schema-table-color:        var(--schema-table-color4);
+    --schema-table-border-color: var(--schema-table-border-color4);
+    --schema-table-color--dark:  var(--schema-table-color4--dark);
+    --table-hover-row-color:     var(--schema-table-color4--dark) !important;
+    --table-hover-cell-color:    var(--schema-table-color4) !important;
+    --table-border-color:        var(--schema-table-border-color4) !important;
+}
 
 /* Focussed */
 :is(table, .table).focus {
     box-shadow: 0 0 0 var(--schema-focus-width) var(--schema-highlight-color), var(--box-shadow) !important;
+    z-index: 1;
 }
 
 table.db-data,
@@ -445,7 +486,7 @@ table.db-schema .icon.foreign svg {
         background-color: var(--schema-table-color);
         box-shadow: var(--box-shadow-small);
         color: var(--schema-heading-text-color);
-        border: var(--schema-rel-width) solid var(--schema-table-color);
+        border: var(--schema-rel-width) solid var(--schema-table-border-color);
         border-radius: var(--border-radius);
 
         &.focus {
@@ -456,20 +497,20 @@ table.db-schema .icon.foreign svg {
     /* Relationship lines */
     .relationship {
         height: var(--schema-rel-size);
-        width: var(--schema-rel-width);
-        background-color: var(--schema-link-color);
+        width: var(--schema-rel-link-width);
+        background-color: var(--schema-rel-link-color);
         position: relative;
         margin: 0em;
 
         &.focus {
-            --schema-link-color: var(--schema-highlight-color);
+            --schema-rel-link-color: var(--schema-highlight-color);
             --schema-rel-width: var(--schema-rel-width--high);
         }
 
         @container (min-width: 40rem) {
             flex: 1;
             width: var(--schema-rel-size);
-            height: var(--schema-rel-width);
+            height: var(--schema-rel-link-width);
         }
 
         /* Relationship feet */
@@ -479,25 +520,25 @@ table.db-schema .icon.foreign svg {
             position: absolute;
             width: 1.7em;
             height: 1.7em;
-            border: var(--schema-rel-width) solid transparent;
+            border: var(--schema-rel-link-width) solid transparent;
             display: none;
         }
 
         /* Vertical positioning */
         &::before {
-            left: calc(0.5 * var(--schema-rel-width));
+            left: calc(0.5 * var(--schema-rel-link-width));
             top: -0.48em;
-            border-bottom-color: var(--schema-link-color);
-            border-left-color: var(--schema-link-color);
+            border-bottom-color: var(--schema-rel-link-color);
+            border-left-color: var(--schema-rel-link-color);
             transform-origin: bottom left;
             transform: rotate(-45deg);
         }
 
         &::after {
-            left: calc(0.5 * var(--schema-rel-width));
+            left: calc(0.5 * var(--schema-rel-link-width));
             bottom: -0.48em;
-            border-top-color: var(--schema-link-color);
-            border-left-color: var(--schema-link-color);
+            border-top-color: var(--schema-rel-link-color);
+            border-left-color: var(--schema-rel-link-color);
             transform-origin: top left;
             transform: rotate(45deg);
         }
@@ -505,17 +546,17 @@ table.db-schema .icon.foreign svg {
         /* Horizontal positioning */
         @container (min-width: 40rem) {
             &::before {
-                top: calc(0.5 * var(--schema-rel-width));
+                top: calc(0.5 * var(--schema-rel-link-width));
                 left: -0.48em;
                 border-color: transparent;
-                border-top-color: var(--schema-link-color);
-                border-right-color: var(--schema-link-color);
+                border-top-color: var(--schema-rel-link-color);
+                border-right-color: var(--schema-rel-link-color);
                 transform-origin: top right;
                 transform: rotate(45deg);
             }
 
             &::after {
-                top: calc(0.5 * var(--schema-rel-width));
+                top: calc(0.5 * var(--schema-rel-link-width));
                 right: -0.48em;
                 left: auto;
                 transform: rotate(-45deg);

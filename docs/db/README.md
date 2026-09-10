@@ -16,7 +16,7 @@ Almost every app and website relies on a database to store its data - user accou
 
 <menu>
 
-### Databases
+### Database Intro
 
 <i data-lucide="database"></i>
 
