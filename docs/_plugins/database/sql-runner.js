@@ -2,7 +2,7 @@
  * docsify-sql-runner.js - Makes ```sql run blocks interactive using Codapi's SQLite sandbox.
  *
  * Usage in markdown:
- *   ```sql run id=create
+ *   ```sql id=create
  *   CREATE TABLE cats (id INTEGER PRIMARY KEY, name TEXT);
  *   ```
  *
@@ -10,9 +10,11 @@
  *   SELECT * FROM cats;
  *   ```
  *
- * Supports dependencies between snippets:
- *   ```sql run id=create    → creates a named snippet with ID
- *   ```sql run depends=create  → depends on the named snippet
+ * Hidden setup blocks are not shown to students but run before their query.
+ * Setup blocks can depend on another setup block:
+ *   ```sql id=create       → hidden setup block
+ *   ```sql id=seed depends=create  → hidden setup block with dependency
+ *   ```sql run depends=seed  → visible, editable query
  *
  * Also enables real-time syntax error highlighting in the editor via
  * CodeMirror's lint addon (bracket matching, string tracking, etc.)
@@ -150,10 +152,27 @@
     var docsifySqlRunner = function (hook) {
 
         let snippetCounter = 0
+        let hiddenBlocks = {}
+        let runnableBlockIds = new Set()
 
         hook.beforeEach(function (content) {
             snippetCounter = 0
+            hiddenBlocks = {}
+            runnableBlockIds = new Set()
             content = content.replace(/\r\n/g, '\n')
+
+            // Extract hidden setup blocks before converting runnable blocks.
+            content = content.replace(
+                /^```sql id=(\w+)(?:\s+depends=(\w+))?\n([\s\S]*?)^```$/gm,
+                function (match, idName, dependsName, code) {
+                    hiddenBlocks[idName] = { code, dependsName }
+                    return ''
+                }
+            )
+
+            for (const match of content.matchAll(/^```sql run\s+id=(\w+)/gm)) {
+                runnableBlockIds.add(match[1])
+            }
 
             // Transform all variations of ```sql run to sql-run with attributes preserved
             // Capture: id=NAME, depends=NAME, or both, or neither
@@ -176,7 +195,11 @@
                 function (preBlock, idName, dependsName) {
                     const cleaned = preBlock.replace(/\bsql-run(?:-id-\w+)?(?:-depends-\w+)?\b/g, 'sql')
                     const snippetId = idName || `sql-snippet-${++snippetCounter}`
-                    const dependsAttr = dependsName ? ` depends-on="${dependsName}"` : ''
+                    const dependsAttr = dependsName
+                        ? runnableBlockIds.has(dependsName)
+                            ? ` depends-on="${dependsName}"`
+                            : ` data-depends="${dependsName}"`
+                        : ''
 
                     return '<div class="codapi-runner">' +
                            cleaned +
@@ -207,6 +230,11 @@
                 if (!code) return
 
                 const visibleCode = code.textContent
+                const hiddenCode = getHiddenCode(snippet.dataset.depends)
+
+                if (hiddenCode) {
+                    code.textContent = hiddenCode + '\n' + visibleCode
+                }
 
                 // Create CodeMirror editor
                 const cm = CodeMirror(function (editorEl) {
@@ -228,7 +256,7 @@
 
                 // Sync CodeMirror changes to the <code> element (for Codapi to pick up)
                 cm.on('change', function () {
-                    code.textContent = cm.getValue()
+                    code.textContent = hiddenCode ? hiddenCode + '\n' + cm.getValue() : cm.getValue()
                 })
 
                 // Hide the original <pre> block
@@ -238,6 +266,17 @@
                 snippet.dataset.initialized = 'true'
             })
         })
+
+        function getHiddenCode(idName, visited = new Set()) {
+            if (!idName || visited.has(idName)) return ''
+
+            const block = hiddenBlocks[idName]
+            if (!block) return ''
+
+            visited.add(idName)
+            const dependencyCode = getHiddenCode(block.dependsName, visited)
+            return dependencyCode ? dependencyCode + '\n' + block.code : block.code
+        }
     }
 
     window.DocsifyUtils.registerPlugin(docsifySqlRunner)
