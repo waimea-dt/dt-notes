@@ -2,7 +2,7 @@
 
 <speak>
 
-![Mac](../_assets/macs/macintosh-face.svg)
+![Mac](../_assets/macs/macintosh-thinking.svg)
 
 Where do I put all this stuff?
 
@@ -36,7 +36,7 @@ Meet SQL, the language used to talk to a database
 
 ---
 
-### Creating Database Tables
+### Creating Tables: **CREATE**
 
 <i data-lucide="table"></i>
 
@@ -46,7 +46,7 @@ Define tables and their fields, keys and relationships
 
 ---
 
-### Creating Records [INSERT]
+### Creating Records: **INSERT**
 
 <i data-lucide="between-horizontal-start"></i>
 
@@ -56,7 +56,7 @@ Add new records into a table with INSERT
 
 ---
 
-### Reading Records [SELECT]
+### Reading Records: **SELECT**
 
 <i data-lucide="search"></i>
 
@@ -66,7 +66,7 @@ Query, filter, sort and summarise data with SELECT
 
 ---
 
-### Updating Records [UPDATE]
+### Updating Records: **UPDATE**
 
 <i data-lucide="replace"></i>
 
@@ -76,7 +76,7 @@ Change existing records with UPDATE
 
 ---
 
-### Deleting Records [DELETE]
+### Deleting Records: **DELETE**
 
 <i data-lucide="trash-2"></i>
 

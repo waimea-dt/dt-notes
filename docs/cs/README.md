@@ -2,7 +2,7 @@
 
 <speak>
 
-![Mac](../_assets/macs/macintosh-happy.svg)
+![Mac](../_assets/macs/macintosh-thinking.svg)
 
 So, how do I work?!
 

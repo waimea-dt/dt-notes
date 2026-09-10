@@ -2,7 +2,7 @@
 
 <speak>
 
-![Mac](../_assets/macs/macintosh-face.svg)
+![Mac](../_assets/macs/macintosh-happy.svg)
 
 Welcome to the World Wide Web!
 

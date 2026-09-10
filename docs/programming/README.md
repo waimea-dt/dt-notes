@@ -22,7 +22,7 @@ Programming is the skill of writing precise, step-by-step instructions that a co
 
 [Link](/programming/kotlin/)
 
-Kotlin is a clean, modern language and is the recommended language for Android app development
+Kotlin is the recommended language for Android app development
 
 ---
 
@@ -32,7 +32,7 @@ Kotlin is a clean, modern language and is the recommended language for Android a
 
 [Link](/programming/python/)
 
-Python is great for learning to program and also one of the most widely used in the real world
+Python is great for learning and one of the most widely used in the real world
 
 ---
 
@@ -42,7 +42,7 @@ Python is great for learning to program and also one of the most widely used in 
 
 [Link](/programming/scratch/)
 
-Scratch is a block-based programming language for building games, animations, stories, etc.
+Scratch is a block-based language for building games, animations, stories, etc.
 
 ---
 
@@ -53,16 +53,6 @@ Scratch is a block-based programming language for building games, animations, st
 [Link](/programming/programming.md)
 
 Find out what programming is and why it's such a useful skill to learn
-
----
-
-### Programming Languages
-
-<i data-lucide="braces"></i>
-
-[Link](/programming/kotlin/)
-
-Explore Kotlin, Python and Scratch - three very different ways to write code
 
 ---
 
