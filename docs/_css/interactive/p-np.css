@@ -8,10 +8,10 @@
     --pnp-label-color:      var(--color-text);
     --pnp-muted:            var(--color-mono-7);
 
-    --pnp-bg-canvas:        #111;
-    --pnp-color-p:          var(--palette-color-5);
-    --pnp-color-np:         var(--palette-color-3);
-    --pnp-color-npc:        var(--palette-color-10);
+    --pnp-bg-canvas:        var(--color-min);
+    --pnp-color-p:          var(--palette-color-4);
+    --pnp-color-np:         var(--palette-color-8);
+    --pnp-color-npc:        var(--palette-color-9);
     --pnp-color-nph:        var(--color-attention);
 
     --pnp-color-tract:      var(--color-good);

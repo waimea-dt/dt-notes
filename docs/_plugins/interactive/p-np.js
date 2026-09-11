@@ -32,6 +32,8 @@
 
 (function () {
     let colorProbeContext = null
+    // Live widget instances, so the canvas Venn diagram can be redrawn on theme change.
+    const activeInstances = new Set()
 
     function resolveCssVarColor(element, styles, varName, fallback) {
         const raw = styles.getPropertyValue(varName).trim() || fallback
@@ -372,6 +374,7 @@
             this.collapse = Boolean(collapse)
             this.markers = Boolean(markers)
             this.headerConfig = headerConfig || { show: true, title: null, subtitle: null }
+            activeInstances.add(this)
             this.init()
         }
 
@@ -777,7 +780,7 @@
                 npc: resolveCssVarColor(this.element, styles, '--pnp-color-npc', '#F44336'),
                 nph: resolveCssVarColor(this.element, styles, '--pnp-color-nph', '#607D8B')
             }
-            const markerIconColor = resolveCssVarColor(this.element, styles, '--color-text', '#ffffff')
+            const markerIconColor = resolveCssVarColor(this.element, styles, '--color-bg', '#ffffff')
 
             markers.forEach(marker => {
                 const color = markerColors[marker.className] || markerColors.np
@@ -792,11 +795,11 @@
 
                 ctx.fillStyle = color
                 ctx.fill()
-                ctx.strokeStyle = canvasBgColor
+                ctx.strokeStyle = markerIconColor
                 ctx.lineWidth = 3
                 ctx.stroke()
 
-                const svgString = marker.icon
+                const svgString = marker.icon.replace(/currentColor/g, markerIconColor)
                 const img = new Image()
                 const svgBlob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'})
                 const url = URL.createObjectURL(svgBlob)
@@ -1063,6 +1066,17 @@
             })
         })
     }
+
+    // Canvas colours are baked in at draw time, so redraw on theme change instead of relying on CSS.
+    window.addEventListener('docsify-theme-change', function () {
+        activeInstances.forEach(instance => {
+            if (document.contains(instance.element)) {
+                instance.rerender()
+            } else {
+                activeInstances.delete(instance)
+            }
+        })
+    })
 
     window.DocsifyUtils.registerPlugin(pnpPlugin)
 })()
