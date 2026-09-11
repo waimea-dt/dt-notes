@@ -27,7 +27,7 @@
 
 - [<i data-lucide="pencil-ruler"></i> UI Design](/ui/)
     - [<i data-lucide="paintbrush"></i> UI Mockups & Prototypes](/ui/mockups.md)
-    - [<i data-lucide="palette"></i> UI Colour Palettes](/ui/colours.md)
+    - [<i data-lucide="palette"></i> UI Colour Picker](/ui/colour-pick.md)
 
 - [<i data-lucide="database"></i> Databases](/db/)
     - [<i data-lucide="database-search"></i> SQLite](/db/sql/)

@@ -1,4 +1,4 @@
-# Waimea College Digital Technologies
+# Digital Technologies @ Waimea College
 
 <speak>
 

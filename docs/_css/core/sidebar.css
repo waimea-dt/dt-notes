@@ -64,8 +64,10 @@
 
     --sidebar-sub-link-indent:              var(--gap-large);
 
-    --plugin-search-input-bg:               var(--color-bg) !important;
-    --plugin-search-kbd-bg:                 var(--color-mono-1) !important;
+    --plugin-search-input-bg:                   var(--color-bg) !important;
+    --plugin-search-kbd-bg:                     var(--color-mono-1) !important;
+    --plugin-search-input-border-color:         var(--color-mono-3);
+    --plugin-search-input-border-color-hover:   var(--color-mono-4);
 
     /* Flexbox layout */
     display: flex;
@@ -80,6 +82,10 @@
 
     .search {
         order: 2;
+
+        input:hover {
+            border-color: var(--plugin-search-input-border-color-hover);
+        }
     }
 
     .sidebar-nav {

@@ -29,6 +29,7 @@
     - [<i data-lucide="layout-template"></i> Wireframing](/ui/wireframes.md)
     - [<i data-lucide="paintbrush"></i> Mockups & Prototypes](/ui/mockups.md)
     - [<i data-lucide="palette"></i> Colour Palettes](/ui/colours.md)
+    - [<i data-lucide="palette"></i> Colour Picker](/ui/colour-pick.md)
     - [<i data-lucide="flask-conical"></i> Usability Testing](/ui/usability.md)
     - [<i data-lucide="accessibility"></i> Accessibility](/ui/accessibility.md)
 

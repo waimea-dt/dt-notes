@@ -8,9 +8,6 @@
 
 #### Menu
 
-- <i data-lucide="pocket-knife"></i> Useful Tools
-    - [<i data-lucide="circle-question-mark"></i> What is a Good Tool?](/tools/tools.md)
-
 - <i data-lucide="braces"></i> Coding Tools
     - [<i data-lucide="monitor-check"></i> Code Editors and IDEs](/tools/code-edit.md)
     - [<i data-lucide="monitor-cloud"></i> Online Coding Tools](/tools/code-online.md)
@@ -26,6 +23,7 @@
     - [<i data-lucide="layout-template"></i> Wireframing Tools](/tools/des-wire.md)
     - [<i data-lucide="palette"></i> Colour Palette Tools](/tools/des-colour.md)
     - [<i data-lucide="type-outline"></i> Font and Text Tools](/tools/des-text.md)
+    - [<i data-lucide="eye-off"></i> Accessibility Tools](/tools/des-access.md)
 
 - <i data-lucide="image-upscale"></i> Image Tools
     - [<i data-lucide="crop"></i> Image Editing Tools](/tools/image-edit.md)

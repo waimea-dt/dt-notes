@@ -9,6 +9,7 @@
     --tool-list-border-high:        color-mix(in srgb, var(--highlight-color) 50%, var(--plugin-panel-border));
     --tool-list-border-high-hover:  var(--highlight-color);
     --tool-list-muted:              var(--color-mono-6);
+    --tool-list-icons:              var(--color-mono-4);
     /* --tool-list-panel-width:        calc((var(--content-max-width) - (5 * var(--gap))) / 3); */
     --tool-list-panel-width:        18rem;
 
@@ -24,11 +25,12 @@
 
     /* Individual tool items */
     > li {
-        border: 1px solid var(--tool-list-border);
+        border: 2px solid var(--tool-list-border);
         border-radius: var(--border-radius);
         background-color: var(--tool-list-item-bg);
         box-shadow: var(--box-shadow-small);
         padding: var(--padding);
+        padding-right: calc(2.5 * var(--padding));
         margin: 0;
         position: relative;
         /* overflow: hidden; */
@@ -55,12 +57,37 @@
             margin: 0;
         }
 
+        /* Metadata icons (free, paid, online, desktop) */
+        > .icons {
+            position: absolute;
+            right: var(--padding-med);
+            bottom: var(--padding);
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-tiny);
+
+            .icon {
+                width: 1.1rem;
+                height: 1.1rem;
+                color: var(--tool-list-icons);
+                transition: all 250ms;
+
+                &:hover {
+                    color: var(--tool-list-muted);
+                }
+            }
+        }
+
         /* Recommended items */
         &.recommended {
             border-color: var(--tool-list-border-high);
 
             &:hover {
                 border-color: var(--tool-list-border-high-hover);
+
+                &::before {
+                    transform: scale(1.5) rotate(-5deg);
+                }
             }
 
             &::before {
@@ -73,6 +100,7 @@
                 line-height: 1;
                 z-index: 1;
                 transform: rotate(-10deg);
+                transition: all 250ms;
             }
         }
 
@@ -121,7 +149,7 @@
             }
 
             &::after {
-                content: "";
+                /* content: ""; */
                 display: inline-block;
                 width: 0.85em;
                 height: 0.85em;

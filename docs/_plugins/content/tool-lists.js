@@ -3,15 +3,16 @@
  *
  * Identifies tool/resource lists marked with <!-- tool-lists --> comment at page top.
  * When marker is found, ALL h2 headings and their following ULs are styled as tool lists.
- * Adds classes to list items based on metadata found in sub-lists:
- *   - **Recommended** → adds "recommended" class
- *   - **Free** / **Paid** → adds "free" or "paid" class
- *   - **Beginner friendly** → adds "beginner-friendly" class
+ * Adds classes to list items based on metadata found in sub-lists, and renders a
+ * matching Lucide icon inside a .icons div for non-recommended metadata:
+ *   - **Recommended** → adds "recommended" class (no icon, uses a star badge in CSS)
+ *   - **Free** / **Paid** → adds "free"/"paid" class + gift/circle-dollar-sign icon
+ *   - **Online** / **Desktop** → adds "online"/"desktop" class + globe/monitor icon
  *
  * Usage:
  *   # Page Title
  *   <!-- tool-lists -->
- *   
+ *
  *   ## Python IDEs
  *   - [Thonny](https://thonny.org/)
  *       - **Recommended**
@@ -26,6 +27,24 @@
         'recommended': 'recommended',
         'free': 'free',
         'paid': 'paid',
+        'online': 'online',
+        'desktop': 'desktop',
+    }
+
+    // Lucide icon names for metadata classes (recommended has no icon)
+    const METADATA_ICONS = {
+        'free': 'gift',
+        'paid': 'circle-dollar-sign',
+        'online': 'globe',
+        'desktop': 'monitor',
+    }
+
+    // Mouse-over titles for metadata icons
+    const METADATA_TITLES = {
+        'free': 'Free or free-to-use',
+        'paid': 'Paid app or service',
+        'online': 'Online app or service',
+        'desktop': 'Desktop app',
     }
 
     function resolveScope(root) {
@@ -121,6 +140,10 @@
                     li.classList.add(cls)
                 })
 
+                if (foundClasses.includes('recommended')) {
+                    li.title = 'Recommended'
+                }
+
                 // Remove metadata items from the sub-list
                 itemsToRemove.forEach(subLi => {
                     subLi.remove()
@@ -130,7 +153,49 @@
                 if (subList.children.length === 0) {
                     subList.remove()
                 }
+
+                addIcons(li, foundClasses)
             })
+        })
+
+        if (window.lucide) {
+            lucide.createIcons({
+                attrs: {
+                    class: ['icon', 'no-zoom'],
+                    'stroke-width': 2,
+                    stroke: 'currentColor',
+                },
+            })
+        }
+    }
+
+    function addIcons(li, foundClasses) {
+        const iconNames = foundClasses
+            .map(cls => METADATA_ICONS[cls])
+            .filter(Boolean)
+
+        if (!iconNames.length) return
+
+        let icons = li.querySelector(':scope > .icons')
+        if (!icons) {
+            icons = document.createElement('div')
+            icons.className = 'icons'
+            li.prepend(icons)
+        }
+
+        iconNames.forEach(name => {
+            if (icons.querySelector(`[data-lucide="${name}"]`)) return
+
+            // Lucide replaces the <i> with an <svg>, so the title lives on a wrapper span
+            // (SVG "title" attributes don't trigger native tooltips, only <title> elements do)
+            const title = METADATA_TITLES[foundClasses.find(cls => METADATA_ICONS[cls] === name)]
+            const wrap = document.createElement('span')
+            if (title) wrap.title = title
+
+            const icon = document.createElement('i')
+            icon.setAttribute('data-lucide', name)
+            wrap.appendChild(icon)
+            icons.appendChild(wrap)
         })
     }
 

@@ -2,7 +2,7 @@
 
 <speak>
 
-![Mac](../_assets/macs/macintosh-idea.svg)
+![Mac](../_assets/macs/macintosh-thumb.svg)
 
 The right tool for the job!
 
@@ -11,20 +11,10 @@ The right tool for the job!
 </speak>
 
 
-Good tools get out of your way and let you focus on the work. This section lists tried-and-tested tools for coding, databases, design, and media - all free or low-cost, cross-platform, and well documented.
+This is a list of tried-and-tested tools for coding, databases, design, and media - where possible, these are all **free**, **cross-platform** and **open-source**
 
 
 <menu>
-
-### Useful Tools
-
-<i data-lucide="pocket-knife"></i>
-
-[Link](/tools/tools.md)
-
-Find out what makes a tool worth using
-
----
 
 ### Coding Tools
 

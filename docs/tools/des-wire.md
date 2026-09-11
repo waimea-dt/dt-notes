@@ -2,36 +2,43 @@
 
 <!-- tool-lists -->
 
-## System Flow / Overview
+## Full-Site / Multi-Page Design
 
-- [WireFlow](https://wireflow.co)
-    - Allows you to design the 'flow' between UI screens
+- [Penpot](https://www.penpot.app/)
+    ![](_assets/penpot.svg)
+    - **Recommended**
+    - **Online**
+    - Free and open-source
+    - Create complex layouts and designs
+    - Interactive prototypes
+
+- [Figma](https://www.figma.com/)
+    ![](_assets/figma.svg)
+    - **Online**
+    - Powerful and popular
+    - Complex layouts and designs
+    - Interactive prototypes
+    - Free education 'pro' accounts
 
 
 ## Simple and Easy Wireframing
 
 - [My Draft](https://mydraft.cc)
     - **Recommended**
+    - **Online**
     - Simple but effective wireframing tool
 
 - [Wireframe](https://wireframe.cc/)
+    - **Online**
     - Very simple to use - just drag region and pick content
     - Good for quick and dirty designs
 
 
-## Full-Site / Multi-Page Design
+## System Flow / Overview
 
-- [Penpot](https://www.penpot.app/)
-    - **Recommended**
-    - Free and open-source
-    - Create complex layouts and designs
-    - Interactive prototypes
-
-- [Figma](https://www.figma.com/)
-    - Powerful and popular design system
-    - Create complex layouts and designs
-    - Interactive prototypes
-    - Free education 'pro' accounts
+- [WireFlow](https://wireflow.co)
+    - **Online**
+    - Allows you to design the 'flow' between UI screens
 
 
 

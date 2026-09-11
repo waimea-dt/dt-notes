@@ -7,6 +7,7 @@
 - [Visual Studio Code](https://code.visualstudio.com/)
     ![](_assets/code.svg)
     - **Recommended**
+    - **Desktop**
     - **Free**
     - Very popular and powerful
     - Customise via extensions
@@ -14,6 +15,7 @@
 
 - [Zed Editor](https://zed.dev/)
     ![](_assets/zed.png)
+    - **Desktop**
     - **Free**
     - Clean, fast and modern
     - Good for web development
@@ -24,6 +26,7 @@
 
 - [Thonny](https://thonny.org/)
     ![](_assets/thonny.png)
+    - **Desktop**
     - **Free**
     - Simple interface
     - Built-in debugger
@@ -31,6 +34,7 @@
 
 - [Spyder](https://www.spyder-ide.org/)
     ![](_assets/spyder.png)
+    - **Desktop**
     - **Free**
     - Scientific Python IDE
     - Good for data analysis
@@ -38,6 +42,7 @@
 
 - [PyCharm](https://www.jetbrains.com/pycharm/)
     ![](_assets/pycharm.svg)
+    - **Desktop**
     - **Free**
     - Free Community Edition
     - Professional IDE from JetBrains
@@ -49,6 +54,7 @@
 - [IntelliJ IDEA](https://www.jetbrains.com/idea/)
     ![](_assets/intellij.svg)
     - **Recommended**
+    - **Desktop**
     - **Free**
     - Free Community Edition
     - Professional IDE from JetBrains
