@@ -35,6 +35,9 @@
     /* Fullscreen overlay */
     --flash-overlay-color:          #000e;
 
+    /* Shadow - Symmetric due to flipping */
+    --flash-card-shadow:            0 0 0.8rem #0006;
+
     /* Layout */
     margin: var(--margin-block) 0 !important;
     padding: 0;
@@ -55,7 +58,8 @@
         list-style: none;
         line-height: 1.4;
 
-        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
+        box-shadow: var(--flash-card-shadow);
 
         transform-style: preserve-3d;
         transition: transform var(--flash-flip-time) ease;

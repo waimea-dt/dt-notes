@@ -11,11 +11,13 @@ figure.speech[data-speech-loading] {
 figure.speech {
     --speech-font-family: "Mouse Memoirs", sans-serif;
 
-    --speech-back-color:        var(--color-mono-8);
+    --speech-back-color:        #fff;
     --speech-border-color:      #000;
-    --speech-text-color:        var(--color-bg);
+    --speech-text-color:        #222;
     --speech-text-color-em:     var(--theme-color-3);
     --speech-text-color-strong: var(--theme-color-4);
+
+    --speech-border-width:      4px;
 
     container-type: inline-size;
     margin: var(--margin-block) auto;
@@ -40,7 +42,7 @@ figure.speech {
     figcaption {
         color: var(--speech-text-color);
         background-color: var(--speech-back-color);
-        border: 5px solid var(--speech-border-color);
+        border: var(--speech-border-width) solid var(--speech-border-color);
         border-radius: 1em;
         flex: 1;
         order: 1;
@@ -130,8 +132,8 @@ figure.speech {
             }
 
             &::after {
-                bottom: calc(1em + 5px);
-                left: calc(-1.05em + 11px);
+                bottom: calc(1em + var(--speech-border-width));
+                left: calc(-1.05em + calc((2 * var(--speech-border-width)) + 1px));
                 border-color:
                     transparent
                     var(--speech-back-color)
@@ -161,8 +163,8 @@ figure.speech {
             }
 
             &::after {
-                bottom: calc(1em + 5px);
-                left: calc(-1.05em + 11px);
+                bottom: calc(1em + var(--speech-border-width));
+                left: calc(-1.05em + calc((2 * var(--speech-border-width)) + 1px));
                 border-color:
                     transparent
                     var(--speech-back-color)

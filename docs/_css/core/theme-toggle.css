@@ -1,0 +1,47 @@
+/** Theme Toggle
+ * Light/dark mode toggle button, fixed to the top-right corner of the sidebar
+ */
+:is(.sidebar) .theme-toggle-button {
+    --theme-toggle-color:           var(--color-mono-5);
+    --theme-toggle-color-bg:        var(--color-mono-2);
+    --theme-toggle-color-bg-hover:  var(--color-mono-5);
+    --theme-toggle-color-sun:       #ff0;
+    --theme-toggle-color-moon:      #eee;
+
+    position: absolute;
+    top: var(--space-med);
+    right: var(--space-med);
+    z-index: 1;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+
+    background: var(--theme-toggle-color-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    color: var(--theme-toggle-color);
+    cursor: pointer;
+    transition: var(--butt-transition);
+
+    &:hover {
+        background: var(--theme-toggle-color-bg-hover);
+        color: var(--theme-color);
+
+        &:has([data-lucide=moon]) {
+            color: var(--theme-toggle-color-moon);
+        }
+
+        &:has([data-lucide=sun]) {
+            color: var(--theme-toggle-color-sun);
+        }
+    }
+
+    .icon {
+        --icon-size: 1.1em;
+    }
+}

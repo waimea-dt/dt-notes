@@ -8,6 +8,14 @@
 
     <title>DT Notes</title>
 
+    <!-- Apply the stored theme before first paint to avoid a flash of the wrong theme. -->
+    <script>
+        (function () {
+            var stored = localStorage.getItem('theme')
+            document.documentElement.setAttribute('data-theme', stored === 'light' ? 'light' : 'dark')
+        })()
+    </script>
+
     <link rel="icon" href="_assets/macs/macintosh.svg">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,8 +24,7 @@
 
     <link rel="stylesheet" href="https://unpkg.com/simple-icons-font@latest/font/simple-icons.min.css">
 
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@^5.0.0-rc/dist/themes/core.min.css">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@^5.0.0-rc/dist/themes/addons/core-dark.min.css" />
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/core.min.css">
 
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/codemirror@5/lib/codemirror.css">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/codemirror@5/theme/material-darker.css">
@@ -32,6 +39,7 @@
 
     <!-- Core -->
     <link rel="stylesheet" href="_css/core/theme.css">
+    <link rel="stylesheet" href="_css/core/theme-toggle.css">
     <link rel="stylesheet" href="_css/core/buttons.css">
     <link rel="stylesheet" href="_css/core/sidebar.css">
     <link rel="stylesheet" href="_css/core/topic-menu.css">
@@ -162,9 +170,11 @@
 
     <script type="module">
         import mermaid from "https://unpkg.com/mermaid@11.0.2/dist/mermaid.esm.min.mjs";
+        // Module scripts run after HTML parsing, so data-theme is already set by the anti-FOUC script above.
+        const initialTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'default' : 'dark'
         mermaid.initialize({
             startOnLoad: true,
-            theme: 'dark',
+            theme: initialTheme,
             themeVariables: {
                 fontSize: '18px',
                 fontFamily: 'system-ui, sans-serif'
@@ -197,9 +207,9 @@
 
     <script src="//unpkg.com/lucide@latest"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/docsify@^5.0.0-rc/dist/docsify.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/docsify@^5.0.0-rc/dist/plugins/search.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/docsify@^5.0.0-rc/dist/plugins/zoom-image.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/docsify.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/plugins/search.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/plugins/zoom-image.min.js"></script>
 
     <script src="//unpkg.com/docsify-mermaid/dist/docsify-mermaid.js"></script>
 
@@ -260,6 +270,7 @@
     <script defer src="_plugins/core/sidebar-scrollspy.js"></script>
     <script defer src="_plugins/core/sidebar-filter.js"></script>
     <script defer src="_plugins/core/lucide-icons.js"></script>
+    <script defer src="_plugins/core/theme-toggle.js"></script>
     <script defer src="_plugins/core/tooltips.js"></script>
     <script defer src="_plugins/core/definitions.js"></script>
     <script defer src="_plugins/core/topic-menu.js"></script>
@@ -281,6 +292,7 @@
 
     <!-- Graphics Plugins -->
     <script defer src="_plugins/graphics/svg-zoom.js"></script>
+    <script defer src="_plugins/graphics/mermaid-theme.js"></script>
 
     <!-- Visualisation Plugins -->
     <script defer src="_plugins/visualisation/sequences.js"></script>

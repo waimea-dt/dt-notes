@@ -560,8 +560,8 @@
                 <div class="cp-section-header">
                     <h4 class="cp-section-title">${UI_TEXT.previewTitle}</h4>
                     <button class="cp-toggle-btn" id="cp-dark-mode-btn">
-                        ${this.darkMode ? SVG_ICONS.moon : SVG_ICONS.sun}
-                        <span>${this.darkMode ? UI_TEXT.darkMode : UI_TEXT.lightMode}</span>
+                        ${this.darkMode ? SVG_ICONS.sun : SVG_ICONS.moon}
+                        <span>${this.darkMode ? UI_TEXT.lightMode : UI_TEXT.darkMode}</span>
                     </button>
                 </div>
                 <div class="cp-preview-container">

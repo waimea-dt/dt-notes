@@ -1,12 +1,31 @@
 /** Presentation Slides
  * Reveal.js slide deck integration
  */
+
+/* Override reveal.js's dracula theme vars with our own tokens, so decks
+   follow the site's light/dark toggle instead of staying permanently dark.
+   Defined on :root (not .docsify-slide-deck) so reveal.js's dynamically
+   created .reveal-viewport wrapper - an ancestor, unreachable via CSS - picks
+   these up too. */
+:root {
+    --r-background:                 var(--color-mono-0);
+    --r-background-color:           var(--color-mono-0);
+    --r-main-color:                 var(--color-text);
+    --r-heading-color:              var(--theme-color);
+    --r-link-color:                 var(--link-color);
+    --r-link-color-dark:            var(--link-color-hover);
+    --r-link-color-hover:           var(--link-color-hover);
+    --r-selection-background-color: var(--theme-color-3);
+    --r-selection-color:            var(--color-text);
+}
+
 .markdown-section .docsify-slide-deck {
     width: 100%;
     aspect-ratio: 16/9;
     margin-block: var(--margin-block);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
 
     /* Headings */
 

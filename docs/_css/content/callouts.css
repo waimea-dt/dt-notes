@@ -2,7 +2,7 @@
  * Styled blockquotes for notes, tips, warnings, and other highlighted content
  */
 .markdown-section .callout {
-    --callout-back-color:             #0003;
+    --callout-back-color:             var(--color-mono-1);
     --callout-note-color:             var(--secondary-color);
     --callout-tip-color:              var(--theme-color);
     --callout-question-color:         var(--palette-color-2);

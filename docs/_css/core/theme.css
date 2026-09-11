@@ -1,17 +1,90 @@
 /** Global Theme
  * Design tokens, color system, typography, spacing, and base element styling
  */
+
+/* Base colors */
+ :root {
+    --color-min:        #000;
+    --color-bg:         #1f2428;
+    --color-text:       #fff;
+
+    --theme-color:      #68bef8;
+    --secondary-color:  #f2d297;
+    --tertiary-color:   #ff9d7a;
+
+    /* Palette: HEX fallback */
+    --palette-color-1:  #24b6a1;
+    --palette-color-2:  #9b92e5;
+    --palette-color-3:  #de8269;
+    --palette-color-4:  #6eb26d;
+    --palette-color-5:  #64a2e7;
+    --palette-color-6:  #da7d9b;
+    --palette-color-7:  #a6a442;
+    --palette-color-8:  #1bb0ce;
+    --palette-color-9:  #c384c9;
+    --palette-color-10: #cc9140;
+
+    --palette-color-1:  oklch(0.7 0.12 180);
+    --palette-color-2:  oklch(0.7 0.12 288);
+    --palette-color-3:  oklch(0.7 0.12  36);
+    --palette-color-4:  oklch(0.7 0.12 144);
+    --palette-color-5:  oklch(0.7 0.12 252);
+    --palette-color-6:  oklch(0.7 0.12   0);
+    --palette-color-7:  oklch(0.7 0.12 108);
+    --palette-color-8:  oklch(0.7 0.12 216);
+    --palette-color-9:  oklch(0.7 0.12 324);
+    --palette-color-10: oklch(0.7 0.12  72);
+
+    /* Semantic colors */
+    --color-good:       #47dd97;
+    --color-important:  #d8dd47;
+    --color-warning:    #e2ae47;
+    --color-attention:  #e64848;
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    --color-min:        #fff;
+    --color-bg:         #f4f4f2;
+    --color-text:       #1f2428;
+
+    --theme-color:      #2a83be;
+    --secondary-color:  #a78c57;
+    --tertiary-color:   #ce6d4a;
+
+    --palette-color-1:  #009583; 
+    --palette-color-2:  #7e6ed3;
+    --palette-color-3:  #c9593b;
+    --palette-color-4:  #3d9640;
+    --palette-color-5:  #2f82d6;
+    --palette-color-6:  #c5547c;
+    --palette-color-7:  #888500; 
+    --palette-color-8:  #008fa9; 
+    --palette-color-9:  #ab5db2;
+    --palette-color-10: #af7100; 
+
+    --palette-color-1:  oklch(0.6 0.15 180);
+    --palette-color-2:  oklch(0.6 0.15 288);
+    --palette-color-3:  oklch(0.6 0.15  36);
+    --palette-color-4:  oklch(0.6 0.15 144);
+    --palette-color-5:  oklch(0.6 0.15 252);
+    --palette-color-6:  oklch(0.6 0.15   0);
+    --palette-color-7:  oklch(0.6 0.15 108);
+    --palette-color-8:  oklch(0.6 0.15 216);
+    --palette-color-9:  oklch(0.6 0.15 324);
+    --palette-color-10: oklch(0.6 0.15  72);
+
+    /* Semantic colors */
+    --color-good:       #00b460;
+    --color-important:  #ceb300;
+    --color-warning:    #d07200;
+    --color-attention:  #d80000;
+}
+
 :root {
-    /* Base colors */
-    --color-bg:                   #1f2428;
-    --color-text:                 #fff;
-
-    --theme-color:                #68bef8;
-    --secondary-color:            #f2d297;
-    --tertiary-color:             #ff9d7a;
-
     /* Theme color variants */
-    --color-mono-0:               color-mix(in srgb, var(--color-mono-min),  #000                10%);
+    --color-mono-0:               color-mix(in srgb, var(--color-mono-min),  var(--color-min)      40%);
     --theme-color-0:              color-mix(in srgb, var(--theme-color),     var(--color-mono-min) 97%);
     --secondary-color-0:          color-mix(in srgb, var(--secondary-color), var(--color-mono-min) 97%);
 
@@ -23,29 +96,6 @@
     --secondary-color-6:          color-mix(in srgb, var(--secondary-color), var(--color-mono-max) 55%);
     --secondary-color-7:          color-mix(in srgb, var(--secondary-color), var(--color-mono-max) 75%);
     --secondary-color-8:          color-mix(in srgb, var(--secondary-color), var(--color-mono-max) 90%);
-
-    /* Palette: HEX fallback, then perceptually consistent OKLCH values */
-    --palette-color-1:            #24b6a1;
-    --palette-color-2:            #9b92e5;
-    --palette-color-3:            #de8269;
-    --palette-color-4:            #6eb26d;
-    --palette-color-5:            #64a2e7;
-    --palette-color-6:            #da7d9b;
-    --palette-color-7:            #a6a442;
-    --palette-color-8:            #1bb0ce;
-    --palette-color-9:            #c384c9;
-    --palette-color-10:           #cc9140;
-
-    --palette-color-1:            oklch(0.7 0.12 180);
-    --palette-color-2:            oklch(0.7 0.12 288);
-    --palette-color-3:            oklch(0.7 0.12  36);
-    --palette-color-4:            oklch(0.7 0.12 144);
-    --palette-color-5:            oklch(0.7 0.12 252);
-    --palette-color-6:            oklch(0.7 0.12   0);
-    --palette-color-7:            oklch(0.7 0.12 108);
-    --palette-color-8:            oklch(0.7 0.12 216);
-    --palette-color-9:            oklch(0.7 0.12 324);
-    --palette-color-10:           oklch(0.7 0.12  72);
 
     --palette-color-1-dark:       color-mix(in srgb, var(--palette-color-1), var(--color-mono-min) 50%);
     --palette-color-2-dark:       color-mix(in srgb, var(--palette-color-2), var(--color-mono-min) 50%);
@@ -68,12 +118,6 @@
     --palette-color-8-light:      color-mix(in srgb, var(--palette-color-8), var(--color-mono-max) 50%);
     --palette-color-9-light:      color-mix(in srgb, var(--palette-color-9), var(--color-mono-max) 50%);
     --palette-color-10-light:     color-mix(in srgb, var(--palette-color-10), var(--color-mono-max) 50%);
-
-    /* Semantic colors */
-    --color-good:                 #47dd97;
-    --color-important:            #d8dd47;
-    --color-warning:              #e2ae47;
-    --color-attention:            #e64848;
 
     --highlight-color:            var(--color-important);
     --error-color:                var(--color-attention);
@@ -143,7 +187,7 @@
     --plugin-wrapper-bg:          var(--color-mono-1);
     --plugin-wrapper-border:      var(--color-mono-3);
     --plugin-wrapper-radius:      var(--border-radius);
-    --plugin-wrapper-shadow:      var(--box-shadow-small);
+    --plugin-wrapper-shadow:      var(--box-shadow);
 
     --plugin-panel-bg:            var(--color-mono-0);
     --plugin-panel-border:        var(--color-mono-3);

@@ -24,6 +24,10 @@
     const SCENE_CACHE = new Map()
     let exportToSvgPromise = null
 
+    function getCurrentTheme() {
+        return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
+    }
+
     async function loadExportToSvg() {
         if (!exportToSvgPromise) {
             exportToSvgPromise = Promise.resolve(window.ExcalidrawReady)
@@ -64,9 +68,10 @@
         }
     }
 
-    async function renderSceneAsDataUrl(srcPath) {
-        if (SCENE_CACHE.has(srcPath)) {
-            return SCENE_CACHE.get(srcPath)
+    async function renderSceneAsDataUrl(srcPath, theme) {
+        const cacheKey = `${srcPath}::${theme}`
+        if (SCENE_CACHE.has(cacheKey)) {
+            return SCENE_CACHE.get(cacheKey)
         }
 
         const response = await fetch(srcPath)
@@ -83,14 +88,14 @@
             appState: {
                 ...scene.appState,
                 exportBackground: false,
-                exportWithDarkMode: true,
+                exportWithDarkMode: theme === 'dark',
             },
             files: scene.files,
             exportPadding: 16,
         })
 
         const dataUrl = serialiseSvgToDataUrl(svgElement)
-        SCENE_CACHE.set(srcPath, dataUrl)
+        SCENE_CACHE.set(cacheKey, dataUrl)
         return dataUrl
     }
 
@@ -106,11 +111,13 @@
 
         const resolvedSrc = resolveSourcePath(srcAttr)
         const alt = deriveAltText(srcAttr, el.getAttribute('alt'))
+        const theme = getCurrentTheme()
 
         el.innerHTML = '<div class="excalidraw-loading">Loading Excalidraw diagram...</div>'
 
         try {
-            const dataUrl = await renderSceneAsDataUrl(resolvedSrc)
+            const dataUrl = await renderSceneAsDataUrl(resolvedSrc, theme)
+            el.dataset.excalidrawTheme = theme
             const img = document.createElement('img')
             img.className = `excalidraw-image ${el.getAttribute('class') || ''}`.trim()
             img.src = dataUrl
@@ -139,6 +146,20 @@
             processExcalidrawBlock(block)
         })
     }
+
+    // Re-render already-rendered diagrams when the site theme toggles, since
+    // exportWithDarkMode is baked into the exported SVG at render time.
+    function retheme() {
+        const theme = getCurrentTheme()
+        document.querySelectorAll('excalidraw').forEach(el => {
+            if (el.dataset.excalidrawProcessed !== 'true') return
+            if (el.dataset.excalidrawTheme === theme) return
+            el.dataset.excalidrawProcessed = 'false'
+            processExcalidrawBlock(el)
+        })
+    }
+
+    window.addEventListener('docsify-theme-change', retheme)
 
     const docsifyExcalidraw = function (hook) {
         hook.doneEach(function () {

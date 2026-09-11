@@ -11,9 +11,39 @@
  */
 
 ;(function () {
-  const { dispatchSlidesRendered } = window.DocsifyUtils
+  const { dispatchSlidesRendered, isAbsoluteUrl } = window.DocsifyUtils
   const stash = {}
   const deckCleanup = new WeakMap()
+
+  // Docsify resolves relative asset paths against the current route for normal
+  // markdown, but slide markdown bypasses that compiler entirely (it's handed
+  // straight to Reveal's own parser), so relative paths must be rewritten here
+  // to be relative to the docs root instead - see docsify-slides.js discussion.
+  function getCurrentRouteDir() {
+    const route = decodeURIComponent(window.location.hash || '')
+      .replace(/^#\/?/, '')
+      .split(/[?#]/)[0]
+
+    if (!route || route.endsWith('/')) return route.replace(/\/$/, '')
+
+    const parts = route.split('/')
+    parts.pop()
+    return parts.join('/')
+  }
+
+  function resolveSlideAssetPath(routeDir, rawPath) {
+    const clean = String(rawPath || '').trim()
+    if (!clean || isAbsoluteUrl(clean) || clean.startsWith('/')) return clean
+
+    const base = `https://slides.invalid/${routeDir ? routeDir + '/' : ''}`
+    return new URL(clean, base).pathname.replace(/^\/+/, '')
+  }
+
+  function resolveSlideAssetPaths(markdown, routeDir) {
+    return markdown
+      .replace(/(!\[[^\]]*]\()([^)\s]+)/g, (match, prefix, path) => `${prefix}${resolveSlideAssetPath(routeDir, path)}`)
+      .replace(/(<[a-zA-Z][\w-]*\b[^>]*\ssrc=["'])([^"']+)/g, (match, prefix, path) => `${prefix}${resolveSlideAssetPath(routeDir, path)}`)
+  }
 
   function registerDeckCleanup(deck, cleanupFn) {
     if (typeof cleanupFn !== 'function') return
@@ -207,11 +237,12 @@
       cleanupDeckWatchers()
       Object.keys(stash).forEach((k) => delete stash[k])
 
+      const routeDir = getCurrentRouteDir()
       let index = 0
       return content.replace(
         /<slides>([\s\S]*?)<\/slides>/g,
         function (_match, markdown) {
-          stash[index] = markdown
+          stash[index] = resolveSlideAssetPaths(markdown, routeDir)
           const placeholder = `<div class="slides-placeholder" data-index="${index}"></div>`
           index++
           return placeholder

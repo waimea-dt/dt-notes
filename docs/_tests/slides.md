@@ -42,7 +42,7 @@ Testing
 
 ---
 
-![](_tests/_assets/ui-demo.png)
+![](_assets/ui-demo.png)
 
 ---
 
@@ -59,13 +59,13 @@ A --> C[End]
 
 ---
 
-![](//_assets/macs/macintosh.svg)
+![](../_assets/macs/macintosh.svg)
 
 ---
 
 <speak>
 
-![](//_assets/macs/macintosh.svg)
+![](../_assets/macs/macintosh.svg)
 
 Hello, Human!
 
@@ -73,7 +73,7 @@ Hello, Human!
 
 ---
 
-<excalidraw src="_tests/_assets/test.excalidraw" alt="Excalidraw test scene"></excalidraw>
+<excalidraw src="_assets/test.excalidraw" alt="Excalidraw test scene"></excalidraw>
 
 ---
 
