@@ -46,13 +46,14 @@
     if (!img) return null
 
     const imgParent = img.closest('p')
+    const imgLink = img.closest('a')
 
     const figure = documentRef.createElement('figure')
     figure.className = 'speech'
     // Mark as pending until font is confirmed ready, so it stays invisible.
     // Removed by revealSpeechFigures() once document.fonts.load() resolves.
     if (!fontIsReady) figure.setAttribute('data-speech-loading', '')
-    figure.appendChild(img.cloneNode(true))
+    figure.appendChild((imgLink || img).cloneNode(true))
 
     const figcaption = documentRef.createElement('figcaption')
     let hasContent = false

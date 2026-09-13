@@ -2,11 +2,24 @@
  * SVG-based computer screen visualizations
  */
 
-computer {
+ .markdown-section:has(> computer:only-of-type):has(> script) {
+    display: flex;
+    min-height: 100%;
+    width: 100%;
+    margin-top: 0;
+    padding-block: var(--gap-large);
+    align-items: center;
+    justify-content: center;
+}
+
+.markdown-section computer {
     /* Text colors for different screen types */
-    --computer-text-color:          var(--text-color);
-    --computer-text-inv-color:      var(--color-mono-1);
+    --computer-text-color-norm:     #eee;
+    --computer-text-color-inv:      #111;
     --computer-text-color--vintage: #af7;
+
+    --computer-text-color:     var(--computer-text-color-norm);
+    --computer-text-inv-color: var(--computer-text-color-inv);
 
     /* Base display */
     display: block;
@@ -19,12 +32,15 @@ computer {
     /* Define as container for cqw units */
     container-type: inline-size;
 
+    &:last-child {
+        margin-block: 0;
+    }
+
     /* SVG frame fills the container */
     .computer-frame {
         display: block;
         width: 100%;
         height: 100%;
-        ;
     }
 
     /* Content wrapper overlays the screen area */
@@ -42,7 +58,7 @@ computer {
 
         & > * {
             line-height: 1.2 !important;
-            margin: 0 !important;
+            margin-block: 0 !important;
             color: inherit !important;
             border: none;
             flex-shrink: 0;
@@ -52,6 +68,7 @@ computer {
         :is(h1, h2, h3, h4, h5, h6) {
             font-weight: bold;
             color: inherit !important;
+            text-wrap: wrap;
         }
 
         h1 { font-size: 1.3em !important; }
@@ -82,12 +99,36 @@ computer {
             text-decoration: none;
             pointer-events: none;
         }
+
+        input {
+            background-color: color-mix(in srgb, var(--computer-text-inv-color), transparent 80%) !important;
+            border: 1px solid currentColor !important;
+            border-radius: var(--border-radius-small);
+        }
+
+        button {
+            background-color: color-mix(in srgb, var(--computer-text-color), transparent 80%) !important;
+            border: 1px solid currentColor !important;
+            border-radius: var(--border-radius-small);
+            padding-block: 0.2em;
+            width: fit-content;
+
+            &:hover {
+                background-color: color-mix(in srgb, var(--computer-text-inv-color), transparent 80%) !important;
+            }
+        }
+
+        ol {
+            margin-left: var(--gap);
+        }
     }
 
     /* TYPE: DESKTOP / SIMPLE */
     &:is([type="desktop"], [type="simple"]) {
         max-width: 44rem;
         aspect-ratio: 2791 / 2310;
+
+        &:only-of-type:has(+ script) { max-width: 48rem; }
 
         .computer-screen-content {
             top: 1.75%;
@@ -99,8 +140,13 @@ computer {
 
     /* TYPE: WINDOW */
     &[type="window"] {
+        --computer-text-color: var(--computer-text-color-inv);
+        --computer-text-inv-color: var(--computer-text-color-norm);
+
         max-width: 44rem;
         aspect-ratio: 2791 / 2310;
+
+        &:only-of-type:has(+ script) { max-width: 48rem; }
 
         .computer-screen-content {
             /* Position inside the white document area (below title bar) */
@@ -108,7 +154,6 @@ computer {
             left: 9.31%;
             width: 81.37%;
             height: 58.91%;
-            color: var(--computer-text-inv-color);
             padding: 0.8em;
         }
     }
@@ -117,6 +162,8 @@ computer {
     &[type="laptop"] {
         max-width: 40rem;
         aspect-ratio: 1434 / 825;
+
+        &:only-of-type:has(+ script) { max-width: 56rem; }
 
         .computer-screen-content {
             top: 2.18%;
@@ -131,6 +178,8 @@ computer {
         max-width: 36em;
         aspect-ratio: 1024 / 694;
 
+        &:only-of-type:has(+ script) { max-width: 48rem; }
+
         .computer-screen-content {
             top: 4.32%;
             left: 2.93%;
@@ -144,6 +193,8 @@ computer {
         max-width: 18em;
         aspect-ratio: 384 / 694;
 
+        &:only-of-type:has(+ script) { max-width: 20rem; }
+
         .computer-screen-content {
             top: 2.74%;
             left: 5.21%;
@@ -154,15 +205,19 @@ computer {
 
     /* TYPE: VINTAGE / 1980s */
     &:is([type="vintage"], [type="1980s"]) {
+        --computer-text-color: var(--computer-text-color--vintage);
+        --computer-text-inv-color: var(--computer-text-color-norm);
+
         max-width: 40em;
         aspect-ratio: 2360 / 2103;
+
+        &:only-of-type:has(+ script) { max-width: 44rem; }
 
         .computer-screen-content {
             top: 8.56%;
             left: 7.63%;
             width: 84.75%;
             height: 71.33%;
-            color: var(--computer-text-color--vintage);
 
             pre[data-lang],
             pre[data-lang] > code {
@@ -174,15 +229,29 @@ computer {
 
     /* TYPE: MACINTOSH / MAC */
     &:is([type="macintosh"], [type="mac"]) {
+        --computer-text-color: var(--computer-text-color-inv);
+        --computer-text-inv-color: var(--computer-text-color-norm);
+
         max-width: 30em;
         aspect-ratio: 1212.377 / 1597;
 
+        &:only-of-type:has(+ script) { max-width: 40rem; }
+
         .computer-screen-content {
-            top: 13.76%;
-            left: 12.67%;
-            width: 73.27%;
+            top: 14.26%;
+            left: 12.75%;
+            width: 74.37%;
             height: 37.34%;
-            color: var(--computer-text-inv-color);
+
+            &:has(img[src*="mac"]),
+            &:has(iframe) {
+                overflow: hidden;
+            }
+
+            img[src*="face"] {
+                width: 100%;
+                padding-top: 1.5em;
+            }
         }
     }
 }

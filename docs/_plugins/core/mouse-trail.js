@@ -1,8 +1,10 @@
 /**
- * Mouse trails on home page
+ * Mouse trails on selected routes
  */
 ;(function () {
     'use strict'
+
+    const TRAIL_ROUTES = ['/mac']
 
     const TRAIL_CLASS = 'mouse-trail-item'
     const ROOT_CLASS = 'mouse-trail-root'
@@ -125,9 +127,9 @@
         return Boolean(target.closest(UI_CLICK_EXCLUSION_SELECTOR))
     }
 
-    function isHomePath(path) {
+    function isTrailRoute(path) {
         const cleanedPath = String(path || '/').replace(/\/+$/, '')
-        return cleanedPath === '' || cleanedPath === '/'
+        return TRAIL_ROUTES.includes(cleanedPath || '/')
     }
 
     function createTrailRoot() {
@@ -297,7 +299,7 @@
 
     function docsifyMouseTrail(hook, vm) {
         hook.doneEach(function () {
-            if (isHomePath(vm?.route?.path)) {
+            if (isTrailRoute(vm?.route?.path)) {
                 void activate()
                 return
             }
