@@ -48,7 +48,25 @@
         "There are 10 types of people in the world... </h1><h1> Those who understand ternary, those who don't, and those who thought this was a binary joke",
     ]
 
-    words = [
+    const laughs = [
+        `Ha! Ha ha! Ha ha ha!`,
+        `I'm so funny!`,
+        `What a crack up!`,
+        `Oh, I'm going to blow a diode!`,
+        `Get it?! Do you get it?!`,
+        `Thank you! I'll be here all night!`,
+        `Now, that was hilarious!`,
+        `Ouch! My circuits ache!`,
+        `Beep boop beep beep!`,
+        `Be still, my beating system clock!`,
+        `I'm on a roll - a 3.5 inch roll!`,
+        `I'm floppy with laughter!`,
+        `Warning: laughter overflow error!`,
+        `I'm 128 kilobytes of pure comedy!`,
+        `System error: Too much hilarity!`,
+    ]
+
+    const words = [
         'ALGORITHM', 'PSEUDOCODE', 'FLOWCHART', 'SYNTAX', 'COMMENT', 'VARIABLE', 'CONSTANT', 'BIT',
         'BYTE', 'BOOLEAN', 'CHAR', 'STRING', 'CONCATENATE', 'NULL', 'LITERAL', 'MUTABLE',
         'IMMUTABLE', 'SEQUENCE', 'CONDITION', 'BRANCH', 'SELECTION', 'ITERATION', 'LOOP', 'RECURSION',
@@ -165,6 +183,8 @@
 
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+    const randomItem = arr => arr[Math.floor(Math.random() * arr.length)]
+
     async function typeHtml(display, html, characterDelay = CHAR_PAUSE) {
         const template = document.createElement('template')
         template.innerHTML = html
@@ -229,7 +249,7 @@
     async function showGreeting() {
         await showTextPage([
             `<h1>Hello, ${name}!</h1>`,
-            `<p>I'm a <strong>Macintosh</strong> computer from <strong>1984</strong>. Back then I was pretty ripped...`,
+            `<p>I'm a <strong>Macintosh</strong> computer from <strong>1984</strong>. Back then I was pretty ripped:`,
             `<ul>
                 <li style="margin-block: 0;"><strong>8MHz</strong> CPU (single core)
                 <li style="margin-block: 0;"><strong>128kB</strong> RAM
@@ -238,7 +258,7 @@
                 <li style="margin-block: 0;"><strong>Graphical user interface (GUI)</strong>
                 <li style="margin-block: 0;"><strong>Mouse</strong> to work with the GUI (one button)
             </ul>`,
-            `<p>Impressed?`,
+            `<p>Nothing else like me in '84... Impressed?`,
             ``,
             `<p>
                 So, what's your name?
@@ -298,14 +318,18 @@
     }
 
     async function showJoke() {
-        const joke = jokes[Math.floor(Math.random() * jokes.length)]
+        const joke = randomItem(jokes)
+        const laugh1 = randomItem(laughs)
+        let laugh2 = laugh1
+        while (laugh2 == laugh1) { laugh2 = randomItem(laughs) }
+
         await showTextPage([
             `<p>Ok, ${name}, here is a joke...</h1>`,
             ``,
             `<h1>${joke}</h1>`,
             `<p>`,
-            `<p>Ha! Ha ha! Ha ha ha!`,
-            `<p>I'm so funny!`,
+            `<p>${laugh1}`,
+            `<p>${laugh2}`,
             `<p>`,
             `<button id="back">Back</button>`,
         ])
