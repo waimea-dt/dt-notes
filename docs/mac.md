@@ -303,7 +303,7 @@
     async function showVideo() {
         await showTextPage([
             `<iframe
-                style="width: 100%; aspect-ratio: 16/9; border-radius: 0.5rem; overflow: hidden; border: 2px solid #111; filter: grayscale(100%) sepia(0%);"
+                style="width: 100%; aspect-ratio: 16/9; border-radius: 0.5rem; overflow: hidden; border: 2px solid #111; filter: grayscale(0%) sepia(0%);"
                 src="https://www.youtube.com/embed/-5zeJyQ31rM?si=Nu5kt3cATnkyfKBp"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerpolicy="strict-origin-when-cross-origin"
