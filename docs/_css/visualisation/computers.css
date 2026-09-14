@@ -224,6 +224,23 @@
                 background-color: transparent !important;
                 padding-inline: 0 !important;
             }
+
+            /* &::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: 1em;
+                pointer-events: none;
+                background: repeating-linear-gradient(
+                    to bottom,
+                    #0003 0px,
+                    #0003 2px,
+                    transparent 2px,
+                    transparent 4px
+                );
+            } */
+
+            animation: flicker 6s infinite;
         }
     }
 
@@ -238,15 +255,41 @@
         &:only-of-type:has(+ script) { max-width: 40rem; }
 
         .computer-screen-content {
-            top: 14.26%;
-            left: 12.75%;
-            width: 74.37%;
-            height: 37.34%;
+            top: 14.6%;
+            left: 13.3%;
+            width: 73.4%;
+            height: 37.4%;
 
             &:has(img[src*="mac"]),
             &:has(iframe) {
                 overflow: hidden;
             }
+
+            /* &::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: 1em;
+                pointer-events: none;
+                background: repeating-linear-gradient(
+                    to bottom,
+                    #fff7 0px,
+                    #fff7 2px,
+                    transparent 2px,
+                    transparent 4px
+                );
+                box-shadow: inset 0 0 1em 0.1em #000c;
+            } */
         }
     }
+}
+
+@keyframes flicker {
+    0%, 100% { filter: brightness(1); }
+    8%  { filter: brightness(calc(1 + 0.1)); }
+    9%  { filter: brightness(1); }
+    52% { filter: brightness(calc(1 - 0.1)); }
+    53% { filter: brightness(1); }
+    77% { filter: brightness(calc(1 + 0.15)); }
+    78% { filter: brightness(1); }
 }
