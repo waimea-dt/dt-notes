@@ -6,13 +6,13 @@
 
 
 <script>
-    const BOOT_DELAY = 500
+    const BOOT_DELAY  = 500
     const SMILE_DELAY = 1000
     const START_DELAY = 1000
-    const LINE_PAUSE = 250
+    const LINE_PAUSE  = 250
     const SHORT_PAUSE = 1000
-    const LONG_PAUSE = 2000
-    const CHAR_PAUSE = 5
+    const LONG_PAUSE  = 2000
+    const CHAR_PAUSE  = 5
 
     const HANGMAN_STATUS = Object.freeze({
         IDLE: 'idle',
@@ -48,28 +48,28 @@
     const filler = `<br>—<br>`
 
     const jokes = [
-        `There are only two hard things in computer science...${filler}Cache invalidation, naming things, and off-by-one errors!`,
+        `There are only two hard things in computer science...${filler}Cache invalidation,– naming things,– and off-by-one errors!`,
         `To understand recursion...${filler}You must first understand recursion!`,
         `I would tell you a UDP joke...${filler}But you might not get it!`,
-        `There are 10 types of people in the world...${filler}Those who understand binary, and those who don't!`,
-        `An SQL query walks into a bar, walks up to two tables, and asks: 'Can I join you?'`,
+        `There are 10 types of people in the world...${filler}Those who understand binary,– and those who don't!`,
+        `An SQL query walks into a bar, walks up to two tables, and asks:– 'Can I join you?'`,
         `My code doesn't have bugs...${filler}It just develops random features!`,
         `My code works perfectly...${filler}Until someone uses it!`,
-        `Programming is 10% writing code and 90% figuring out why it doesn't work!`,
+        `Programming is 10% writing code– and 90% figuring out why it doesn't work!`,
         `Remember... <br><br>There's no place like $HOME`,
         `How do robots eat pizza?${filler}One byte at a time!`,
         `What type of cryptography do pigs use?${filler}Invisible oink!`,
         `How do dolphins compute?${filler}They use a Central Porpoising Unit!`,
         `What type of cryptography did Vikings use?${filler}Norse code!`,
         `<code>['hip', 'hip']</code>${filler}Hip hip array!`,
-        `Two bits walked into an expensive cafe, but were thrown out...${filler}They didn't have enough for a byte!`,
-        `Counting in binary...${filler}It's as easy as 01 10 11`,
-        `ASCII codes...${filler}As easy as 65 66 67`,
+        `Two bits walked into an expensive cafe,– but were thrown out...${filler}They didn't have enough for a byte!`,
+        `Counting in binary...${filler}It's as easy as– 01– 10– 11`,
+        `ASCII codes...${filler}As easy as– 65– 66– 67`,
         `Why don't elephants use desktop computers?${filler}They are scared of the mouse!`,
         `How does a computer scientist organise her bath toys?${filler}Bubble sort!`,
         `Computers make mistakes...${filler}But they're very fast, very accurate mistakes!`,
         `How many programmers does it take to change a light bulb?${filler}None, it's a hardware problem!`,
-        `The programmer got stuck in the shower...${filler}The shampoo bottle said: Lather, Rinse, Repeat`,
+        `The programmer got stuck in the shower...${filler}The shampoo bottle said:– Lather,– Rinse,– Repeat!`,
         `What do you call a group of eight hobbits?${filler}A hobbyte!`,
         `Why do web developers wear glasses?${filler}To improve their site!`,
         `My team had a debate on what the best looping variable name is...${filler}i won!`,
@@ -77,11 +77,11 @@
         `I got really angry and smashed my keyboard...${filler}I completely lost CTRL!`,
         `I have a joke about computers...${filler}But it's not PC!`,
         `I teased a Linux user...${filler}They retreated back into their shell!`,
-        `Artificial intelligence is no match for my natural stupidity`,
-        `Teachers: in the real world, you can't just Google everything${filler}Programmers: lol`,
-        `What goes from 0 to 100 really fast?${filler}Binary`,
-        `Why do number jokes not work in Octal?${filler}Because 7 10 11`,
-        `There are 10 types of people in the world...${filler}Those who understand ternary, those who don't, and those who thought this was a binary joke!`,
+        `Artificial intelligence...${filler}No match for my natural stupidity!`,
+        `Teachers:– in the real world, you can't just Google everything${filler}Programmers:– lol`,
+        `What goes from 0 to 100 really fast?${filler}Binary!`,
+        `Why do number jokes not work in Octal?${filler}Because– 7– 10– 11`,
+        `There are 10 types of people in the world...${filler}Those who understand ternary,– those who don't,– and those who thought this was a binary joke!`,
         `Why do programmers prefer dark mode?${filler}Because light attracts bugs!`,
         `I'd tell you a joke about NULL...${filler}But you'd get nothing out of it!`,
         `Why did the developer go broke?${filler}Because they used up all their cache!`,
@@ -94,29 +94,29 @@
         `What do you call a snake that codes?${filler}A Python developer!`,
         `What's an astronaut's favourite key on a keyboard?${filler}The space bar!`,
         `What do you call it when a programmer finish a project?${filler}A miracle!`,
-        `Weeks of coding can save you hours of planning!`,
+        `Weeks of coding can save you– hours of planning!`,
         `A code tester walks into a bar and orders a beer,– then 0 beers,– then 999999999 beers,– then -1 beers,– then a lizard`,
-        `Debugging...${filler}Being the detective in a crime movie where you are also the murderer!`,
+        `Debugging...${filler}Being the detective in a crime movie,– where you are also the murderer!`,
         `Why did the computer cross the road?${filler}To get a byte to eat!`,
         `Computers are like air conditioners...${filler}They stop working if you open Windows!`,
-        `My wi-fi went down, so I had to talk to my family...${filler}They seem nice!`,
+        `My wi-fi went down,– so I had to talk to my family...${filler}They seem nice!`,
         `What's a computer's favourite beat?${filler}Algo-rhythm!`,
-        `My love life is binary...${filler}Either 0 success or 1 heartbreak!`,
-        `Debugging: "Who wrote this terrible code?!"${filler}Oh... it was me!`,
+        `My love life is binary...${filler}Either 0 success– or 1 heartbreak!`,
+        `Debugging:– "Who wrote this terrible code?!"${filler}Oh...– it was me!`,
         `99 little bugs in the code,– take one down,– patch it around...${filler}Oh...– 127 bugs in the code...`,
         `Machine learning...${filler}Teaching computers to guess confidently!`,
         `"My computer is slow"... ${filler}User with 124 tabs open!`,
-        `Coding...${filler}10% writing, 90% Googling!`,
-        `My code is like a diary...${filler}really embarrassing to read!`,
+        `Coding...${filler}10% writing,– 90% Googling!`,
+        `My code is like a diary...${filler}Really embarrassing to read!`,
         `CAPS LOCK...${filler}Preventing logins since 1980!`,
-        `MS Edge...${filler}The best browser for downloading another browser!`,
+        `MS Edge...${filler}The best browser for– downloading another browser!`,
         `If brute-force doesn't work...${filler}You're not using enough!`,
-        `My password is...${filler}...the last 16 digits of Pi!`,
+        `My password is...${filler}The last 16 digits of Pi!`,
         `Algorithm...${filler}A word used by programmers when they don't want to explain what they did!`,
-        `Coding...${filler}10% typing and 90% debugging!`,
-        `Binary humour...${filler}It's either funny or it isn't!`,
+        `Coding...${filler}10% typing– and 90% debugging!`,
+        `Binary humour...${filler}It's either funny– or it's not funny!`,
         `Programmers...${filler}Tools for converting caffeine into code!`,
-        `There are three kinds of people...${filler}Those who can count and those who can't!`,
+        `There are three kinds of people...${filler}Those who can count– and those who can't!`,
     ]
 
     const laughs = [
