@@ -89,7 +89,7 @@
                 // Add class to SVG for styling and remove fixed dimensions
                 const svgElement = computer.querySelector('svg')
                 if (svgElement) {
-                    svgElement.classList.add('computer-frame')
+                    svgElement.classList.add('computer-frame', 'no-zoom')
                     svgElement.removeAttribute('width')
                     svgElement.removeAttribute('height')
                 }

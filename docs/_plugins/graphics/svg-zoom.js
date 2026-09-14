@@ -15,6 +15,11 @@
         return src.endsWith('.svg') || src.startsWith('data:image/svg+xml')
     }
 
+    function isZoomDisabled(node) {
+        return node.classList?.contains('no-zoom') ||
+               node.dataset?.noZoom === 'true'
+    }
+
     function registerPlugin(fn) {
         if (window.DocsifyUtils?.registerPlugin) {
             window.DocsifyUtils.registerPlugin(fn)
@@ -32,26 +37,26 @@
             if (!node) continue
 
             if (node.tagName === 'IMG' && node.dataset?.zoomAttached === 'true') {
-                if (node.dataset.noZoom !== 'true' && !node.classList?.contains('no-zoom')) {
+                if (!isZoomDisabled(node)) {
                     return node
                 }
             }
 
             if (node.tagName === 'SVG' && node.dataset?.zoomAttached === 'true') {
-                if (node.dataset.noZoom !== 'true' && !node.classList?.contains('no-zoom')) {
+                if (!isZoomDisabled(node)) {
                     return node
                 }
             }
 
             const ownerSvg = node.ownerSVGElement
             if (ownerSvg?.dataset?.zoomAttached === 'true') {
-                if (ownerSvg.dataset.noZoom !== 'true' && !ownerSvg.classList?.contains('no-zoom')) {
+                if (!isZoomDisabled(ownerSvg)) {
                     return ownerSvg
                 }
             }
 
             const nearestSvg = node.closest?.('svg[data-zoom-attached="true"]')
-            if (nearestSvg && nearestSvg.dataset.noZoom !== 'true' && !nearestSvg.classList?.contains('no-zoom')) {
+            if (nearestSvg && !isZoomDisabled(nearestSvg)) {
                 return nearestSvg
             }
         }
@@ -60,7 +65,7 @@
 
     function attachZoom(node) {
         if (!node) return
-        if (node.classList?.contains('no-zoom') || node.dataset?.noZoom === 'true') return
+        if (isZoomDisabled(node)) return
 
         node.dataset.zoomAttached = 'true'
         node.style.cursor = 'zoom-in'

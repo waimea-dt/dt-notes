@@ -41,6 +41,16 @@
     }
   }
 
+  function markSpeechMediaNoZoom(media) {
+    if (media.matches && media.matches('img, svg')) {
+      media.classList.add('no-zoom')
+    }
+
+    media.querySelectorAll('img, svg').forEach((element) => {
+      element.classList.add('no-zoom')
+    })
+  }
+
   function convertSpeakElement(speakEl, documentRef) {
     const img = speakEl.querySelector('img')
     if (!img) return null
@@ -53,7 +63,9 @@
     // Mark as pending until font is confirmed ready, so it stays invisible.
     // Removed by revealSpeechFigures() once document.fonts.load() resolves.
     if (!fontIsReady) figure.setAttribute('data-speech-loading', '')
-    figure.appendChild((imgLink || img).cloneNode(true))
+    const media = (imgLink || img).cloneNode(true)
+    markSpeechMediaNoZoom(media)
+    figure.appendChild(media)
 
     const figcaption = documentRef.createElement('figcaption')
     let hasContent = false
