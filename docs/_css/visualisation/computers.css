@@ -247,11 +247,6 @@
             &:has(iframe) {
                 overflow: hidden;
             }
-
-            img[src*="face"] {
-                width: 100%;
-                padding-top: 1.5em;
-            }
         }
     }
 }

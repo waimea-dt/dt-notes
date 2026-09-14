@@ -105,30 +105,29 @@
 
     const facts = [
         `The first computer bug was an actual bug - a moth found trapped in a relay of Harvard's Mark II in 1947.`,
-        `ENIAC, one of the first electronic computers, weighed around 30 tonnes and used over 17,000 vacuum tubes.`,
+        `ENIAC, one of the first electronic computers, weighed around 30 tonnes, used over 17,000 vacuum tubes and took up a whole room.`,
         `The word "computer" originally meant a person who did calculations by hand, not a machine.`,
         `The first computer mouse, invented by Douglas Engelbart in 1964, was carved out of wood.`,
-        `The Apollo Guidance Computer that helped land astronauts on the Moon had about 64KB of memory.`,
-        `The first computer virus, called "Creeper," appeared in 1971 and simply displayed the message "I'M THE CREEPER, CATCH ME IF YOU CAN!"`,
+        `The Apollo Guidance Computer that helped land astronauts on the Moon ran with just 64KB of memory.`,
+        `The first computer virus, called "Creeper", appeared in 1971 and simply displayed the message "I'M THE CREEPER, CATCH ME IF YOU CAN!"`,
         `The first 1GB hard drive, released by IBM in 1980, weighed over 250kg and cost around $40,000.`,
-        `The "@" symbol was chosen for email addresses because it was a rarely-used key on the keyboard.`,
-        `The first webcam was built at Cambridge University purely to monitor how full a coffee pot was.`,
+        `The "@" symbol was chosen in 1971 for email addresses simply because it was a rarely-used key on the keyboard.`,
+        `The first streaming webcam was set up at Cambridge University purely to monitor how full the coffee pot was in the kitchen.`,
         `Spacewar!, created in 1962, is considered one of the first video games and ran on a computer the size of a fridge.`,
         `Tetris was created in 1984 by Soviet software engineer Alexey Pajitnov.`,
         `Early floppy disks, 8 inches across, were genuinely floppy enough to bend by hand.`,
         `USB flash drives weren't invented until 2000, so most of the 1990s relied on floppy disks and CDs.`,
-        `The first computer virus for MS-DOS, called "Brain," was created by two brothers in Pakistan in 1986.`,
+        `The first computer virus for MS-DOS, called "Brain", was created by two brothers in Pakistan in 1986.`,
         `The first ever domain name registered on the internet was symbolics.com, in 1985.`,
-        `Bill Gates and Paul Allen wrote their first commercial software without ever testing it on the actual machine it was designed for.`,
-        `The word "spam," used for junk email, comes from a Monty Python sketch about canned meat.`,
+        `The nickname "spam", used for junk email, comes from a Monty Python sketch about the canned meat of the same name.`,
         `Space Invaders was so popular in Japan in 1978 that it reportedly caused a temporary shortage of 100-yen coins.`,
-        `The first text message ever sent, in 1992, simply said "Merry Christmas."`,
-        `Wi-Fi doesn't actually stand for anything - it was a made-up marketing term meant to sound like "Hi-Fi."`,
+        `The first SMS text message ever sent, in 1992, simply said "Merry Christmas."`,
+        `Wi-Fi doesn't actually stand for anything - it is a made-up marketing term meant to sound like "Hi-Fi."`,
         `The programming language COBOL, created in 1959, is still quietly running behind the scenes in many banks today.`,
         `Grace Hopper, a pioneering computer scientist, helped invent one of the first compilers in the 1950s.`,
-        `The Xerox Alto, built in 1973, had a graphical interface and mouse a full decade before mainstream PCs.`,
+        `The Xerox Alto, built in 1973, had a graphical interface (GUI) and mouse a full decade before mainstream PCs.`,
         `Steve Jobs and Steve Wozniak built the first Apple computers in Jobs's parents' garage.`,
-        `The name "Google" comes from a misspelling of "googol," the number 1 followed by 100 zeros.`,
+        `The name "Google" comes from a misspelling of "googol" - the number 1 followed by 100 zeros.`,
         `Amazon originally sold nothing but books when it launched in 1994.`,
         `CAPTCHA stands for "Completely Automated Public Turing test to tell Computers and Humans Apart."`,
         `The first video ever uploaded to YouTube, in 2005, was just 19 seconds long and showed a man at a zoo.`,
@@ -143,64 +142,48 @@
         `Pac-Man's original Japanese name, Puck-Man, was changed for the US release to stop people scratching out the P.`,
         `The ghosts in Pac-Man each have their own distinct chase behaviour programmed individually.`,
         `Super Mario Bros. was originally going to star a character called "Mr. Video" before Mario was created.`,
-        `The "Konami Code" (up, up, down, down, left, right, left, right, B, A) started as a cheat in a 1986 game and became a lasting gaming meme.`,
         `The first computer game ever sold commercially was Computer Space in 1971, created by the future founders of Atari.`,
-        `Atari famously buried thousands of unsold E.T. game cartridges in a New Mexico landfill in 1983.`,
-        `The Game Boy was so durable that one survived a Gulf War bombing in 1991 and reportedly still worked.`,
         `World of Warcraft has had more player-created characters than there are people in most countries.`,
-        `The original Legend of Zelda cartridge was gold-coloured to make it look special on store shelves.`,
         `Nintendo started out in 1889 as a company that made handmade playing cards.`,
         `Sonic the Hedgehog was designed to be blue specifically to match Sega's company logo.`,
-        `The longest officially recognised video game marathon lasted over 50 hours without sleep.`,
         `The first esports tournament was held in 1972 at Stanford University, with Spacewar! as the game.`,
-        `Some early arcade cabinets used actual oscilloscopes as their screens instead of standard monitors.`,
         `The original Halo was almost released as a Mac-exclusive game before Microsoft bought the studio.`,
-        `Speedrunners have completed Super Mario 64 collecting all 120 stars in well under two hours.`,
-        `The word "glitch" is thought to come from the Yiddish word for "slip," adopted by early engineers.`,
+        `The word "glitch" is thought to come from the Yiddish word for "slip", adopted by early engineers.`,
         `The first computer worm to spread across the early internet, the Morris Worm (1988), was created as an experiment and accidentally crashed thousands of machines.`,
         `Early hackers in the 1960s used the term "phreaking" to describe hacking into telephone networks using whistles and tones.`,
-        `A famous phone phreak discovered that a toy whistle from a cereal box produced the exact tone needed to make free long-distance calls.`,
         `The first computer password system was introduced at MIT in 1961 to stop students hogging shared computer time.`,
         `Cracking modern encryption using brute force would take even powerful computers longer than the age of the universe.`,
-        `The Enigma machine, used by Germany in World War II, had more possible settings than there are atoms in the observable universe, according to some estimates.`,
+        `The Enigma machine, used by Germany in World War II, had more possible settings than there are atoms in the observable universe.`,
         `Alan Turing helped crack the Enigma code at Bletchley Park, work that remained classified for decades after the war.`,
         `The first recorded use of the term "software" appeared in a 1958 academic paper.`,
-        `Early computers used punch cards, and a single stack of them could hold just a few kilobytes of data.`,
+        `Early computers used punched cards to store and read data. A single stack of them could hold just a few kilobytes of data.`,
         `The Commodore 64, released in 1982, remains one of the best-selling computer models of all time.`,
         `The floppy disk "save" icon still used in modern apps is unrecognisable to teenagers who've never touched a real one.`,
         `The first 3D-printed object was created in 1983 using a UV-curable resin.`,
         `Early modems made a distinctive screeching sound because they transmitted data as audible audio tones.`,
-        `Some 1980s home computers, like the ZX Spectrum, loaded games from ordinary cassette tapes, which could take several minutes per game.`,
+        `Some 1980s home computers, like the ZX Spectrum, loaded games from ordinary audio cassette tapes. A game might take 20 mins or more to load!`,
         `The Furby toy from 1998 could supposedly "learn" English, which briefly worried the US National Security Agency about it recording conversations.`,
         `A single modern smartphone has more processing power than the computers used to run entire space missions in the 1960s and 70s.`,
         `The first item ever sold on eBay was a broken laser pointer, bought for $14.83 in 1995.`,
         `Early internet users had to dial in through a phone line, meaning nobody in the house could make a call while someone was online.`,
-        `The dancing baby GIF, one of the first viral internet memes, dates back to 1996.`,
-        `The first ever banner ad appeared online in 1994 and reportedly had a click-through rate of over 40%.`,
         `Tim Berners-Lee, who invented the World Wide Web, never patented it, deliberately keeping it free for everyone to use.`,
         `The first message ever sent over the internet's precursor, ARPANET, in 1969 was meant to be "LOGIN" - but the system crashed after just two letters.`,
-        `Early supercomputers in the 1970s were sometimes cooled using massive tanks of a special inert liquid rather than fans.`,
+        `Early supercomputers in the 1970s were sometimes cooled using massive tanks of liquid rather than fans.`,
         `The Roomba robot vacuum shares some of its original navigation technology with military robots developed by the same company.`,
         `Early digital cameras in the 1970s could take photos with a resolution of just 0.01 megapixels.`,
         `The first 1TB hard drive wasn't released to consumers until 2007.`,
-        `The inventor of the World Wide Web originally wanted to call it "The Information Mine," but dropped it because the acronym spelled "TIM."`,
-        `Some early video games stored save data using actual paper passwords instead of memory chips.`,
-        `The Nintendo Power Glove, an early motion controller from 1989, was considered a commercial flop but is now a cult collector's item.`,
+        `The inventor of the World Wide Web originally wanted to call it "The Information Mine", but dropped it because "TIM" was also his name.`,
+        `Some early video games required you to write down a pass code to save your place in the game as they had no data storage system.`,
         `The very first emoticon, a sideways smiley :-), was proposed by a computer scientist in 1982 to mark jokes in online messages.`,
-        `The blue screen of death got its nickname from early Windows users, though Microsoft never officially called it that.`,
-        `A hidden text adventure game was reportedly programmed inside the source code of some early word processors as an Easter egg.`,
+        `The 'blue screen of death' (BSOD) got its nickname from the crash screen of early versions of Windows - Microsoft never officially called it that.`,
+        `A hidden text adventure game was programmed inside the source code of some early word processors as an Easter egg.`,
         `The Atari 2600, released in 1977, only had 128 bytes of RAM - not even enough to store one modern text message.`,
-        `Some competitive Tetris players today play at speeds where the game becomes unstable, a phenomenon called "kill screen."`,
         `The classic game Snake became famous worldwide largely because it came pre-installed on Nokia phones in the late 1990s.`,
-        `An arcade version of Pac-Man was inducted into the World Video Game Hall of Fame in its very first induction class.`,
         `Some early computer scientists used to physically rewire circuit boards by hand to change what a program did.`,
-        `The term "bit," short for binary digit, was first suggested in a 1948 academic paper.`,
-        `A working computer has been built entirely inside the sandbox game Minecraft, using only in-game mechanics.`,
+        `The term "bit", short for binary digit, was first suggested in a 1948 academic paper.`,
+        `A working computer with screen and CPU, has been built entirely inside Minecraft, using only redstone and pistons.`,
         `The card game Solitaire was included with early versions of Windows specifically to teach people how to use a mouse.`,
         `The first item scanned using a barcode at a shop checkout, in 1974, was a packet of chewing gum.`,
-        `Some vintage arcade machines are worth thousands of dollars today purely because so few of the originals survive.`,
-        `Early computer monitors sometimes had a permanent "burn-in" if the same image stayed on screen too long, which is why screensavers were invented.`,
-        `A researcher once programmed a computer to solve every possible position in the game of checkers, "solving" it completely in 2007.`,
         `The world's first computer conference in the 1950s reportedly had attendees line up just to see a machine that could add numbers.`,
     ]
 
@@ -224,10 +207,65 @@
             `       ||    (__)     `,
             `       ||w--||     \\|/`,
             `   \\|/                `,
-            `          MOO!        `,
         ],
-
+        [
+            `(\\___/)    /\\_/\\ `,
+            `(='x'=)   (=^.^=)`,
+            `(")_(")   (")_(")`,
+        ],
+        [
+            `  (\\w/)           `,
+            `  (..  \\          `,
+            ` _/  )  \\______   `,
+            `(oo /'\\        )',`,
+            ` '--' (v  __( / ||`,
+            `       |||  ||| ||`,
+            `      //_| //_|   `,
+        ],
+        [
+            `      ____()()   `,
+            `     /      @@   `,
+            `~~~~~\\_;m__m._>o `,
+        ],
+        [
+            ` .-""-.          `,
+            `/)    (\\   ,;;;, `,
+            `( ' \\' )  // \\\\\\\\`,
+            ` \\  = /   ( ' ' )`,
+            `  )--(     \\_=_/ `,
+        ],
+        [
+            `/\\_/\\  `,
+            `>^,^<  `,
+            ` / \\   `,
+            `(___)_/`,
+        ],
+        [
+            `  (> " " <)  `,
+            `  ( ='v'= )  `,
+            `-(,,)---(,,)-`,
+        ],
+        [
+            `    __//  `,
+            `   /.__.\\ `,
+            `   \\ \\/ / `,
+            `'__/    \\ `,
+            ` \\-      )`,
+            `  \\_____/ `,
+            `____|_|___`,
+            `    " "   `,
+        ],
+        [
+            `          __     __  `,
+            `         /  \\~~~/  \\ `,
+            `   ,----(     ..    )`,
+            `  /      \\__     __/ `,
+            ` /|         (\\  |(   `,
+            `^ \\   /___\\  /\\ |    `,
+            `   |__|   |__|-"     `,
+        ],
     ]
+
 
     const words = [
         'ALGORITHM', 'PSEUDOCODE', 'FLOWCHART', 'SYNTAX', 'COMMENT', 'VARIABLE', 'CONSTANT', 'BIT',
@@ -252,7 +290,7 @@
         'URL', 'PACKET', 'PORT', 'ROUTER', 'MODEM', 'FIREWALL', 'BANDWIDTH', 'SSD',
         'HDD', 'USB', 'MOTHERBOARD', 'INPUT', 'OUTPUT', 'PERIPHERAL', 'ANDROID', 'MACOS',
         'LINUX', 'APPLICATION', 'SOFTWARE', 'LIBRARY', 'MODULE', 'PACKAGE', 'FILE', 'FOLDER',
-        'DIRECTORY', 'ROOT', 'PYTHON',
+        'DIRECTORY', 'ROOT', 'PYTHON', 'CHEESE', 'PICKLE', 'BANANA', 'COPLEY'
     ]
 
     const hangmanStages = [
@@ -408,10 +446,12 @@
 
     async function showBoot() {
         await showTextPage([
-            `<img
-                style="width: 10%; height: auto; padding-top: 7.5em;"
-                src="./_assets/macs/happy-mac-icon.png"
-            >`,
+            `<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center;">
+                <img
+                    style="width: 10%; height: auto;"
+                    src="./_assets/macs/happy-mac-icon.png"
+                >
+            </div>`,
         ])
 
         setTimeout(showSmile, SMILE_DELAY)
@@ -419,9 +459,12 @@
 
     async function showSmile() {
         await showTextPage([
-            `<img
-                src="./_assets/macs/face.svg"
-            >`,
+            `<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center;">
+                <img
+                    style="width: 100%;"
+                    src="./_assets/macs/face.svg"
+                >
+            </div>`,
         ])
 
         setTimeout(showGreeting, START_DELAY)
@@ -470,7 +513,7 @@
                 <li>I can tell you a <strong>nerdy joke</strong>
                 <li>I can tell you a cool <strong>computer fact</strong>
                 <li>I can draw you some <strong>ASCII art</strong>
-                <li>I can play a <strong>game of nerdy Hangman</strong>
+                <li>I can play a game of <strong>nerdy Hangman</strong>
                 <li>I can show you a <strong>video about me</strong>
                 <li>You can <strong>reboot me</strong>
             </ol>`,
@@ -531,10 +574,10 @@
         const art = randomItem(asciiArt).join('\n')
 
         await showTextPage([
-            `<p>Ok, ${escapeHtml(name)}, here is some art...</h1>`,
+            `<p>Ok, ${escapeHtml(name)}, some art for you...</h1>`,
             ``,
             `<h1 style="text-align: center;"><pre>${art}</pre></h1>`,
-            `<p>`,
+            ``,
             `<button id="back">Back</button>`,
         ])
 
