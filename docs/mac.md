@@ -8,7 +8,7 @@
 <script>
     const BOOT_DELAY  = 500
     const SMILE_DELAY = 1000
-    const START_DELAY = 1000
+    const START_DELAY = 2000
     const LINE_PAUSE  = 250
     const SHORT_PAUSE = 1000
     const LONG_PAUSE  = 2000
@@ -641,6 +641,8 @@
 
     async function showTextPage(htmlLines) {
         const display = document.querySelector('.computer-screen-content')
+        if (!display) return
+
         display.innerHTML = ''
 
         await wait(LINE_PAUSE)

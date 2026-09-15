@@ -53,16 +53,16 @@
     --secondary-color:  #a78c57;
     --tertiary-color:   #ce6d4a;
 
-    --palette-color-1:  #009583; 
+    --palette-color-1:  #009583;
     --palette-color-2:  #7e6ed3;
     --palette-color-3:  #c9593b;
     --palette-color-4:  #3d9640;
     --palette-color-5:  #2f82d6;
     --palette-color-6:  #c5547c;
-    --palette-color-7:  #888500; 
-    --palette-color-8:  #008fa9; 
+    --palette-color-7:  #888500;
+    --palette-color-8:  #008fa9;
     --palette-color-9:  #ab5db2;
-    --palette-color-10: #af7100; 
+    --palette-color-10: #af7100;
 
     --palette-color-1:  oklch(0.6 0.15 180);
     --palette-color-2:  oklch(0.6 0.15 288);
