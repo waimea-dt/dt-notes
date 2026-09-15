@@ -180,6 +180,15 @@ table.db-schema {
         padding: 0.3em 0.6em;
         vertical-align: middle;
         text-align: center;
+
+        em {
+            font-size: var(--font-med);
+            margin-left: 0.5em;
+            color: var(--table-border-color);
+            color: var(--schema-heading-text-color);
+            opacity: 0.5;
+            font-style: normal;
+        }
     }
 
     td {

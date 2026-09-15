@@ -198,7 +198,7 @@
             if (highlightClass) table.classList.add(highlightClass)
 
             // Merge header row
-            headRow.innerHTML = `<th colspan="${numCols}">${cleanName}</th>`
+            headRow.innerHTML = `<th colspan="${numCols}">${cleanName} <em>SCHEMA</em></th>`
 
             // Add row numbers to body rows
             bodyRows.forEach((row, rowIdx) => {
@@ -299,7 +299,7 @@
             if (highlightClass) table.classList.add(highlightClass)
 
             // Merge header row
-            headRow.innerHTML = `<th colspan="${numCols}">${cleanName}</th>`
+            headRow.innerHTML = `<th colspan="${numCols}">${cleanName} <em>DATA</em></th>`
 
             // Remove optional divider row (all-dashes cells) and move fieldname row
             if (isDividerRow(bodyRows[1])) {
