@@ -158,7 +158,7 @@
         `Grace Hopper, a pioneering computer scientist, helped invent one of the first compilers in the 1950s.`,
         `The Xerox Alto, built in 1973, had a graphical interface (GUI) and mouse a full decade before mainstream PCs.`,
         `Steve Jobs and Steve Wozniak built the first Apple computers in Jobs's parents' garage.`,
-        `The name "Google" comes from a misspelling of "googol" - the number 1 followed by 100 zeros.`,
+        `The name "Google" comes from a misspelling of "Googol", which is a number: 1 followed by 100 zeros.`,
         `Amazon originally sold nothing but books when it launched in 1994.`,
         `CAPTCHA stands for "Completely Automated Public Turing test to tell Computers and Humans Apart."`,
         `The first video ever uploaded to YouTube, in 2005, was just 19 seconds long and showed a man at a zoo.`,
@@ -238,14 +238,17 @@
             `       ||    (__)     `,
             `       ||w--||     \\|/`,
             `   \\|/                `,
+            `          MOO!        `,
         ],
         [
             `(\\___/)    /\\_/\\ `,
             `(='x'=)   (=^.^=)`,
             `(")_(")   (")_(")`,
+            `                 `,
+            `  BUN      KITTY `,
         ],
         [
-            `  (\\w/)           `,
+            `  (\\w/)    NEIGH! `,
             `  (..  \\          `,
             ` _/  )  \\______   `,
             `(oo /'\\        )',`,
@@ -257,6 +260,8 @@
             `      ____()()   `,
             `     /      @@   `,
             `~~~~~\\_;m__m._>o `,
+            `                 `,
+            `      SQUEAK!    `,
         ],
         [
             ` .-""-.          `,
@@ -264,30 +269,36 @@
             `( ' \\' )  // \\\\\\\\`,
             ` \\  = /   ( ' ' )`,
             `  )--(     \\_=_/ `,
+            `                 `,
+            `  WATCHING YOU!  `,
         ],
         [
             `/\\_/\\  `,
             `>^,^<  `,
             ` / \\   `,
             `(___)_/`,
+            `       `,
+            ` MEOW! `,
         ],
         [
             `  (> " " <)  `,
-            `  ( ='v'= )  `,
+            `  ( ='.'= )  `,
             `-(,,)---(,,)-`,
+            `             `,
+            `    MEW?     `,
         ],
         [
-            `    __//  `,
-            `   /.__.\\ `,
-            `   \\ \\/ / `,
-            `'__/    \\ `,
-            ` \\-      )`,
-            `  \\_____/ `,
-            `____|_|___`,
-            `    " "   `,
+            `    __//  CHEEP!`,
+            `   /.__.\\       `,
+            `   \\ \\/ /       `,
+            `'__/    \\        `,
+            ` \\-      )      `,
+            `  \\_____/       `,
+            `____|_|______   `,
+            `    " "         `,
         ],
         [
-            `          __     __  `,
+            `  TOOT!   __     __  `,
             `         /  \\~~~/  \\ `,
             `   ,----(     ..    )`,
             `  /      \\__     __/ `,
@@ -503,7 +514,7 @@
             `<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center;">
                 <img
                     class="no-zoom"
-                    style="width: 100%;"
+                    style="width: 80%;"
                     src="./_assets/macs/face.svg"
                 >
             </div>`,
@@ -517,7 +528,8 @@
 
         await showTextPage([
             `<h1>Hello, ${escapeHtml(name)}!</h1>`,
-            `<p>I'm a <strong>Macintosh</strong> computer from <strong>1984</strong>.<br>Back then I was pretty ripped:`,
+            `<p>I'm a <strong>Macintosh</strong> computer from <strong>1984</strong>.
+                Back in the day I was considered pretty swol:`,
             `<ul>
                 <li style="margin-block: 0;"><strong>8MHz</strong> CPU (single core)
                 <li style="margin-block: 0;"><strong>128kB</strong> RAM
@@ -589,7 +601,12 @@
         await showTextPage([
             `<p>Ok, ${escapeHtml(name)}, here is a joke...</h1>`,
             ``,
-            `<h1>${joke}</h1>`,
+            `<h1 style="
+                padding: 0.5em 1em;
+                border: 2px solid #111;
+                border-radius: 0.25em;
+                background-color: #fff4;
+            ">${joke}</h1>`,
             `<p>`,
             `<p>${laugh1}`,
             `<p>${laugh2}`,
@@ -604,9 +621,19 @@
         const art = randomItem(asciiArt).join('\n')
 
         await showTextPage([
-            `<p>Ok, ${escapeHtml(name)}, some art for you...</h1>`,
+            `<h1>Check out this art, ${escapeHtml(name)}...</h1>`,
             ``,
-            `<h1 style="text-align: center;"><pre>${art}</pre></h1>`,
+            `<h1 style="text-align: center;">
+                <pre style="
+                    margin: 0.5em auto;
+                    width: fit-content;
+                    background-color: #def;
+                    padding: 0.5em;
+                    border: 2px solid #111;
+                    box-shadow: 0 0.1em 0.5em #0003;
+                    border-radius: 0;
+                ">${art}</pre>
+            </h1>`,
             ``,
             `<button id="back">Back</button>`,
         ])
@@ -621,7 +648,12 @@
         await showTextPage([
             `<p>Ok, ${escapeHtml(name)}, here is a neat fact...</h1>`,
             ``,
-            `<h1>${fact}</h1>`,
+            `<h1 style="
+                padding: 0.5em 1em;
+                border: 2px solid #111;
+                border-radius: 0.25em;
+                background-color: #fff4;
+            ">${fact}</h1>`,
             `<p>`,
             `<p>${comment}`,
             `<p>`,
@@ -665,16 +697,16 @@
     async function showPC() {
         await showTextPage([
             `
-            <div style="display: flex; gap: 1rem; width: 100%; justify-content: space-between; align-items: center; padding-bottom: 1em;">
+            <div style="display: flex; gap: 1rem; width: 100%; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-bottom: 1em;">
                 <h1 style="margin-block: 0;">IBM PC XT, 1983</h1>
                 <button id="back">Back</button>
             </div>
-            <div style="display: flex; gap: 1rem; width: 100%; justify-content: space-evenly; align-items: center;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%; justify-content: space-evenly; align-items: center;">
                 <img
-                    style="width: 60%; filter: grayscale(1); margin-block: 0;"
+                    style="flex: 4 1 10em; width: 100%; filter: grayscale(1); margin-block: 0;"
                     src="./_assets/macs/ibm-pc.png"
                 >
-                <ul style="margin-bottom: 0.5em;">
+                <ul style="flex: 3 1 8em; margin-bottom: 0.5em;">
                     <li>4.77 MHz CPU
                     <li>128kB base RAM
                     <li>Monochrome text display
@@ -703,7 +735,7 @@
         const mistakesText = `${hangman.mistakes} / ${hangmanStages.length - 1}`
 
         let promptText = ''
-        let inputHtml = 'Your guess, A-Z... <input type="text" size="1" id="guess">'
+        let inputHtml = 'Guess <input type="text" size="1" id="guess">'
 
         if (hangman.feedback.length > 0) {
             promptText = hangman.feedback
@@ -724,20 +756,43 @@
 
         await showTextPage([
             `<h1>Hangman with ${escapeHtml(name)} the Human</h1>`,
-            `<p>`,
-            `<h1 style="text-align: center;">${hangmanText}</h1>`,
-            `<p>`,
-            `<div style="display: flex; gap: 1rem; width: 100%; justify-content: space-evenly; align-items: center;">
+            ``,
+            `<div style="
+                display: flex;
+                gap: 1rem;
+                width: 100%;
+                padding-block: 0.5em;
+                justify-content: center;
+                align-items: center;
+            ">
                 <div>
-                    <p style="margin-top: 0;">${promptText}
-                    <p style="margin-bottom: 0;"><em>
-                        Mistakes: ${mistakesText}<br>
-                        Used: ${guessesText}
-                    </em>
+                    <p style="margin: 0 0 0.5em;">${promptText}
+                    <p style="margin: 0.5em 0; font-style: italic;">Mistakes: ${mistakesText}
+                    <p style="margin: 0.5em 0 0; font-style: italic;">Used: ${guessesText}
                 </div>
-                <pre style="text-align: center; margin: 0;">${hangmanStage}</pre>
+                <pre style="
+                    text-align: center;
+                    margin: 0;
+                    width: fit-content;
+                    background-color: #fff3;
+                    padding: 0 1em 1.2em;
+                    border: 2px solid #1116;
+                    border-radius: 0.4em;
+                    font-size: 0.9em;
+                    font-weight: bold;
+                ">${hangmanStage}</pre>
             </div>`,
-            `<p>`,
+            ``,
+            `<h1 style="
+                text-align: center;
+                margin: 0 auto;
+                width: fit-content;
+                background-color: #fff3;
+                padding: 0.5em 0.8em;
+                border: 2px solid #1116;
+                border-radius: 0.35em;
+            ">${hangmanText}</h1>`,
+            ``,
             `<p>${inputHtml}`,
         ])
 
