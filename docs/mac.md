@@ -8,11 +8,11 @@
 <script>
     const BOOT_DELAY  = 500
     const SMILE_DELAY = 1000
-    const START_DELAY = 2000
-    const LINE_PAUSE  = 250
-    const SHORT_PAUSE = 1000
-    const LONG_PAUSE  = 2000
-    const CHAR_PAUSE  = 5
+    const START_DELAY = 1500
+    const LINE_PAUSE  = 0
+    const SHORT_PAUSE = 750
+    const LONG_PAUSE  = 1500
+    const CHAR_PAUSE  = 3
 
     const HANGMAN_STATUS = Object.freeze({
         IDLE: 'idle',
@@ -21,25 +21,15 @@
         LOST: 'lost',
     })
 
-    const starters = [
-        `So`,
-        `Ok`,
-        `Yo`,
-        `Right`,
-        `Now`,
-        `Well`,
-        `Hey`,
-        `Alright`,
-    ]
+    const starters = [`So`, `Ok`, `Yo`, `Right`, `Now`, `Well`, `Hey`,]
 
     const prompts = [
         `how can I help you?`,
-        `what would you like to do?`,
-        `some options for you:`,
-        `what do you want to do?`,
-        `some things you can do:`,
+        `would you like to:`,
+        `your options:`,
+        `what do you want?`,
+        `you can:`,
         `pick an option:`,
-        `what do you feel like doing?`,
     ]
 
     const filler = `<br>—<br>`
@@ -127,7 +117,6 @@
         `Ouch! My circuits ache!`,
         `Beep boop beep beep!`,
         `Be still, my beating system clock!`,
-        `I'm on a roll - a 3.5 inch roll!`,
         `I'm floppy with laughter!`,
         `Warning: laughter overflow error!`,
         `I'm 128 kilobytes of pure comedy!`,
@@ -254,6 +243,8 @@
         `How about that?!`,
         `Well, that's interesting!`,
         `Heck!`,
+        `Awesome knowledge!`,
+        `Crazy, eh?!`,
     ]
 
     const asciiArt = [
@@ -286,7 +277,7 @@
             `     /      @@   `,
             `~~~~~\\_;m__m._>o `,
             `                 `,
-            `      SQUEAK!    `,
+            ` GOT ANY CHEESE? `,
         ],
         [
             ` .-""-.          `,
@@ -295,7 +286,7 @@
             ` \\  = /   ( ' ' )`,
             `  )--(     \\_=_/ `,
             `                 `,
-            `  WATCHING YOU!  `,
+            `  FATHER & SON!  `,
         ],
         [
             `/\\_/\\  `,
@@ -310,7 +301,7 @@
             `  ( ='.'= )  `,
             `-(,,)---(,,)-`,
             `             `,
-            `    MEW?     `,
+            ` PEEK-A-BOO! `,
         ],
         [
             `    __//  CHEEP!`,
@@ -365,7 +356,7 @@
             `   JUST CHILLIN   `,
         ],
         [
-            `     \\ /  BUG!`,
+            `BUG  \\ /  OUT!`,
             `     oVo      `,
             ` \\___XXX___/  `,
             `  __XXXXX__   `,
@@ -387,14 +378,14 @@
             `(")(_)-"()))=-`,
             `   (\\\\        `,
             `              `,
-            `  BZZZ BZZZ!  `,
+            ` BZZ BZZ BZZ! `,
         ],
         [
-            `FOLLOW ME!     O  o`,
-            `          _\\_   o  `,
-            `>('>   \\\\/  o\\ .   `,
-            `       //\\___=     `,
-            `          ''       `,
+            `        O  o       `,
+            `   _\\_   o     ,   `,
+            `\\\\/  o\\ .    <o))< `,
+            `//\\___w        \`   `,
+            `   ''       UH OH! `,
         ],
         [
             `       .   HELLO THERE!  `,
@@ -457,9 +448,9 @@
             `       \`          `,
         ],
         [
-            `ZOOM!---__@     __~@  `,
-            `----- _\`\\<,_   _\`\\<,_ `,
-            `---- (*)/ (*) (*)/ (*)`,
+            `ZOOM! --- __@     __~@  `,
+            `    --- _\`\\<,_   _\`\\<,_ `,
+            `  ---  (*)/ (*) (*)/ (*)`,
             `~~~~~~~~~~~~~~~~~~~~~~`,
         ],
     ]
@@ -606,6 +597,15 @@
         const template = document.createElement('template')
         template.innerHTML = html
 
+        lucide.createIcons({
+            root: template.content,
+            attrs: {
+                class: ['icon', 'no-zoom'],
+                'stroke-width': 2,
+                stroke: 'currentColor',
+            },
+        })
+
         async function typeNode(node, parent) {
             if (node.nodeType === Node.TEXT_NODE) {
                 for (const character of node.textContent) {
@@ -685,14 +685,14 @@
         await showTextPage([
             `<h1>Hello, ${escapeHtml(name)}!</h1>`,
             `<p>I'm a <strong>Macintosh</strong> computer from <strong>1984</strong>.
-                Back in the day I was considered pretty ripped:`,
+                Back in the day I was considered pretty ripped: <i data-lucide="biceps-flexed"></i>`,
             `<ul class="mac-chat-specifications">
-                <li><strong>8 MHz</strong> CPU (single core)
-                <li><strong>128 kB</strong> RAM
-                <li><strong>400 kB</strong> 3.5inch floppy (OS / storage)
-                <li><strong>9" greyscale</strong> display (512×342 pixels)
-                <li><strong>Advanced GUI</strong> (graphical user interface)
-                <li><strong>Mouse</strong> to work with the GUI (one button)
+                <li><i data-lucide="cpu"></i> <strong>8 MHz</strong> CPU (single core)
+                <li><i data-lucide="memory-stick"></i> <strong>128 kB</strong> RAM
+                <li><i data-lucide="save"></i> <strong>400 kB</strong> 3.5inch floppy (OS / storage)
+                <li><i data-lucide="square-square"></i> <strong>9" greyscale</strong> display (512×342 pixels)
+                <li><i data-lucide="app-window"></i> <strong>Advanced GUI</strong> (graphical user interface)
+                <li><i data-lucide="mouse-pointer"></i> <strong>Mouse</strong> to work with the GUI (one button)
             </ul>`,
             `<p>Nothing else like me in '84... Impressed?`,
             ``,
@@ -719,14 +719,14 @@
         await showTextPage([
             `<h1>${starter}, ${escapeHtml(name)}, ${prompt}</h1>`,
             `<ol class="mac-chat-option-list">
-                <li>See what my <strong>1984 GUI</strong> looked like
-                <li>Watch a <strong>video about me</strong>
-                <li>See my competition, the <strong>IBM PC</strong>
-                <li>Read a cool <strong>computer fact</strong>
-                <li>Play a game of <strong>nerdy Hangman</strong>
-                <li>Hear a <strong>nerdy joke</strong>
-                <li>See some fabulous <strong>ASCII art</strong>
-                <li><strong>Reboot</strong> me
+                <li><i data-lucide="app-window"></i> See what my <strong>1984 GUI</strong> looked like
+                <li><i data-lucide="square-play"></i> Watch a <strong>video about me</strong>
+                <li><i data-lucide="computer"></i> See my competition, the <strong>IBM PC</strong>
+                <li><i data-lucide="info"></i> Read a cool <strong>computer fact</strong>
+                <li><i data-lucide="face-grinning"></i> Hear a <strong>nerdy joke</strong>
+                <li><i data-lucide="image"></i> See some fabulous <strong>ASCII art</strong>
+                <li><i data-lucide="case-upper"></i> Play a game of <strong>nerdy Hangman</strong>
+                <li><i data-lucide="circle-power"></i> <strong>Reboot</strong> me
             </ol>`,
             `<p>Pick A-H <input type="text" size="1" id="choice">`
         ])
@@ -740,9 +740,9 @@
                 if (choice === 'B') showVideo()
                 if (choice === 'C') showPC()
                 if (choice === 'D') showFact()
-                if (choice === 'E') playHangman()
-                if (choice === 'F') showJoke()
-                if (choice === 'G') showArt()
+                if (choice === 'E') showJoke()
+                if (choice === 'F') showArt()
+                if (choice === 'G') playHangman()
                 if (choice === 'H') showBoot()
             }
         })
@@ -753,9 +753,9 @@
         const laugh = randomItem(laughs)
 
         await showTextPage([
-            `<p>Ok, ${escapeHtml(name)}, here is a joke...</h1>`,
+            `<h3>Ok, ${escapeHtml(name)}, here is a joke...</h3>`,
             `<h1 class="mac-chat-message">${joke}</h1>`,
-            `<p class="mac-chat-comment">${laugh}`,
+            `<p class="mac-chat-comment"><i data-lucide="face-grinning"></i> ${laugh}`,
             `<button id="back">Back</button>`,
         ])
 
@@ -779,9 +779,9 @@
         const comment = randomItem(comments)
 
         await showTextPage([
-            `<p>Ok, ${escapeHtml(name)}, here is a neat fact...</h1>`,
+            `<h3>Ok, ${escapeHtml(name)}, here is a neat fact...</h3>`,
             `<h1 class="mac-chat-message">${fact}</h1>`,
-            `<p class="mac-chat-comment">${comment}`,
+            `<p class="mac-chat-comment"><i data-lucide="thumbs-up"></i> ${comment}`,
             `<button id="back">Back</button>`,
         ])
 
@@ -797,7 +797,10 @@
                 referrerpolicy="strict-origin-when-cross-origin"
                 allowfullscreen
             ></iframe>`,
-            `<button id="back">Back</button>`,
+            `<div class="mac-chat-controls">
+                <button id="back">Back</button>
+                <span><i data-lucide="triangle-alert"></i> Warning: The 80s vibe is strong!</span>
+            </div>`,
         ])
 
         bindBackButton()
@@ -825,14 +828,14 @@
             <div class="mac-chat-pc-content">
                 <img src="./_assets/macs/ibm-pc.png">
                 <ul>
-                    <li>4.77 MHz CPU
-                    <li>128kB base RAM
-                    <li>Monochrome text display
-                    <li>5.25" floppy drives
-                    <li>MS-DOS command-line OS
+                    <li><i data-lucide="cpu"></i> 4.77 MHz CPU
+                    <li><i data-lucide="memory-stick"></i> 128kB RAM
+                    <li><i data-lucide="square-square"></i> Monochrome CRT
+                    <li><i data-lucide="save"></i> 5.25" floppy
+                    <li><i data-lucide="square-terminal"></i> MS-DOS CLI
                 </ul>
             </div>
-            <h3>What a brute! No class... Not like me!</h3>
+            <h3><i data-lucide="face-slightly-frowning"></i> What a brute! No class, unlike me!</h3>
             `,
         ])
 
@@ -860,12 +863,12 @@
         }
 
         if (hangman.status === HANGMAN_STATUS.WON) {
-            promptText += '<p><strong>You guessed the word!</strong>'
+            promptText += '<p><i data-lucide="trophy"></i> <strong>You guessed the word!</strong>'
             hangmanStage = hangmanWin.join('\n')
         }
 
         if (hangman.status === HANGMAN_STATUS.LOST) {
-            promptText += '<p>Oh no, <strong>you were hanged!</strong>'
+            promptText += '<p><i data-lucide="face-slightly-frowning"></i> Oh no, <strong>you were hanged!</strong>'
             hangmanText = hangman.word.join(' ')
         }
 
@@ -881,7 +884,7 @@
                 <pre>${hangmanStage}</pre>
             </div>`,
             `<h1 class="mac-chat-hangman-word">${hangmanText}</h1>`,
-            `<div class="mac-chat-hangman-controls">
+            `<div class="mac-chat-controls">
                 <span>Guess <input type="text" size="1" id="guess"></span>
                 <button id="back">Back</button>
             </div>`,
@@ -902,7 +905,7 @@
 
                 if (guess.length === 1 && guess >= 'A' && guess <= 'Z') {
                     if (hangman.guesses.includes(guess)) {
-                        hangman.feedback = `Whoops! You already tried '${guess}'...`
+                        hangman.feedback = `<i data-lucide="circle-slash"></i> Whoops! You already tried '${guess}'...`
                         playHangman()
                         return
                     }
@@ -910,7 +913,7 @@
                     hangman.guesses.push(guess)
 
                     if (hangman.word.includes(guess)) {
-                        hangman.feedback = `Yes! '${guess}' <strong>is</strong> in the word`
+                        hangman.feedback = `<i data-lucide="circle-check"></i> Yes! '${guess}' <strong>is</strong> in the word`
 
                         const updatedRevealedWord = hangman.word.map((char, index) => {
                             return char === guess ? char : hangman.revealed[index]
@@ -922,7 +925,7 @@
                         }
                     }
                     else {
-                        hangman.feedback = `No! '${guess}' is <strong>not</strong> in the word`
+                        hangman.feedback = `<i data-lucide="circle-x"></i> No! '${guess}' is <strong>not</strong> in the word`
                         hangman.mistakes++
 
                         if (hangman.mistakes === hangmanStages.length - 1) {

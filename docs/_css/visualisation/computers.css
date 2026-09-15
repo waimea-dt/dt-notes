@@ -226,7 +226,7 @@
                 padding-inline: 0 !important;
             }
 
-            animation: flicker 6s infinite;
+            animation: crt-flicker 6s infinite;
         }
 
         &::after {
@@ -256,7 +256,7 @@
         max-width: 30em;
         aspect-ratio: 1212.377 / 1597;
 
-        &:only-of-type:has(+ script) { max-width: 40rem; }
+        &:only-of-type:has(+ script) { max-width: 50rem; }
 
         .computer-screen-content {
             top: 14.6%;
@@ -305,7 +305,7 @@
     }
 }
 
-@keyframes flicker {
+@keyframes crt-flicker {
     0%, 100% { filter: brightness(1); }
     8%  { filter: brightness(calc(1 + 0.1)); }
     9%  { filter: brightness(1); }
