@@ -23,26 +23,23 @@
 
     const starters = [
         `So`,
-        `Ok then`,
+        `Ok`,
         `Yo`,
-        `Right then`,
-        `Now then`,
-        `Anyway`,
+        `Right`,
+        `Now`,
         `Well`,
         `Hey`,
-        `Anyway`,
         `Alright`,
     ]
 
     const prompts = [
-        `How can I help you?`,
-        `What would you like to do?`,
-        `Here are some options for you:`,
-        `I can offer you these services:`,
-        `What should we do next?`,
-        `Here are some things we could do:`,
-        `Pick an option:`,
-        `What do you feel like doing?`,
+        `how can I help you?`,
+        `what would you like to do?`,
+        `some options for you:`,
+        `what do you want to do?`,
+        `some things you can do:`,
+        `pick an option:`,
+        `what do you feel like doing?`,
     ]
 
     const filler = `<br>—<br>`
@@ -552,47 +549,35 @@
         const prompt = randomItem(prompts)
 
         await showTextPage([
-            `<h1>${starter}, ${escapeHtml(name)}...</h1>`,
-            `<p>${prompt}`,
+            `<h1>${starter}, ${escapeHtml(name)}, ${prompt}</h1>`,
             `<ol style="list-style-type: upper-alpha;">
-                <li>I can tell you a <strong>nerdy joke</strong>
-                <li>I can tell you a cool <strong>computer fact</strong>
-                <li>I can draw you some <strong>ASCII art</strong>
-                <li>I can play a game of <strong>nerdy Hangman</strong>
-                <li>I can show you a <strong>video about me</strong>
-                <li>You can <strong>reboot me</strong>
+                <li>Hear a <strong>nerdy joke</strong>
+                <li>Read a cool <strong>computer fact</strong>
+                <li>See some fabulous <strong>ASCII art</strong>
+                <li>Play a game of <strong>nerdy Hangman</strong>
+                <li>See what my <strong>1984 GUI</strong> looked like
+                <li>Watch a <strong>video about me</strong>
+                <li>See my competition, the <strong>IBM PC</strong>
+                <li><strong>Reboot</strong> me
             </ol>`,
-            `<p>Pick A-F <input type="text" size="1" id="choice">`
+            `<p>Pick A-H <input type="text" size="1" id="choice">`
         ])
 
         const choiceInput = document.getElementById('choice')
         choiceInput.focus()
         choiceInput.addEventListener('change', () => {
             const choice = choiceInput.value.trim().toUpperCase()
-            if (choice.length === 1 && choice >= 'A' && choice <= 'F') {
+            if (choice.length === 1 && choice >= 'A' && choice <= 'H') {
                 if (choice === 'A') showJoke()
                 if (choice === 'B') showFact()
                 if (choice === 'C') showArt()
                 if (choice === 'D') playHangman()
-                if (choice === 'E') showVideo()
-                if (choice === 'F') showBoot()
+                if (choice === 'E') showGUI()
+                if (choice === 'F') showVideo()
+                if (choice === 'G') showPC()
+                if (choice === 'H') showBoot()
             }
         })
-    }
-
-    async function showVideo() {
-        await showTextPage([
-            `<iframe
-                style="width: 100%; aspect-ratio: 16/9; border-radius: 0.5rem; overflow: hidden; border: 2px solid #111; filter: grayscale(0%) sepia(0%);"
-                src="https://www.youtube.com/embed/-5zeJyQ31rM?si=Nu5kt3cATnkyfKBp"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerpolicy="strict-origin-when-cross-origin"
-                allowfullscreen
-            ></iframe>`,
-            `<button id="back">Back</button>`,
-        ])
-
-        bindBackButton()
     }
 
     async function showJoke() {
@@ -641,6 +626,64 @@
             `<p>${comment}`,
             `<p>`,
             `<button id="back">Back</button>`,
+        ])
+
+        bindBackButton()
+    }
+
+    async function showVideo() {
+        await showTextPage([
+            `<iframe
+                style="width: 100%; aspect-ratio: 16/9; border-radius: 0.5rem; overflow: hidden; border: 2px solid #111; filter: grayscale(0%) sepia(0%);"
+                src="https://www.youtube.com/embed/-5zeJyQ31rM?si=Nu5kt3cATnkyfKBp"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+            ></iframe>`,
+            `<button id="back">Back</button>`,
+        ])
+
+        bindBackButton()
+    }
+
+    async function showGUI() {
+        await showTextPage([
+            `<img
+                class="no-zoom"
+                style="position: absolute; inset: 0; width: 100%; aspect-ratio: 4/2.7; max-width: unset; border-radius: 1em;"
+                src="./_assets/macs/macintosh-screen.png"
+            >`,
+            `<button
+                id="back"
+                style="position: absolute; right: 5%; top: 27%;"
+            >Back</button>`,
+        ])
+
+        bindBackButton()
+    }
+
+    async function showPC() {
+        await showTextPage([
+            `
+            <div style="display: flex; gap: 1rem; width: 100%; justify-content: space-between; align-items: center; padding-bottom: 1em;">
+                <h1 style="margin-block: 0;">IBM PC XT, 1983</h1>
+                <button id="back">Back</button>
+            </div>
+            <div style="display: flex; gap: 1rem; width: 100%; justify-content: space-evenly; align-items: center;">
+                <img
+                    style="width: 60%; filter: grayscale(1); margin-block: 0;"
+                    src="./_assets/macs/ibm-pc.png"
+                >
+                <ul style="margin-bottom: 0.5em;">
+                    <li>4.77 MHz CPU
+                    <li>128kB base RAM
+                    <li>Monochrome text display
+                    <li>5.25" floppy drives
+                    <li>MS-DOS command-line OS
+                </ul>
+            </div>
+            <h3>What a brute! No class... Not like me!</h3>
+            `,
         ])
 
         bindBackButton()
