@@ -853,7 +853,6 @@
         const mistakesText = `${hangman.mistakes} / ${hangmanStages.length - 1}`
 
         let promptText = ''
-        let inputHtml = 'Guess <input type="text" size="1" id="guess">'
 
         if (hangman.feedback.length > 0) {
             promptText = hangman.feedback
@@ -862,13 +861,11 @@
 
         if (hangman.status === HANGMAN_STATUS.WON) {
             promptText += '<p><strong>You guessed the word!</strong>'
-            inputHtml = '<button id="back">Back</button>'
             hangmanStage = hangmanWin.join('\n')
         }
 
         if (hangman.status === HANGMAN_STATUS.LOST) {
             promptText += '<p>Oh no, <strong>you were hanged!</strong>'
-            inputHtml = '<button id="back">Back</button>'
             hangmanText = hangman.word.join(' ')
         }
 
@@ -884,7 +881,10 @@
                 <pre>${hangmanStage}</pre>
             </div>`,
             `<h1 class="mac-chat-hangman-word">${hangmanText}</h1>`,
-            `<p>${inputHtml}`,
+            `<div class="mac-chat-hangman-controls">
+                <span>Guess <input type="text" size="1" id="guess"></span>
+                <button id="back">Back</button>
+            </div>`,
         ])
 
         bindBackButton(() => {

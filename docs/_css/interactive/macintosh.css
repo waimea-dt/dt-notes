@@ -85,11 +85,11 @@
         display: flex;
         width: 100%;
         gap: 1rem;
+        flex-wrap: wrap;
         align-items: center;
     }
 
     .mac-chat-pc-header {
-        flex-wrap: wrap;
         justify-content: space-between;
         padding-bottom: 1em;
 
@@ -99,8 +99,6 @@
     }
 
     .mac-chat-pc-content {
-        flex-wrap: wrap;
-
         img {
             flex: 4 1 10em;
             width: 100%;
@@ -164,5 +162,13 @@
         padding: 0.5em 0.8em;
         border-radius: 0.35em !important;
         text-align: center;
+    }
+
+    .mac-chat-hangman-controls {
+        display: flex;
+        width: 100%;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
     }
 }
