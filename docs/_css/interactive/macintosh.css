@@ -1,0 +1,161 @@
+/* Macintosh chat screen */
+.macintosh-chat {
+    --mac-chat-border-color: #111;
+    --mac-chat-panel-bg: #fff3;
+
+    .mac-chat-centred-screen {
+        display: flex;
+        width: 100%;
+        height: 100% !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mac-chat-boot-icon {
+        width: 10%;
+        height: auto;
+    }
+
+    .mac-chat-smile-image {
+        width: 80%;
+    }
+
+    .mac-chat-specifications li {
+        margin-block: 0;
+    }
+
+    .mac-chat-option-list {
+        list-style-type: upper-alpha;
+    }
+
+    .mac-chat-message {
+        padding: 0.5em 1em;
+        border: 2px solid var(--mac-chat-border-color) !important;
+        border-radius: 0.25em !important;
+        background-color: #fff4;
+    }
+
+    .mac-chat-comment {
+        padding-block: 1em;
+    }
+
+    .mac-chat-ascii-art {
+        width: fit-content;
+        margin: 0.5em auto !important;
+        padding: 0.5em;
+        border: 2px solid var(--mac-chat-border-color) !important;
+        border-radius: 0 !important;
+        background-color: #def;
+        box-shadow: 0 0.1em 0.5em #0003;
+        text-align: center;
+    }
+
+    .mac-chat-video {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border: 2px solid var(--mac-chat-border-color) !important;
+        border-radius: 0.5rem !important;
+
+        filter: grayscale(1);
+
+        &:hover {
+            filter: none;
+        }
+    }
+
+    .mac-chat-gui-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        max-width: unset !important;
+        aspect-ratio: 4 / 2.7;
+        border-radius: 1em !important;
+    }
+
+    .mac-chat-gui-back {
+        position: absolute;
+        top: 27%;
+        right: 5%;
+    }
+
+    .mac-chat-pc-header,
+    .mac-chat-pc-content {
+        display: flex;
+        width: 100%;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .mac-chat-pc-header {
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding-bottom: 1em;
+
+        h1 {
+            margin-block: 0 !important;
+        }
+    }
+
+    .mac-chat-pc-content {
+        flex-wrap: wrap;
+
+        img {
+            flex: 4 1 10em;
+            width: 100%;
+            margin-block: 0 !important;
+            filter: grayscale(1);
+        }
+
+        ul {
+            flex: 3 1 8em;
+            margin-bottom: 0.5em;
+        }
+    }
+
+    .mac-chat-hangman-status {
+        display: flex;
+        width: 100%;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+        padding-block: 0.5em;
+
+        > div {
+            > p:first-child {
+                margin: 0 0 0.5em !important;
+            }
+
+            > p:not(:first-child) {
+                margin: 0.5em 0 !important;
+                font-style: italic;
+            }
+
+            > p:last-child {
+                margin-bottom: 0 !important;
+            }
+        }
+
+        > pre {
+            margin: 0 !important;
+            padding: 0 1em 1.2em;
+            border-radius: 0.4em !important;
+            text-align: center;
+            font-size: 0.9em;
+            font-weight: bold;
+            width: fit-content;
+            border: 2px solid #1116 !important;
+            background-color: var(--mac-chat-panel-bg);
+        }
+    }
+
+    .mac-chat-hangman-word {
+        width: fit-content;
+        border: 2px solid #1116 !important;
+        background-color: var(--mac-chat-panel-bg);
+        margin: 0 auto !important;
+        padding: 0.5em 0.8em;
+        border-radius: 0.35em !important;
+        text-align: center;
+    }
+}

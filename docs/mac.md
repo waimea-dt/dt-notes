@@ -1,4 +1,4 @@
-<computer type="mac">
+<computer class="macintosh-chat" type="mac">
 
 &nbsp;
 
@@ -90,7 +90,7 @@
         `How do you know if a programmer is an extrovert?${filler}They look at YOUR shoes when they talk to you!`,
         `What do you call a snake that codes?${filler}A Python developer!`,
         `What's an astronaut's favourite key on a keyboard?${filler}The space bar!`,
-        `What do you call it when a programmer finish a project?${filler}A miracle!`,
+        `What do you call it when a programmer finishes a project?${filler}A miracle!`,
         `Weeks of coding can save you– hours of planning!`,
         `A code tester walks into a bar and orders a beer,– then 0 beers,– then 999999999 beers,– then -1 beers,– then a lizard`,
         `Debugging...${filler}Being the detective in a crime movie,– where you are also the murderer!`,
@@ -497,10 +497,9 @@
 
     async function showBoot() {
         await showTextPage([
-            `<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center;">
+            `<div class="mac-chat-centred-screen">
                 <img
-                    class="no-zoom"
-                    style="width: 10%; height: auto;"
+                    class="no-zoom mac-chat-boot-icon"
                     src="./_assets/macs/happy-mac-icon.png"
                 >
             </div>`,
@@ -511,10 +510,9 @@
 
     async function showSmile() {
         await showTextPage([
-            `<div style="display: flex; height: 100%; width: 100%; align-items: center; justify-content: center;">
+            `<div class="mac-chat-centred-screen">
                 <img
-                    class="no-zoom"
-                    style="width: 80%;"
+                    class="no-zoom mac-chat-smile-image"
                     src="./_assets/macs/face.svg"
                 >
             </div>`,
@@ -529,14 +527,14 @@
         await showTextPage([
             `<h1>Hello, ${escapeHtml(name)}!</h1>`,
             `<p>I'm a <strong>Macintosh</strong> computer from <strong>1984</strong>.
-                Back in the day I was considered pretty swol:`,
-            `<ul>
-                <li style="margin-block: 0;"><strong>8MHz</strong> CPU (single core)
-                <li style="margin-block: 0;"><strong>128kB</strong> RAM
-                <li style="margin-block: 0;"><strong>400kB</strong> 3.5inch floppy drive (OS / storage)
-                <li style="margin-block: 0;"><strong>9" greyscale</strong> display (512×342 pixels)
-                <li style="margin-block: 0;"><strong>Advanced GUI</strong> (graphical user interface)
-                <li style="margin-block: 0;"><strong>Mouse</strong> to work with the GUI (one button)
+                Back in the day I was considered pretty ripped:`,
+            `<ul class="mac-chat-specifications">
+                <li><strong>8MHz</strong> CPU (single core)
+                <li><strong>128kB</strong> RAM
+                <li><strong>400kB</strong> 3.5inch floppy drive (OS / storage)
+                <li><strong>9" greyscale</strong> display (512×342 pixels)
+                <li><strong>Advanced GUI</strong> (graphical user interface)
+                <li><strong>Mouse</strong> to work with the GUI (one button)
             </ul>`,
             `<p>Nothing else like me in '84... Impressed?`,
             ``,
@@ -562,14 +560,14 @@
 
         await showTextPage([
             `<h1>${starter}, ${escapeHtml(name)}, ${prompt}</h1>`,
-            `<ol style="list-style-type: upper-alpha;">
-                <li>Hear a <strong>nerdy joke</strong>
-                <li>Read a cool <strong>computer fact</strong>
-                <li>See some fabulous <strong>ASCII art</strong>
-                <li>Play a game of <strong>nerdy Hangman</strong>
+            `<ol class="mac-chat-option-list">
                 <li>See what my <strong>1984 GUI</strong> looked like
                 <li>Watch a <strong>video about me</strong>
                 <li>See my competition, the <strong>IBM PC</strong>
+                <li>Read a cool <strong>computer fact</strong>
+                <li>Play a game of <strong>nerdy Hangman</strong>
+                <li>Hear a <strong>nerdy joke</strong>
+                <li>See some fabulous <strong>ASCII art</strong>
                 <li><strong>Reboot</strong> me
             </ol>`,
             `<p>Pick A-H <input type="text" size="1" id="choice">`
@@ -580,13 +578,13 @@
         choiceInput.addEventListener('change', () => {
             const choice = choiceInput.value.trim().toUpperCase()
             if (choice.length === 1 && choice >= 'A' && choice <= 'H') {
-                if (choice === 'A') showJoke()
-                if (choice === 'B') showFact()
-                if (choice === 'C') showArt()
-                if (choice === 'D') playHangman()
-                if (choice === 'E') showGUI()
-                if (choice === 'F') showVideo()
-                if (choice === 'G') showPC()
+                if (choice === 'A') showGUI()
+                if (choice === 'B') showVideo()
+                if (choice === 'C') showPC()
+                if (choice === 'D') showFact()
+                if (choice === 'E') playHangman()
+                if (choice === 'F') showJoke()
+                if (choice === 'G') showArt()
                 if (choice === 'H') showBoot()
             }
         })
@@ -594,23 +592,12 @@
 
     async function showJoke() {
         const joke = randomItem(jokes)
-        const laugh1 = randomItem(laughs)
-        let laugh2 = laugh1
-        while (laugh2 === laugh1) { laugh2 = randomItem(laughs) }
+        const laugh = randomItem(laughs)
 
         await showTextPage([
             `<p>Ok, ${escapeHtml(name)}, here is a joke...</h1>`,
-            ``,
-            `<h1 style="
-                padding: 0.5em 1em;
-                border: 2px solid #111;
-                border-radius: 0.25em;
-                background-color: #fff4;
-            ">${joke}</h1>`,
-            `<p>`,
-            `<p>${laugh1}`,
-            `<p>${laugh2}`,
-            `<p>`,
+            `<h1 class="mac-chat-message">${joke}</h1>`,
+            `<p class="mac-chat-comment">${laugh}`,
             `<button id="back">Back</button>`,
         ])
 
@@ -622,19 +609,7 @@
 
         await showTextPage([
             `<h1>Check out this art, ${escapeHtml(name)}...</h1>`,
-            ``,
-            `<h1 style="text-align: center;">
-                <pre style="
-                    margin: 0.5em auto;
-                    width: fit-content;
-                    background-color: #def;
-                    padding: 0.5em;
-                    border: 2px solid #111;
-                    box-shadow: 0 0.1em 0.5em #0003;
-                    border-radius: 0;
-                ">${art}</pre>
-            </h1>`,
-            ``,
+            `<h1><pre class="mac-chat-ascii-art">${art}</pre></h1>`,
             `<button id="back">Back</button>`,
         ])
 
@@ -647,16 +622,8 @@
 
         await showTextPage([
             `<p>Ok, ${escapeHtml(name)}, here is a neat fact...</h1>`,
-            ``,
-            `<h1 style="
-                padding: 0.5em 1em;
-                border: 2px solid #111;
-                border-radius: 0.25em;
-                background-color: #fff4;
-            ">${fact}</h1>`,
-            `<p>`,
-            `<p>${comment}`,
-            `<p>`,
+            `<h1 class="mac-chat-message">${fact}</h1>`,
+            `<p class="mac-chat-comment">${comment}`,
             `<button id="back">Back</button>`,
         ])
 
@@ -666,7 +633,7 @@
     async function showVideo() {
         await showTextPage([
             `<iframe
-                style="width: 100%; aspect-ratio: 16/9; border-radius: 0.5rem; overflow: hidden; border: 2px solid #111; filter: grayscale(0%) sepia(0%);"
+                class="mac-chat-video"
                 src="https://www.youtube.com/embed/-5zeJyQ31rM?si=Nu5kt3cATnkyfKBp"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerpolicy="strict-origin-when-cross-origin"
@@ -681,14 +648,10 @@
     async function showGUI() {
         await showTextPage([
             `<img
-                class="no-zoom"
-                style="position: absolute; inset: 0; width: 100%; aspect-ratio: 4/2.7; max-width: unset; border-radius: 1em;"
+                class="no-zoom mac-chat-gui-image"
                 src="./_assets/macs/macintosh-screen.png"
             >`,
-            `<button
-                id="back"
-                style="position: absolute; right: 5%; top: 27%;"
-            >Back</button>`,
+            `<button id="back" class="mac-chat-gui-back">Back</button>`,
         ])
 
         bindBackButton()
@@ -697,16 +660,13 @@
     async function showPC() {
         await showTextPage([
             `
-            <div style="display: flex; gap: 1rem; width: 100%; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-bottom: 1em;">
-                <h1 style="margin-block: 0;">IBM PC XT, 1983</h1>
+            <div class="mac-chat-pc-header">
+                <h1>IBM PC XT, 1983</h1>
                 <button id="back">Back</button>
             </div>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%; justify-content: space-evenly; align-items: center;">
-                <img
-                    style="flex: 4 1 10em; width: 100%; filter: grayscale(1); margin-block: 0;"
-                    src="./_assets/macs/ibm-pc.png"
-                >
-                <ul style="flex: 3 1 8em; margin-bottom: 0.5em;">
+            <div class="mac-chat-pc-content">
+                <img src="./_assets/macs/ibm-pc.png">
+                <ul>
                     <li>4.77 MHz CPU
                     <li>128kB base RAM
                     <li>Monochrome text display
@@ -757,42 +717,15 @@
         await showTextPage([
             `<h1>Hangman with ${escapeHtml(name)} the Human</h1>`,
             ``,
-            `<div style="
-                display: flex;
-                gap: 1rem;
-                width: 100%;
-                padding-block: 0.5em;
-                justify-content: center;
-                align-items: center;
-            ">
+            `<div class="mac-chat-hangman-status">
                 <div>
-                    <p style="margin: 0 0 0.5em;">${promptText}
-                    <p style="margin: 0.5em 0; font-style: italic;">Mistakes: ${mistakesText}
-                    <p style="margin: 0.5em 0 0; font-style: italic;">Used: ${guessesText}
+                    <p>${promptText}
+                    <p>Mistakes: ${mistakesText}
+                    <p>Used: ${guessesText}
                 </div>
-                <pre style="
-                    text-align: center;
-                    margin: 0;
-                    width: fit-content;
-                    background-color: #fff3;
-                    padding: 0 1em 1.2em;
-                    border: 2px solid #1116;
-                    border-radius: 0.4em;
-                    font-size: 0.9em;
-                    font-weight: bold;
-                ">${hangmanStage}</pre>
+                <pre>${hangmanStage}</pre>
             </div>`,
-            ``,
-            `<h1 style="
-                text-align: center;
-                margin: 0 auto;
-                width: fit-content;
-                background-color: #fff3;
-                padding: 0.5em 0.8em;
-                border: 2px solid #1116;
-                border-radius: 0.35em;
-            ">${hangmanText}</h1>`,
-            ``,
+            `<h1 class="mac-chat-hangman-word">${hangmanText}</h1>`,
             `<p>${inputHtml}`,
         ])
 
