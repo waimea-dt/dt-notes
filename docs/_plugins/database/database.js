@@ -13,6 +13,10 @@
  *   | id | name |
  *   | 1  | Sam  |
  *   </db-data>
+ *
+ * Table/item names support a trailing sequence marker to reorder their position
+ * in the diagram: '++' moves forward 1 step, '+++' forward 2 steps, etc; '--'
+ * moves backward 1 step, '---' backward 2 steps, etc (run length - 1 = steps).
  */
 
 (function () {
@@ -33,8 +37,9 @@
     const DB_MARKERS = {
         HIGHLIGHT:      '!!!',
         ITEM_HIGHLIGHT: '!!',
-        SKIP_ONE:       '++',
-        PREV_ONE:       '--'
+        // Sequence adjustment markers: '++' = +1 step, '+++' = +2 steps, etc. (and same for '-')
+        SKIP_FORWARD:   /\+{2,}/,
+        SKIP_BACKWARD:  /-{2,}/
     }
 
     const DB_RELATIONSHIP_TYPES = {
@@ -77,14 +82,16 @@
             cleanName = cleanName.replace(DB_MARKERS.HIGHLIGHT, '').trim()
         }
 
-        // Check for sequence adjustment markers
-        if (cleanName.includes(DB_MARKERS.SKIP_ONE)) {
-            cleanName = cleanName.replace(DB_MARKERS.SKIP_ONE, '').trim()
-            tableNum = index + 2
+        // Check for sequence adjustment markers (run length - 1 = number of steps)
+        const forwardMatch = cleanName.match(DB_MARKERS.SKIP_FORWARD)
+        const backwardMatch = cleanName.match(DB_MARKERS.SKIP_BACKWARD)
+        if (forwardMatch) {
+            cleanName = cleanName.replace(DB_MARKERS.SKIP_FORWARD, '').trim()
+            tableNum = index + 1 + (forwardMatch[0].length - 1)
         }
-        else if (cleanName.includes(DB_MARKERS.PREV_ONE)) {
-            cleanName = cleanName.replace(DB_MARKERS.PREV_ONE, '').trim()
-            tableNum = index
+        else if (backwardMatch) {
+            cleanName = cleanName.replace(DB_MARKERS.SKIP_BACKWARD, '').trim()
+            tableNum = index + 1 - (backwardMatch[0].length - 1)
         }
 
         return { cleanName, tableNum, highlightClass }

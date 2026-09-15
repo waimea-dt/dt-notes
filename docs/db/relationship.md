@@ -123,17 +123,17 @@ So, for the above example, the schema now looks like this:
 |         | teacher | TEXT |
 
 
-| members   |            |         |
-| --------- | ---------- | ------- |
-| PK FK !!! | class_code | TEXT    |
-| PK FK !!! | student_id | INTEGER |
+| members ++ |            |         |
+| ---------- | ---------- | ------- |
+| PK FK !!!  | class_code | TEXT    |
+| PK FK !!!  | student_id | INTEGER |
 
 
-| students |       |         |
-| -------- | ----- | ------- |
-| PK       | id    | INTEGER |
-|          | name  | TEXT    |
-|          | notes | TEXT    |
+| students -- |       |         |
+| ----------- | ----- | ------- |
+| PK          | id    | INTEGER |
+|             | name  | TEXT    |
+|             | notes | TEXT    |
 
 </db-schema>
 
@@ -148,19 +148,19 @@ Note that other fields can be added to the link table if needed. For this exampl
 |         | teacher | TEXT |
 
 
-| members |            |         |
-| ------- | ---------- | ------- |
-| PK FK   | class_code | TEXT    |
-| PK FK   | student_id | INTEGER |
-|         | attendance | INTEGER |
-|         | grade      | TEXT    |
+| members ++ |            |         |
+| ---------- | ---------- | ------- |
+| PK FK      | class_code | TEXT    |
+| PK FK      | student_id | INTEGER |
+|            | attendance | INTEGER |
+|            | grade      | TEXT    |
 
 
-| students |       |         |
-| -------- | ----- | ------- |
-| PK       | id    | INTEGER |
-|          | name  | TEXT    |
-|          | notes | TEXT    |
+| students -- |       |         |
+| ----------- | ----- | ------- |
+| PK          | id    | INTEGER |
+|             | name  | TEXT    |
+|             | notes | TEXT    |
 
 </db-schema>
 
@@ -173,7 +173,7 @@ In the above example, we add students as members of classes by adding records to
 
 <db-data>
 
-| members ++       |                  |            |       |
+| members +++       |                  |            |       |
 | ---------------- | ---------------- | ---------- | ----- |
 | PK FK class_code | PK FK student_id | attendance | grade |
 | 100DTD           | 23123            | 95         | A     |

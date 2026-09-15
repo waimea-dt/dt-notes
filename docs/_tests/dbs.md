@@ -220,6 +220,40 @@
 </db-schema>
 
 
+## Four Tables, Multi-Step Seq Adjusted
+
+<db-schema>
+
+| customers |         |
+| --------- | ------- |
+| PK        | id      |
+|           | name    |
+|           | email   |
+|           | address |
+
+| orders |           |
+| ------ | --------- |
+| PK     | id        |
+|        | date      |
+| FK     | cust_id   |
+|        | completed |
+
+| contains +++ |          |
+| ------------ | -------- |
+| FK PK        | order_id |
+| FK PK        | prod_id  |
+|              | quantity |
+
+| products ---- |             |
+| -------------- | ----------- |
+| PK             | id          |
+|                | name        |
+|                | price       |
+|                | description |
+
+</db-schema>
+
+
 ## Highlight
 
 ### Whole table
@@ -652,6 +686,19 @@
 
 </db-relationship>
 
+### With Multi-Step Seq Adjustments
+
+<db-relationship>
+
+- customers
+    - 1:m
+- orders
+    - 1:m
+- contains +++
+    - m:1
+- products ----
+
+</db-relationship>
 
 ## Combined
 
