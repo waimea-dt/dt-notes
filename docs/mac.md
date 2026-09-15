@@ -721,11 +721,11 @@
             `<ol class="mac-chat-option-list">
                 <li><i data-lucide="app-window"></i> See what my <strong>1984 GUI</strong> looked like
                 <li><i data-lucide="square-play"></i> Watch a <strong>video about me</strong>
-                <li><i data-lucide="computer"></i> See my competition, the <strong>IBM PC</strong>
+                <li><i data-lucide="computer"></i> See my 80s competition, the <strong>IBM PC</strong>
                 <li><i data-lucide="info"></i> Read a cool <strong>computer fact</strong>
                 <li><i data-lucide="face-grinning"></i> Hear a <strong>nerdy joke</strong>
                 <li><i data-lucide="image"></i> See some fabulous <strong>ASCII art</strong>
-                <li><i data-lucide="case-upper"></i> Play a game of <strong>nerdy Hangman</strong>
+                <li><i data-lucide="book-a"></i> Play a game of <strong>nerdy Hangman</strong>
                 <li><i data-lucide="circle-power"></i> <strong>Reboot</strong> me
             </ol>`,
             `<p>Pick A-H <input type="text" size="1" id="choice">`
@@ -833,9 +833,10 @@
                     <li><i data-lucide="square-square"></i> Monochrome CRT
                     <li><i data-lucide="save"></i> 5.25" floppy
                     <li><i data-lucide="square-terminal"></i> MS-DOS CLI
+                    <li><i data-lucide="weight"></i> Chunky!
                 </ul>
             </div>
-            <h3><i data-lucide="face-slightly-frowning"></i> What a brute! No class, unlike me!</h3>
+            <h3>What a brute! Not classy like me! <i data-lucide="face-grinning"></i></h3>
             `,
         ])
 
