@@ -272,27 +272,27 @@
     > h4 + ul > li:has(> p > a) {
         color: inherit;
 
-        &:nth-child(1)  { color: var(--palette-color-1-light); }
-        &:nth-child(2)  { color: var(--palette-color-2-light); }
-        &:nth-child(3)  { color: var(--palette-color-3-light); }
-        &:nth-child(4)  { color: var(--palette-color-4-light); }
-        &:nth-child(5)  { color: var(--palette-color-5-light); }
-        &:nth-child(6)  { color: var(--palette-color-6-light); }
-        &:nth-child(7)  { color: var(--palette-color-7-light); }
-        &:nth-child(8)  { color: var(--palette-color-8-light); }
-        &:nth-child(9)  { color: var(--palette-color-9-light); }
-        &:nth-child(10) { color: var(--palette-color-10-light); }
+        &:nth-child(10n + 1)  { color: var(--palette-color-1-light); }
+        &:nth-child(10n + 2)  { color: var(--palette-color-2-light); }
+        &:nth-child(10n + 3)  { color: var(--palette-color-3-light); }
+        &:nth-child(10n + 4)  { color: var(--palette-color-4-light); }
+        &:nth-child(10n + 5)  { color: var(--palette-color-5-light); }
+        &:nth-child(10n + 6)  { color: var(--palette-color-6-light); }
+        &:nth-child(10n + 7)  { color: var(--palette-color-7-light); }
+        &:nth-child(10n + 8)  { color: var(--palette-color-8-light); }
+        &:nth-child(10n + 9)  { color: var(--palette-color-9-light); }
+        &:nth-child(10n + 10) { color: var(--palette-color-10-light); }
 
-        &:nth-child(1)  strong { color: var(--palette-color-1); }
-        &:nth-child(2)  strong { color: var(--palette-color-2); }
-        &:nth-child(3)  strong { color: var(--palette-color-3); }
-        &:nth-child(4)  strong { color: var(--palette-color-4); }
-        &:nth-child(5)  strong { color: var(--palette-color-5); }
-        &:nth-child(6)  strong { color: var(--palette-color-6); }
-        &:nth-child(7)  strong { color: var(--palette-color-7); }
-        &:nth-child(8)  strong { color: var(--palette-color-8); }
-        &:nth-child(9)  strong { color: var(--palette-color-9); }
-        &:nth-child(10) strong { color: var(--palette-color-10); }
+        &:nth-child(10n + 1)  strong { color: var(--palette-color-1); }
+        &:nth-child(10n + 2)  strong { color: var(--palette-color-2); }
+        &:nth-child(10n + 3)  strong { color: var(--palette-color-3); }
+        &:nth-child(10n + 4)  strong { color: var(--palette-color-4); }
+        &:nth-child(10n + 5)  strong { color: var(--palette-color-5); }
+        &:nth-child(10n + 6)  strong { color: var(--palette-color-6); }
+        &:nth-child(10n + 7)  strong { color: var(--palette-color-7); }
+        &:nth-child(10n + 8)  strong { color: var(--palette-color-8); }
+        &:nth-child(10n + 9)  strong { color: var(--palette-color-9); }
+        &:nth-child(10n + 10) strong { color: var(--palette-color-10); }
 
         > p > a {
             color: inherit;

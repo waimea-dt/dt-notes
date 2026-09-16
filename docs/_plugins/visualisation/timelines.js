@@ -45,6 +45,7 @@
         // Get the first text content (date/title line)
         // It might be in a text node or in the first paragraph
         let dateTitle = ''
+        let dateTitleFromParagraph = false
 
         // First, try to find a direct text node
         for (const node of item.childNodes) {
@@ -65,6 +66,7 @@
         const allParagraphs = Array.from(item.children).filter(child => child.tagName === 'P')
         if (!dateTitle && allParagraphs.length > 0) {
           dateTitle = allParagraphs[0].textContent.trim()
+          dateTitleFromParagraph = true
         }
 
         if (!dateTitle) return
@@ -99,16 +101,13 @@
           dt.appendChild(titleSpan)
         }
 
-        // Create DD with the content (paragraphs)
+        // Preserve figures and other custom blocks in the event content.
         const dd = document.createElement('dd')
 
-        // Get content paragraphs (skip the first one if we used it for the date)
-        const contentParagraphs = !dateTitle || allParagraphs.length === 0 || item.childNodes[0].nodeType === Node.TEXT_NODE
-          ? allParagraphs
-          : allParagraphs.slice(1)
-
-        contentParagraphs.forEach((p) => {
-          dd.appendChild(p.cloneNode(true))
+        Array.from(item.childNodes).forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) return
+          if (dateTitleFromParagraph && node === allParagraphs[0]) return
+          dd.appendChild(node.cloneNode(true))
         })
 
         // Add DT and DD to the definition list

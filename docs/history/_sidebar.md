@@ -8,6 +8,9 @@
 
 #### Menu
 
+- [<i data-lucide="hourglass"></i> Pre Digital](/history/pre.md)
+    - Computing before the invention of the digital computer
+
 - [<i data-lucide="swords"></i> 1940s <em>WWII</em>](/history/1940s.md)
     - The first programmable, digital computers
 
@@ -34,5 +37,8 @@
 
 - [<i data-lucide="brain"></i> 2020s <em>LLMs and AI</em>](/history/2020s.md)
     - The rise of Large Language Models (LLMs) and AI
+
+- [<i data-lucide="telescope"></i> The Future](/history/future.md)
+    - What might computing look like in the future?
 
 

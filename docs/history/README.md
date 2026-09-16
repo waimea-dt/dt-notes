@@ -14,6 +14,16 @@ Back in the 19th Century, people had created mechanical calculating devices. How
 
 <menu>
 
+### Pre Digital
+
+<i data-lucide="hourglass"></i>
+
+[Link](/history/pre.md)
+
+How were computations done before the creation of digital computers?
+
+---
+
 ### 1940s (WWII)
 
 <i data-lucide="swords"></i>
@@ -101,6 +111,16 @@ The app revolution saw the rise of 'cloud' computing, and data became big busine
 [Link](/history/2020s.md)
 
 Large Language Models and AI radically changed how we work with computers
+
+---
+
+### The Future
+
+<i data-lucide="telescope"></i>
+
+[Link](/history/future.md)
+
+What might computing look like in the future?
 
 </menu>
 

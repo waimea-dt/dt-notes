@@ -362,6 +362,9 @@
         display: block;
         margin: var(--margin-block) auto;
 
+        &:first-child { margin-top: 0; }
+        &:last-child { margin-bottom: 0; }
+
         @container (min-width: 640px) {
             max-width: 90%;
         }
