@@ -44,10 +44,12 @@
   function markSpeechMediaNoZoom(media) {
     if (media.matches && media.matches('img, svg')) {
       media.classList.add('no-zoom')
+      media.dataset.noZoom = 'true'
     }
 
     media.querySelectorAll('img, svg').forEach((element) => {
       element.classList.add('no-zoom')
+      element.dataset.noZoom = 'true'
     })
   }
 
