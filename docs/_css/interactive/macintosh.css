@@ -100,9 +100,9 @@
 
     .mac-chat-pc-content {
         padding-bottom: 1em;
-        
+
         img {
-            flex: 3 1 10em;
+            flex: 3 1 8em;
             width: 100%;
             margin-block: 0 !important;
 
@@ -115,7 +115,7 @@
         }
 
         ul {
-            flex: 3 1 10em;
+            flex: 4 1 10em;
             margin-bottom: 0.5em;
         }
     }

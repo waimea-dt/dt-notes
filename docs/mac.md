@@ -437,15 +437,7 @@
             `(((@)-(@)))  I   `,
             `())  L  (()  SEE `,
             ` )(\\ - /)(   YOU!`,
-            ` ())\`-\`(()       `,
-        ],
-        [
-            `FOR YOU   ,       `,
-            `         ()    /) `,
-            ` ----.---'----(  )`,
-            `      \\        \\) `,
-            `      ()          `,
-            `       \`          `,
+            ` ())\`-'(()       `,
         ],
         [
             `ZOOM! --- __@     __~@  `,
@@ -558,7 +550,13 @@
         `|___/_\\`,
     ]
 
-    let name = 'Human'
+    //==========================================================
+
+    const shuffledIndexes = new Map([
+        ['jokes', { indexes: createShuffledIndexes(jokes.length),    position: 0 }],
+        ['art',   { indexes: createShuffledIndexes(asciiArt.length), position: 0 }],
+        ['facts', { indexes: createShuffledIndexes(facts.length),    position: 0 }],
+    ])
 
     const createHangman = () => ({
         status: HANGMAN_STATUS.IDLE,
@@ -571,11 +569,36 @@
 
     let hangman = createHangman()
 
+    let name = 'Human'
+
     setTimeout(showBoot, BOOT_DELAY)
+
+    //==========================================================
 
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
     const randomItem = arr => arr[Math.floor(Math.random() * arr.length)]
+
+    function createShuffledIndexes(length) {
+        const indexes = Array.from({ length }, (_, index) => index)
+
+        // Fisher-Yates shuffle algorithm
+        for (let index = indexes.length - 1; index > 0; index--) {
+            const swapIndex = Math.floor(Math.random() * (index + 1))
+            ;[indexes[index], indexes[swapIndex]] = [indexes[swapIndex], indexes[index]]
+        }
+
+        return indexes
+    }
+
+    function nextRandomItem(key, items) {
+        const state = shuffledIndexes.get(key)
+        if (!state) return randomItem(items)
+
+        const index = state.indexes[state.position]
+        state.position = (state.position + 1) % state.indexes.length
+        return items[index]
+    }
 
     const escapeHtml = text => text.replace(/[&<>"']/g, character => ({
         '&': '&amp;',
@@ -658,10 +681,13 @@
             `<div class="mac-chat-centred-screen">
                 <img
                     class="no-zoom mac-chat-boot-icon"
-                    src="./_assets/macs/happy-mac-icon.png"
+                    src="./_assets/macs/macintosh-happy-icon.webp"
                 >
             </div>`,
         ])
+
+        const chime = new Audio('./_assets/macs/macintosh-chime.wav')
+        chime.play()
 
         setTimeout(showSmile, SMILE_DELAY)
     }
@@ -690,7 +716,7 @@
                 <li><i data-lucide="cpu"></i> <strong>8 MHz</strong> CPU (single core)
                 <li><i data-lucide="memory-stick"></i> <strong>128 kB</strong> RAM
                 <li><i data-lucide="save"></i> <strong>400 kB</strong> 3.5inch floppy (OS / storage)
-                <li><i data-lucide="square-square"></i> <strong>9" greyscale</strong> display (512×342 pixels)
+                <li><i data-lucide="square-square"></i> <strong>9" greyscale</strong> display (512 × 342 pixels)
                 <li><i data-lucide="app-window"></i> <strong>Advanced GUI</strong> (graphical user interface)
                 <li><i data-lucide="mouse-pointer"></i> <strong>Mouse</strong> to work with the GUI (one button)
             </ul>`,
@@ -749,7 +775,7 @@
     }
 
     async function showJoke() {
-        const joke = randomItem(jokes)
+        const joke = nextRandomItem('jokes', jokes)
         const laugh = randomItem(laughs)
 
         await showTextPage([
@@ -763,7 +789,7 @@
     }
 
     async function showArt() {
-        const art = randomItem(asciiArt).join('\n')
+        const art = escapeHtml(nextRandomItem('art', asciiArt).join('\n'))
 
         await showTextPage([
             `<h1>Check out this art, ${escapeHtml(name)}...</h1>`,
@@ -775,7 +801,7 @@
     }
 
     async function showFact() {
-        const fact = randomItem(facts)
+        const fact = nextRandomItem('facts', facts)
         const comment = randomItem(comments)
 
         await showTextPage([
@@ -826,7 +852,7 @@
                 <button id="back">Back</button>
             </div>
             <div class="mac-chat-pc-content">
-                <img src="./_assets/macs/ibm-pc.png">
+                <img src="./_assets/macs/ibm-pc.webp">
                 <ul>
                     <li><i data-lucide="cpu"></i> 4.77 MHz CPU
                     <li><i data-lucide="memory-stick"></i> 128kB RAM
