@@ -17,7 +17,7 @@
     const ITEM_SIZE_MAX = 8
     const SPEED_FOR_MAX_SIZE = 8      // pixels per ms
     const SPEED_FOR_MAX_SPREAD = 8    // pixels per ms
-    const SPEED_THRESHOLD = 4         // Low threshold to drop static ticks (px/ms)
+    const SPEED_THRESHOLD = 1         // Low threshold to drop static ticks (px/ms)
     const SPEED_SCALING = 50          // scale px/ms for CSS transform
     const SIZE_SMOOTHING = 0.1
     const SPREAD_SMOOTHING = 0.1

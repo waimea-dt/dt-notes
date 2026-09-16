@@ -256,7 +256,7 @@
         max-width: 30em;
         aspect-ratio: 1212.377 / 1597;
 
-        &:only-of-type:has(+ script) { max-width: 50rem; }
+        &:only-of-type:has(+ script) { max-width: 48rem; }
 
         .computer-screen-content {
             top: 14.6%;
