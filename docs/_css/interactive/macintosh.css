@@ -1,5 +1,19 @@
+.markdown-section .home-mac {
+    --home-mac-easing: linear(
+        0, 1.114 8.5%, 1.296, 1.37 12.9%, 1.364, 1.315 16.2%, 0.941 24%, 0.891,
+        0.869 27.8%, 0.882 30.7%, 1.012 38.3%, 1.046 42.7%, 1.042 45.7%, 0.996 53.3%,
+        0.984 57.5%, 1.006 72.2%, 1
+    );
+
+    transition: transform 800ms var(--home-mac-easing);
+
+    &:hover {
+        transform: rotate(3deg);
+    }
+}
+
 /* Macintosh chat screen */
-.macintosh-chat {
+.markdown-section .macintosh-chat {
     --mac-chat-border-color: #111;
     --mac-chat-panel-bg: #fff3;
 

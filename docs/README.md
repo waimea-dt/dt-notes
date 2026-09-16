@@ -2,7 +2,7 @@
 
 <speak>
 
-[![Mac](/_assets/macs/macintosh-happy.svg)](/mac.md)
+[![Mac](/_assets/macs/macintosh-happy.svg ':class=home-mac')](/mac.md)
 
 **Hello[,](/_tests/) Human!**
 
