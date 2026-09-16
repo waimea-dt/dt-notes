@@ -889,6 +889,12 @@
             hangman.feedback = ''
         }
 
+        let controlHTML = '<button id="back">Back</button>'
+
+        if (hangman.status === HANGMAN_STATUS.PLAYING) {
+            controlHTML = '<span>Guess <input type="text" size="1" id="guess"></span>' + controlHTML
+        }
+
         if (hangman.status === HANGMAN_STATUS.WON) {
             promptText += '<p><i data-lucide="trophy"></i> <strong>You guessed the word!</strong>'
             hangmanStage = hangmanWin.join('\n')
@@ -912,8 +918,7 @@
             </div>`,
             `<h1 class="mac-chat-hangman-word">${hangmanText}</h1>`,
             `<div class="mac-chat-controls">
-                <span>Guess <input type="text" size="1" id="guess"></span>
-                <button id="back">Back</button>
+                ${controlHTML}
             </div>`,
         ])
 
