@@ -23,12 +23,20 @@
 
 ## Full Image Editors
 
+- [Graphite](https://grahite.art/)
+    - **Recommended**
+    - **Online**
+    - **Free**
+    - Amazing vector graphic editor
+    - No installation needed
+    - Free and open-source
+
 - [Photopea](https://www.photopea.com/)
     - **Recommended**
     - **Online**
+    - **Free**
     - Similar to Photoshop
     - No installation needed
-    - Free
 
 - [Krita](https://krita.org/)
     - **Free**
