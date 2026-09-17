@@ -26,7 +26,7 @@ Before the invention of the first digital computers in the 1940s, people had cre
 
     <captioned>
 
-    ![](./_assets/pre/ada-lovelace.png)
+    ![](./_assets/pre/ada-lovelace.jpg)
 
     Ada Lovelace, age 28
 

@@ -34,7 +34,7 @@ World War II drove the development and creation of digital computers
 
 ---
 
-### 1950s (Cold War)
+### 1950s (Post-War)
 
 <i data-lucide="briefcase-business"></i>
 

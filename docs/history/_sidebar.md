@@ -14,8 +14,8 @@
 - [<i data-lucide="swords"></i> 1940s <em>WWII</em>](/history/1940s.md)
     - The first programmable, digital computers
 
-- [<i data-lucide="briefcase-business"></i> 1950s <em>The Cold War</em>](/history/1950s.md)
-    - The Cold War begins, and first commercial use of computers
+- [<i data-lucide="briefcase-business"></i> 1950s <em>Post-War Boom</em>](/history/1950s.md)
+    - New programming languages and commercial use of computers
 
 - [<i data-lucide="rocket"></i> 1960s <em>The Space Race</em>](/history/1960s.md)
     - The Space Race and the rise of the mainframe computer
