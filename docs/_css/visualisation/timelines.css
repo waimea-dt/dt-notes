@@ -56,6 +56,7 @@
     /* Timeline content */
 
     dd {
+        width: 100%;
         margin: 0 0 0 calc((1.5em - var(--timeline-border-width)) / 2);
         padding: 0.5em 0 2em 2em;
 
@@ -67,7 +68,7 @@
             padding-bottom: 0;
         }
 
-        dd:last-child:empty {
+        &:last-child:empty {
             padding-top: 0;
         }
 
@@ -75,11 +76,11 @@
             border-left: var(--timeline-border-width) solid var(--timeline-line-color);
         }
 
-        > :first-child {
+        :first-child {
             margin-top: 0;
         }
 
-        > :last-child {
+        :last-child {
             margin-bottom: 0;
         }
 
@@ -89,14 +90,18 @@
             gap: var(--gap);
             align-items: flex-start;
 
-            >* {
+            > * {
                 margin-block: 0;
+            }
+
+            > :first-child {
                 flex: 1 1 10rem;
             }
 
             :is(svg, img, figure) {
                 width: 100%;
                 max-width: var(--timeline-max-image-width);
+                margin-inline: 0;
             }
         }
     }
