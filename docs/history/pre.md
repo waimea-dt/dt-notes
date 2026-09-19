@@ -37,7 +37,7 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
 
 <timeline>
 
-- 1822: The Difference and Analytical Engines
+- 1822-37: The Difference and Analytical Engines
 
     English mathematician **Charles Babbage** conceived of steam-driven machines that could calculate tables of numbers. He never completed the full machines, but the designs introduced ideas that would later appear in programmable computers.
 
@@ -65,13 +65,9 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
 
 - 1890: Hollerith's Punched-Card System
 
-    <div>
-
-     **Herman Hollerith** designed a **punched-card** system to process the 1880 United States census. Data was recorded as holes in stacks of cards, which were fed into tabulating machines to be processed. The system completed the work in only three years, seven year quicker than previously.
+     **Herman Hollerith** designed a **punched-card** system to process the 1890 United States census. Data was recorded as holes in stacks of cards, which were fed into tabulating machines to be processed. The system completed the work in only three years, seven year quicker than previously.
 
      Punched cards became a standard way to store and process data into the digital computer era. Hollerith's company eventually became **IBM**, one of the largest computer companies of the 20th Century.
-
-    </div>
 
     <captioned>
 
