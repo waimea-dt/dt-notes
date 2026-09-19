@@ -1,5 +1,22 @@
 # Computing Before Digital Computers
 
+<pagination>
+
+- Early
+- [1940s](/history/1940s.md)
+- [1950s](/history/1950s.md)
+- [1960s](/history/1960s.md)
+- [1970s](/history/1970s.md)
+- [1980s](/history/1980s.md)
+- [1990s](/history/1990s.md)
+- [2000s](/history/2000s.md)
+- [2010s](/history/2010s.md)
+- [2020s](/history/2020s.md)
+- [Future](/history/future.md)
+
+</pagination>
+
+
 <aside narrow>
 
   <captioned>
@@ -124,3 +141,21 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
     </captioned>
 
 </timeline>
+
+
+<pagination class="bottom">
+
+- Early
+- [1940s](/history/1940s.md)
+- [1950s](/history/1950s.md)
+- [1960s](/history/1960s.md)
+- [1970s](/history/1970s.md)
+- [1980s](/history/1980s.md)
+- [1990s](/history/1990s.md)
+- [2000s](/history/2000s.md)
+- [2010s](/history/2010s.md)
+- [2020s](/history/2020s.md)
+- [Future](/history/future.md)
+
+</pagination>
+

@@ -12,7 +12,7 @@
     --timeline-line-color: var(--theme-color);
     --timeline-marker-color: var(--theme-color);
     --timeline-marker-bg-color: var(--theme-color-2);
-    --timeline-marker-hi-color: var(--theme-color-6);
+    --timeline-marker-hi-color: var(--theme-color-4);
 
     --timeline-date-fg-color: var(--secondary-color-5);
     --timeline-title-fg-color: var(--theme-color-5);
@@ -124,6 +124,6 @@
     dt:hover .marker,
     dt:has(+ dd:hover) .marker {
         background-color: var(--timeline-marker-hi-color);
-        border-color: var(--timeline-marker-hi-color);
+        /* border-color: var(--timeline-marker-hi-color); */
     }
 }

@@ -1,5 +1,21 @@
 # The Future of Computing
 
+<pagination>
+
+- [Early](/history/pre.md)
+- [1940s](/history/1940s.md)
+- [1950s](/history/1950s.md)
+- [1960s](/history/1960s.md)
+- [1970s](/history/1970s.md)
+- [1980s](/history/1980s.md)
+- [1990s](/history/1990s.md)
+- [2000s](/history/2000s.md)
+- [2010s](/history/2010s.md)
+- [2020s](/history/2020s.md)
+- Future
+
+</pagination>
+
 Looking into the future, developments in quantum computing, specialised AI hardware, new storage methods and richer interfaces may enable computers to solve different problems and act in more complex ways. The timing is uncertain: some changes are already emerging, while others remain research goals.
 
 Natural-language interaction will become more common, but hand-written code is unlikely to disappear completely. People will still need to define goals, check results, design systems and maintain software.
@@ -130,4 +146,22 @@ I'm going to miss my human programmers, hand-crafting my beautiful code...
     </captioned>
 
 </timeline>
+
+
+
+<pagination class="bottom">
+
+- [Early](/history/pre.md)
+- [1940s](/history/1940s.md)
+- [1950s](/history/1950s.md)
+- [1960s](/history/1960s.md)
+- [1970s](/history/1970s.md)
+- [1980s](/history/1980s.md)
+- [1990s](/history/1990s.md)
+- [2000s](/history/2000s.md)
+- [2010s](/history/2010s.md)
+- [2020s](/history/2020s.md)
+- Future
+
+</pagination>
 
