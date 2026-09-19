@@ -10,6 +10,13 @@
     --pagination-link-color: var(--secondary-color-5);
     --pagination-current-color: var(--theme-color);
 
+    --pagination-link-angle: -60deg;
+    --pagination-link-angle-wide: -45deg;
+    --pagination-link-bottom-angle: 60deg;
+    --pagination-link-bottom-angle-wide: 45deg;
+
+    --pagination-dot-transform: translateX(-0.5em) translateY(0.75em);
+
 
     container-type: inline-size;
     display: block;
@@ -54,7 +61,7 @@
             width: var(--pagination-dot-size);
             height: 1em;
             padding-left: var(--pagination-dot-size);
-            transform: rotate(-60deg);
+            transform: rotate(var(--pagination-link-angle));
             transform-origin: left;
             transition: all 250ms;
 
@@ -71,7 +78,7 @@
             &::before {
                 content: "";
                 display: inline-block;
-                transform: translateX(-0.5em) translateY(0.75em);
+                transform: var(--pagination-dot-transform);
                 width: var(--pagination-dot-size);
                 height: var(--pagination-dot-size);
                 border-radius: var(--pagination-dot-size);
@@ -79,8 +86,12 @@
                 background-color: var(--pagination-dot-color);
             }
 
-            &:hover::before {
-                background-color: var(--pagination-current-color);
+            &:hover {
+                transform: rotate(var(--pagination-link-angle)) scale(1.15);
+
+                &::before {
+                    background-color: var(--pagination-current-color);
+                }
             }
 
             &:not(:has(a))::before {
@@ -88,7 +99,7 @@
             }
 
             @container (min-width: 600px) {
-                transform: rotate(-45deg);
+                transform: rotate(var(--pagination-link-angle-wide));
             }
         }
     }
@@ -106,15 +117,9 @@
             }
 
             li {
-                transform: rotate(60deg);
-
-                &::before {
-                    transform: translateX(-0.5em) translateY(-0.5em);
-                }
-
-                @container (min-width: 600px) {
-                    transform: rotate(45deg);
-                }
+                --pagination-link-angle: var(--pagination-link-bottom-angle);
+                --pagination-link-angle-wide: var(--pagination-link-bottom-angle-wide);
+                --pagination-dot-transform: translateX(-0.5em) translateY(-0.5em);
             }
         }
     }
