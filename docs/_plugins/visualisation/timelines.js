@@ -101,14 +101,25 @@
           dt.appendChild(titleSpan)
         }
 
-        // Preserve figures and other custom blocks in the event content.
+        // Group text and trailing figures into separate flex items.
         const dd = document.createElement('dd')
+        const content = document.createElement('div')
+        const figures = document.createElement('div')
 
         Array.from(item.childNodes).forEach((node) => {
           if (node.nodeType === Node.TEXT_NODE) return
           if (dateTitleFromParagraph && node === allParagraphs[0]) return
-          dd.appendChild(node.cloneNode(true))
+
+          const clone = node.cloneNode(true)
+          const isFigure = clone.nodeType === Node.ELEMENT_NODE &&
+            ['FIGURE', 'CAPTIONED'].includes(clone.nodeName)
+
+          const target = isFigure ? figures : content
+          target.appendChild(clone)
         })
+
+        if (content.hasChildNodes()) dd.appendChild(content)
+        if (figures.hasChildNodes()) dd.appendChild(figures)
 
         // Add DT and DD to the definition list
         dl.appendChild(dt)
