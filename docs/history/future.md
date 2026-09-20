@@ -18,7 +18,7 @@
 
 Looking into the future, developments in quantum computing, specialised AI hardware, new storage methods and richer interfaces may enable computers to solve different problems and act in more complex ways. The timing is uncertain: some changes are already emerging, while others remain research goals.
 
-Natural-language interaction will become more common, but hand-written code is unlikely to disappear completely. People will still need to define goals, check results, design systems and maintain software.
+Natural-language interaction will become more common, but hand-written code is unlikely to disappear completely. People will still need to define goals, check results, design systems and maintain software. The future also depends on choices about energy use, privacy, accessibility, safety and who controls data.
 
 <speak>
 
@@ -29,7 +29,7 @@ I'm going to miss my human programmers, hand-crafting my beautiful code...
 </speak>
 
 
-## Key Hardware Changes
+## Possible Hardware Changes
 
 <timeline>
 
@@ -49,7 +49,7 @@ I'm going to miss my human programmers, hand-crafting my beautiful code...
 
     </captioned>
 
-- 2030s and beyond: Neuromorphic circuitry
+- Possible future: Neuromorphic circuitry
 
     Neuromorphic chips use networks of artificial neurons and event-based signals rather than processing every pixel or sensor reading continuously. This could let speech, vision and robotics systems run locally with much less power, although general-purpose CPUs and GPUs will remain important.
 
@@ -62,7 +62,7 @@ I'm going to miss my human programmers, hand-crafting my beautiful code...
     </captioned>
 
 
-- 2030s and beyond: Optical processors
+- Possible future: Optical processors
 
     Photonic processors use light to move or transform data, especially for matrix operations in AI systems. They may reduce the energy and delay involved in moving data, but they will not eliminate heat or replace electronic memory and control circuits entirely.
 
@@ -74,7 +74,7 @@ I'm going to miss my human programmers, hand-crafting my beautiful code...
 
     </captioned>
 
-- 2030s and beyond: Biological data storage
+- Possible future: Biological data storage
 
     Synthetic DNA can store data at extremely high theoretical densities, potentially reaching petabytes or more in a tiny mass. Slow writing, reading, sequencing errors and the cost of laboratory equipment mean it is most likely to suit long-term archives rather than everyday storage.
 
@@ -86,14 +86,14 @@ I'm going to miss my human programmers, hand-crafting my beautiful code...
 
     </captioned>
 
-- 2030s and beyond: Advanced carbon electronics
+- Possible future: Advanced carbon electronics
 
     Graphene and carbon nanotubes may improve transistors, sensors and chip interconnects where silicon is reaching practical limits. Manufacturing reliable large-scale carbon electronics remains difficult, so they are more likely to complement silicon than replace it suddenly.
 
 </timeline>
 
 
-## Key Software Changes
+## Possible Software Changes
 
 <timeline>
 
@@ -133,7 +133,7 @@ I'm going to miss my human programmers, hand-crafting my beautiful code...
 
     </captioned>
 
-- 2030s and beyond: Spatial operating systems
+- Possible future: Spatial operating systems
 
     Operating systems may move beyond flat screens into three-dimensional environments for augmented and virtual reality. Useful spatial systems will need accurate tracking, comfortable displays, accessible interaction methods and strong privacy controls for cameras and sensors.
 
@@ -142,6 +142,86 @@ I'm going to miss my human programmers, hand-crafting my beautiful code...
     ![](../_assets/future/spatial-computing.jpg)
 
     Spatial-computing interface
+
+    </captioned>
+
+</timeline>
+
+
+## Possible Social Changes
+
+<timeline>
+
+
+- Possible future: AI Safety and Accountability
+
+    Future AI systems may make decisions about work, education, health and public services. People will need ways to test for unfair bias, explain important decisions, challenge mistakes and identify who is responsible when an automated system causes harm.
+
+    <captioned>
+
+    ![](../_assets/future/PLACEHOLDER.jpg)
+
+    People making choices about future technology
+
+    </captioned>
+
+- Possible future: Digital Identity and Privacy
+
+    Digital identity systems may make it easier to prove who we are online, but they could also allow organisations to track people across many services. Future systems will need strong security, meaningful consent and ways to use essential services without surrendering unnecessary personal data.
+
+    <captioned>
+
+    ![](../_assets/future/PLACEHOLDER.jpg)
+
+    Identity and privacy in connected systems
+
+    </captioned>
+
+- Possible future: Accessible and Inclusive Computing
+
+    Computers should work for people with different bodies, languages, abilities and ways of communicating. Voice control, captions, screen readers, adaptable interfaces and affordable access may become standard, but only if disabled people and diverse communities help design the systems.
+
+    <captioned>
+
+    ![](../_assets/future/PLACEHOLDER.jpg)
+
+    Designing technology for many users
+
+    </captioned>
+
+- Possible future: Sustainable and Repairable Hardware
+
+    Computing will need to use less energy and produce less electronic waste. Longer-lasting devices, replaceable parts, repair rights, recycling and lower-impact materials could matter as much as faster processors.
+
+    <captioned>
+
+    ![](../_assets/future/PLACEHOLDER.jpg)
+
+    Sustainable technology choices
+
+    </captioned>
+
+- Possible future: Māori Data Sovereignty
+
+    Māori data sovereignty may shape how data about Māori, whakapapa and te reo Māori is collected, stored and used. Māori communities and iwi will need meaningful control over data and AI systems that affect them, rather than being consulted only after systems are built.
+
+    <captioned>
+
+    ![](../_assets/future/PLACEHOLDER.jpg)
+
+    Māori data governance and collective rights
+
+    </captioned>
+
+- Possible future: Human-AI Collaboration
+
+    AI may handle routine searching, drafting and analysis while people set goals, bring judgement and take responsibility for decisions. Education and workplaces will need to value human creativity, relationships, critical thinking and the ability to check machine-generated results.
+
+    <captioned>
+
+    ![](../_assets/future/PLACEHOLDER.jpg)
+
+    People working with intelligent tools
 
     </captioned>
 

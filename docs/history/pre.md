@@ -37,6 +37,18 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
 
 <timeline>
 
+- 1801: Jacquard Loom
+
+    **Joseph-Marie Jacquard** developed a loom controlled by punched cards. The holes told the loom which threads to raise, allowing complex patterns to be woven automatically. The idea showed how instructions could be stored separately from a machine and changed without rebuilding it.
+
+    <captioned>
+
+    ![](./_assets/pre/PLACEHOLDER.jpg)
+
+    Punched cards used as machine instructions
+
+    </captioned>
+
 - 1822-37: The Difference and Analytical Engines
 
     English mathematician **Charles Babbage** conceived of steam-driven machines that could calculate tables of numbers. He never completed the full machines, but the designs introduced ideas that would later appear in programmable computers.
@@ -59,6 +71,19 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
     ![](./_assets/pre/ada-lovelace.jpg)
 
     Ada Lovelace, age 28
+
+    </captioned>
+
+
+- 1854: George Boole and Boolean Algebra
+
+    **George Boole** published a system of algebra for working with true and false values. His **Boolean algebra** gave later engineers a mathematical way to describe logic gates, digital circuits and computer decisions.
+
+    <captioned>
+
+    ![](./_assets/pre/PLACEHOLDER.jpg)
+
+    Boolean logic
 
     </captioned>
 
@@ -123,6 +148,18 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
 	Bush and the Differential Analyser
 
 	</captioned>
+
+- 1937: Claude Shannon's Switching Circuits
+
+    **Claude Shannon** showed that Boolean algebra could describe the behaviour of electrical switching circuits. This connected abstract logic to real hardware and helped establish the ideas used in modern digital circuit design.
+
+    <captioned>
+
+    ![](./_assets/pre/PLACEHOLDER.jpg)
+
+    Logic represented by electrical switches
+
+    </captioned>
 
 - 1936: Turing's Universal Machine
 
