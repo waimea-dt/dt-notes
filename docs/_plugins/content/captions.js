@@ -27,20 +27,28 @@
 
     captionBlocks.forEach((captionBlock) => {
       const img = captionBlock.querySelector('img')
-      if (!img) return
+      const video = captionBlock.querySelector('video')
+      if (!img && !video) return
+
+      if (video) {
+        video.style.width = "100%"
+        video.style.aspectRatio = "4/3"
+      }
+      
+      const media = img ? img : video
 
       const paragraphs = Array.from(captionBlock.querySelectorAll('p'))
-      const imgParent = img.closest('p')
+      const mediaParent = media.closest('p')
 
       const figure = document.createElement('figure')
 
-      figure.appendChild(img.cloneNode(true))
+      figure.appendChild(media.cloneNode(true))
 
       const figcaption = document.createElement('figcaption')
       let hasContent = false
 
       paragraphs.forEach((p) => {
-        if (p !== imgParent) {
+        if (p !== mediaParent) {
           const content = p.innerHTML
           if (content.trim()) {
             const div = document.createElement('div')
