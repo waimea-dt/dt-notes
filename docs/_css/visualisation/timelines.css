@@ -4,8 +4,9 @@
 
 /* Container */
 .markdown-section dl.timeline {
-    --timeline-max-width: 40rem;
+    --timeline-min-text-width:  15rem;
     --timeline-max-image-width: 12rem;
+    --timeline-max-width:       50rem;
 
     --timeline-border-width: 3px;
 
@@ -95,8 +96,17 @@
             }
 
             > :first-child {
-                flex: 1 1 10rem;
+                flex: 1 1 var(--timeline-min-text-width);
             }
+
+            /* > :last-child {
+                display: flex;
+                gap: var(--gap);
+
+                > * {
+                    margin-block: 0;
+                }
+            } */
 
             :is(svg, img, figure) {
                 width: 100%;

@@ -29,9 +29,9 @@
 
 </aside>
 
-Businesses and governments have long required calculations to be performed. For centuries, these calculations were carried out manually. The people tasked with this were known as '**computers**' - this was their job title.
+Businesses and governments have long required calculations to be performed. For centuries, these calculations were carried out **manually**. The people tasked with this were known as '**computers**' - this was their job title.
 
-During the 19th and early 20th Centuries, a whole host of clever mechanical machines were invented to help with computation, whilst other technologies and ideas were developed that would form the foundation for the development of digital computers in the 1940s.
+During the 19th and early 20th Centuries, a whole host of clever **mechanical machines** were invented to help with computation, whilst other technologies and ideas were developed that would form the **foundation** for the development of digital computers in the 1940s.
 
 ## 19th Century
 
@@ -43,9 +43,9 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
 
     <captioned>
 
-    ![](./_assets/pre/PLACEHOLDER.jpg)
+    ![](./_assets/pre/jacquard-loom.jpg)
 
-    Punched cards used as machine instructions
+    Punched cards used as weaving loom instructions
 
     </captioned>
 
@@ -75,15 +75,15 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
     </captioned>
 
 
-- 1854: George Boole and Boolean Algebra
+- 1854: Boolean Algebra
 
-    **George Boole** published a system of algebra for working with true and false values. His **Boolean algebra** gave later engineers a mathematical way to describe logic gates, digital circuits and computer decisions.
+    **George Boole** published a system of **algebra** for working with **true and false values**. Although little use was made of this during his lifetime, his **Boolean algebra** gave later engineers a mathematical way to describe logic gates, digital circuits and computer decisions.
 
     <captioned>
 
-    ![](./_assets/pre/PLACEHOLDER.jpg)
+    ![](./_assets/pre/boole.jpg)
 
-    Boolean logic
+    George Boole and his logical 'Laws of Thought'
 
     </captioned>
 
@@ -151,13 +151,13 @@ During the 19th and early 20th Centuries, a whole host of clever mechanical mach
 
 - 1937: Claude Shannon's Switching Circuits
 
-    **Claude Shannon** showed that Boolean algebra could describe the behaviour of electrical switching circuits. This connected abstract logic to real hardware and helped establish the ideas used in modern digital circuit design.
+    **Claude Shannon** showed that **Boolean algebra** could describe the behaviour of **electrical switching circuits**. He connected abstract logic to real hardware and helped establish many of the ideas used in modern digital circuit design.
 
     <captioned>
 
-    ![](./_assets/pre/PLACEHOLDER.jpg)
+    ![](./_assets/pre/shannon.jpg)
 
-    Logic represented by electrical switches
+    Clause Shannon
 
     </captioned>
 
