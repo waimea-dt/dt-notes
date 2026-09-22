@@ -90,7 +90,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
 - 1890: Hollerith's Punched-Card System
 
-     **Herman Hollerith** designed a **punched-card** system to process the 1890 United States census. Data was recorded as holes in stacks of cards, which were fed into tabulating machines to be processed. The system completed the work in only three years, seven year quicker than previously.
+     **Herman Hollerith** designed a **punched-card** system to process the 1890 United States census. Data was recorded as holes in stacks of cards, which were fed into tabulating machines to be processed. The system completed the work in only three years, seven years quicker than previously.
 
      Punched cards became a standard way to store and process data into the digital computer era. Hollerith's company eventually became **IBM**, one of the largest computer companies of the 20th Century.
 
@@ -157,7 +157,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     ![](./_assets/pre/shannon.jpg)
 
-    Clause Shannon
+    Claude Shannon
 
     </captioned>
 

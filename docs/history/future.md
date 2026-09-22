@@ -16,13 +16,13 @@
 
 </pagination>
 
-Looking into the future, developments in quantum computing, specialised AI hardware, new storage methods and richer interfaces may enable computers to solve different problems and act in more complex ways. The timing is uncertain: some changes are already emerging, while others are in the research stage.
+Looking into the future, developments in **quantum computing**, specialised **AI hardware**, new **data storage** methods and richer **user interfaces** may enable computers to solve different problems and act in more complex ways. The timing is uncertain: some changes are already emerging, while others are in the research stage.
 
 <speak>
 
 ![Mac](../_assets/macs/macintosh-sad.svg)
 
-I wonder what's coming in the future. I hope humans are still around!
+I wonder what's coming in the future... I hope we don't end up **destroying humanity**!
 
 </speak>
 
@@ -39,15 +39,20 @@ I wonder what's coming in the future. I hope humans are still around!
 
     ![](./_assets/future/quantum.jpg)
 
-    A quantum-computing experiment
+    An experimental quantum computer
 
     </captioned>
 
+
+- Near Term: Robotics and Autonomous Systems
+
+    **Robots** combine sensors, processors, software and motors to observe the world and act within it. Future robotic system, **combined with AI**, will be able to learn new tasks, move safely through changing environments and work alongside people in homes, hospitals, farms and factories.
+
     <captioned>
 
-    ![](./_assets/future/dwave-one.webp)
+    ![](./_assets/future/robot.jpg)
 
-    A commercial quantum computer
+    Autonomous robots
 
     </captioned>
 
@@ -103,7 +108,6 @@ I wonder what's coming in the future. I hope humans are still around!
 
     </captioned>
 
-
 </timeline>
 
 
@@ -147,6 +151,7 @@ I wonder what's coming in the future. I hope humans are still around!
 
     </captioned>
 
+
 - Possible Future: Spatial Operating Systems
 
     Operating systems may move beyond flat screens into **three-dimensional** environments for **augmented and virtual reality**. Useful spatial systems will need accurate tracking, comfortable displays, accessible interaction methods and strong privacy controls for cameras and sensors.
@@ -166,19 +171,7 @@ I wonder what's coming in the future. I hope humans are still around!
 
 <timeline>
 
-- Possible Future: Human-AI Collaboration
-
-    **AI may handle routine tasks**: searching, drafting and analysis while **people set goals, bring judgement and take responsibility** for decisions. Education and workplaces will need to value human creativity, relationships, critical thinking and the ability to check machine-generated results.
-
-    <captioned>
-
-    ![](./_assets/future/ai-collab.jpg)
-
-    People working with intelligent tools
-
-    </captioned>
-
-- Possible Future: AI Safety and Accountability
+- Near Term: AI Safety and Accountability
 
     Future AI systems may make **decisions about work, education, health and public services**. People will need ways to test for unfair bias, explain important decisions, challenge mistakes and identify who is responsible when an automated system causes harm.
 
@@ -190,7 +183,8 @@ I wonder what's coming in the future. I hope humans are still around!
 
     </captioned>
 
-- Possible Future: Digital Identity and Privacy
+
+- Near Term: Digital Identity and Privacy
 
     **Digital identity** systems may make it easier to prove who we are online, but they could also allow organisations to track people across many services, raising **privacy** concerns. Future systems will need strong **security**, meaningful **consent** and ways to use essential services without surrendering **unnecessary personal data**.
 
@@ -201,6 +195,20 @@ I wonder what's coming in the future. I hope humans are still around!
     Identity and privacy in connected systems
 
     </captioned>
+
+
+- Near Term: Human-AI Collaboration
+
+    **AI may handle routine tasks**: searching, drafting and analysis while **people set goals, bring judgement and take responsibility** for decisions. Education and workplaces will need to value human creativity, relationships, critical thinking and the ability to check machine-generated results.
+
+    <captioned>
+
+    ![](./_assets/future/ai-collab.jpg)
+
+    People working with intelligent tools
+
+    </captioned>
+
 
 - Possible Future: Sustainable and Repairable Hardware
 
