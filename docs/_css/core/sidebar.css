@@ -3,7 +3,14 @@
  */
 
 :root {
-    --sidebar-width:                  400px;
+    --sidebar-width-mobile:  280px;
+    --sidebar-width-desktop: 400px;
+
+    --sidebar-width: var(--sidebar-width-mobile);
+
+    @media screen and (min-width: 480px) {
+        --sidebar-width: var(--sidebar-width-desktop);
+    }
 }
 
 /* Fix mobile toggle button sizing */
