@@ -1,6 +1,6 @@
 # Game Asset Libraries
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Game Art and Sprites
 

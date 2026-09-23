@@ -1,6 +1,6 @@
 # Source Code Management & Hosting
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Source Code Management
 

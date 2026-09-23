@@ -1,6 +1,6 @@
 # Online Code Editors and Playgrounds
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Multiple Languages
 

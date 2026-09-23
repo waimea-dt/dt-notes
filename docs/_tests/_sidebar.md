@@ -38,7 +38,7 @@
     - [Details](/_tests/details.md)
     - [Speech](/_tests/speech.md)
     - [Cards](/_tests/cards.md)
-    - [Tool Lists](/_tests/tool-lists.md)
+    - [Recommendations](/_tests/recommendations.md)
     - [Callouts](/_tests/callouts.md)
     - [Tables](/_tests/tables.md)
     - [Unicode Lucide](/_tests/unicode-lucide.md)

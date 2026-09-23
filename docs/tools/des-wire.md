@@ -1,6 +1,6 @@
 # Wireframing Layout Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Full-Site / Multi-Page Design
 

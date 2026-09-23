@@ -1,8 +1,10 @@
 /**
- * tool-lists.js - Enhances lists following marked headings with semantic classes.
+ * recommendations.js - Enhances lists following marked headings with semantic classes.
  *
- * Identifies tool/resource lists marked with <!-- tool-lists --> comment at page top.
- * When marker is found, ALL h2 headings and their following ULs are styled as tool lists.
+ * Identifies recommendation lists marked with <!-- recommendations --> comment at page top.
+ * When marker is found, ALL h2 headings and their following ULs are styled as recommendation lists.
+ * Additional words in the marker become classes on each generated UL, for example
+ * <!-- recommendations media --> adds both "recommendations" and "media".
  * Adds classes to list items based on metadata found in sub-lists, and renders a
  * matching Lucide icon inside a .icons div for non-recommended metadata:
  *   - **Recommended** → adds "recommended" class (no icon, uses a star badge in CSS)
@@ -11,7 +13,7 @@
  *
  * Usage:
  *   # Page Title
- *   <!-- tool-lists -->
+ *   <!-- recommendations media -->
  *
  *   ## Python IDEs
  *   - [Thonny](https://thonny.org/)
@@ -51,14 +53,14 @@
         return root && typeof root.querySelectorAll === 'function' ? root : document
     }
 
-    function processToolLists(root) {
+    function processRecommendations(root) {
         const scope = resolveScope(root)
         const container = scope === document ? document.querySelector('.markdown-section') : scope
 
         if (!container) return
 
-        // Check if page has <!-- tool-lists --> marker anywhere near the top
-        let hasToolListsMarker = false
+        // Check if page has a recommendations marker anywhere near the top
+        let markerClasses = null
         const walker = document.createTreeWalker(
             container,
             NodeFilter.SHOW_COMMENT,
@@ -68,22 +70,23 @@
 
         let commentNode
         while ((commentNode = walker.nextNode())) {
-            if (commentNode.nodeValue.trim() === 'tool-lists') {
-                hasToolListsMarker = true
+            const markerParts = commentNode.nodeValue.trim().split(/\s+/)
+            if (markerParts[0] === 'recommendations') {
+                markerClasses = markerParts.slice(1)
                 break
             }
             // Stop searching after first h2 (marker should be before content)
             if (commentNode.nextElementSibling?.tagName === 'H2') break
         }
 
-        if (!hasToolListsMarker) return
+        if (!markerClasses) return
 
         // Process ALL h2 headings in the page
         const selector = scope === document ? '.markdown-section h2' : 'h2'
         const headings = container.querySelectorAll(selector)
 
         headings.forEach(heading => {
-            heading.classList.add('tools-heading')
+            heading.classList.add('recommendations-heading')
 
             // Find the next sibling UL
             let nextEl = heading.nextElementSibling
@@ -93,12 +96,12 @@
 
             if (!nextEl || nextEl.tagName !== 'UL') return
 
-            // Mark this as a tool list
-            const toolList = nextEl
-            toolList.classList.add('tool-list')
+            // Mark this as a recommendation list and apply any marker variants.
+            const recommendationList = nextEl
+            recommendationList.classList.add('recommendations', ...markerClasses)
 
             // Process each top-level LI
-            const listItems = Array.from(toolList.children).filter(el => el.tagName === 'LI')
+            const listItems = Array.from(recommendationList.children).filter(el => el.tagName === 'LI')
 
             listItems.forEach(li => {
                 // Find nested UL within this LI (sub-list with metadata)
@@ -199,26 +202,26 @@
         })
     }
 
-    const docsifyToolLists = function (hook) {
+    const docsifyRecommendations = function (hook) {
         hook.doneEach(function () {
-            processToolLists()
+            processRecommendations()
         })
 
         hook.ready(function () {
             if (window.DocsifyUtils?.onSlidesRendered) {
                 window.DocsifyUtils.onSlidesRendered(function (root) {
-                    processToolLists(root)
+                    processRecommendations(root)
                 })
             }
         })
     }
 
     if (window.DocsifyUtils?.registerPlugin) {
-        window.DocsifyUtils.registerPlugin(docsifyToolLists)
+        window.DocsifyUtils.registerPlugin(docsifyRecommendations)
     } else {
         // Fallback if utils not loaded
         if (window.$docsify) {
-            window.$docsify.plugins = [].concat(docsifyToolLists, window.$docsify.plugins || [])
+            window.$docsify.plugins = [].concat(docsifyRecommendations, window.$docsify.plugins || [])
         }
     }
 })()

@@ -1,6 +1,6 @@
 # Code Editors and Integrated Development Environments (IDEs)
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## General Code Editors
 

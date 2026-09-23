@@ -1,6 +1,6 @@
 # Data Generation Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Test Data Generators
 

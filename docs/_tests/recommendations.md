@@ -1,13 +1,13 @@
-# Tool Lists Test
+# Recommendations Test
 
-Test page for the tool-lists plugin that adds semantic classes to lists of tools and resources.
+Test page for the recommendations plugin that adds semantic classes to recommendation lists.
 
 ## Usage
 
-Add `<!-- tools -->` comment before any heading that precedes a tool list:
+Add `<!-- recommendations -->` before any heading that precedes a recommendation list. Add words after `recommendations` to apply variant classes to each generated list:
 
 ```markdown
-<!-- tools -->
+<!-- recommendations -->
 ## Python IDEs
 
 - [Thonny](https://thonny.org/)
@@ -15,6 +15,8 @@ Add `<!-- tools -->` comment before any heading that precedes a tool list:
     - **Beginner friendly**
     - Simple interface
 ```
+
+For example, `<!-- recommendations media -->` adds both `.recommendations` and `.media` to each generated `ul`.
 
 ## Metadata Keywords
 
@@ -34,7 +36,7 @@ The following bold keywords are automatically converted to classes:
 
 ---
 
-<!-- tools -->
+<!-- recommendations -->
 ## Example: Code Editors
 
 - [Visual Studio Code](https://code.visualstudio.com/)
@@ -65,7 +67,7 @@ The following bold keywords are automatically converted to classes:
 
 ---
 
-<!-- tools -->
+<!-- recommendations -->
 ## Example: Python IDEs
 
 - [Thonny](https://thonny.org/)
@@ -98,7 +100,7 @@ The following bold keywords are automatically converted to classes:
 
 ---
 
-<!-- tools -->
+<!-- recommendations -->
 ## Example: Experimental Tools
 
 - [Zed Editor](https://zed.dev/)
@@ -117,7 +119,7 @@ The following bold keywords are automatically converted to classes:
 
 ---
 
-<!-- tools -->
+<!-- recommendations -->
 ## Example: Game Engines
 
 - [Unity](https://unity.com/)
@@ -158,7 +160,7 @@ The following bold keywords are automatically converted to classes:
 
 ## Regular List (no marker)
 
-This list should NOT be styled as a tool list:
+This list should NOT be styled as a recommendation list:
 
 - Regular list item
     - Sub-item one
@@ -172,7 +174,8 @@ This list should NOT be styled as a tool list:
 ## CSS Classes Reference
 
 ### List Container Classes
-- `.tool-list` - Added to UL elements following `<!-- tools -->` comments
+- `.recommendations` - Added to UL elements following `<!-- recommendations -->` comments
+- `.media` - Added when the marker uses `<!-- recommendations media -->`
 
 ### List Item Classes
 - `.has-metadata` - Added to LI elements that have metadata badges

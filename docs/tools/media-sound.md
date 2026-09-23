@@ -1,6 +1,6 @@
 # Sound Libraries
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Sound Effects
 

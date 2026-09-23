@@ -40,6 +40,10 @@
 
 <!-- - [<i data-lucide="graduation-cap"></i> DT Courses @ Waimea](/courses/) -->
 - [<i data-lucide="pocket-knife"></i> Useful Tools](/tools/)
-- [<i data-lucide="rotate-ccw-clock"></i> Computing History](/history/)
 - [<i data-lucide="book-open"></i> Glossary of Terms](/_glossary.md)
+
+---
+
+- [<i data-lucide="rotate-ccw-clock"></i> Computing History](/history/)
+- [<i data-lucide="brain"></i> Nerdery](/nerdery/)
 

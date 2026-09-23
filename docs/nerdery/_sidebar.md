@@ -1,0 +1,18 @@
+- [<i data-lucide="home"></i> Home](/)
+<i data-lucide="arrow-down"></i>
+
+- [<i data-lucide="brain"></i> Nerdery](/nerdery/)
+<i data-lucide="arrow-down"></i>
+
+<!-- -------------------------- -->
+
+#### Menu
+
+- [<i data-lucide="clapperboard"></i> Nerdy Movies](/nerdery/movies.md)
+    - Awesome movies, full of excitement and nerdy details
+
+- [<i data-lucide="book"></i> Nerdy Books](/nerdery/books.md)
+    - Books to capture you imagination and make you think
+
+- [<i data-lucide="globe"></i> Nerdy Websites](/nerdery/websites.md)
+    - Great websites that will appeal to your nerdy side

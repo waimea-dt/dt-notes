@@ -1,6 +1,6 @@
 # Database Management and Editing Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## SQLite Tools
 

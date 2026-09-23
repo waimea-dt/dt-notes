@@ -1,6 +1,6 @@
 # Pixel Art Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Online Pixel Art Editors
 

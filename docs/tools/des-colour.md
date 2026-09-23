@@ -1,6 +1,6 @@
 # Colour Palette Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Colour Applied to a Design
 

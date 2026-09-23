@@ -1,6 +1,6 @@
 # Image Editing Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Simple Single-Task Tools
 

@@ -1,6 +1,6 @@
 # Accessibility Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Vision Impairment Tools
 

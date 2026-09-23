@@ -1,6 +1,6 @@
 # Online Database Tools and Playgrounds
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## SQL Practice and Learning
 

@@ -1,6 +1,6 @@
 # Database Design and Schema Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## DB Design
 

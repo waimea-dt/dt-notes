@@ -1,6 +1,6 @@
 # Image Libraries
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Icon Collections
 

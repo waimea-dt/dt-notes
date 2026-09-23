@@ -1,6 +1,6 @@
 # Font and Text Tools
 
-<!-- tool-lists -->
+<!-- recommendations -->
 
 ## Lorem Ipsum
 
