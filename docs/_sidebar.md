@@ -45,5 +45,5 @@
 ---
 
 - [<i data-lucide="rotate-ccw-clock"></i> Computing History](/history/)
-- [<i data-lucide="brain"></i> Nerdery](/nerdery/)
+- [<i data-lucide="brain"></i> Nerdy Brain Food](/nerdery/)
 

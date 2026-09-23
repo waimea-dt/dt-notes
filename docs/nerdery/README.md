@@ -32,7 +32,7 @@ Awesome movies, full of excitement and nerdy details
 
 [Link](/nerdery/books.md)
 
-Books to capture you imagination and make you think
+Books to capture your imagination and make you think
 
 ---
 

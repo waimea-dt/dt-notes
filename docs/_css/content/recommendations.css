@@ -10,18 +10,42 @@
     --recommendations-border-high-hover:  var(--highlight-color);
     --recommendations-muted:              var(--color-mono-6);
     --recommendations-icons:              var(--color-mono-4);
-    /* --recommendations-panel-width:        calc((var(--content-max-width) - (5 * var(--gap))) / 3); */
-    --recommendations-panel-width:        18rem;
+
+    --recommendations-panel-width:        19rem;
+    --recommendations-panel-height:       10rem;
+    --recommendations-img-width:          2.5rem;
+    --recommendations-img-height:         2.5rem;
+    --recommendations-img-radius:         0;
+    --recommendations-img-border:         none;
 
     list-style: none;
     padding-left: 0;
-    display: grid;
-    gap: var(--gap);
-    grid-template-columns: repeat(auto-fit, var(--recommendations-panel-width));
+    columns: 1;
+    column-gap: var(--gap-large);
+    width: fit-content;
+    max-width: 100%;
 
-    /* grid-template-columns: 1fr;
-    @container (min-width: 35rem) { grid-template-columns: 1fr 1fr; }
-    @container (min-width: 50rem) { grid-template-columns: 1fr 1fr 1fr; } */
+    @container (min-width: 38rem) {
+        columns: 2;
+    }
+
+    @container (min-width: 57rem) {
+        columns: 3;
+    }
+
+    &.media {
+        --recommendations-panel-width:    28rem;
+        --recommendations-img-height:     12rem;
+        --recommendations-img-width:      calc(var(--recommendations-img-height) * 0.67);
+        --recommendations-img-radius:     var(--border-radius-small);
+        --recommendations-img-border:     1px solid var(--recommendations-border);
+
+        columns: 1;
+
+        @container (min-width: 57rem) {
+            columns: 2;
+        }
+    }
 
     /* Individual tool items */
     > li {
@@ -30,14 +54,20 @@
         background-color: var(--recommendations-item-bg);
         box-shadow: var(--box-shadow-small);
         padding: var(--padding);
-        padding-right: calc(2.5 * var(--padding));
+        width: var(--recommendations-panel-width);
+        max-width: 100%;
+        min-height: max(
+            var(--recommendations-panel-height),
+            calc((2 * var(--padding)) + var(--recommendations-img-height) + 2px)
+        );
         margin: 0;
+        break-inside: avoid;
+        margin-bottom: var(--gap-large);
         position: relative;
-        /* overflow: hidden; */
         transition: border-color 250ms;
 
         &:hover {
-            border-color: var(--recommendations-border-hover);
+            --recommendations-border: var(--recommendations-border-hover);
         }
 
         > :first-child {
@@ -48,87 +78,21 @@
             margin-bottom: 0;
         }
 
-        img {
-            width: 2.5rem;
-            height: 2.5rem;
-            position: absolute;
-            right: 0.75rem;
-            top: 0.75rem;
-            margin: 0;
-        }
+        /* Heading / link styling in recommendation lists */
+        > p,
+        > a {
+            margin-block: var(--gap-small);
 
-        /* Metadata icons (free, paid, online, desktop) */
-        > .icons {
-            position: absolute;
-            right: var(--padding-med);
-            bottom: var(--padding);
-            display: flex;
-            flex-direction: column;
-            gap: var(--gap-tiny);
-
-            .icon {
-                width: 1.1rem;
-                height: 1.1rem;
-                color: var(--recommendations-icons);
-                transition: all 250ms;
-
-                &:hover {
-                    color: var(--recommendations-muted);
-                }
+            &:first-of-type {
+                font-weight: 500;
+                line-height: 1.2;
+                font-size: var(--font-xlarge);
+                margin: 0 0 var(--gap-tiny);
             }
-        }
-
-        /* Recommended items */
-        &.recommended {
-            border-color: var(--recommendations-border-high);
-
-            &:hover {
-                border-color: var(--recommendations-border-high-hover);
-
-                &::before {
-                    transform: scale(1.5) rotate(-5deg);
-                }
-            }
-
-            &::before {
-                content: '★';
-                position: absolute;
-                left: -0.4em;
-                top: -0.5em;
-                color: var(--highlight-color);
-                font-size: 2rem;
-                line-height: 1;
-                z-index: 1;
-                transform: rotate(-10deg);
-                transition: all 250ms;
-            }
-        }
-
-        /* Sub-lists within tool items */
-        > ul {
-            margin: var(--gap-small) 0 0;
-            list-style: square;
-            display: flex;
-            flex-direction: column;
-
-            > li {
-                font-size: var(--font-med);
-                color: var(--recommendations-muted);
-                margin: 0;
-            }
-        }
-
-        /* Link styling in recommendation lists */
-        > p {
-            margin: 0;
         }
 
         > p > a,
         > a {
-            display: block;
-            font-weight: 600;
-            font-size: var(--font-xlarge);
-            margin-bottom: var(--gap-tiny);
             text-decoration: underline;
             text-decoration-color: var(--color-mono-3);
             color: var(--theme-color);
@@ -140,16 +104,12 @@
                 font-size: 0.9em;
             }
 
-            &:has(+ img) {
-                margin-right: 3rem;
-            }
-
             &:hover {
                 text-decoration: underline;
             }
 
-            &::after {
-                /* content: ""; */
+            /* &::after {
+                content: "";
                 display: inline-block;
                 width: 0.85em;
                 height: 0.85em;
@@ -165,6 +125,84 @@
                 -webkit-mask-repeat: no-repeat;
                 -webkit-mask-position: center;
                 vertical-align: middle;
+            } */
+        }
+
+        img {
+            width: var(--recommendations-img-width);
+            height: var(--recommendations-img-height);
+            border-radius: var(--recommendations-img-radius);
+            border: var(--recommendations-img-border);
+            float: right;
+            margin: 0 0 0 var(--padding);
+        }
+
+        /* Metadata icons (free, paid, online, desktop) */
+        > .icons {
+            position: absolute;
+            right: calc(0.75 * var(--padding));
+            bottom: calc(-0.75 * var(--padding));
+            display: flex;
+            /* flex-direction: column; */
+            gap: var(--gap-small);
+
+            .icon {
+                width: 1.5rem;
+                height: 1.5rem;
+                padding: 0.15em;
+                color: var(--recommendations-icons);
+                border: 2px solid var(--recommendations-border);
+                border-radius: 2em;
+                background-color: var(--plugin-panel-bg);
+                transition: all 250ms;
+
+                &:hover {
+                    color: var(--recommendations-muted);
+                }
+            }
+        }
+
+        /* Recommended items */
+        &.recommended {
+            --recommendations-border: var(--recommendations-border-high);
+
+            &:hover {
+                --recommendations-border: var(--recommendations-border-high-hover);
+
+                &::before {
+                    transform: scale(1.25) rotate(-15deg);
+                }
+            }
+
+            &::before {
+                content: '★';
+                position: absolute;
+                left: -0.4em;
+                top: -0.5em;
+                color: var(--highlight-color);
+                font-size: 2.5rem;
+                line-height: 1;
+                z-index: 1;
+                transform: rotate(-10deg);
+                transition: all 250ms;
+            }
+        }
+
+        /* Sub-lists within tool items */
+        > ul {
+            margin: var(--gap-small) 0;
+            list-style: square;
+            display: flex;
+            flex-direction: column;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            > li {
+                font-size: var(--font-med);
+                color: var(--recommendations-muted);
+                margin: 0;
             }
         }
     }
