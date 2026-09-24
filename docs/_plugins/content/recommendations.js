@@ -24,98 +24,36 @@
 ;(function () {
     'use strict'
 
-    // Metadata keywords that should become classes (case-insensitive)
-    const METADATA_KEYWORDS = {
-        'recommended': 'recommended',
+    // Metadata keywords, icons, and tooltips (case-insensitive)
+    const METADATA = {
+        'recommended': { title: 'Recommended' },
+        'free':        { icon: 'gift', title: 'Free or free-to-use' },
+        'paid':        { icon: 'circle-dollar-sign', title: 'Paid app or service' },
+        'online':      { icon: 'globe', title: 'Online app or service' },
+        'desktop':     { icon: 'monitor', title: 'Desktop app' },
 
-        'free':         'free',
-        'paid':         'paid',
-        'online':       'online',
-        'desktop':      'desktop',
-
-        'hacking':      'hacking',
-        'drama':        'drama',
-        'action':       'action',
-        'adventure':    'adventure',
-        'comedy':       'comedy',
-        'thriller':     'thriller',
-        'fantasy':      'fantasy',
-        'sci-fi':       'sci-fi',
-        'horror':       'horror',
-        'war':          'war',
-        'crime':        'crime',
-        'spy':          'spy',
-        'zombie':       'zombie',
-        'dystopia':     'dystopia',
-        'animated':     'animated',
-        'mystery':      'mystery',
-        'romance':      'romance',
-        'biography':    'biography',
-        'neo-noir':     'neo-noir',
-        'history':      'history',
-        'philosophy':   'philosophy',
-        'documentary':  'documentary',
-    }
-
-    // Lucide icon names for metadata classes (recommended has no icon)
-    const METADATA_ICONS = {
-        'free':         'gift',
-        'paid':         'circle-dollar-sign',
-        'online':       'globe',
-        'desktop':      'monitor',
-
-        'hacking':      'square-terminal',
-        'drama':        'drama',
-        'action':       'sport-shoe',
-        'adventure':    'route',
-        'comedy':       'face-grinning',
-        'thriller':     'crosshair',
-        'fantasy':      'wand',
-        'sci-fi':       'rocket',
-        'horror':       'face-angry',
-        'war':          'swords',
-        'crime':        'banknote',
-        'spy':          'hat-glasses',
-        'zombie':       'skull',
-        'dystopia':     'face-slightly-frowning',
-        'animated':     'pencil-sparkles',
-        'mystery':      'search',
-        'romance':      'heart',
-        'biography':    'user-round',
-        'neo-noir':     'moon-star',
-        'history':      'history',
-        'philosophy':   'brain-circuit',
-        'documentary':  'binoculars',
-    }
-
-    // Mouse-over titles for metadata icons
-    const METADATA_TITLES = {
-        'free':         'Free or free-to-use',
-        'paid':         'Paid app or service',
-        'online':       'Online app or service',
-        'desktop':      'Desktop app',
-
-        'hacking':      'Hacking / computers',
-        'drama':        'Drama',
-        'action':       'Action / adventure',
-        'adventure':    'Adventure',
-        'comedy':       'Comedy',
-        'thriller':     'Thriller / exciting',
-        'fantasy':      'Fantasy',
-        'sci-fi':       'Science Fiction',
-        'horror':       'Horror',
-        'war':          'War',
-        'crime':        'Crime',
-        'spy':          'Spy',
-        'zombie':       'Zombies',
-        'dystopia':     'Dystopian',
-        'mystery':      'Mystery',
-        'romance':      'Romance',
-        'biography':    'Biography',
-        'neo-noir':     'Neo-noir',
-        'history':      'History',
-        'philosophy':   'Philosophy',
-        'documentary':  'Documentary',
+        'hacking':     { icon: 'square-terminal', title: 'Hacking / computers' },
+        'drama':       { icon: 'drama', title: 'Drama' },
+        'action':      { icon: 'sport-shoe', title: 'Action / adventure' },
+        'adventure':   { icon: 'route', title: 'Adventure' },
+        'comedy':      { icon: 'face-grinning', title: 'Comedy' },
+        'thriller':    { icon: 'crosshair', title: 'Thriller / exciting' },
+        'fantasy':     { icon: 'wand', title: 'Fantasy' },
+        'sci-fi':      { icon: 'rocket', title: 'Science Fiction' },
+        'horror':      { icon: 'face-angry', title: 'Horror' },
+        'war':         { icon: 'swords', title: 'War' },
+        'crime':       { icon: 'banknote', title: 'Crime' },
+        'spy':         { icon: 'hat-glasses', title: 'Spy' },
+        'zombie':      { icon: 'skull', title: 'Zombies' },
+        'dystopia':    { icon: 'face-slightly-frowning', title: 'Dystopian' },
+        'animated':    { icon: 'pencil-sparkles', title: 'Animated' },
+        'mystery':     { icon: 'search', title: 'Mystery' },
+        'romance':     { icon: 'heart', title: 'Romance' },
+        'biography':   { icon: 'user-round', title: 'Biography' },
+        'neo-noir':    { icon: 'moon-star', title: 'Neo-noir' },
+        'history':     { icon: 'history', title: 'History' },
+        'philosophy':  { icon: 'brain-circuit', title: 'Philosophy' },
+        'documentary': { icon: 'binoculars', title: 'Documentary' },
     }
 
     function resolveScope(root) {
@@ -201,8 +139,8 @@
                     const normalized = boldText.toLowerCase().trim()
 
                     // Check exact matches first
-                    if (METADATA_KEYWORDS[normalized]) {
-                        foundClasses.push(METADATA_KEYWORDS[normalized])
+                    if (METADATA[normalized]) {
+                        foundClasses.push(normalized)
                         itemsToRemove.push(subLi)
                     }
                 })
@@ -213,7 +151,7 @@
                 })
 
                 if (foundClasses.includes('recommended')) {
-                    li.title = 'Recommended'
+                    li.title = METADATA.recommended.title
                 }
 
                 // Remove metadata items from the sub-list
@@ -242,30 +180,29 @@
     }
 
     function addIcons(li, foundClasses) {
-        const iconNames = foundClasses
-            .map(cls => METADATA_ICONS[cls])
-            .filter(Boolean)
-
-        if (!iconNames.length) return
-
         let icons = li.querySelector(':scope > .icons')
+        const metadataWithIcons = foundClasses
+            .map(cls => METADATA[cls])
+            .filter(metadata => metadata?.icon)
+
+        if (!metadataWithIcons.length) return
+
         if (!icons) {
             icons = document.createElement('div')
             icons.className = 'icons'
             li.prepend(icons)
         }
 
-        iconNames.forEach(name => {
-            if (icons.querySelector(`[data-lucide="${name}"]`)) return
+        metadataWithIcons.forEach(metadata => {
+            if (icons.querySelector(`[data-lucide="${metadata.icon}"]`)) return
 
             // Lucide replaces the <i> with an <svg>, so the title lives on a wrapper span
             // (SVG "title" attributes don't trigger native tooltips, only <title> elements do)
-            const title = METADATA_TITLES[foundClasses.find(cls => METADATA_ICONS[cls] === name)]
             const wrap = document.createElement('span')
-            if (title) wrap.title = title
+            if (metadata.title) wrap.title = metadata.title
 
             const icon = document.createElement('i')
-            icon.setAttribute('data-lucide', name)
+            icon.setAttribute('data-lucide', metadata.icon)
             wrap.appendChild(icon)
             icons.appendChild(wrap)
         })

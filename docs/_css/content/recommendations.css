@@ -10,8 +10,10 @@
     --recommendations-border-high-hover:  var(--highlight-color);
     --recommendations-muted:              var(--color-mono-6);
 
-    --recommendations-icons:              var(--secondary-color-4);
-    --recommendations-icons-hover:        var(--secondary-color-6);
+    --recommendations-icon-size:          1em;
+    --recommendations-icon-col:           var(--secondary-color-4);
+    --recommendations-icon-col-hover:     var(--secondary-color-6);
+    --recommendations-icon-direction:     column;
 
     --recommendations-panel-width:        19rem;
     --recommendations-panel-height:       10rem;
@@ -19,6 +21,7 @@
     --recommendations-img-height:         2.5rem;
     --recommendations-img-radius:         0;
     --recommendations-img-border:         none;
+    --recommendations-icon-gap:           var(--gap-tiny);
 
     list-style: none;
     padding-left: 0;
@@ -42,6 +45,8 @@
         --recommendations-img-width:      calc(var(--recommendations-img-height) * 0.67);
         --recommendations-img-radius:     var(--border-radius-small);
         --recommendations-img-border:     1px solid var(--recommendations-border);
+        --recommendations-icon-direction: row;
+        --recommendations-icon-gap:       var(--gap-small);
 
         columns: 1;
 
@@ -66,7 +71,12 @@
         max-width: 100%;
         min-height: max(
             var(--recommendations-panel-height),
-            calc((4.75 * var(--padding)) + var(--recommendations-img-height) + 2px)
+            calc(
+                (1 * var(--recommendations-icon-size)) +
+                (3 * var(--padding)) +
+                var(--recommendations-img-height) +
+                2px
+            )
         );
         margin: 0;
         break-inside: avoid;
@@ -129,23 +139,19 @@
         /* Metadata icons (free, paid, online, desktop) */
         > .icons {
             position: absolute;
-            right: calc(0.9 * var(--padding));
-            bottom: calc(1 * var(--padding));
+            right: var(--padding);
+            bottom: var(--padding);
             display: flex;
-            gap: var(--gap-small);
+            flex-direction: var(--recommendations-icon-direction);
+            gap: var(--recommendations-icon-gap);
 
             .icon {
-                width: 1.8rem;
-                height: 1.8rem;
-                padding: 0.2em;
-                color: var(--recommendations-icons);
-                border: 2px solid var(--recommendations-border);
-                border-radius: var(--border-radius);
-                background-color: var(--plugin-panel-bg);
+                color: var(--recommendations-icon-col);
                 transition: all 250ms;
 
                 &:hover {
-                    color: var(--recommendations-icons-hover);
+                    color: var(--recommendations-icon-col-hover);
+                    transform: rotate(-5deg) scale(1.1);
                 }
             }
         }
