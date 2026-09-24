@@ -16,6 +16,16 @@ This is a list of some of the finest nerdy stuff out there, all personal recomme
 
 <menu>
 
+### Nerdy Books
+
+<i data-lucide="book"></i>
+
+[Link](/nerdery/books.md)
+
+Books to capture your imagination and make you think
+
+---
+
 ### Nerdy Movies
 
 <i data-lucide="clapperboard"></i>
@@ -26,13 +36,13 @@ Awesome movies, full of excitement and nerdy details
 
 ---
 
-### Nerdy Books
+### Nerdy TV
 
-<i data-lucide="book"></i>
+<i data-lucide="tv"></i>
 
-[Link](/nerdery/books.md)
+[Link](/nerdery/tv.md)
 
-Books to capture your imagination and make you think
+TV shows and series that are full of the good stuff
 
 ---
 
