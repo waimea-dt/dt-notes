@@ -94,7 +94,7 @@
         'paid':         'Paid app or service',
         'online':       'Online app or service',
         'desktop':      'Desktop app',
-        
+
         'hacking':      'Hacking / computers',
         'drama':        'Drama',
         'action':       'Action / adventure',

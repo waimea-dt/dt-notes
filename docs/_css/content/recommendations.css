@@ -35,7 +35,8 @@
         columns: 3;
     }
 
-    &.media {
+    &.media,
+    &.websites {
         --recommendations-panel-width:    28rem;
         --recommendations-img-height:     12rem;
         --recommendations-img-width:      calc(var(--recommendations-img-height) * 0.67);
@@ -47,6 +48,11 @@
         @container (min-width: 54rem) {
             columns: 2;
         }
+    }
+
+    &.websites {
+        --recommendations-img-height:     10rem;
+        --recommendations-img-width:      calc(var(--recommendations-img-height) * 1.33);
     }
 
     /* Individual tool items */

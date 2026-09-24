@@ -44,7 +44,7 @@ Awesome movies, full of excitement and nerdy details
 
 TV shows and series that are full of the good stuff
 
----
+<!-- ---
 
 ### Nerdy Websites
 
@@ -52,7 +52,7 @@ TV shows and series that are full of the good stuff
 
 [Link](/nerdery/websites.md)
 
-Websites that will appeal to the nerdy side of you
+Websites that will appeal to the nerdy side of you -->
 
 
 </menu>

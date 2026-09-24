@@ -17,5 +17,5 @@
 - [<i data-lucide="tv"></i> Nerdy TV](/nerdery/tv.md)
     - TV shows and series that are full of the good stuff
 
-- [<i data-lucide="globe"></i> Nerdy Websites](/nerdery/websites.md)
-    - Great websites that will appeal to your nerdy side
+<!-- - [<i data-lucide="globe"></i> Nerdy Websites](/nerdery/websites.md)
+    - Great websites that will appeal to your nerdy side -->

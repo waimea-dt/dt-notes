@@ -1,6 +1,15 @@
 # Great Nerdy Websites
 
-<!-- recommendations media -->
+<!-- recommendations websites -->
+
+## Tech Stuff
+
+- ![](_assets/websites/coding-train.jpg)
+
+    [The Coding Train](https://thecodingtrain.com/)
+
+    words
+
 
 ## Fun Stuff
 
