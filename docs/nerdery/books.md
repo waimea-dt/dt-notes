@@ -15,6 +15,29 @@
 
     Two interconnected storylines: One in WWII and one in the 1990s; linked by code breaking, conspiracies, computers, mysterious organisations, and gold... Lots of gold.
 
+- ![](_assets/books/reamde.jpg)
+    [REAMDE](https://www.goodreads.com/book/show/10552338-reamde)
+
+    - **Sci-Fi**
+    - **Action**
+    - **Thriller**
+    - Neal Stephenson
+    - 2011
+
+    A ransomware outbreak becomes a globe-spanning chase involving hackers, terrorists, spies and one very dangerous video game.
+
+
+- ![](_assets/books/wasp-factory.jpg)
+    [The Wasp Factory](https://www.goodreads.com/en/book/show/567678.The_Wasp_Factory)
+
+    - **Action**
+    - **Thriller**
+    - **Horror**
+    - Iain Banks
+    - 1984
+
+    A dark tale of a disturbed teenager on a remote Scottish island who spends his days performing cruel rituals and consulting a homemade death-trap clock. This book is really dark, but also has humorous undertones.
+
 - ![](_assets/books/baroque-cycle.jpg)
     The Baroque Cycle Trilogy
 
@@ -41,6 +64,9 @@
 
     A government project combines magic, science and time travel in a secret attempt to rewrite history.
 
+
+## Sci-Fi Books
+
 - ![](_assets/books/snow-crash.jpg)
     [Snow Crash](https://www.goodreads.com/book/show/830.Snow_Crash)
 
@@ -52,20 +78,6 @@
 
     A pizza delivery driver and a sword-wielding hacker face a digital virus that threatens both the Metaverse and the real world.
 
-- ![](_assets/books/reamde.jpg)
-    [REAMDE](https://www.goodreads.com/book/show/10552338-reamde)
-
-    - **Sci-Fi**
-    - **Action**
-    - **Thriller**
-    - Neal Stephenson
-    - 2011
-
-    A ransomware outbreak becomes a globe-spanning chase involving hackers, terrorists, spies and one very dangerous video game.
-
-
-## Sci-Fi Books
-
 - ![](_assets/books/diamond-age.jpg)
     [The Diamond Age](https://www.goodreads.com/en/book/show/827.The_Diamond_Age)
 
@@ -73,6 +85,8 @@
     - **Adventure**
     - Neal Stephenson
     - 1995
+
+    '*... or a young lady's illustrated primer*'
 
     A near-future novel in a world of social enclaves and nano-technology; a young girl comes upon an artificially intelligent book that will change her life and those around her.
 
@@ -135,6 +149,17 @@
 
     The world faces a catastrophic, unavoidable end, and races against time to save some of humanity. It all goes well... until it doesn't.
 
+- ![](_assets/books/anathem.jpg)
+    [Anathem](https://www.goodreads.com/book/show/2845024-anathem)
+
+    - **Sci-Fi**
+    - **Adventure**
+    - **Mystery**
+    - Neal Stephenson
+    - 2008
+
+    Life for the fraas and suurs of the Concent of Saunt Edhar, a sanctuary for science and maths, moves to a slow and steady beat, but a threat to the world triggers an exodus across, and then off the planet.
+
 - ![](_assets/books/dune.jpg)
     Dune Series
 
@@ -151,17 +176,6 @@
     1. [Dune Messiah](https://www.goodreads.com/book/show/44492285-dune-messiah) (1969)
     1. [Children of Dune](https://www.goodreads.com/book/show/44492286-children-of-dune) (1976)
     1. ... and more
-
-- ![](_assets/books/anathem.jpg)
-    [Anathem](https://www.goodreads.com/book/show/2845024-anathem)
-
-    - **Sci-Fi**
-    - **Adventure**
-    - **Mystery**
-    - Neal Stephenson
-    - 2008
-
-    Life for the fraas and suurs of the Concent of Saunt Edhar, a sanctuary for science and maths, moves to a slow and steady beat, but a threat to the world triggers an exodus across, and then off the planet.
 
 - ![](_assets/books/hhgttg.avif)
     The Hitchhikers Guide to the Galaxy Series
@@ -219,8 +233,9 @@
     1. [Surface Detail](https://www.goodreads.com/book/show/7937744-surface-detail) (2010)
     1. [The Hydrogen Sonata](https://www.goodreads.com/book/show/13497991-the-hydrogen-sonata) (2012)
 
-## Fantasy Books
 
+
+## Fantasy Books
 
 - ![](_assets/books/dark-materials.jpg)
     His Dark Materials Trilogy
@@ -262,7 +277,21 @@
     - Terry Pratchett, Neil Gaiman
     - 1990
 
-    'The Nice and Accurate Prophecies of Agnes Nutter, Witch' - But how accurate? The apocalypse is next Saturday, armies of Good and Evil are massing, and the Antichrist is missing...
+    '*The Nice and Accurate Prophecies of Agnes Nutter, Witch*'
+
+    But how accurate? The apocalypse is next Saturday, armies of Good and Evil are massing, and the Antichrist is missing...
+
+
+- ![](_assets/books/end-mr-y.jpg)
+    [The End of Mr. Y](https://www.goodreads.com/book/show/93436.The_End_of_Mr_Y)
+
+    - **Fantasy**
+    - **Mystery**
+    - **Sci-Fi**
+    - Scarlett Thomas
+    - 2006
+
+    A find in an secondhand bookshop leads to an adventure involving science, love, death, and time travel. Really well written.
 
 
 - ![](_assets/books/graveyard.jpg)
@@ -287,6 +316,18 @@
     An alternative 19th Century world where magic still exists, but long forgotten. One magician could win the war...
 
 
+- ![](_assets/books/cloud-atlas.jpg)
+    [The Cloud Atlas](https://www.goodreads.com/book/show/49628.Cloud_Atlas)
+
+    - **Fantasy**
+    - **Sci-Fi**
+    - **Dystopia**
+    - David Mitchell
+    - 2004
+
+    An epic book of six interconnected stories, spanning from the nineteenth century to a post-apocalyptic future; see how choices and actions ripple across time.
+
+
 - ![](_assets/books/dark-tower.jpg)
     The Dark Tower Series
 
@@ -307,7 +348,7 @@
     8. [The Dark Tower](https://www.goodreads.com/book/show/5091.The_Dark_Tower) (2004)
 
 
-## Thoughtful Books
+## Thoughtful & Factual Books
 
 - ![](_assets/books/sophies-world.jpg)
     [Sophie's World](https://www.goodreads.com/book/show/10959.Sophie_s_World)
@@ -318,4 +359,65 @@
     - 1991
 
     "Who are you?" and "Where does the world come from?" These notes are the start of journey of discovery for Sophie, through the rich history of philosophy.
+
+
+- ![](_assets/books/wizards.jpg)
+    [Where Wizards Stay Up Late](https://www.goodreads.com/book/show/281818.Where_Wizards_Stay_Up_Late)
+
+    - **Computing**
+    - **History**
+    - **Factual**
+    - Katie Hafner, Matthew Lyon
+    - 1996
+
+    '*The Origins of the Internet*'
+
+    The amazing story of the creation of ARPANET, the predecessor of the Internet, and the incredible people who made it happen.
+
+
+- ![](_assets/books/computers-britain.jpg)
+    [The Computers that Made Britain](https://www.goodreads.com/en/book/show/58312784-the-computers-that-made-britain)
+
+    - **Computing**
+    - **History**
+    - **Factual**
+    - Tim Danton
+    - 2021
+
+    A short history of some of the innovative and novel computers produced in the UK during the 1980s personal computer boom, and the people behind them.
+
+
+- ![](_assets/books/sapiens.jpg)
+    [Sapiens: A Brief History of Humankind](https://www.goodreads.com/book/show/23692271-sapiens)
+
+    - **Society**
+    - **History**
+    - **Factual**
+    - Yuval Noah Harari
+    - 2011
+
+    An amazing, comprehensive and engaging history of the forces and events that shaped the human species.
+
+- ![](_assets/books/emperors-new-mind.jpg)
+    [The Emperor's New Mind](https://www.goodreads.com/book/show/140377651-the-emporer-s-new-mind)
+
+    - **Science**
+    - **History**
+    - **Factual**
+    - Roger Penrose
+    - 1989
+
+    '*Concerning Computers, Minds, and the Laws of Physics*'
+
+    A deep and detailed journey through maths, philosophy and artificial intelligence - it's a pretty dense read, but still very readable
+
+- ![](_assets/books/selfish-gene.jpg)
+    [The Selfish Gene](https://www.goodreads.com/book/show/61535.The_Selfish_Gene)
+
+    - **Science**
+    - **Factual**
+    - Richard Dawkins
+    - 1976
+
+    This amazing book asks you to consider our existence from the point of view of our genes: a collection of self-replicating chemicals, and once you do the origins of evolution, our biology and our behaviours all become clear.
 

@@ -50,10 +50,14 @@
         'mystery':     { icon: 'search', title: 'Mystery' },
         'romance':     { icon: 'heart', title: 'Romance' },
         'biography':   { icon: 'user-round', title: 'Biography' },
-        'neo-noir':    { icon: 'moon-star', title: 'Neo-noir' },
+        'neo-noir':    { icon: 'moon', title: 'Neo-noir' },
         'history':     { icon: 'history', title: 'History' },
-        'philosophy':  { icon: 'brain-circuit', title: 'Philosophy' },
+        'society':     { icon: 'user-group', title: 'Society' },
+        'philosophy':  { icon: 'circle-question-mark', title: 'Philosophy' },
         'documentary': { icon: 'binoculars', title: 'Documentary' },
+        'factual':     { icon: 'info', title: 'Factual' },
+        'science':     { icon: 'atom', title: 'Science' },
+        'computing':   { icon: 'computer', title: 'Computing' },
     }
 
     function resolveScope(root) {

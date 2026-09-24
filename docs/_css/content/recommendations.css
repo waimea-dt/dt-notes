@@ -22,6 +22,7 @@
     --recommendations-img-radius:         0;
     --recommendations-img-border:         none;
     --recommendations-icon-gap:           var(--gap-tiny);
+    --recommendations-icon-margin:        3em;
 
     list-style: none;
     padding-left: 0;
@@ -47,6 +48,7 @@
         --recommendations-img-border:     1px solid var(--recommendations-border);
         --recommendations-icon-direction: row;
         --recommendations-icon-gap:       var(--gap-small);
+        --recommendations-icon-margin:    6em;
 
         columns: 1;
 
@@ -94,6 +96,10 @@
 
         > :last-child {
             margin-bottom: 0;
+        }
+
+        > :is(p, li):last-child {
+            margin-right: var(--recommendations-icon-margin);
         }
 
         /* Heading / link styling in recommendation lists */

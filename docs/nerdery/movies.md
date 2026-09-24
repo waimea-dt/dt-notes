@@ -24,7 +24,7 @@
 
     A sharp biographical drama about the early battle between Apple and Microsoft.
 
-- ![](_assets/movies/tron.jpg)
+- ![](_assets/movies/tron.webp)
     [Tron](https://www.imdb.com/title/tt0084827/)
 
     - **Sci-Fi**
@@ -80,7 +80,7 @@
 
 ## Space & Aliens
 
-- ![](_assets/movies/alien.jpg)
+- ![](_assets/movies/alien.avif)
     Alien Series
 
     - **Sci-Fi**
@@ -121,7 +121,7 @@
 
     A smart, emotional sci-fi film about language, time, and the human cost of first contact.
 
-- ![](_assets/movies/interstellar.jpg)
+- ![](_assets/movies/interstellar.webp)
     [Interstellar](https://www.imdb.com/title/tt0816692/)
 
     - **Sci-Fi**
@@ -424,7 +424,7 @@
 
     A stylish dystopian action film about freedom, identity, and the power of a single voice.
 
-- ![](_assets/movies/world-war-z.jpg)
+- ![](_assets/movies/world-war-z.webp)
     [World War Z](https://www.imdb.com/title/tt0816711/)
 
     - **Action**
@@ -470,13 +470,13 @@
 
     A fast, stylish video-game movie with killer music, sharp jokes, and a lot of heart.
 
-- ![](_assets/movies/worlds-end.jpg)
-    [The World's End](https://www.imdb.com/title/tt1212950/)
+- ![](_assets/movies/shaun-dead.avif)
+    [Shaun of the Dead](https://www.imdb.com/title/tt0365748/)
 
     - **Comedy**
     - **Action**
     - **Sci-Fi**
-    - 2013
+    - 2004
 
-    A hilarious, oddball apocalypse comedy with sharp wit and a surprisingly good emotional core.
+    Two hapless, every day mates find themselves in the midst of a zombie apocalypse. Obviously the pub will be the safest place to be.
 
