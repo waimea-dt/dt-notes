@@ -25,7 +25,7 @@
     Twins spend a strange summer uncovering supernatural secrets in a small Oregon town.
 
 - ![](_assets/tv/the-owl-house.jpg)
-    [The Owl House](https://www.imdb.com/title/tt11163474/)
+    [The Owl House](https://www.imdb.com/title/tt8050756/)
 
     - **Animated**
     - **Fantasy**
@@ -35,7 +35,7 @@
     A human teenager learns magic in a demon realm and finds an unexpected home.
 
 - ![](_assets/tv/kipo-and-the-age-of-wonderbeasts.jpg)
-    [Kipo and the Age of Wonderbeasts](https://www.imdb.com/title/tt10482588/)
+    [Kipo and the Age of Wonderbeasts](https://www.imdb.com/title/tt10482560/)
 
     - **Animated**
     - **Sci-Fi**
@@ -58,7 +58,7 @@
 ## Comic, Book and Game Adaptions
 
 - ![](_assets/tv/watchmen.jpg)
-    [Watchmen](https://www.imdb.com/title/tt6844628/)
+    [Watchmen](https://www.imdb.com/title/tt7049682/)
 
     - **Drama**
     - **Mystery**
@@ -249,13 +249,22 @@
 ## Science, Nature and Technology
 
 - ![](_assets/tv/planet-earth.jpg)
-    [Planet Earth](https://www.imdb.com/title/tt0795176/)
+    Planet Earth Series
 
     - **Documentary**
     - **Adventure**
-    - 2006
+    - 2001-2024
 
     An extraordinary journey through the habitats, landscapes and wildlife of our planet.
+
+    - [Blue Planet I](https://www.imdb.com/title/tt0296310/) (2001)
+    - [Blue Planet II](https://www.imdb.com/title/tt6769208/) (2017)
+    - [Planet Earth I](https://www.imdb.com/title/tt0795176/) (2006)
+    - [Planet Earth II](https://www.imdb.com/title/tt5491994/) (2016)
+    - [Planet Earth III](https://www.imdb.com/title/tt9805674/) (2024)
+    - [Human Planet](https://www.imdb.com/title/tt1806234/) (2011)
+    - [Frozen Planet I](https://www.imdb.com/title/tt2092588/) (2012)
+    - [Frozen Planet II](https://www.imdb.com/title/tt9805678/) (2023)
 
 - ![](_assets/tv/the-secret-life-of-machines.jpg)
     [The Secret Life of Machines](https://www.imdb.com/title/tt0431571/)
