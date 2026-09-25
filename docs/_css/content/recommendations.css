@@ -17,12 +17,12 @@
 
     --recommendations-panel-width:        19rem;
     --recommendations-panel-height:       10rem;
-    --recommendations-img-width:          2.5rem;
     --recommendations-img-height:         2.5rem;
     --recommendations-img-radius:         0;
     --recommendations-img-border:         none;
+
     --recommendations-icon-gap:           var(--gap-tiny);
-    --recommendations-icon-margin:        3em;
+    --recommendations-icon-margin:        calc(var(--recommendations-img-width) + var(--padding));
 
     list-style: none;
     padding-left: 0;
@@ -42,13 +42,20 @@
     &.media,
     &.websites {
         --recommendations-panel-width:    28rem;
+        --recommendations-panel-height:   calc(
+            (1 * var(--recommendations-icon-size)) +
+            (3 * var(--padding)) +
+            var(--recommendations-img-height) +
+            2px
+        );
+
         --recommendations-img-height:     12rem;
-        --recommendations-img-width:      calc(var(--recommendations-img-height) * 0.67);
+        --recommendations-img-width:      8rem;
         --recommendations-img-radius:     var(--border-radius-small);
         --recommendations-img-border:     1px solid var(--recommendations-border);
+
         --recommendations-icon-direction: row;
         --recommendations-icon-gap:       var(--gap-small);
-        --recommendations-icon-margin:    6em;
 
         columns: 1;
 
@@ -71,15 +78,7 @@
         padding: var(--padding);
         width: var(--recommendations-panel-width);
         max-width: 100%;
-        min-height: max(
-            var(--recommendations-panel-height),
-            calc(
-                (1 * var(--recommendations-icon-size)) +
-                (3 * var(--padding)) +
-                var(--recommendations-img-height) +
-                2px
-            )
-        );
+        min-height: var(--recommendations-panel-height);
         margin: 0;
         break-inside: avoid;
         margin-bottom: var(--gap-large);
@@ -98,7 +97,11 @@
             margin-bottom: 0;
         }
 
-        > :is(p, li):last-child {
+        /* > :is(p, li):last-child {
+            margin-right: var(--recommendations-icon-margin);
+        } */
+
+        > :is(p, ul, ol) {
             margin-right: var(--recommendations-icon-margin);
         }
 
@@ -138,8 +141,9 @@
             height: var(--recommendations-img-height);
             border-radius: var(--recommendations-img-radius);
             border: var(--recommendations-img-border);
-            float: right;
-            margin: 0 0 0 var(--padding);
+            position: absolute;
+            top: var(--padding);
+            right: var(--padding);
         }
 
         /* Metadata icons (free, paid, online, desktop) */
