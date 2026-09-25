@@ -279,7 +279,6 @@
     color-scheme: dark;
 }
 
-
 .content {
     overflow-x: hidden;
 }
@@ -310,6 +309,7 @@
 
         &:is(h1) {
             font-weight: 600;
+            text-align: center;
         }
 
         &:is(h1) { color: var(--theme-color); }

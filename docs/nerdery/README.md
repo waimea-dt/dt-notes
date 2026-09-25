@@ -1,17 +1,17 @@
-# Nerdery
+# Nerdy Brain Food *<i data-lucide="brain"></i>*
 
 <speak>
 
 ![Mac](../_assets/macs/macintosh-sheepish.svg)
 
-What?! You're a **NERD**?!
+Hang on... You're a **NERD** like that Copley guy?!
 
-I had no idea
+I had no idea. Eww...
 
 </speak>
 
+Here are some lists of the finest nerdy stuff out there: movies, books, TV shows - all personal recommendations of *Mr Copley*. Even if you're not old and wizened like he is, you will likely find something of interest.
 
-This is a list of some of the finest nerdy stuff out there, all personal recommendations of My Copley...
 
 
 <menu>

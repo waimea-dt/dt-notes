@@ -24,7 +24,7 @@
     overflow: hidden;
 
     summary {
-        font-size: 1.1rem;
+        font-size: 1.1em;
         color: var(--details-summary-color);
         font-weight: 500;
         margin: calc(-1 * var(--details-padding));

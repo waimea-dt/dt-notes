@@ -1,8 +1,8 @@
-# Great Nerdy Books
+# Brilliant Nerdy Books *<i data-lucide="book"></i>*
 
 <!-- recommendations media -->
 
-## Adventure Books
+## Adventures
 
 - ![](_assets/books/cryptonomicon.jpg)
     [Cryptonomicon](hhttps://www.goodreads.com/book/show/816.Cryptonomicon)
@@ -29,19 +29,20 @@
     A ransomware outbreak becomes a globe-spanning chase involving hackers, terrorists, spies and one very dangerous video game.
 
 
-- ![](_assets/books/wasp-factory.jpg)
-    [The Wasp Factory](https://www.goodreads.com/en/book/show/567678.The_Wasp_Factory)
+- ![](_assets/books/project-dodo.jpg)
+    [Project DODO](https://www.goodreads.com/book/show/32920280-the-rise-and-fall-of-d-o-d-o)
 
-    - **Action**
-    - **Thriller**
-    - **Horror**
-    - Iain Banks
-    - 1984
+    - **Sci-Fi**
+    - **Adventure**
+    - **History**
+    - **Fantasy**
+    - Neal Stephenson, Nicole Galland
+    - 2017
 
-    A dark tale of a disturbed teenager on a remote Scottish island who spends his days performing cruel rituals and consulting a homemade death-trap clock. This book is really dark, but also has humorous undertones.
+    A government project combines magic, science and time travel in a secret attempt to rewrite history.
 
 - ![](_assets/books/baroque-cycle.jpg)
-    The Baroque Cycle Trilogy
+    [The Baroque Cycle Trilogy](https://www.goodreads.com/series/49317-the-baroque-cycle-3-volume)
 
     - **Adventure**
     - **History**
@@ -55,43 +56,20 @@
     1. [The Confusion](https://www.goodreads.com/book/show/822.The_Confusion) (2004)
     1. [The System of the World](https://www.goodreads.com/book/show/116257.The_System_of_the_World) (2004)
 
-- ![](_assets/books/project-dodo.jpg)
-    [Project DODO](https://www.goodreads.com/book/show/32920280-the-rise-and-fall-of-d-o-d-o)
 
-    - **Sci-Fi**
-    - **Adventure**
-    - **History**
-    - **Fantasy**
-    - Neal Stephenson, Nicole Galland
-    - 2017
+- ![](_assets/books/wasp-factory.jpg)
+    [The Wasp Factory](https://www.goodreads.com/en/book/show/567678.The_Wasp_Factory)
 
-    A government project combines magic, science and time travel in a secret attempt to rewrite history.
-
-
-## Sci-Fi Books
-
-- ![](_assets/books/snow-crash.jpg)
-    [Snow Crash](https://www.goodreads.com/book/show/830.Snow_Crash)
-
-    - **Sci-Fi**
     - **Action**
-    - **Adventure**
-    - Neal Stephenson
-    - 1992
+    - **Thriller**
+    - **Horror**
+    - Iain Banks
+    - 1984
 
-    A pizza delivery driver and a sword-wielding hacker face a digital virus that threatens both the Metaverse and the real world.
+    A dark tale of a disturbed teenager on a remote Scottish island who spends his days performing cruel rituals and consulting a homemade death-trap clock. This book is really dark, but also has humorous undertones.
 
-- ![](_assets/books/diamond-age.jpg)
-    [The Diamond Age](https://www.goodreads.com/en/book/show/827.The_Diamond_Age)
 
-    - **Sci-Fi**
-    - **Adventure**
-    - Neal Stephenson
-    - 1995
-
-    '*... or a young lady's illustrated primer*'
-
-    A near-future novel in a world of social enclaves and nano-technology; a young girl comes upon an artificially intelligent book that will change her life and those around her.
+## Science Fiction
 
 - ![](_assets/books/the-martian.jpg)
     [The Martian](https://www.goodreads.com/book/show/18007564-the-martian)
@@ -129,8 +107,32 @@
 
     A smuggler on the Moon takes one risky job too many and finds herself caught in a conspiracy over the city of Artemis.
 
+
+- ![](_assets/books/snow-crash.jpg)
+    [Snow Crash](https://www.goodreads.com/book/show/830.Snow_Crash)
+
+    - **Sci-Fi**
+    - **Action**
+    - **Adventure**
+    - Neal Stephenson
+    - 1992
+
+    A pizza delivery driver and a sword-wielding hacker face a digital virus that threatens both the Metaverse and the real world.
+
+- ![](_assets/books/diamond-age.jpg)
+    [The Diamond Age](https://www.goodreads.com/en/book/show/827.The_Diamond_Age)
+
+    - **Sci-Fi**
+    - **Adventure**
+    - Neal Stephenson
+    - 1995
+
+    '*... or a young lady's illustrated primer*'
+
+    A near-future novel in a world of social enclaves and nano-technology; a young girl comes upon an artificially intelligent book that will change her life and those around her.
+
 - ![](_assets/books/three-body-problem.jpg)
-    The Three-Body Problem Trilogy
+    [Remembrance of Earth's Past Series](https://www.goodreads.com/series/189931-remembrance-of-earth-s-past)
 
     - **Sci-Fi**
     - **Adventure**
@@ -169,7 +171,7 @@
     Life for the fraas and suurs of the Concent of Saunt Edhar, a sanctuary for science and maths, moves to a slow and steady beat, but a threat to the world triggers an exodus across, and then off the planet.
 
 - ![](_assets/books/dune.jpg)
-    Dune Series
+    [Dune Series](https://www.goodreads.com/series/45935-dune)
 
     - **Sci-Fi**
     - **Adventure**
@@ -183,10 +185,11 @@
     1. [Dune](https://www.goodreads.com/book/show/44767458-dune) (1965)
     1. [Dune Messiah](https://www.goodreads.com/book/show/44492285-dune-messiah) (1969)
     1. [Children of Dune](https://www.goodreads.com/book/show/44492286-children-of-dune) (1976)
-    1. ... and more
+
+    ... and many more
 
 - ![](_assets/books/hhgttg.avif)
-    The Hitchhikers Guide to the Galaxy Series
+    [The Hitchhikers Guide to the Galaxy Series](https://www.goodreads.com/series/40957-the-hitchhiker-s-guide-to-the-galaxy)
 
     - **Sci-Fi**
     - **Comedy**
@@ -203,7 +206,7 @@
     1. [Mostly Harmless](https://www.goodreads.com/book/show/569429.Mostly_Harmless) (1992)
 
 - ![](_assets/books/enders-game.jpg)
-    Ender's Saga Series
+    [Ender's Saga Series](https://www.goodreads.com/series/43963-ender-s-saga)
 
     - **Sci-Fi**
     - **Adventure**
@@ -212,7 +215,7 @@
     - Orson Scott Card
     - 1985-2021
 
-    Children trained to fight a world-threatening alien fleet, pushed beyond their limits; extinction of worlds and species; political machinations; redemption arcs... These books forse us to confront difficult questions about who we are as humans.
+    Children trained to fight a world-threatening alien fleet, pushed beyond their limits; extinction of worlds and species; political machinations; redemption arcs... These books force us to confront difficult questions about who we are as humans.
 
     1. [Ender's Game](https://www.goodreads.com/book/show/375802.Ender_s_Game) (1985)
     1. [Speaker for the Dead](https://www.goodreads.com/book/show/7967.Speaker_for_the_Dead) (1986)
@@ -222,7 +225,7 @@
     1. [The Last Shadow](https://www.goodreads.com/book/show/7108926-the-last-shadow) (2021)
 
 - ![](_assets/books/culture.jpg)
-    The Culture Series
+    [The Culture Series](https://www.goodreads.com/series/49118-culture)
 
     - **Sci-Fi**
     - **Adventure**
@@ -245,11 +248,10 @@
     1. [The Hydrogen Sonata](https://www.goodreads.com/book/show/13497991-the-hydrogen-sonata) (2012)
 
 
-
-## Fantasy Books
+## Fantasy
 
 - ![](_assets/books/dark-materials.jpg)
-    His Dark Materials Trilogy
+    [His Dark Materials Trilogy](https://www.goodreads.com/series/44427-his-dark-materials)
 
     - **Fantasy**
     - **Adventure**
@@ -257,7 +259,7 @@
     - Philip Pullman
     - 1995-2000
 
-    Parallel worlds touch and vast powers battle for control; armoured bears, witches, daemons, innocence, betrayal, love, sacrifice... These books have it all.
+    Parallel worlds touch and vast powers battle for control; armoured bears, witches, daemons, innocence, betrayal, love, sacrifice... These books have it all; so beautifully written too.
 
     1. [Northern Lights](https://www.goodreads.com/book/show/70947.Northern_Lights) (1995)
     2. [The Subtle Knife](https://www.goodreads.com/book/show/41637836-the-subtle-knife) (1997)
@@ -265,7 +267,7 @@
 
 
 - ![](_assets/books/lotr.jpg)
-    Middle Earth Series
+    [Middle Earth Series](https://www.goodreads.com/series/66175-middle-earth)
 
     - **Fantasy**
     - **Adventure**
@@ -273,12 +275,33 @@
     - J.R.R. Tolkien
     - 1937-1955
 
-    A ring, some hobbits, a wizard, a dragons, many battles, many tragedies, true friendship... These books and the world they create are unforgettable.
+    A ring, some hobbits, a wizard, a dragons, many battles, many tragedies, true friendship... These books and the world they create are unforgettable, and have influenced so many writers since. Tolkien was the ultimate language nerd too.
 
     1. [The Hobbit](https://www.goodreads.com/book/show/5907.The_Hobbit_or_There_and_Back_Again) (1937)
     2. [The Fellowship of the Ring](https://www.goodreads.com/book/show/61215351-the-fellowship-of-the-ring) (1954)
     3. [The Two Towers](https://www.goodreads.com/book/show/61215372-the-two-towers) (1954)
     4. [The Return of the King](https://www.goodreads.com/book/show/61215384-the-return-of-the-king) (1955)
+
+
+- ![](_assets/books/dark-tower.jpg)
+    [The Dark Tower Series](https://www.goodreads.com/series/40750-the-dark-tower)
+
+    - **Fantasy**
+    - **Adventure**
+    - **Horror**
+    - Stephen King
+    - 1982-2012
+
+    An epic and gripping tale of many worlds, linked an dying as the power of the Dark Tower wains. A gunslinger and a boy journey to save it.
+
+    1. [The Gunslinger](https://www.goodreads.com/book/show/247642509-the-gunslinger) (1982)
+    2. [The Drawing of the Three](https://www.goodreads.com/book/show/5094.The_Drawing_of_the_Three) (1987)
+    3. [The Waste Lands](https://www.goodreads.com/book/show/34084.The_Waste_Lands) (1991)
+    4. [Wizard and Glass](https://www.goodreads.com/book/show/5096.Wizard_and_Glass) (1997)
+    6. [Wolves of the Calla](https://www.goodreads.com/book/show/4978.Wolves_of_the_Calla) (2003)
+    7. [Song of Sussanah](https://www.goodreads.com/book/show/5093.Song_of_Susannah) (2004)
+    8. [The Dark Tower](https://www.goodreads.com/book/show/5091.The_Dark_Tower) (2004)
+    5. [The Wind Through the Keyhole](https://www.goodreads.com/book/show/12341557-the-wind-through-the-keyhole) (2012)
 
 
 - ![](_assets/books/good-omens.jpg)
@@ -291,7 +314,7 @@
 
     '*The Nice and Accurate Prophecies of Agnes Nutter, Witch*'
 
-    But how accurate? The apocalypse is next Saturday, armies of Good and Evil are massing, and the Antichrist is missing...
+    But how accurate? The apocalypse is next Saturday, armies of Good and Evil are massing, and the Antichrist is missing... Great writing, and excellent humour.
 
 
 - ![](_assets/books/end-mr-y.jpg)
@@ -341,39 +364,8 @@
     An epic book of six interconnected stories, spanning from the nineteenth century to a post-apocalyptic future; see how choices and actions ripple across time.
 
 
-- ![](_assets/books/dark-tower.jpg)
-    The Dark Tower Series
 
-    - **Fantasy**
-    - **Adventure**
-    - **Horror**
-    - Stephen King
-    - 1982-2012
-
-    An epic and gripping tale of many worlds, linked an dying as the power of the Dark Tower wains. A gunslinger and a boy journey to save it.
-
-    1. [The Gunslinger](https://www.goodreads.com/book/show/247642509-the-gunslinger) (1982)
-    2. [The Drawing of the Three](https://www.goodreads.com/book/show/5094.The_Drawing_of_the_Three) (1987)
-    3. [The Waste Lands](https://www.goodreads.com/book/show/34084.The_Waste_Lands) (1991)
-    4. [Wizard and Glass](https://www.goodreads.com/book/show/5096.Wizard_and_Glass) (1997)
-    5. [The Wind Through the Keyhole](https://www.goodreads.com/book/show/12341557-the-wind-through-the-keyhole) (2012)
-    6. [Wolves of the Calla](https://www.goodreads.com/book/show/4978.Wolves_of_the_Calla) (2003)
-    7. [Song of Sussanah](https://www.goodreads.com/book/show/5093.Song_of_Susannah) (2004)
-    8. [The Dark Tower](https://www.goodreads.com/book/show/5091.The_Dark_Tower) (2004)
-
-
-## Thoughtful & Factual Books
-
-- ![](_assets/books/sophies-world.jpg)
-    [Sophie's World](https://www.goodreads.com/book/show/10959.Sophie_s_World)
-
-    - **Philosophy**
-    - **Drama**
-    - Jostein Gaarder
-    - 1991
-
-    "Who are you?" and "Where does the world come from?" These notes are the start of journey of discovery for Sophie, through the rich history of philosophy.
-
+## History of Computing
 
 - ![](_assets/books/wizards.jpg)
     [Where Wizards Stay Up Late](https://www.goodreads.com/book/show/281818.Where_Wizards_Stay_Up_Late)
@@ -401,6 +393,19 @@
     A short history of some of the innovative and novel computers produced in the UK during the 1980s personal computer boom, and the people behind them.
 
 
+## Science & Philosophy
+
+- ![](_assets/books/sophies-world.jpg)
+    [Sophie's World](https://www.goodreads.com/book/show/10959.Sophie_s_World)
+
+    - **Philosophy**
+    - **Drama**
+    - Jostein Gaarder
+    - 1991
+
+    "Who are you?" and "Where does the world come from?" These notes are the start of journey of discovery for Sophie, through the rich history of philosophy.
+
+
 - ![](_assets/books/sapiens.jpg)
     [Sapiens: A Brief History of Humankind](https://www.goodreads.com/book/show/23692271-sapiens)
 
@@ -410,7 +415,7 @@
     - Yuval Noah Harari
     - 2011
 
-    An amazing, comprehensive and engaging history of the forces and events that shaped the human species.
+    An amazing, comprehensive and engaging history of the forces and events that shaped the human species. Brilliantly accessible and super-interesting.
 
 - ![](_assets/books/emperors-new-mind.jpg)
     [The Emperor's New Mind](https://www.goodreads.com/book/show/140377651-the-emporer-s-new-mind)

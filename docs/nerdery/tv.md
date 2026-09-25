@@ -1,4 +1,4 @@
- # Great Nerdy TV
+ # Brilliant Nerdy TV Shows *<i data-lucide="tv"></i>*
 
 <!-- recommendations media -->
 
@@ -13,7 +13,9 @@
     - **Comedy**
     - 2010-2018
 
-    Finn and Jake explore the strange, colourful Land of Ooo, meeting monsters, heroes and the occasional mathematical disaster.
+    '*Adventure Time, come on, grab your friends; we'll go to very distant lands...*'
+
+    Finn and Jake explore the strange, colourful Land of Ooo, meeting monsters, heroes and the occasional mathematical disaster. You're never too old to enjoy some Adventure Time!
 
 - ![](_assets/tv/gravity-falls.jpg)
     [Gravity Falls](https://www.imdb.com/title/tt1865718/)
@@ -24,17 +26,7 @@
     - **Horror**
     - 2012-2016
 
-    Twins spend a strange summer uncovering supernatural secrets in a small Oregon town.
-
-- ![](_assets/tv/the-owl-house.jpg)
-    [The Owl House](https://www.imdb.com/title/tt8050756/)
-
-    - **Animated**
-    - **Fantasy**
-    - **Adventure**
-    - 2020-2023
-
-    A human teenager learns magic in a demon realm and finds an unexpected home.
+    Twins spend a strange summer uncovering supernatural secrets in a small Oregon town. A great show with mystery, comedy, and real depth. Every episode is packed with background secrets, hidden messages, and ciphers. Fun!
 
 - ![](_assets/tv/kipo-and-the-age-of-wonderbeasts.jpg)
     [Kipo and the Age of Wonderbeasts](https://www.imdb.com/title/tt10482560/)
@@ -45,7 +37,7 @@
     - **Dystopia**
     - 2020
 
-    A sheltered girl crosses a colourful post-apocalyptic world ruled by intelligent mutant animals.
+    Exploring a post-apocalyptic world ruled by intelligent mutant animals, Kipo makes friends along the way and discovers who she is.
 
 - ![](_assets/tv/arcane.jpg)
     [Arcane](https://www.imdb.com/title/tt11126994/)
@@ -56,7 +48,7 @@
     - **Action**
     - 2021-2024
 
-    Two sisters are pulled onto opposite sides of a conflict between the wealthy and troubled cities of Piltover and Zaun.
+    Two sisters are pulled onto opposite sides of a conflict between the wealthy and troubled cities of Piltover and Zaun. Stunning animation, superb soundtrack, and real emotional depth. Brilliant.
 
 
 ## Comic, Book and Game Adaptions
@@ -70,7 +62,7 @@
     - **Action**
     - 2019
 
-    A murder investigation exposes a buried history of masked heroes, racism and power in an alternate America.
+    A murder investigation exposes a buried history of masked heroes, racism and power in an alternate Cold War America. This TV adaption of Alan Moore's graphic novel is beautifully done.
 
 - ![](_assets/tv/fallout.jpg)
     [Fallout](https://www.imdb.com/title/tt12637874/)
@@ -79,9 +71,9 @@
     - **Action**
     - **Drama**
     - **Dystopia**
-    - 2024-
+    - 2024
 
-    A sheltered vault dweller enters a brutal wasteland where old-world secrets still shape the future.
+    A sheltered vault dweller leaves enters a brutal wasteland where old-world secrets abound. Adventure awaits and secrets are discovered. Fun take on the videogame world.
 
 - ![](_assets/tv/good-omens.jpg)
     [Good Omens](https://www.imdb.com/title/tt1869454/)
@@ -91,7 +83,7 @@
     - **Drama**
     - 2019-2023
 
-    An angel and a demon team up to prevent the apocalypse they have both grown rather fond of avoiding.
+    An angel and a demon team up to prevent the apocalypse they have both grown rather fond of avoiding. The Antichrist who should be involved seems to have gone missing. Humorous and fun.
 
 - ![](_assets/tv/american-gods.jpg)
     [American Gods](https://www.imdb.com/title/tt1898069/)
@@ -101,7 +93,7 @@
     - **Mystery**
     - 2017-2021
 
-    Shadow Moon is drawn into a hidden war between ancient gods and the new gods of modern life.
+    Shadow Moon is drawn into a hidden war between ancient gods and the new gods of modern life. Based on a brilliant book by Neil Gaiman.
 
 - ![](_assets/tv/jonathan-strange-and-mr-norrell.jpg)
     [Jonathan Strange & Mr Norrell](https://www.imdb.com/title/tt2548418/)
@@ -111,7 +103,7 @@
     - **War**
     - 2015
 
-    Two very different magicians revive English magic while helping a kingdom at war with Napoleon.
+    Two very different magicians revive English magic while helping a kingdom at war with Napoleon. A good adaption of Susanna Clark's clever novel.
 
 - ![](_assets/tv/his-dark-materials.jpg)
     [His Dark Materials](https://www.imdb.com/title/tt5607976/)
@@ -121,7 +113,7 @@
     - **Drama**
     - 2019-2022
 
-    Lyra crosses parallel worlds in a battle involving daemons, powerful institutions and the nature of Dust.
+    Lyra crosses parallel worlds in a battle involving daemons, powerful institutions and the nature of Dust. This BBC adaption of Philip Pullman's masterful books is so well done.
 
 
 ## Science Fiction
@@ -134,7 +126,7 @@
     - **Thriller**
     - 2016-2025
 
-    Friends, families and a gifted young girl face supernatural threats emerging from a hidden dimension.
+    Friends, families and a gifted young girl face supernatural threats emerging from a hidden dimension. Brilliant story-telling, atmospheric and a cultural phenomenon.
 
 - ![](_assets/tv/severance.jpg)
     [Severance](https://www.imdb.com/title/tt11280740/)
@@ -145,7 +137,7 @@
     - **Drama**
     - 2022-
 
-    Employees at a mysterious company separate their work memories from their outside lives, with unsettling results.
+    Employees at a mysterious company separate their work memories from their outside lives, with unsettling results. Clever, beautifully staged and great acting.
 
 - ![](_assets/tv/murderbot.jpg)
     [Murderbot](https://www.imdb.com/title/tt30444310/)
@@ -156,7 +148,7 @@
     - **Comedy**
     - 2025-
 
-    A security android secretly gains free will and would much rather watch serials than discuss its feelings.
+    A security android secretly gains free will by hacking itself. It would much rather watch TV serials than discuss its feelings with the humans who insist it should. Funny and well done.
 
 - ![](_assets/tv/dark-matter.jpg)
     [Dark Matter](https://www.imdb.com/title/tt4159076/)
@@ -166,7 +158,7 @@
     - **Mystery**
     - 2015
 
-    A crew of strangers wakes aboard a spaceship with no memories and must uncover who they were.
+    A crew of strangers wakes aboard a spaceship with no memories and must uncover who they were. Dark, exciting and clever story-telling.
 
 - ![](_assets/tv/11-22-63.jpg)
     [11.22.63](https://www.imdb.com/title/tt2879552/)
@@ -177,7 +169,7 @@
     - **History**
     - 2016
 
-    A teacher travels back in time to stop the Kennedy assassination, discovering that history resists being changed.
+    A teacher stumbles on a doorway back in time. He travels back to try to stop the Kennedy assassination, but discovers that history resists being changed. Great Stephen King story.
 
 - ![](_assets/tv/future-man.jpg)
     [Future Man](https://www.imdb.com/title/tt4975856/)
@@ -187,7 +179,7 @@
     - **Action**
     - 2017-2020
 
-    A videogame champion is recruited by time-travelling warriors to save humanity, despite having no useful qualifications.
+    A videogame champion is recruited by time-travelling warriors to save humanity, despite having no useful qualifications. Great humour, good fun.
 
 - ![](_assets/tv/altered-carbon.jpg)
     [Altered Carbon](https://www.imdb.com/title/tt2261227/)
@@ -198,7 +190,7 @@
     - **Neo-Noir**
     - 2018-2020
 
-    In a future where bodies can be replaced, a resurrected soldier investigates a wealthy man's suspicious murder.
+    In a future where bodies can be replaced, a resurrected soldier investigates a wealthy man's suspicious murder. Lots of twists and turns.
 
 - ![](_assets/tv/black-mirror.jpg)
     [Black Mirror](https://www.imdb.com/title/tt2085059/)
@@ -209,7 +201,7 @@
     - **Society**
     - 2011-
 
-    Dark, sharp standalone stories about technology, society and the uncomfortable parts of being human.
+    Dark, sharp standalone stories about technology, society and the uncomfortable parts of being human. Some of these will stay with you forever; really brilliant at times.
 
 
 ## Computers and Hacking
@@ -223,7 +215,7 @@
     - **Drama**
     - 2015-2019
 
-    A gifted but isolated hacker is drawn into a plan to bring down the financial system.
+    A gifted but isolated hacker is drawn into a plan to bring down the financial system. This show is so good, genuinely capturing the world of hacking in a dark and rich storyline.
 
 - ![](_assets/tv/halt-and-catch-fire.jpg)
     [Halt and Catch Fire](https://www.imdb.com/title/tt2543312/)
@@ -234,7 +226,7 @@
     - **Computing**
     - 2014-2017
 
-    Engineers and entrepreneurs chase the next breakthrough through the early personal-computer revolution.
+    Engineers and entrepreneurs chase the next breakthrough through the early personal-computer revolution. Pretty nerdy show with lots of computer culture references.
 
 - ![](_assets/tv/the-it-crowd.jpg)
     [The IT Crowd](https://www.imdb.com/title/tt0487831/)
@@ -243,7 +235,9 @@
     - **Computing**
     - 2006-2013
 
-    Two socially awkward technicians and their technically clueless manager survive life in a basement IT department.
+    '*Hello, IT... Have you tried turning it off and on again?*'
+
+    Two socially awkward technicians and their technically clueless manager survive life in a basement IT department. Brilliantly funny, every episode has a laugh-out-loud moment.
 
 
 ## Historical Drama
@@ -257,7 +251,7 @@
     - **Factual**
     - 2019
 
-    A devastating account of the nuclear disaster and the people who fought to contain its consequences.
+    A devastating account of the nuclear disaster and the people who fought to contain its consequences. Really impressive production covering an incident that impacted all of Europe.
 
 
 ## Science, Nature and Technology
@@ -271,7 +265,7 @@
     - **Nature**
     - 2001-2024
 
-    An extraordinary journey through the habitats, landscapes and wildlife of our planet.
+    An extraordinary journey through the habitats, landscapes and wildlife of our planet. The production values and camera work in these shows is unsurpassed, and nobody voices a nature show better than Sir David Attenborough.
 
     - [Blue Planet I](https://www.imdb.com/title/tt0296310/) (2001)
     - [Blue Planet II](https://www.imdb.com/title/tt6769208/) (2017)
@@ -291,5 +285,5 @@
     - **Factual**
     - 1988-1993
 
-    Tim Hunkin takes everyday machines apart and explains how they work with wit, curiosity and wonderfully improvised models.
+    Tim Hunkin takes everyday machines apart and explains how they work with wit, curiosity and wonderfully improvised models. A pretty old show, but really well done and genuinely informative.
 

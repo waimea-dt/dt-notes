@@ -28,9 +28,9 @@
     const METADATA = {
         'recommended': { title: 'Recommended' },
 
-        'free':        { icon: 'gift',                   title: 'Free or Free-to-Ese' },
-        'paid':        { icon: 'circle-dollar-sign',     title: 'Paid App or Service' },
-        'online':      { icon: 'globe',                  title: 'Online App or Service' },
+        'free':        { icon: 'gift',                   title: 'Free App' },
+        'paid':        { icon: 'circle-dollar-sign',     title: 'Paid App' },
+        'online':      { icon: 'globe',                  title: 'Online App' },
         'desktop':     { icon: 'monitor',                title: 'Desktop App' },
 
         'hacking':     { icon: 'square-terminal',        title: 'Hacking' },
@@ -65,26 +65,30 @@
     }
 
     function addMetadataFilter(container, metadataValues) {
-        container.querySelectorAll('fieldset.recommendations-filter').forEach(filter => filter.remove())
+        container.querySelectorAll('.recommendations-filter').forEach(filter => filter.remove())
 
         const firstHeading = container.querySelector('h1')
         if (!firstHeading || metadataValues.size === 0) return
 
-        const fieldset = document.createElement('fieldset')
-        fieldset.className = 'recommendations-filter'
+        const details = document.createElement('details')
+        details.open = false
+        details.classList.add('recommendations-filter')
+        details.innerHTML = '<summary>Filters</summary>'
 
-        // const legend = document.createElement('legend')
-        // legend.textContent = 'Filter by metadata'
-        // fieldset.append(legend)
+        const filterContainer = document.createElement('div')
+        filterContainer.className = 'recommendations-filter-list'
 
         const allLabel = document.createElement('label')
         const allInput = document.createElement('input')
+        const allText = document.createElement('strong')
+
         allInput.type = 'radio'
         allInput.name = 'recommendations-filter'
         allInput.value = 'all'
         allInput.checked = true
-        allLabel.append(allInput, ' All')
-        fieldset.append(allLabel)
+        allText.textContent = ' View All'
+        allLabel.append(allInput, allText)
+        filterContainer.append(allLabel)
 
         Array.from(metadataValues)
             .sort((first, second) => METADATA[first].title.localeCompare(METADATA[second].title))
@@ -95,10 +99,11 @@
                 input.name = 'recommendations-filter'
                 input.value = genre
                 label.append(input, ` ${METADATA[genre].title}`)
-                fieldset.append(label)
+                filterContainer.append(label)
             })
 
-        firstHeading.parentElement.insertBefore(fieldset, firstHeading.nextSibling)
+        details.append(filterContainer)
+        firstHeading.parentElement.insertBefore(details, firstHeading.nextSibling)
     }
 
     function processRecommendations(root) {

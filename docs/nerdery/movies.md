@@ -1,4 +1,4 @@
-# Great Nerdy Movies
+# Fantastic Nerdy Movies *<i data-lucide="clapperboard"></i>*
 
 <!-- recommendations media -->
 
@@ -23,7 +23,7 @@
     - **Computing**
     - 1999
 
-    A sharp biographical drama about the early battle between Apple and Microsoft.
+    A sharp biographical drama about the early battle between Apple and Microsoft in the 80s. This is the era that shaped the future of personal computing.
 
 - ![](_assets/movies/tron.webp)
     [Tron](https://www.imdb.com/title/tt0084827/)
@@ -34,7 +34,7 @@
     - **Adventure**
     - 1982
 
-    A neon-drenched digital-world adventure that feels like a dream of computers and code made visible.
+    Another great 80s movie, one of the first to use computer graphics. It's a neon-drenched digital adventure, good vs bad, lots of computing reference easter eggs.
 
 
 ## War & Thrillers
@@ -48,7 +48,7 @@
     - **War**
     - 2014
 
-    A tense, human story about Alan Turing and the codebreaking effort that changed history.
+    A tense, human story about Alan Turing, Bletchley Park, and the codebreaking effort that changed history.
 
 - ![](_assets/movies/hunt-for-red-october.jpg)
     [The Hunt for Red October](https://www.imdb.com/title/tt0099810/)
@@ -70,7 +70,7 @@
     - **Drama**
     - 1995
 
-    A fierce and claustrophobic submarine drama where trust is as dangerous as the enemy.
+    A fierce and claustrophobic submarine drama where the world is teetering on the edge of World War III. really tense and thrilling.
 
 
 ## Space & Aliens
@@ -84,7 +84,7 @@
     - **Thriller**
     - 1979-2024
 
-    A terrifying space-horror classic where a crew learns the hard way that the unknown is never safe.
+    A classic space horror series, each movies is different, but each is terrifying in its own way; minimal lighting and confined spaces add to the tension and fear.
 
     - [Alien](https://www.imdb.com/title/tt0078748/) (1979)
     - [Aliens](https://www.imdb.com/title/tt0090605/) (1986)
@@ -103,7 +103,7 @@
     - **Drama**
     - 2021-2024
 
-    A massive desert-world epic about power, prophecy, and survival on a planet built for collapse.
+    A massive desert-world epic about power, prophecy, and survival; warring factions, betrayal, giant sand worms, epic visuals. A really great adaption of the books.
 
     - [Dune: Part 1](https://www.imdb.com/title/tt1160419/) (2021)
     - [Dune: Part 2](https://www.imdb.com/title/tt15239678/) (2024)
@@ -116,7 +116,7 @@
     - **Thriller**
     - 2016
 
-    A smart, emotional sci-fi film about language, time, and the human cost of first contact.
+    A smart, emotional sci-fi film about language, time, and the human cost of first contact. The styling of the alien ships and the aliens is so well done.
 
 - ![](_assets/movies/interstellar.webp)
     [Interstellar](https://www.imdb.com/title/tt0816692/)
@@ -126,7 +126,7 @@
     - **Drama**
     - 2014
 
-    A huge, emotional space adventure about love, survival, and humanity's future beyond Earth.
+    A huge, emotional space adventure about love, survival, and humanity's future beyond Earth. Takes a couple of viewings to follow it properly.
 
 - ![](_assets/movies/starship-troopers.jpg)
     [Starship Troopers](https://www.imdb.com/title/tt0120201/)
@@ -136,7 +136,7 @@
     - **War**
     - 1997
 
-    A satirical military sci-fi film packed with bugs, bravado, and a very big bug problem.
+    A satirical military sci-fi film packed with bugs, bravado, and a very big bug problem. Loosely based on Robert A. Heinlein's 1959 novel, but reframed brilliantly.
 
 - ![](_assets/movies/gravity.jpg)
     [Gravity](https://www.imdb.com/title/tt1454468/)
@@ -146,7 +146,7 @@
     - **Drama**
     - 2013
 
-    A terrifying survival film set in space, where every mistake feels fatal and every second matters.
+    A terrifying survival film set in low Earth orbit. Things go horribly wrong, every mistake feels fatal and every second matters.
 
 - ![](_assets/movies/the-martian.jpg)
     [The Martian](https://www.imdb.com/title/tt3659388/)
@@ -157,7 +157,7 @@
     - **Drama**
     - 2015
 
-    A funny, tense survival story about a stranded astronaut trying to stay alive and stay sane.
+    A great survival story about a astronaut stranded on Mars, trying to stay alive and stay sane. The book is even better than this movie adaption.
 
 - ![](_assets/movies/project-hail-mary.jpg)
     [Project Hail Mary](https://www.imdb.com/title/tt12042730/)
@@ -167,7 +167,7 @@
     - **Drama**
     - 2026
 
-    A lone astronaut wakes far from Earth with one impossible mission: save humanity and discover what happened to his crew.
+    A lone astronaut wakes far from Earth with one impossible mission: save humanity. Along the way, he makes a pretty cool friend. Fantastic movie, even better book.
 
 - ![](_assets/movies/contact.jpg)
     [Contact](https://www.imdb.com/title/tt0118884/)
@@ -177,7 +177,7 @@
     - **Mystery**
     - 1997
 
-    A thoughtful, inspiring look at the search for alien life and what it means to be human.
+    A thoughtful, inspiring look at the search for alien life and what it means to be human. The book it is based on has more depth, but still a good movie.
 
 - ![](_assets/movies/edge-of-tomorrow.jpg)
     [Edge of Tomorrow](https://www.imdb.com/title/tt1631867/)
@@ -188,7 +188,7 @@
     - **Adventure**
     - 2014
 
-    A clever time-loop action film where a soldier keeps reliving the same battle until he learns to win.
+    A clever time-loop action film where a soldier keeps reliving the same battle until he learns to win. The beachhead battle scenes are intense.
 
 - ![](_assets/movies/fifth-element.jpg)
     [The Fifth Element](https://www.imdb.com/title/tt0119116/)
@@ -198,7 +198,7 @@
     - **Adventure**
     - 1997
 
-    A wildly colourful space opera full of strange creatures, big ideas, and very 90s flair.
+    A wildly colourful space opera full of strange creatures, big ideas, memorable quotes, and very 90s flair. It's as close to a comic book as you can get in a movie.
 
 - ![](_assets/movies/enders-game.jpg)
     [Ender's Game](https://www.imdb.com/title/tt1731141/)
@@ -208,7 +208,7 @@
     - **Adventure**
     - 2013
 
-    A strategic military sci-fi story about genius, pressure, and the cost of winning.
+    A strategic military sci-fi story about genius, pressure, and the cost of winning. The book this is based on is amazing, and they did well to capture it.
 
 
 ## Brain-Twisters
@@ -222,7 +222,7 @@
     - **Mystery**
     - 2010
 
-    A layered, high-stakes dream-heist film that turns architecture, psychology, and obsession into pure spectacle.
+    A layered, high-stakes dream-heist film that turns architecture, psychology, and obsession into pure spectacle; need to watch it multiple times.
 
 - ![](_assets/movies/primer.jpg)
     [Primer](https://www.imdb.com/title/tt0390384/)
@@ -233,7 +233,7 @@
     - **Mystery**
     - 2004
 
-    A compact, clever time-travel film that rewards attention and rewards it hard.
+    A compact, clever time-travel film that has so many twisting timelines its hard to follow... the first time, and the second, and the third! But it's worth it.
 
 
 ## Cyberpunk, AI & Dystopia
@@ -247,7 +247,7 @@
     - **Horror**
     - 1984-2003
 
-    A relentless machine from the future and a tense chase that helped define the action sci-fi genre.
+    A relentless machine from the future, the possible end of humanity at the hands of AI machines, chases, time travel... these movies helped define the action sci-fi genre.
 
     - [The Terminator](https://www.imdb.com/title/tt0088247/) (1984)
     - [T2: Judgement Day](https://www.imdb.com/title/tt0103064/) (1991)
@@ -263,7 +263,7 @@
     - **Hacking**
     - 1999-2021
 
-    A mind-bending cyberpunk series about reality, choice, and whether humans are still in control.
+    A mind-bending cyberpunk series about reality, choice, and whether humans are still in control. These movies had such a huge impact on films that followed, and each one has much depth and clever detail. Brilliant.
 
     - [The Matrix](https://www.imdb.com/title/tt0133093/) (1999)
     - [The Matrix Reloaded](https://www.imdb.com/title/tt0234215/) (2003)
@@ -279,7 +279,7 @@
     - **Dystopia**
     - 1988
 
-    A landmark cyberpunk anime with explosive energy, huge ideas, and a gorgeous futuristic city.
+    A landmark cyberpunk anime with explosive energy, huge ideas, and a gorgeous futuristic city. The cinematography and story-telling is so good.
 
 - ![](_assets/movies/ghost-in-the-shell.jpg)
     [Ghost in the Shell](https://www.imdb.com/title/tt0113568/)
@@ -289,7 +289,7 @@
     - **Action**
     - 1995
 
-    A smart and atmospheric cyberpunk anime about identity, memory, and what makes a person real.
+    A smart and atmospheric cyberpunk anime about identity, memory, and what makes a person real. Another animated classic.
 
 - ![](_assets/movies/blade-runner.jpg)
     Blade Runner
@@ -300,7 +300,7 @@
     - **Crime**
     - 1982 / 2017
 
-    Rain-soaked, moody, and full of big questions about humanity, memory, and identity.
+    Rain-soaked, moody, and full of big questions about humanity, memory, and identity. The incredible style of the original movie has been copied so many times, but the original stands the test of time. Note that the original 1982 cinema cut had a terrible, cheesy ;happy ending' tacked on - watch the director's cut!
 
     - [Blade Runner](https://www.imdb.com/title/tt0083658/) (1982)
     - [Blade Runner 2049](https://www.imdb.com/title/tt1856101/) (2017)
@@ -314,7 +314,7 @@
     - **Drama**
     - 2000
 
-    A brutal survival story where a class of students is forced into a deadly game of elimination.
+    A brutal survival story where a class of students is forced into a deadly game of elimination. So dark, but so well done - another genre-establishing movie.
 
 - ![](_assets/movies/ready-player-one.jpg)
     [Ready Player One](https://www.imdb.com/title/tt1677720/)
@@ -324,7 +324,7 @@
     - **Action**
     - 2018
 
-    A fast, flashy virtual-reality adventure with endless references and huge world-building energy.
+    A fast, flashy virtual-reality adventure with endless 80s computer / gaming references and huge world-building energy. Super fun, and the book is even more nerdy.
 
 - ![](_assets/movies/snowpiercer.jpg)
     [Snowpiercer](https://www.imdb.com/title/tt1706620/)
@@ -336,7 +336,7 @@
     - **Dystopia**
     - 2013
 
-    A brutal, claustrophobic survival story set on a train that carries the last of humanity.
+    A brutal, claustrophobic survival story set on a train that carries the last of humanity. Crazy premise, but a great movie.
 
 - ![](_assets/movies/brazil.jpg)
     [Brazil](https://www.imdb.com/title/tt0088846/)
@@ -347,7 +347,7 @@
     - **Dystopia**
     - 1985
 
-    A darkly funny dystopian satire about bureaucracy, freedom, and a world gone wrong.
+    A darkly funny dystopian satire about bureaucracy, freedom, and a world gone wrong. Terry Gilliam (ex. Monty Python) world-building is fantastic.
 
 - ![](_assets/movies/district-9.jpg)
     [District 9](https://www.imdb.com/title/tt1136608/)
@@ -355,11 +355,11 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
-    - **Drama**
+    - **Comedy**
     - **Dystopia**
     - 2009
 
-    A gritty, inventive alien-invasion story that mixes action with sharp social commentary.
+    A gritty, inventive alien-invasion story that mixes action with sharp social commentary. The look and feel of this is so real. Clever movie.
 
 - ![](_assets/movies/ex-machina.jpg)
     [Ex Machina](https://www.imdb.com/title/tt0470752/)
@@ -380,7 +380,7 @@
     - **Thriller**
     - 2009
 
-    A layered superhero story with big ideas, messy morals, and a lot of political weight.
+    A layered superhero story with big ideas, messy morals, and a lot of political weight. An Set during an alternative history Cold War, the graphic novel this is based on is captured beautifully in the film.
 
 
 ## Fantasy & Adventure Movies
@@ -394,7 +394,7 @@
     - **Drama**
     - 2001-2003
 
-    A sweeping epic of friendship, courage, and a quest that decides the fate of Middle-earth.
+    A sweeping epic of friendship, courage, and a quest that decides the fate of Middle-Earth. Such a cultural touchstone that has influenced generations of story tellers since, painstakingly, beautifully rendered on-screen.
 
     - [The Fellowship of the Ring](https://www.imdb.com/title/tt0120737/) (2001)
     - [The Two Towers](https://www.imdb.com/title/tt0167261/) (2002)
@@ -409,7 +409,7 @@
     - **Romance**
     - 2020
 
-    A charming post-apocalypse adventure about finding your way home and learning to live again.
+    A charming post-apocalypse adventure about finding your way home and learning to live again. Funny and fun, with great graphics.
 
 
 ## Action & Survival Movies
@@ -423,7 +423,7 @@
     - **Dystopia**
     - 1979-2016
 
-    A brutal, unforgettable road-war saga about survival, revenge, and a broken future.
+    A brutal, unforgettable road-war saga about survival, revenge, and a broken future. These movies created a genre of gritty, post-apocalyptic stories.
 
     - [Mad Max](https://www.imdb.com/title/tt0079501/) (1979)
     - [Mad Max 2](https://www.imdb.com/title/tt0082694/) (1981)
@@ -439,7 +439,7 @@
     - **Action**
     - 2011
 
-    A clever, fast-moving time-loop mystery where every restart carries a new clue and a new risk.
+    A clever, fast-moving time-loop mystery where every restart carries a new clue and a new risk. Fun movie, and thought-provoking.
 
 - ![](_assets/movies/v-for-vendetta.jpg)
     [V for Vendetta](https://www.imdb.com/title/tt0434409/)
@@ -450,7 +450,7 @@
     - **Dystopia**
     - 2006
 
-    A stylish dystopian action film about freedom, identity, and the power of a single voice.
+    A stylish dystopian action film about freedom, identity, and the power of a single voice. Based on a graphic novel, the film does well to capture its feel.
 
 - ![](_assets/movies/world-war-z.webp)
     [World War Z](https://www.imdb.com/title/tt0816711/)
@@ -462,7 +462,7 @@
     - **Zombie**
     - 2013
 
-    A fast-moving zombie blockbuster about global panic, survival, and the cost of keeping humanity together.
+    A fast-moving zombie blockbuster about global panic, survival, and the cost of keeping humanity together. Brutal at times; the zombie hordes are done so well.
 
 - ![](_assets/movies/kill-bill.jpg)
     Kill Bill
@@ -472,7 +472,7 @@
     - **Thriller**
     - 2003-2004
 
-    A stylish revenge epic that mixes samurai energy, comic-book attitude, and pure cinematic flair.
+    A stylish revenge epic that mixes samurai energy, comic-book attitude, and pure cinematic flair. Tarantino is a master story-teller, and the visuals here are a treat.
 
     - [Kill Bill: Volume 1](https://www.imdb.com/title/tt0266697/) (2003)
     - [Kill Bill: Volume 2](https://www.imdb.com/title/tt0378194/) (2004)
@@ -488,7 +488,7 @@
     - **Crime**
     - 2010
 
-    A funny, chaotic superhero story that turns the idea of being a hero into absolute chaos.
+    A funny, chaotic superhero story that turns the idea of being a hero into absolute chaos. Fun and funny in equal measure.
 
 - ![](_assets/movies/scott-pilgrim.jpg)
     [Scott Pilgrim vs. the World](https://www.imdb.com/title/tt0446029/)
@@ -499,7 +499,7 @@
     - **Fantasy**
     - 2010
 
-    A fast, stylish video-game movie with killer music, sharp jokes, and a lot of heart.
+    A fast, stylish video-game movie with killer music, sharp jokes, and a lot of heart. Every nerd can empathise with the central character.
 
 - ![](_assets/movies/shaun-dead.avif)
     [Shaun of the Dead](https://www.imdb.com/title/tt0365748/)
