@@ -207,3 +207,58 @@
         }
     }
 }
+
+/* FILTERING ===================================================== */
+
+.markdown-section .recommendations-filter {
+    margin-top: var(--gap-xlarge);
+    position: sticky;
+    top: var(--gap-small);
+    z-index: 99;
+    background-color: var(--plugin-panel-bg);
+    border-color: var(--plugin-panel-border);
+    padding: var(--padding-small) var(--padding);
+    font-size: var(--font-tiny);
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(6em, 1fr) );
+    gap: var(--gap-tiny) var(--gap);
+
+    label {
+        text-wrap: nowrap;
+    }
+}
+
+.markdown-section {
+    &:has(fieldset input[value="action"]:checked)      .recommendations > li:not(.action),
+    &:has(fieldset input[value="adventure"]:checked)   .recommendations > li:not(.adventure),
+    &:has(fieldset input[value="animated"]:checked)    .recommendations > li:not(.animated),
+    &:has(fieldset input[value="biography"]:checked)   .recommendations > li:not(.biography),
+    &:has(fieldset input[value="comedy"]:checked)      .recommendations > li:not(.comedy),
+    &:has(fieldset input[value="computing"]:checked)   .recommendations > li:not(.computing),
+    &:has(fieldset input[value="crime"]:checked)       .recommendations > li:not(.crime),
+    &:has(fieldset input[value="desktop"]:checked)     .recommendations > li:not(.desktop),
+    &:has(fieldset input[value="drama"]:checked)       .recommendations > li:not(.drama),
+    &:has(fieldset input[value="dystopia"]:checked)    .recommendations > li:not(.dystopia),
+    &:has(fieldset input[value="factual"]:checked)     .recommendations > li:not(.factual),
+    &:has(fieldset input[value="fantasy"]:checked)     .recommendations > li:not(.fantasy),
+    &:has(fieldset input[value="free"]:checked)        .recommendations > li:not(.free),
+    &:has(fieldset input[value="hacking"]:checked)     .recommendations > li:not(.hacking),
+    &:has(fieldset input[value="history"]:checked)     .recommendations > li:not(.history),
+    &:has(fieldset input[value="horror"]:checked)      .recommendations > li:not(.horror),
+    &:has(fieldset input[value="mystery"]:checked)     .recommendations > li:not(.mystery),
+    &:has(fieldset input[value="nature"]:checked)      .recommendations > li:not(.nature),
+    &:has(fieldset input[value="online"]:checked)      .recommendations > li:not(.online),
+    &:has(fieldset input[value="paid"]:checked)        .recommendations > li:not(.paid),
+    &:has(fieldset input[value="philosophy"]:checked)  .recommendations > li:not(.philosophy),
+    &:has(fieldset input[value="recommended"]:checked) .recommendations > li:not(.recommended),
+    &:has(fieldset input[value="romance"]:checked)     .recommendations > li:not(.romance),
+    &:has(fieldset input[value="sci-fi"]:checked)      .recommendations > li:not(.sci-fi),
+    &:has(fieldset input[value="science"]:checked)     .recommendations > li:not(.science),
+    &:has(fieldset input[value="society"]:checked)     .recommendations > li:not(.society),
+    &:has(fieldset input[value="spy"]:checked)         .recommendations > li:not(.spy),
+    &:has(fieldset input[value="thriller"]:checked)    .recommendations > li:not(.thriller),
+    &:has(fieldset input[value="war"]:checked)         .recommendations > li:not(.war),
+    &:has(fieldset input[value="zombie"]:checked)      .recommendations > li:not(.zombie) {
+        opacity: 0.2;
+    }
+}

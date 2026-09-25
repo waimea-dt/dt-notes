@@ -27,41 +27,78 @@
     // Metadata keywords, icons, and tooltips (case-insensitive)
     const METADATA = {
         'recommended': { title: 'Recommended' },
-        'free':        { icon: 'gift', title: 'Free or free-to-use' },
-        'paid':        { icon: 'circle-dollar-sign', title: 'Paid app or service' },
-        'online':      { icon: 'globe', title: 'Online app or service' },
-        'desktop':     { icon: 'monitor', title: 'Desktop app' },
 
-        'hacking':     { icon: 'square-terminal', title: 'Hacking / computers' },
-        'drama':       { icon: 'drama', title: 'Drama' },
-        'action':      { icon: 'sport-shoe', title: 'Action / adventure' },
-        'adventure':   { icon: 'route', title: 'Adventure' },
-        'comedy':      { icon: 'face-grinning', title: 'Comedy' },
-        'thriller':    { icon: 'crosshair', title: 'Thriller / exciting' },
-        'fantasy':     { icon: 'wand', title: 'Fantasy' },
-        'sci-fi':      { icon: 'rocket', title: 'Science Fiction' },
-        'horror':      { icon: 'face-angry', title: 'Horror' },
-        'war':         { icon: 'swords', title: 'War' },
-        'crime':       { icon: 'banknote', title: 'Crime' },
-        'spy':         { icon: 'hat-glasses', title: 'Spy' },
-        'zombie':      { icon: 'skull', title: 'Zombies' },
+        'free':        { icon: 'gift',                   title: 'Free or Free-to-Ese' },
+        'paid':        { icon: 'circle-dollar-sign',     title: 'Paid App or Service' },
+        'online':      { icon: 'globe',                  title: 'Online App or Service' },
+        'desktop':     { icon: 'monitor',                title: 'Desktop App' },
+
+        'hacking':     { icon: 'square-terminal',        title: 'Hacking' },
+        'drama':       { icon: 'drama',                  title: 'Drama' },
+        'action':      { icon: 'sport-shoe',             title: 'Action' },
+        'adventure':   { icon: 'signpost-big',           title: 'Adventure' },
+        'comedy':      { icon: 'face-grinning',          title: 'Comedy' },
+        'thriller':    { icon: 'crosshair',              title: 'Thriller' },
+        'fantasy':     { icon: 'wand',                   title: 'Fantasy' },
+        'sci-fi':      { icon: 'rocket',                 title: 'Sci-Fi' },
+        'horror':      { icon: 'face-angry',             title: 'Horror' },
+        'war':         { icon: 'swords',                 title: 'War' },
+        'crime':       { icon: 'banknote',               title: 'Crime' },
+        'spy':         { icon: 'hat-glasses',            title: 'Spy' },
+        'zombie':      { icon: 'skull',                  title: 'Zombies' },
         'dystopia':    { icon: 'face-slightly-frowning', title: 'Dystopian' },
-        'animated':    { icon: 'pencil-sparkles', title: 'Animated' },
-        'mystery':     { icon: 'search', title: 'Mystery' },
-        'romance':     { icon: 'heart', title: 'Romance' },
-        'biography':   { icon: 'user-round', title: 'Biography' },
-        'neo-noir':    { icon: 'moon', title: 'Neo-noir' },
-        'history':     { icon: 'history', title: 'History' },
-        'society':     { icon: 'user-group', title: 'Society' },
-        'philosophy':  { icon: 'circle-question-mark', title: 'Philosophy' },
-        'documentary': { icon: 'binoculars', title: 'Documentary' },
-        'factual':     { icon: 'info', title: 'Factual' },
-        'science':     { icon: 'atom', title: 'Science' },
-        'computing':   { icon: 'computer', title: 'Computing' },
+        'animated':    { icon: 'pencil-sparkles',        title: 'Animated' },
+        'mystery':     { icon: 'search',                 title: 'Mystery' },
+        'nature':      { icon: 'leaf',                   title: 'Nature' },
+        'romance':     { icon: 'heart',                  title: 'Romance' },
+        'biography':   { icon: 'user-round',             title: 'Biography' },
+        'history':     { icon: 'history',                title: 'History' },
+        'society':     { icon: 'user-group',             title: 'Society' },
+        'philosophy':  { icon: 'circle-question-mark',   title: 'Philosophy' },
+        'factual':     { icon: 'info',                   title: 'Factual' },
+        'science':     { icon: 'atom',                   title: 'Science' },
+        'computing':   { icon: 'computer',               title: 'Computing' },
     }
 
     function resolveScope(root) {
         return root && typeof root.querySelectorAll === 'function' ? root : document
+    }
+
+    function addMetadataFilter(container, metadataValues) {
+        container.querySelectorAll('fieldset.recommendations-filter').forEach(filter => filter.remove())
+
+        const firstHeading = container.querySelector('h1')
+        if (!firstHeading || metadataValues.size === 0) return
+
+        const fieldset = document.createElement('fieldset')
+        fieldset.className = 'recommendations-filter'
+
+        // const legend = document.createElement('legend')
+        // legend.textContent = 'Filter by metadata'
+        // fieldset.append(legend)
+
+        const allLabel = document.createElement('label')
+        const allInput = document.createElement('input')
+        allInput.type = 'radio'
+        allInput.name = 'recommendations-filter'
+        allInput.value = 'all'
+        allInput.checked = true
+        allLabel.append(allInput, ' All')
+        fieldset.append(allLabel)
+
+        Array.from(metadataValues)
+            .sort((first, second) => METADATA[first].title.localeCompare(METADATA[second].title))
+            .forEach(genre => {
+                const label = document.createElement('label')
+                const input = document.createElement('input')
+                input.type = 'radio'
+                input.name = 'recommendations-filter'
+                input.value = genre
+                label.append(input, ` ${METADATA[genre].title}`)
+                fieldset.append(label)
+            })
+
+        firstHeading.parentElement.insertBefore(fieldset, firstHeading.nextSibling)
     }
 
     function processRecommendations(root) {
@@ -91,6 +128,8 @@
         }
 
         if (!markerClasses) return
+
+        const metadataValues = new Set()
 
         // Process ALL h2 headings in the page
         const selector = scope === document ? '.markdown-section h2' : 'h2'
@@ -152,6 +191,7 @@
                 // Add all found classes to the parent LI
                 foundClasses.forEach(cls => {
                     li.classList.add(cls)
+                    metadataValues.add(cls)
                 })
 
                 if (foundClasses.includes('recommended')) {
@@ -171,6 +211,8 @@
                 addIcons(li, foundClasses)
             })
         })
+
+        addMetadataFilter(container, metadataValues)
 
         if (window.lucide) {
             lucide.createIcons({

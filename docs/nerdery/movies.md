@@ -20,6 +20,7 @@
     - **Drama**
     - **Biography**
     - **History**
+    - **Computing**
     - 1999
 
     A sharp biographical drama about the early battle between Apple and Microsoft.
@@ -30,6 +31,7 @@
     - **Sci-Fi**
     - **Action**
     - **Hacking**
+    - **Adventure**
     - 1982
 
     A neon-drenched digital-world adventure that feels like a dream of computers and code made visible.
@@ -43,6 +45,7 @@
     - **Drama**
     - **Biography**
     - **Thriller**
+    - **War**
     - 2014
 
     A tense, human story about Alan Turing and the codebreaking effort that changed history.
@@ -53,19 +56,10 @@
     - **War**
     - **Thriller**
     - **Action**
+    - **Drama**
     - 1990
 
     A tense Cold War submarine thriller full of strategy, suspicion, and nerve-rattling pressure.
-
-- ![](_assets/movies/battle-royale.jpg)
-    [Battle Royale](https://www.imdb.com/title/tt0266308/)
-
-    - **Drama**
-    - **Thriller**
-    - **Action**
-    - 2000
-
-    A brutal survival story where a class of students is forced into a deadly game of elimination.
 
 - ![](_assets/movies/crimson-tide.jpg)
     [Crimson Tide](https://www.imdb.com/title/tt0112740/)
@@ -73,6 +67,7 @@
     - **War**
     - **Thriller**
     - **Action**
+    - **Drama**
     - 1995
 
     A fierce and claustrophobic submarine drama where trust is as dangerous as the enemy.
@@ -86,6 +81,7 @@
     - **Sci-Fi**
     - **Horror**
     - **Action**
+    - **Thriller**
     - 1979-2024
 
     A terrifying space-horror classic where a crew learns the hard way that the unknown is never safe.
@@ -104,6 +100,7 @@
     - **Sci-Fi**
     - **Action**
     - **Adventure**
+    - **Drama**
     - 2021-2024
 
     A massive desert-world epic about power, prophecy, and survival on a planet built for collapse.
@@ -157,6 +154,7 @@
     - **Sci-Fi**
     - **Comedy**
     - **Adventure**
+    - **Drama**
     - 2015
 
     A funny, tense survival story about a stranded astronaut trying to stay alive and stay sane.
@@ -187,6 +185,7 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
+    - **Adventure**
     - 2014
 
     A clever time-loop action film where a soldier keeps reliving the same battle until he learns to win.
@@ -220,6 +219,7 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
+    - **Mystery**
     - 2010
 
     A layered, high-stakes dream-heist film that turns architecture, psychology, and obsession into pure spectacle.
@@ -230,6 +230,7 @@
     - **Sci-Fi**
     - **Drama**
     - **Thriller**
+    - **Mystery**
     - 2004
 
     A compact, clever time-travel film that rewards attention and rewards it hard.
@@ -243,12 +244,13 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
+    - **Horror**
     - 1984-2003
 
     A relentless machine from the future and a tense chase that helped define the action sci-fi genre.
 
     - [The Terminator](https://www.imdb.com/title/tt0088247/) (1984)
-    - [T2: Judgment Day](https://www.imdb.com/title/tt0103064/) (1991)
+    - [T2: Judgement Day](https://www.imdb.com/title/tt0103064/) (1991)
     - [T3: Rise of the Machines](https://www.imdb.com/title/tt0181852/) (2003)
 
 - ![](_assets/movies/the-matrix.jpg)
@@ -257,6 +259,8 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
+    - **Dystopia**
+    - **Hacking**
     - 1999-2021
 
     A mind-bending cyberpunk series about reality, choice, and whether humans are still in control.
@@ -272,6 +276,7 @@
     - **Animated**
     - **Sci-Fi**
     - **Action**
+    - **Dystopia**
     - 1988
 
     A landmark cyberpunk anime with explosive energy, huge ideas, and a gorgeous futuristic city.
@@ -290,14 +295,26 @@
     Blade Runner
 
     - **Sci-Fi**
-    - **Neo-Noir**
     - **Action**
+    - **Drama**
+    - **Crime**
     - 1982 / 2017
 
     Rain-soaked, moody, and full of big questions about humanity, memory, and identity.
 
     - [Blade Runner](https://www.imdb.com/title/tt0083658/) (1982)
     - [Blade Runner 2049](https://www.imdb.com/title/tt1856101/) (2017)
+
+- ![](_assets/movies/battle-royale.jpg)
+    [Battle Royale](https://www.imdb.com/title/tt0266308/)
+
+    - **Dystopia**
+    - **Thriller**
+    - **Action**
+    - **Drama**
+    - 2000
+
+    A brutal survival story where a class of students is forced into a deadly game of elimination.
 
 - ![](_assets/movies/ready-player-one.jpg)
     [Ready Player One](https://www.imdb.com/title/tt1677720/)
@@ -315,6 +332,8 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
+    - **Drama**
+    - **Dystopia**
     - 2013
 
     A brutal, claustrophobic survival story set on a train that carries the last of humanity.
@@ -325,6 +344,7 @@
     - **Sci-Fi**
     - **Comedy**
     - **Drama**
+    - **Dystopia**
     - 1985
 
     A darkly funny dystopian satire about bureaucracy, freedom, and a world gone wrong.
@@ -335,6 +355,8 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
+    - **Drama**
+    - **Dystopia**
     - 2009
 
     A gritty, inventive alien-invasion story that mixes action with sharp social commentary.
@@ -355,6 +377,7 @@
     - **Sci-Fi**
     - **Action**
     - **Drama**
+    - **Thriller**
     - 2009
 
     A layered superhero story with big ideas, messy morals, and a lot of political weight.
@@ -368,6 +391,7 @@
     - **Fantasy**
     - **Adventure**
     - **Action**
+    - **Drama**
     - 2001-2003
 
     A sweeping epic of friendship, courage, and a quest that decides the fate of Middle-earth.
@@ -382,6 +406,7 @@
     - **Fantasy**
     - **Adventure**
     - **Comedy**
+    - **Romance**
     - 2020
 
     A charming post-apocalypse adventure about finding your way home and learning to live again.
@@ -395,6 +420,7 @@
     - **Action**
     - **Sci-Fi**
     - **Adventure**
+    - **Dystopia**
     - 1979-2016
 
     A brutal, unforgettable road-war saga about survival, revenge, and a broken future.
@@ -410,6 +436,7 @@
     - **Sci-Fi**
     - **Thriller**
     - **Mystery**
+    - **Action**
     - 2011
 
     A clever, fast-moving time-loop mystery where every restart carries a new clue and a new risk.
@@ -420,6 +447,7 @@
     - **Action**
     - **Drama**
     - **Thriller**
+    - **Dystopia**
     - 2006
 
     A stylish dystopian action film about freedom, identity, and the power of a single voice.
@@ -430,6 +458,8 @@
     - **Action**
     - **Horror**
     - **Sci-Fi**
+    - **Thriller**
+    - **Zombie**
     - 2013
 
     A fast-moving zombie blockbuster about global panic, survival, and the cost of keeping humanity together.
@@ -466,6 +496,7 @@
     - **Action**
     - **Comedy**
     - **Romance**
+    - **Fantasy**
     - 2010
 
     A fast, stylish video-game movie with killer music, sharp jokes, and a lot of heart.
@@ -476,6 +507,8 @@
     - **Comedy**
     - **Action**
     - **Sci-Fi**
+    - **Horror**
+    - **Zombie**
     - 2004
 
     Two hapless, every day mates find themselves in the midst of a zombie apocalypse. Obviously the pub will be the safest place to be.

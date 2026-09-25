@@ -10,6 +10,7 @@
     - **Animated**
     - **Fantasy**
     - **Adventure**
+    - **Comedy**
     - 2010-2018
 
     Finn and Jake explore the strange, colourful Land of Ooo, meeting monsters, heroes and the occasional mathematical disaster.
@@ -20,6 +21,7 @@
     - **Animated**
     - **Mystery**
     - **Comedy**
+    - **Horror**
     - 2012-2016
 
     Twins spend a strange summer uncovering supernatural secrets in a small Oregon town.
@@ -40,6 +42,7 @@
     - **Animated**
     - **Sci-Fi**
     - **Adventure**
+    - **Dystopia**
     - 2020
 
     A sheltered girl crosses a colourful post-apocalyptic world ruled by intelligent mutant animals.
@@ -50,6 +53,7 @@
     - **Animated**
     - **Fantasy**
     - **Drama**
+    - **Action**
     - 2021-2024
 
     Two sisters are pulled onto opposite sides of a conflict between the wealthy and troubled cities of Piltover and Zaun.
@@ -63,6 +67,7 @@
     - **Drama**
     - **Mystery**
     - **Thriller**
+    - **Action**
     - 2019
 
     A murder investigation exposes a buried history of masked heroes, racism and power in an alternate America.
@@ -73,6 +78,7 @@
     - **Sci-Fi**
     - **Action**
     - **Drama**
+    - **Dystopia**
     - 2024-
 
     A sheltered vault dweller enters a brutal wasteland where old-world secrets still shape the future.
@@ -136,6 +142,7 @@
     - **Sci-Fi**
     - **Mystery**
     - **Thriller**
+    - **Drama**
     - 2022-
 
     Employees at a mysterious company separate their work memories from their outside lives, with unsettling results.
@@ -146,6 +153,7 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
+    - **Comedy**
     - 2025-
 
     A security android secretly gains free will and would much rather watch serials than discuss its feelings.
@@ -166,6 +174,7 @@
     - **Sci-Fi**
     - **Thriller**
     - **Drama**
+    - **History**
     - 2016
 
     A teacher travels back in time to stop the Kennedy assassination, discovering that history resists being changed.
@@ -186,6 +195,7 @@
     - **Sci-Fi**
     - **Crime**
     - **Thriller**
+    - **Neo-Noir**
     - 2018-2020
 
     In a future where bodies can be replaced, a resurrected soldier investigates a wealthy man's suspicious murder.
@@ -196,6 +206,7 @@
     - **Sci-Fi**
     - **Drama**
     - **Thriller**
+    - **Society**
     - 2011-
 
     Dark, sharp standalone stories about technology, society and the uncomfortable parts of being human.
@@ -206,6 +217,7 @@
 - ![](_assets/tv/mr-robot.jpg)
     [Mr Robot](https://www.imdb.com/title/tt4158110/)
 
+    - **Computing**
     - **Hacking**
     - **Thriller**
     - **Drama**
@@ -219,6 +231,7 @@
     - **Hacking**
     - **Drama**
     - **History**
+    - **Computing**
     - 2014-2017
 
     Engineers and entrepreneurs chase the next breakthrough through the early personal-computer revolution.
@@ -227,7 +240,7 @@
     [The IT Crowd](https://www.imdb.com/title/tt0487831/)
 
     - **Comedy**
-    - **Hacking**
+    - **Computing**
     - 2006-2013
 
     Two socially awkward technicians and their technically clueless manager survive life in a basement IT department.
@@ -241,6 +254,7 @@
     - **Drama**
     - **History**
     - **Thriller**
+    - **Factual**
     - 2019
 
     A devastating account of the nuclear disaster and the people who fought to contain its consequences.
@@ -251,8 +265,10 @@
 - ![](_assets/tv/planet-earth.jpg)
     Planet Earth Series
 
-    - **Documentary**
     - **Adventure**
+    - **Science**
+    - **Factual**
+    - **Nature**
     - 2001-2024
 
     An extraordinary journey through the habitats, landscapes and wildlife of our planet.
@@ -271,6 +287,8 @@
 
     - **History**
     - **Comedy**
+    - **Science**
+    - **Factual**
     - 1988-1993
 
     Tim Hunkin takes everyday machines apart and explains how they work with wit, curiosity and wonderfully improvised models.

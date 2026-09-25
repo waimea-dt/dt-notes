@@ -10,6 +10,7 @@
     - **Adventure**
     - **Sci-Fi**
     - **History**
+    - **Computing**
     - Neal Stephenson
     - 1999
 
@@ -21,6 +22,7 @@
     - **Sci-Fi**
     - **Action**
     - **Thriller**
+    - **Hacking**
     - Neal Stephenson
     - 2011
 
@@ -59,6 +61,7 @@
     - **Sci-Fi**
     - **Adventure**
     - **History**
+    - **Fantasy**
     - Neal Stephenson, Nicole Galland
     - 2017
 
@@ -96,6 +99,7 @@
     - **Sci-Fi**
     - **Adventure**
     - **Comedy**
+    - **Science**
     - Andy Weir
     - 2011
 
@@ -107,6 +111,7 @@
     - **Sci-Fi**
     - **Adventure**
     - **Drama**
+    - **Science**
     - Andy Weir
     - 2021
 
@@ -118,6 +123,7 @@
     - **Sci-Fi**
     - **Adventure**
     - **Thriller**
+    - **Crime**
     - Andy Weir
     - 2017
 
@@ -144,6 +150,7 @@
     - **Sci-Fi**
     - **Thriller**
     - **Adventure**
+    - **Science**
     - Neal Stephenson
     - 2015
 
@@ -155,6 +162,7 @@
     - **Sci-Fi**
     - **Adventure**
     - **Mystery**
+    - **Science**
     - Neal Stephenson
     - 2008
 
@@ -199,6 +207,8 @@
 
     - **Sci-Fi**
     - **Adventure**
+    - **War**
+    - **Philosophy**
     - Orson Scott Card
     - 1985-2021
 
@@ -217,6 +227,7 @@
     - **Sci-Fi**
     - **Adventure**
     - **Philosophy**
+    - **Society**
     - Iain M. Banks
     - 1987-2012
 
@@ -258,6 +269,7 @@
 
     - **Fantasy**
     - **Adventure**
+    - **War**
     - J.R.R. Tolkien
     - 1937-1955
 
@@ -322,6 +334,7 @@
     - **Fantasy**
     - **Sci-Fi**
     - **Dystopia**
+    - **Drama**
     - David Mitchell
     - 2004
 
@@ -333,6 +346,7 @@
 
     - **Fantasy**
     - **Adventure**
+    - **Horror**
     - Stephen King
     - 1982-2012
 
