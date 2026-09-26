@@ -381,6 +381,33 @@
     The amazing story of the creation of ARPANET, the predecessor of the Internet, and the incredible people who made it happen.
 
 
+- ![](_assets/books/hackers.jpg)
+    [Hackers: Heroes of the Computer Revolution](https://www.goodreads.com/en/book/show/56829.Hackers)
+
+    - **Computing**
+    - **History**
+    - **Factual**
+    - Steven Levy
+    - 1984
+
+    Chronicles the brilliant, eccentric pioneers who shaped early computer culture from the late 1950s through the early 1980s. Really interesting reading.
+
+
+- ![](_assets/books/cuckoos-egg.jpg)
+    [The Cuckoo's Egg](https://www.goodreads.com/book/show/18154.The_Cuckoo_s_Egg)
+
+    - **Computing**
+    - **History**
+    - **Factual**
+    - **Crime**
+    - Clifford Stoll
+    - 1989
+
+    '*Tracking a Spy Through the Maze of Computer Espionage*'
+
+    An systems administrator investigates a 75-cent accounting error, ends up spending a year tracking a computer hacker breaking into military networks, and eventually uncovers an international espionage ring linked to the KGB.
+
+
 - ![](_assets/books/computers-britain.jpg)
     [The Computers that Made Britain](https://www.goodreads.com/en/book/show/58312784-the-computers-that-made-britain)
 
@@ -391,6 +418,34 @@
     - 2021
 
     A short history of some of the innovative and novel computers produced in the UK during the 1980s personal computer boom, and the people behind them.
+
+
+- ![](_assets/books/cult-dead-cow.jpg)
+    [Cult of the Dead Cow](https://www.goodreads.com/en/book/show/42283862-cult-of-the-dead-cow)
+
+    - **Computing**
+    - **History**
+    - **Factual**
+    - Joseph Menn
+    - 2019
+
+    '*How the Original Hacking Supergroup Might Just Save the World*'
+
+    A history of America's oldest and most influential hacking group, the Cult of the Dead Cow. Its members have impacted the world of technology in many ways, including hacktivism, digital privacy, and cybersecurity.
+
+
+- ![](_assets/books/innovators.jpg)
+    [The Innovators](https://www.goodreads.com/book/show/21856367-the-innovators)
+
+    - **Computing**
+    - **History**
+    - **Factual**
+    - Walter Isaacson
+    - 2014
+
+    '*How a Group of Hackers, Geniuses and Geeks Created the Digital Revolution*'
+
+    Chronicles the history of the digital revolution, arguing that the creation of computers and the internet was driven not by solitary geniuses, but by collaborative teamwork among diverse groups of hackers, engineers, and visionaries.
 
 
 ## Science & Philosophy
