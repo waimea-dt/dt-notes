@@ -382,19 +382,6 @@
 
     An amusing tale of a girl, her robot friend, and a rag-tag group travelling through a strange landscape. Based on wonderful [artwork by Simon Stalenhag](https://www.simonstalenhag.se/es.html), the movie is visually stunning.
 
-- ![](_assets/movies/battle-royale.jpg)
-    [Battle Royale](https://www.imdb.com/title/tt0266308/)
-
-    - **Dystopia**
-    - **Thriller**
-    - **Action**
-    - **Drama**
-    - 2000
-
-    **<i data-lucide="triangle-alert"></i> R18**
-
-    A brutal survival story where a class of students is forced into a deadly game of elimination. So dark, but so well done - another genre-establishing movie.
-
 - ![](_assets/movies/ready-player-one.jpg)
     [Ready Player One](https://www.imdb.com/title/tt1677720/)
 

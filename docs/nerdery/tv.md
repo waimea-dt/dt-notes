@@ -176,40 +176,6 @@
 
     A secretive quantum computing division of a tech company, a powerful quantum computer that predicts the past and future, a conflict over whether human free will is real or not. Gripping drama.
 
-- ![](_assets/tv/dark-matter.jpg)
-    [Dark Matter](https://www.imdb.com/title/tt4159076/)
-
-    - **Sci-Fi**
-    - **Thriller**
-    - **Mystery**
-    - 2015
-
-    A crew of strangers wakes aboard a spaceship with no memories and must uncover who they were. Dark, exciting and clever story-telling.
-
-- ![](_assets/tv/utopia.jpg)
-    [Utopia](https://www.imdb.com/title/tt4159076/)
-
-    - **Sci-Fi**
-    - **Thriller**
-    - **Mystery**
-    - **Comedy**
-    - **Drama**
-    - 2013-14
-
-    **<i data-lucide="triangle-alert"></i> R18**
-
-    A small group of comic book fans find themselves ruthlessly hunted after obtaining the unpublished manuscript of a cult graphic novel that accurately predicts global disasters. Dark, funny, violent and really good.
-
-- ![](_assets/tv/humans.jpg)
-    [Humans](https://www.imdb.com/title/tt4122068/)
-
-    - **Sci-Fi**
-    - **Drama**
-    - **Dystopia**
-    - 2015-2018
-
-    An alternative future where the latest gadget everyone wants is a 'synth', a super-realistic humanoid android. Things don't go well.
-
 - ![](_assets/tv/murderbot.jpg)
     [Murderbot](https://www.imdb.com/title/tt30444310/)
 
@@ -241,17 +207,6 @@
     - 2017-2020
 
     A videogame champion is recruited by time-travelling warriors to save humanity, despite having no useful qualifications. Great humour, good fun.
-
-- ![](_assets/tv/altered-carbon.jpg)
-    [Altered Carbon](https://www.imdb.com/title/tt2261227/)
-
-    - **Sci-Fi**
-    - **Crime**
-    - **Thriller**
-    - **Neo-Noir**
-    - 2018-2020
-
-    In a future where bodies can be replaced, a resurrected soldier investigates a wealthy man's suspicious murder. Lots of twists and turns.
 
 - ![](_assets/tv/black-mirror.jpg)
     [Black Mirror](https://www.imdb.com/title/tt2085059/)
@@ -301,16 +256,6 @@
     '*Hello, IT... Have you tried turning it off and on again?*'
 
     Two socially awkward technicians and their technically clueless manager survive life in a basement IT department. Brilliantly funny, every episode has a laugh-out-loud moment.
-
-- ![](_assets/tv/silicon-valley.jpg)
-    [Silicon Valley](https://www.imdb.com/title/tt2575988/)
-
-    - **Comedy**
-    - **Drama**
-    - **Computing**
-    - 2014-2019
-
-    Follows the struggle of Richard Hendricks, a Silicon Valley engineer trying to build his own company called Pied Piper. Uncomfortable to watch, but really funny, with lots of nerd humour.
 
 
 ## Historical Drama
