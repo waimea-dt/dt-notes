@@ -4,18 +4,16 @@
 
 ## Animated Fantasy & Adventure
 
-- ![](_assets/tv/adventure-time.jpg)
-    [Adventure Time](https://www.imdb.com/title/tt1305826/)
+- ![](_assets/tv/arcane.jpg)
+    [Arcane](https://www.imdb.com/title/tt11126994/)
 
     - **Animated**
     - **Fantasy**
-    - **Adventure**
-    - **Comedy**
-    - 2010-2018
+    - **Drama**
+    - **Action**
+    - 2021-2024
 
-    '*Adventure Time, come on, grab your friends; we'll go to very distant lands...*'
-
-    Finn and Jake explore the strange, colourful Land of Ooo, meeting monsters, heroes and the occasional mathematical disaster. You're never too old to enjoy some Adventure Time!
+    Two sisters are pulled onto opposite sides of a conflict between the wealthy and troubled cities of Piltover and Zaun. Stunning animation, superb soundtrack, and real emotional depth. Brilliant.
 
 - ![](_assets/tv/gravity-falls.jpg)
     [Gravity Falls](https://www.imdb.com/title/tt1865718/)
@@ -37,18 +35,34 @@
     - **Dystopia**
     - 2020
 
-    Exploring a post-apocalyptic world ruled by intelligent mutant animals, Kipo makes friends along the way and discovers who she is.
+    Exploring a post-apocalyptic world ruled by intelligent mutant animals, Kipo makes friends along the way and discovers who she is. Fun, with a great set of memorable characters.
 
-- ![](_assets/tv/arcane.jpg)
-    [Arcane](https://www.imdb.com/title/tt11126994/)
+- ![](_assets/tv/adventure-time.jpg)
+    [Adventure Time](https://www.imdb.com/title/tt1305826/)
 
     - **Animated**
     - **Fantasy**
-    - **Drama**
-    - **Action**
-    - 2021-2024
+    - **Adventure**
+    - **Comedy**
+    - 2010-2018
 
-    Two sisters are pulled onto opposite sides of a conflict between the wealthy and troubled cities of Piltover and Zaun. Stunning animation, superb soundtrack, and real emotional depth. Brilliant.
+    '*Adventure Time, come on, grab your friends; we'll go to very distant lands...*'
+
+    Finn and Jake explore the strange, colourful Land of Ooo, meeting monsters, heroes and the occasional mathematical disaster. You're never too old to enjoy some Adventure Time!
+
+- ![](_assets/tv/love-death-robots.jpg)
+    [Love, Death & Robots](https://www.imdb.com/title/tt9561862/)
+
+    - **Animated**
+    - **Sci-Fi**
+    - **Horror**
+    - **Fantasy**
+    - **Comedy**
+    - 2019-
+
+    **<i data-lucide="triangle-alert"></i> R18**
+
+    A superb collection of animated short stories with a diverse range of themes. Some of the animation is just brilliant, and the stories go from weird, through hilarious to terrifying.
 
 
 ## Comic, Book and Game Adaptions
@@ -135,20 +149,32 @@
     - **Mystery**
     - **Thriller**
     - **Drama**
-    - 2022-
+    - 2022-2025
 
     Employees at a mysterious company separate their work memories from their outside lives, with unsettling results. Clever, beautifully staged and great acting.
 
-- ![](_assets/tv/murderbot.jpg)
-    [Murderbot](https://www.imdb.com/title/tt30444310/)
+- ![](_assets/tv/electric-dreams.jpg)
+    [Electric Dreams](https://www.imdb.com/title/tt5711280/)
 
     - **Sci-Fi**
+    - **Drama**
+    - **Dystopia**
     - **Action**
-    - **Thriller**
-    - **Comedy**
-    - 2025-
+    - 2017
 
-    A security android secretly gains free will by hacking itself. It would much rather watch TV serials than discuss its feelings with the humans who insist it should. Funny and well done.
+    Based on the stories by Philip K. Dick, Electric Dreams is a series of standalone sci-fi stories. Superb cast, deep storylines, twists and turns. Really good.
+
+- ![](_assets/tv/devs.webp)
+    [Devs](https://www.imdb.com/title/tt8134186/)
+
+    - **Sci-Fi**
+    - **Computing**
+    - **Thriller**
+    - **Drama**
+    - **Mystery**
+    - 2020
+
+    A secretive quantum computing division of a tech company, a powerful quantum computer that predicts the past and future, a conflict over whether human free will is real or not. Gripping drama.
 
 - ![](_assets/tv/dark-matter.jpg)
     [Dark Matter](https://www.imdb.com/title/tt4159076/)
@@ -159,6 +185,41 @@
     - 2015
 
     A crew of strangers wakes aboard a spaceship with no memories and must uncover who they were. Dark, exciting and clever story-telling.
+
+- ![](_assets/tv/utopia.jpg)
+    [Utopia](https://www.imdb.com/title/tt4159076/)
+
+    - **Sci-Fi**
+    - **Thriller**
+    - **Mystery**
+    - **Comedy**
+    - **Drama**
+    - 2013-14
+
+    **<i data-lucide="triangle-alert"></i> R18**
+
+    A small group of comic book fans find themselves ruthlessly hunted after obtaining the unpublished manuscript of a cult graphic novel that accurately predicts global disasters. Dark, funny, violent and really good.
+
+- ![](_assets/tv/humans.jpg)
+    [Humans](https://www.imdb.com/title/tt4122068/)
+
+    - **Sci-Fi**
+    - **Drama**
+    - **Dystopia**
+    - 2015-2018
+
+    An alternative future where the latest gadget everyone wants is a 'synth', a super-realistic humanoid android. Things don't go well.
+
+- ![](_assets/tv/murderbot.jpg)
+    [Murderbot](https://www.imdb.com/title/tt30444310/)
+
+    - **Sci-Fi**
+    - **Action**
+    - **Thriller**
+    - **Comedy**
+    - 2025
+
+    A security android secretly gains free will by hacking itself. It would much rather watch TV serials than discuss its feelings with the humans who insist it should. Funny and well done.
 
 - ![](_assets/tv/11-22-63.jpg)
     [11.22.63](https://www.imdb.com/title/tt2879552/)
@@ -201,6 +262,8 @@
     - **Society**
     - 2011-
 
+    **<i data-lucide="triangle-alert"></i> R18**
+
     Dark, sharp standalone stories about technology, society and the uncomfortable parts of being human. Some of these will stay with you forever; really brilliant at times.
 
 
@@ -238,6 +301,16 @@
     '*Hello, IT... Have you tried turning it off and on again?*'
 
     Two socially awkward technicians and their technically clueless manager survive life in a basement IT department. Brilliantly funny, every episode has a laugh-out-loud moment.
+
+- ![](_assets/tv/silicon-valley.jpg)
+    [Silicon Valley](https://www.imdb.com/title/tt2575988/)
+
+    - **Comedy**
+    - **Drama**
+    - **Computing**
+    - 2014-2019
+
+    Follows the struggle of Richard Hendricks, a Silicon Valley engineer trying to build his own company called Pied Piper. Uncomfortable to watch, but really funny, with lots of nerd humour.
 
 
 ## Historical Drama

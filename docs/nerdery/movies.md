@@ -14,6 +14,18 @@
 
     A teenage hacker accidentally connects to a military computer and almost triggers World War III. Awesome 80s tech.
 
+- ![](_assets/movies/sneakers.jpg)
+    [Sneakers](https://www.imdb.com/title/tt0105435/)
+
+    - **Crime**
+    - **Comedy**
+    - **Mystery**
+    - **Thriller**
+    - **Hacking**
+    - 1992
+
+    A team of eccentric security experts and former hackers are forced by the government to steal a universal code-breaking device, but end up in an international conspiracy.
+
 - ![](_assets/movies/pirates-of-silicon-valley.jpg)
     [Pirates of Silicon Valley](https://www.imdb.com/title/tt0168122/)
 
@@ -35,6 +47,16 @@
     - 1982
 
     Another great 80s movie, one of the first to use computer graphics. It's a neon-drenched digital adventure, good vs bad, lots of computing reference easter eggs.
+
+- ![](_assets/movies/micro-men.jpg)
+    [Micro Men](https://www.imdb.com/title/tt1459467/)
+
+    - **History**
+    - **Drama**
+    - **Computing**
+    - 2009
+
+    An entertaining drama about conflict between some of the key figures in the 80s personal computer boom: Clive Sinclair (ZX 80/81/Spectrum), Chris Curry (Acorn, BBC Micro)
 
 
 ## War & Thrillers
@@ -74,6 +96,17 @@
 
 
 ## Space & Aliens
+
+- ![](_assets/movies/2001.jpg)
+    [2001: A Space Odyssey](https://www.imdb.com/title/tt0062622/)
+
+    - **Sci-Fi**
+    - **Drama**
+    - **Thriller**
+    - **Adventure**
+    - 1968
+
+    A mysterious artifact is uncovered on the Moon, leading to a mission to Jupiter being launched to discover its origins, carrying two scientists and an AI computer. This film was groundbreaking for its time, and really defined a new era of sci-fi movies. The cinematography is impressive and the visuals still hold up today.
 
 - ![](_assets/movies/alien.avif)
     Alien Series
@@ -128,6 +161,17 @@
 
     A huge, emotional space adventure about love, survival, and humanity's future beyond Earth. Takes a couple of viewings to follow it properly.
 
+- ![](_assets/movies/moon.jpg)
+    [Moon](https://www.imdb.com/title/tt1182345/)
+
+    - **Sci-Fi**
+    - **Adventure**
+    - **Drama**
+    - **Mystery**
+    - 2009
+
+    A worker on a moon base, coming to the end of his three-year mission, discovers a disturbing secret. Dark, claustrophobic and clever.
+
 - ![](_assets/movies/starship-troopers.jpg)
     [Starship Troopers](https://www.imdb.com/title/tt0120201/)
 
@@ -147,6 +191,16 @@
     - 2013
 
     A terrifying survival film set in low Earth orbit. Things go horribly wrong, every mistake feels fatal and every second matters.
+
+- ![](_assets/movies/sunshine.jpg)
+    [Sunshine](https://www.imdb.com/title/tt0448134/)
+
+    - **Sci-Fi**
+    - **Thriller**
+    - **Drama**
+    - 2007
+
+    The Sun is dying and the Earth with it, so a last-ditch mission to restart the Sun with a huge nuclear bomb is launched. Daft premise, but q pretty good movie.
 
 - ![](_assets/movies/the-martian.jpg)
     [The Martian](https://www.imdb.com/title/tt3659388/)
@@ -305,6 +359,29 @@
     - [Blade Runner](https://www.imdb.com/title/tt0083658/) (1982)
     - [Blade Runner 2049](https://www.imdb.com/title/tt1856101/) (2017)
 
+- ![](_assets/movies/children-men.jpg)
+    [Children of Men](https://www.imdb.com/title/tt0206634/)
+
+    - **Dystopia**
+    - **Thriller**
+    - **Sci-Fi**
+    - **Drama**
+    - 2000
+
+    A near-future movie that is bleak. Globally, women have become infertile, but a miraculous pregnancy leads to a tense and terrifying journey. The camerawork and action pieces are really well done.
+
+- ![](_assets/movies/electric-state.jpg)
+    [The Electric State](https://www.imdb.com/title/tt7766378/)
+
+    - **Dystopia**
+    - **Sci-Fi**
+    - **Adventure**
+    - **Comedy**
+    - **Action**
+    - 2025
+
+    An amusing tale of a girl, her robot friend, and a rag-tag group travelling through a strange landscape. Based on wonderful [artwork by Simon Stalenhag](https://www.simonstalenhag.se/es.html), the movie is visually stunning.
+
 - ![](_assets/movies/battle-royale.jpg)
     [Battle Royale](https://www.imdb.com/title/tt0266308/)
 
@@ -313,6 +390,8 @@
     - **Action**
     - **Drama**
     - 2000
+
+    **<i data-lucide="triangle-alert"></i> R18**
 
     A brutal survival story where a class of students is forced into a deadly game of elimination. So dark, but so well done - another genre-establishing movie.
 
@@ -464,6 +543,18 @@
 
     A fast-moving zombie blockbuster about global panic, survival, and the cost of keeping humanity together. Brutal at times; the zombie hordes are done so well.
 
+- ![](_assets/movies/28-days-later.webp)
+    [28 Days Later](https://www.imdb.com/title/tt0289043/)
+
+    - **Dystopia**
+    - **Horror**
+    - **Sci-Fi**
+    - **Drama**
+    - **Zombie**
+    - 2013
+
+    A mysterious, incurable virus spreads throughout the United Kingdom and a group of survivors try to find sanctuary. This movie changed the zombie genre, replacing the typical shuffling corpses with fast, terrifying infected.
+
 - ![](_assets/movies/kill-bill.jpg)
     Kill Bill
 
@@ -471,6 +562,8 @@
     - **Crime**
     - **Thriller**
     - 2003-2004
+
+    **<i data-lucide="triangle-alert"></i> R18**
 
     A stylish revenge epic that mixes samurai energy, comic-book attitude, and pure cinematic flair. Tarantino is a master story-teller, and the visuals here are a treat.
 
@@ -487,6 +580,8 @@
     - **Comedy**
     - **Crime**
     - 2010
+
+    **<i data-lucide="triangle-alert"></i> R18**
 
     A funny, chaotic superhero story that turns the idea of being a hero into absolute chaos. Fun and funny in equal measure.
 
