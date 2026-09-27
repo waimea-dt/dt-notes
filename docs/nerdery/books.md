@@ -69,7 +69,7 @@
     A dark tale of a disturbed teenager on a remote Scottish island who spends his days performing cruel rituals and consulting a homemade death-trap clock. This book is really dark, but also has humorous undertones.
 
 
-## Science Fiction
+## Space Sci-Fi
 
 - ![](_assets/books/the-martian.jpg)
     [The Martian](https://www.goodreads.com/book/show/18007564-the-martian)
@@ -110,30 +110,6 @@
 
     A smuggler on the Moon takes one risky job too many and finds herself caught in a conspiracy over the city of Artemis.
 
-
-- ![](_assets/books/snow-crash.jpg)
-    [Snow Crash](https://www.goodreads.com/book/show/830.Snow_Crash)
-
-    - **Sci-Fi**
-    - **Action**
-    - **Adventure**
-    - Neal Stephenson
-    - 1992
-
-    A pizza delivery driver and a sword-wielding hacker face a digital virus that threatens both the Metaverse and the real world.
-
-- ![](_assets/books/diamond-age.jpg)
-    [The Diamond Age](https://www.goodreads.com/en/book/show/827.The_Diamond_Age)
-
-    - **Sci-Fi**
-    - **Adventure**
-    - Neal Stephenson
-    - 1995
-
-    '*... or a young lady's illustrated primer*'
-
-    A near-future novel in a world of social enclaves and nano-technology; a young girl comes upon an artificially intelligent book that will change her life and those around her.
-
 - ![](_assets/books/three-body-problem.jpg)
     [Remembrance of Earth's Past Series](https://www.goodreads.com/series/189931-remembrance-of-earth-s-past)
 
@@ -162,19 +138,6 @@
     - 2015
 
     The world faces a catastrophic, unavoidable end, and races against time to save some of humanity. It all goes well... until it doesn't.
-
-- ![](_assets/books/anathem.jpg)
-    [Anathem](https://www.goodreads.com/book/show/2845024-anathem)
-
-    - **Sci-Fi**
-    - **Space**
-    - **Adventure**
-    - **Mystery**
-    - **Science**
-    - Neal Stephenson
-    - 2008
-
-    Life for the fraas and suurs of the Concent of Saunt Edhar, a sanctuary for science and maths, moves to a slow and steady beat, but a threat to the world triggers an exodus across, and then off the planet.
 
 - ![](_assets/books/dune.jpg)
     [Dune Series](https://www.goodreads.com/series/45935-dune)
@@ -280,6 +243,45 @@
     1. [Persepolis Rising](https://www.goodreads.com/book/show/28335696-persepolis-rising) (2017)
     1. [Tiamat's Wrath](https://www.goodreads.com/book/show/28335698-tiamat-s-wrath) (2019)
     1. [Leviathan Falls](https://www.goodreads.com/book/show/28335699-leviathan-falls) (2021)
+
+
+## Other Sci-Fi
+
+- ![](_assets/books/snow-crash.jpg)
+    [Snow Crash](https://www.goodreads.com/book/show/830.Snow_Crash)
+
+    - **Sci-Fi**
+    - **Action**
+    - **Adventure**
+    - Neal Stephenson
+    - 1992
+
+    A pizza delivery driver and a sword-wielding hacker face a digital virus that threatens both the Metaverse and the real world.
+
+- ![](_assets/books/diamond-age.jpg)
+    [The Diamond Age](https://www.goodreads.com/en/book/show/827.The_Diamond_Age)
+
+    - **Sci-Fi**
+    - **Adventure**
+    - Neal Stephenson
+    - 1995
+
+    '*... or a young lady's illustrated primer*'
+
+    A near-future novel in a world of social enclaves and nano-technology; a young girl comes upon an artificially intelligent book that will change her life and those around her.
+
+- ![](_assets/books/anathem.jpg)
+    [Anathem](https://www.goodreads.com/book/show/2845024-anathem)
+
+    - **Sci-Fi**
+    - **Space**
+    - **Adventure**
+    - **Mystery**
+    - **Science**
+    - Neal Stephenson
+    - 2008
+
+    Life for the fraas and suurs of the Concent of Saunt Edhar, a sanctuary for science and maths, moves to a slow and steady beat, but a threat to the world triggers an exodus across, and then off the planet.
 
 
 ## Fantasy
