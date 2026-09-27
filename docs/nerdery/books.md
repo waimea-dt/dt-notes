@@ -8,7 +8,7 @@
     [Cryptonomicon](hhttps://www.goodreads.com/book/show/816.Cryptonomicon)
 
     - **Adventure**
-    - **Sci-Fi**
+    - **Thriller**
     - **History**
     - **Computing**
     - Neal Stephenson
@@ -19,7 +19,6 @@
 - ![](_assets/books/reamde.jpg)
     [REAMDE](https://www.goodreads.com/book/show/10552338-reamde)
 
-    - **Sci-Fi**
     - **Action**
     - **Thriller**
     - **Hacking**
@@ -46,7 +45,8 @@
 
     - **Adventure**
     - **History**
-    - **Sci-Fi**
+    - **Science**
+    - **Thriller**
     - Neal Stephenson
     - 2003-2004
 

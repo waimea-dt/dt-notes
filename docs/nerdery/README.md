@@ -22,7 +22,7 @@ Here are some lists of the finest nerdy stuff out there: movies, books, TV shows
 
 [Link](/nerdery/books.md)
 
-Books to capture your imagination and make you think
+Books to capture your imagination
 
 ---
 
@@ -32,7 +32,7 @@ Books to capture your imagination and make you think
 
 [Link](/nerdery/movies.md)
 
-Awesome movies, full of excitement and nerdy details
+Awesome movies, full of geeky excitement
 
 ---
 
@@ -42,17 +42,17 @@ Awesome movies, full of excitement and nerdy details
 
 [Link](/nerdery/tv.md)
 
-TV shows and series that are full of the good stuff
+TV series full of the good stuff
 
-<!-- ---
+---
 
-### Nerdy Websites
+### Nerdy Documentaries
 
-<i data-lucide="globe"></i>
+<i data-lucide="eye"></i>
 
-[Link](/nerdery/websites.md)
+[Link](/nerdery/docos.md)
 
-Websites that will appeal to the nerdy side of you -->
+Documentaries to feed your nerd brain
 
 
 </menu>

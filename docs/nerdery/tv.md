@@ -65,7 +65,17 @@
     A superb collection of animated short stories with a diverse range of themes. Some of the animation is just brilliant, and the stories go from weird, through hilarious to terrifying.
 
 
-## Comic, Book and Game Adaptions
+## Comic, Novel and Game Adaptions
+
+- ![](_assets/tv/his-dark-materials.jpg)
+    [His Dark Materials](https://www.imdb.com/title/tt5607976/)
+
+    - **Fantasy**
+    - **Adventure**
+    - **Drama**
+    - 2019-2022
+
+    Lyra crosses parallel worlds in a battle involving daemons, powerful institutions and the nature of Dust. This BBC adaption of Philip Pullman's masterful books is so well done.
 
 - ![](_assets/tv/watchmen.jpg)
     [Watchmen](https://www.imdb.com/title/tt7049682/)
@@ -99,6 +109,18 @@
 
     An angel and a demon team up to prevent the apocalypse they have both grown rather fond of avoiding. The Antichrist who should be involved seems to have gone missing. Humorous and fun.
 
+- ![](_assets/tv/umbrella-academy.jpg)
+    [The Umbrella Academy](https://www.imdb.com/title/tt1312171/)
+
+    - **Fantasy**
+    - **Action**
+    - **Adventure**
+    - **Comedy**
+    - **Drama**
+    - 2019-2024
+
+    A dysfunctional family of estranged, superpowered adopted siblings who must reunite upon their adoptive father's death to prevent multiple impending apocalypses across time and space.
+
 - ![](_assets/tv/american-gods.jpg)
     [American Gods](https://www.imdb.com/title/tt1898069/)
 
@@ -118,16 +140,6 @@
     - 2015
 
     Two very different magicians revive English magic while helping a kingdom at war with Napoleon. A good adaption of Susanna Clark's clever novel.
-
-- ![](_assets/tv/his-dark-materials.jpg)
-    [His Dark Materials](https://www.imdb.com/title/tt5607976/)
-
-    - **Fantasy**
-    - **Adventure**
-    - **Drama**
-    - 2019-2022
-
-    Lyra crosses parallel worlds in a battle involving daemons, powerful institutions and the nature of Dust. This BBC adaption of Philip Pullman's masterful books is so well done.
 
 
 ## Science Fiction
@@ -204,6 +216,7 @@
 
     - **Sci-Fi**
     - **Comedy**
+    - **Gaming**
     - **Action**
     - 2017-2020
 
@@ -282,7 +295,7 @@
     Two socially awkward technicians and their technically clueless manager survive life in a basement IT department. Brilliantly funny, every episode has a laugh-out-loud moment.
 
 
-## Historical Drama
+## Docu-Drama
 
 - ![](_assets/tv/chernobyl.jpg)
     [Chernobyl](https://www.imdb.com/title/tt7366338/)
@@ -295,61 +308,4 @@
 
     A devastating account of the nuclear disaster and the people who fought to contain its consequences. Really impressive production covering an incident that impacted all of Europe.
 
-
-## Science, Nature and Technology
-
-- ![](_assets/tv/planet-earth.jpg)
-    Planet Earth Series
-
-    - **Adventure**
-    - **Science**
-    - **Factual**
-    - **Nature**
-    - 2001-2024
-
-    An extraordinary journey through the habitats, landscapes and wildlife of our planet. The production values and camera work in these shows is unsurpassed, and nobody voices a nature show better than Sir David Attenborough.
-
-    - [Blue Planet I](https://www.imdb.com/title/tt0296310/) (2001)
-    - [Blue Planet II](https://www.imdb.com/title/tt6769208/) (2017)
-    - [Planet Earth I](https://www.imdb.com/title/tt0795176/) (2006)
-    - [Planet Earth II](https://www.imdb.com/title/tt5491994/) (2016)
-    - [Planet Earth III](https://www.imdb.com/title/tt9805674/) (2024)
-    - [Human Planet](https://www.imdb.com/title/tt1806234/) (2011)
-    - [Frozen Planet I](https://www.imdb.com/title/tt2092588/) (2012)
-    - [Frozen Planet II](https://www.imdb.com/title/tt9805678/) (2023)
-    - [A Life on Our Planet](https://www.imdb.com/title/tt11989890/) (2020)
-
-- ![](_assets/tv/the-secret-life-of-machines.jpg)
-    [The Secret Life of Machines](https://www.imdb.com/title/tt0431571/)
-
-    - **History**
-    - **Comedy**
-    - **Science**
-    - **Factual**
-    - 1988-1993
-
-    Tim Hunkin takes everyday machines apart and explains how they work with wit, curiosity and wonderfully improvised models. A pretty old show, but really well done and genuinely informative.
-
-    [Watch them all, remastered, on Tim's YouTube channel](https://www.youtube.com/playlist?list=PLtaR0lZhSyAPLuoSbMA29s3Ry8ZUvKff3)
-
-- ![](_assets/tv/horizon.jpg)
-    [Horizon](https://www.imdb.com/title/tt0318224/episodes)
-
-    - **Science**
-    - **Nature**
-    - **Factual**
-    - 1964
-
-    This UK TV show has created some of the best science-focussed TV for years. Always well produced, always interesting, and covering every topic that has impacted humanity for the past six decades.
-
-- ![](_assets/tv/cosmos.jpg)
-    [Cosmos](https://www.imdb.com/title/tt0081846/)
-    and [Cosmos: A Spacetime Odyssey](https://www.imdb.com/title/tt2395695/)
-
-    - **Science**
-    - **Nature**
-    - **Factual**
-    - 1981 / 2014
-
-    Two amazing documentary series, the original hosted by Carl Sagan, and the later one hosted by Neil deGrasse Tyson. They explore the laws of nature, humanity's historic quest for scientific knowledge, and our place within the universe.
 

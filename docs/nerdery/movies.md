@@ -58,6 +58,18 @@
 
     An entertaining drama about conflict between some of the key figures in the 80s personal computer boom: Clive Sinclair (ZX 80/81/Spectrum), Chris Curry (Acorn, BBC Micro)
 
+- ![](_assets/movies/snowden.jpg)
+    [Snowden](https://www.imdb.com/title/tt3774114/)
+
+    - **Thriller**
+    - **Drama**
+    - **Computing**
+    - **Hacking**
+    - **Crime**
+    - 2016
+
+    The true story of a whistleblower, a computer technician who uncovered illegal government mass surveillance, leaked classified documents to journalists, and becomes a fugitive.
+
 
 ## War & Thrillers
 
@@ -326,31 +338,6 @@
     A strategic military sci-fi story about genius, pressure, and the cost of winning. The book this is based on is amazing, and they did well to capture it.
 
 
-## Brain-Twisters
-
-- ![](_assets/movies/inception.jpg)
-    [Inception](https://www.imdb.com/title/tt1375666/)
-
-    - **Sci-Fi**
-    - **Action**
-    - **Thriller**
-    - **Mystery**
-    - 2010
-
-    A layered, high-stakes dream-heist film that turns architecture, psychology, and obsession into pure spectacle; need to watch it multiple times.
-
-- ![](_assets/movies/primer.jpg)
-    [Primer](https://www.imdb.com/title/tt0390384/)
-
-    - **Sci-Fi**
-    - **Drama**
-    - **Thriller**
-    - **Mystery**
-    - 2004
-
-    A compact, clever time-travel film that has so many twisting timelines its hard to follow... the first time, and the second, and the third! But it's worth it.
-
-
 ## Cyberpunk, AI & Dystopia
 
 - ![](_assets/movies/terminator.jpg)
@@ -510,6 +497,31 @@
     A layered superhero story with big ideas, messy morals, and a lot of political weight. An Set during an alternative history Cold War, the graphic novel this is based on is captured beautifully in the film.
 
 
+## Brain-Twisters
+
+- ![](_assets/movies/inception.jpg)
+    [Inception](https://www.imdb.com/title/tt1375666/)
+
+    - **Sci-Fi**
+    - **Action**
+    - **Thriller**
+    - **Mystery**
+    - 2010
+
+    A layered, high-stakes dream-heist film that turns architecture, psychology, and obsession into pure spectacle; need to watch it multiple times.
+
+- ![](_assets/movies/primer.jpg)
+    [Primer](https://www.imdb.com/title/tt0390384/)
+
+    - **Sci-Fi**
+    - **Drama**
+    - **Thriller**
+    - **Mystery**
+    - 2004
+
+    A compact, clever time-travel film that has so many twisting timelines its hard to follow... the first time, and the second, and the third! But it's worth it.
+
+
 ## Fantasy & Adventure Movies
 
 - ![](_assets/movies/lotr.jpg)
@@ -640,6 +652,7 @@
     - **Comedy**
     - **Romance**
     - **Fantasy**
+    - **Gaming**
     - 2010
 
     A fast, stylish video-game movie with killer music, sharp jokes, and a lot of heart. Every nerd can empathise with the central character.
@@ -655,4 +668,16 @@
     - 2004
 
     Two hapless, every day mates find themselves in the midst of a zombie apocalypse. Obviously the pub will be the safest place to be.
+
+- ![](_assets/movies/free-guy.jpg)
+    [Free Guy](https://www.imdb.com/title/tt6264654/)
+
+    - **Gaming**
+    - **Comedy**
+    - **Action**
+    - **Adventure**
+    - **Romance**
+    - 2021
+
+    An NPC in an open-world video game becomes self-aware and teams up with a human player to save his digital home from being shut down. Pretty funny, and full of gaming references.
 
