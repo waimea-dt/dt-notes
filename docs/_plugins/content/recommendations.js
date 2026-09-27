@@ -7,7 +7,7 @@
  * <!-- recommendations media --> adds both "recommendations" and "media".
  * Adds classes to list items based on metadata found in sub-lists, and renders a
  * matching Lucide icon inside a .icons div for non-recommended metadata:
- *   - **Recommended** → adds "recommended" class (no icon, uses a star badge in CSS)
+ *   - **Recommended** → adds "recommended" class + star icon (also uses a star badge in CSS)
  *   - **Free** / **Paid** → adds "free"/"paid" class + gift/circle-dollar-sign icon
  *   - **Online** / **Desktop** → adds "online"/"desktop" class + globe/monitor icon
  *
@@ -26,7 +26,7 @@
 
     // Metadata keywords, icons, and tooltips (case-insensitive)
     const METADATA = {
-        'recommended': { title: 'Recommended' },
+        'recommended': { icon: 'star', title: 'Recommended' },
 
         'free':        { icon: 'gift',                   title: 'Free App' },
         'paid':        { icon: 'circle-dollar-sign',     title: 'Paid App' },
@@ -55,9 +55,10 @@
         'biography':   { icon: 'user-round',             title: 'Biography' },
         'history':     { icon: 'history',                title: 'History' },
         'society':     { icon: 'user-group',             title: 'Society' },
-        'philosophy':  { icon: 'circle-question-mark',   title: 'Philosophy' },
+        'philosophy':  { icon: 'lightbulb',              title: 'Philosophy' },
         'factual':     { icon: 'info',                   title: 'Factual' },
         'science':     { icon: 'atom',                   title: 'Science' },
+        'gaming':      { icon: 'gamepad-2',              title: 'Gaming' },
         'computing':   { icon: 'computer',               title: 'Computing' },
     }
 
@@ -81,12 +82,18 @@
 
         const allLabel = document.createElement('label')
         const allInput = document.createElement('input')
+        const allIconWrapper = document.createElement('span')
+        const allIcon = document.createElement('i')
 
         allInput.type = 'radio'
         allInput.name = 'recommendations-filter'
         allInput.value = 'all'
         allInput.checked = true
-        allLabel.append(allInput, ' View All')
+        allIconWrapper.className = 'recommendations-filter-icon'
+        allIconWrapper.setAttribute('aria-hidden', 'true')
+        allIcon.setAttribute('data-lucide', 'circle-off')
+        allIconWrapper.append(allIcon)
+        allLabel.append(allInput, allIconWrapper, 'View All')
         filterContainer.append(allLabel)
 
         Array.from(metadataValues)
@@ -94,10 +101,24 @@
             .forEach(genre => {
                 const label = document.createElement('label')
                 const input = document.createElement('input')
+                const icon = document.createElement('i')
+                const iconName = METADATA[genre].icon
+
                 input.type = 'radio'
                 input.name = 'recommendations-filter'
                 input.value = genre
-                label.append(input, ` ${METADATA[genre].title}`)
+                label.append(input)
+
+                if (iconName) {
+                    const iconWrapper = document.createElement('span')
+                    iconWrapper.className = 'recommendations-filter-icon'
+                    iconWrapper.setAttribute('aria-hidden', 'true')
+                    icon.setAttribute('data-lucide', iconName)
+                    iconWrapper.append(icon)
+                    label.append(iconWrapper)
+                }
+
+                label.append(METADATA[genre].title)
                 filterContainer.append(label)
             })
 
@@ -232,6 +253,7 @@
     function addIcons(li, foundClasses) {
         let icons = li.querySelector(':scope > .icons')
         const metadataWithIcons = foundClasses
+            .filter(cls => cls !== 'recommended')
             .map(cls => METADATA[cls])
             .filter(metadata => metadata?.icon)
 

@@ -235,15 +235,16 @@
 /* FILTERING ===================================================== */
 
 .markdown-section .recommendations-filter {
-
+    --recommendations-filter-width: 6rem;
+    --recommendations-filter-size: var(--font-med);
     --recommendations-filter-off: var(--color-mono-5);
-    --recommendations-filter-on: var(--theme-color);
+    --recommendations-filter-on:  var(--theme-color);
 
     position: sticky;
     top: calc(-1 * var(--gap-small));
     z-index: 99;
     padding: var(--padding-med) var(--padding);
-    font-size: var(--font-small);
+    font-size: var(--recommendations-filter-size);
     margin-inline: clamp(0px, 5vw, 5vw);
     box-shadow: var(--box-shadow-small);
 
@@ -289,10 +290,32 @@
 
         label {
             text-wrap: nowrap;
-            min-width: 6rem;
+            min-width: var(--recommendations-filter-width);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--gap-tiny);
+            cursor: pointer;
+
+            &:hover {
+                color: var(--recommendations-filter-on);
+            }
+
+            input {
+                display: none;
+            }
+
+            .recommendations-filter-icon {
+                display: inline-flex;
+                width: 1.2em;
+                height: 1.2em;
+            }
+
+            &:has(input:checked) {
+                color: var(--recommendations-filter-on);
+            }
 
             &:has(input[value="all"]) {
-                color: var(--recommendations-filter-off);
+                /* color: var(--recommendations-filter-off); */
             }
         }
     }
@@ -313,6 +336,7 @@
     &:has(input[value="factual"]:checked) .recommendations>li:not(.factual),
     &:has(input[value="fantasy"]:checked) .recommendations>li:not(.fantasy),
     &:has(input[value="free"]:checked) .recommendations>li:not(.free),
+    &:has(input[value="gaming"]:checked) .recommendations>li:not(.gaming),
     &:has(input[value="hacking"]:checked) .recommendations>li:not(.hacking),
     &:has(input[value="history"]:checked) .recommendations>li:not(.history),
     &:has(input[value="horror"]:checked) .recommendations>li:not(.horror),
