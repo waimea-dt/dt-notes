@@ -95,15 +95,73 @@
     A fierce and claustrophobic submarine drama where the world is teetering on the edge of World War III. really tense and thrilling.
 
 
-## Space & Aliens
+## Exploring Space
+
+- ![](_assets/movies/gravity.jpg)
+    [Gravity](https://www.imdb.com/title/tt1454468/)
+
+    - **Space**
+    - **Thriller**
+    - **Drama**
+    - **Action**
+    - 2013
+
+    A terrifying survival film set in low Earth orbit. Things go horribly wrong, every mistake feels fatal and every second matters.
+
+- ![](_assets/movies/hidden-figures.jpg)
+    [Hidden Figures](https://www.imdb.com/title/tt4846340/)
+
+    - **Space**
+    - **Drama**
+    - **Computing**
+    - 2016
+
+    The true story of three brilliant African-American female mathematicians at NASA who overcame fierce racial and gender barriers to help launch the historic orbital flight of astronaut John Glenn.
+
+- ![](_assets/movies/apollo-11.jpg)
+    [Apollo 11](https://www.imdb.com/title/tt8760684/)
+
+    - **Space**
+    - **History**
+    - **Factual**
+    - 2019
+
+    An amazing documentary using restored archival footage and original audio recordings to vividly recreate humanity's first moon landing mission in 1969 without modern narration or interviews. Stunning
+
+- ![](_assets/movies/first-man.jpg)
+    [First Man](https://www.imdb.com/title/tt1213641/)
+
+    - **Space**
+    - **Drama**
+    - **History**
+    - **Factual**
+    - 2018
+
+    Follows astronaut Neil Armstrong as he copes with personal grief and intense training during the dangerous decade leading up to the historic 1969 Apollo 11 moon landing.
+
+- ![](_assets/movies/apollo-13.jpg)
+    [Apollo 13](https://www.imdb.com/title/tt0112384/)
+
+    - **Space**
+    - **Thriller**
+    - **Drama**
+    - **Factual**
+    - 1995
+
+    The tense and thrilling true story of the three Apollo 13 astronauts and NASA engineers who work together to bring the crippled spacecraft safely back to Earth after an explosion mid-flight.
+
+
+
+## Space Sci-Fi
 
 - ![](_assets/movies/2001.jpg)
     [2001: A Space Odyssey](https://www.imdb.com/title/tt0062622/)
 
     - **Sci-Fi**
+    - **Space**
     - **Drama**
     - **Thriller**
-    - **Adventure**
+    - **Mystery**
     - 1968
 
     A mysterious artifact is uncovered on the Moon, leading to a mission to Jupiter being launched to discover its origins, carrying two scientists and an AI computer. This film was groundbreaking for its time, and really defined a new era of sci-fi movies. The cinematography is impressive and the visuals still hold up today.
@@ -112,6 +170,7 @@
     Alien Series
 
     - **Sci-Fi**
+    - **Space**
     - **Horror**
     - **Action**
     - **Thriller**
@@ -131,6 +190,7 @@
     Dune Series
 
     - **Sci-Fi**
+    - **Space**
     - **Action**
     - **Adventure**
     - **Drama**
@@ -145,6 +205,7 @@
     [Arrival](https://www.imdb.com/title/tt2543164/)
 
     - **Sci-Fi**
+    - **Space**
     - **Drama**
     - **Thriller**
     - 2016
@@ -155,6 +216,7 @@
     [Interstellar](https://www.imdb.com/title/tt0816692/)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Drama**
     - 2014
@@ -165,6 +227,7 @@
     [Moon](https://www.imdb.com/title/tt1182345/)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Drama**
     - **Mystery**
@@ -176,26 +239,18 @@
     [Starship Troopers](https://www.imdb.com/title/tt0120201/)
 
     - **Sci-Fi**
+    - **Space**
     - **Action**
     - **War**
     - 1997
 
     A satirical military sci-fi film packed with bugs, bravado, and a very big bug problem. Loosely based on Robert A. Heinlein's 1959 novel, but reframed brilliantly.
 
-- ![](_assets/movies/gravity.jpg)
-    [Gravity](https://www.imdb.com/title/tt1454468/)
-
-    - **Sci-Fi**
-    - **Thriller**
-    - **Drama**
-    - 2013
-
-    A terrifying survival film set in low Earth orbit. Things go horribly wrong, every mistake feels fatal and every second matters.
-
 - ![](_assets/movies/sunshine.jpg)
     [Sunshine](https://www.imdb.com/title/tt0448134/)
 
     - **Sci-Fi**
+    - **Space**
     - **Thriller**
     - **Drama**
     - 2007
@@ -206,6 +261,7 @@
     [The Martian](https://www.imdb.com/title/tt3659388/)
 
     - **Sci-Fi**
+    - **Space**
     - **Comedy**
     - **Adventure**
     - **Drama**
@@ -217,6 +273,7 @@
     [Project Hail Mary](https://www.imdb.com/title/tt12042730/)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Drama**
     - 2026
@@ -227,6 +284,7 @@
     [Contact](https://www.imdb.com/title/tt0118884/)
 
     - **Sci-Fi**
+    - **Space**
     - **Drama**
     - **Mystery**
     - 1997
@@ -237,6 +295,7 @@
     [Edge of Tomorrow](https://www.imdb.com/title/tt1631867/)
 
     - **Sci-Fi**
+    - **Space**
     - **Action**
     - **Thriller**
     - **Adventure**
@@ -248,6 +307,7 @@
     [The Fifth Element](https://www.imdb.com/title/tt0119116/)
 
     - **Sci-Fi**
+    - **Space**
     - **Action**
     - **Adventure**
     - 1997
@@ -258,6 +318,7 @@
     [Ender's Game](https://www.imdb.com/title/tt1731141/)
 
     - **Sci-Fi**
+    - **Space**
     - **Action**
     - **Adventure**
     - 2013
@@ -558,7 +619,7 @@
     - [Kill Bill: Volume 2](https://www.imdb.com/title/tt0378194/) (2004)
 
 
-## Unlikely Superheroes
+## Unlikely Heroes
 
 - ![](_assets/movies/kick-ass.jpg)
     [Kick-Ass](https://www.imdb.com/title/tt1250777/)

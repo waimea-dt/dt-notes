@@ -75,6 +75,7 @@
     [The Martian](https://www.goodreads.com/book/show/18007564-the-martian)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Comedy**
     - **Science**
@@ -87,6 +88,7 @@
     [Project Hail Mary](https://www.goodreads.com/book/show/54493401-project-hail-mary)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Drama**
     - **Science**
@@ -99,6 +101,7 @@
     [Artemis](https://www.goodreads.com/book/show/34928122-artemis)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Thriller**
     - **Crime**
@@ -135,6 +138,7 @@
     [Remembrance of Earth's Past Series](https://www.goodreads.com/series/189931-remembrance-of-earth-s-past)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Drama**
     - Liu Cixin
@@ -150,6 +154,7 @@
     [Seveneves](https://www.goodreads.com/book/show/22816087-seveneves)
 
     - **Sci-Fi**
+    - **Space**
     - **Thriller**
     - **Adventure**
     - **Science**
@@ -162,6 +167,7 @@
     [Anathem](https://www.goodreads.com/book/show/2845024-anathem)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Mystery**
     - **Science**
@@ -174,6 +180,7 @@
     [Dune Series](https://www.goodreads.com/series/45935-dune)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **War**
     - **Drama**
@@ -192,6 +199,7 @@
     [The Hitchhikers Guide to the Galaxy Series](https://www.goodreads.com/series/40957-the-hitchhiker-s-guide-to-the-galaxy)
 
     - **Sci-Fi**
+    - **Space**
     - **Comedy**
     - **Adventure**
     - Douglas Adams
@@ -209,6 +217,7 @@
     [Ender's Saga Series](https://www.goodreads.com/series/43963-ender-s-saga)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **War**
     - **Philosophy**
@@ -228,6 +237,7 @@
     [The Culture Series](https://www.goodreads.com/series/49118-culture)
 
     - **Sci-Fi**
+    - **Space**
     - **Adventure**
     - **Philosophy**
     - **Society**
@@ -246,6 +256,30 @@
     1. [Matter](https://www.goodreads.com/book/show/886066.Matter) (2008)
     1. [Surface Detail](https://www.goodreads.com/book/show/7937744-surface-detail) (2010)
     1. [The Hydrogen Sonata](https://www.goodreads.com/book/show/13497991-the-hydrogen-sonata) (2012)
+
+
+- ![](_assets/books/expanse.jpg)
+    [The Expanse Series](https://www.goodreads.com/series/56399-the-expanse)
+
+    - **Sci-Fi**
+    - **Space**
+    - **Adventure**
+    - **Mystery**
+    - **Drama**
+    - James S.A. Corey
+    - 1987-2012
+
+    A great series about humanity colonizing the solar system and nearly tearing itself apart over politics and a dangerous alien substance. A small crew on a ship named the Rocinante fights to survive these wars and save the human race.
+
+    1. [Leviathan Wakes](https://www.goodreads.com/book/show/8855321-leviathan-wakes) (2011)
+    1. [Caliban’s War](https://www.goodreads.com/book/show/12591698-caliban-s-war) (2012)
+    1. [Abaddon’s Gate](https://www.goodreads.com/book/show/16131032-abaddon-s-gate) (2013)
+    1. [Cibola Burn](https://www.goodreads.com/book/show/18656030-cibola-burn) (2014)
+    1. [Nemesis Games](https://www.goodreads.com/book/show/22886612-nemesis-games) (2015)
+    1. [Babylon’s Ashes](https://www.goodreads.com/book/show/25877663-babylon-s-ashes) (2016)
+    1. [Persepolis Rising](https://www.goodreads.com/book/show/28335696-persepolis-rising) (2017)
+    1. [Tiamat's Wrath](https://www.goodreads.com/book/show/28335698-tiamat-s-wrath) (2019)
+    1. [Leviathan Falls](https://www.goodreads.com/book/show/28335699-leviathan-falls) (2021)
 
 
 ## Fantasy

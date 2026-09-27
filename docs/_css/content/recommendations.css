@@ -303,6 +303,7 @@
     &:has(input[value="science"]:checked)     .recommendations > li:not(.science),
     &:has(input[value="society"]:checked)     .recommendations > li:not(.society),
     &:has(input[value="spy"]:checked)         .recommendations > li:not(.spy),
+    &:has(input[value="space"]:checked)       .recommendations > li:not(.space),
     &:has(input[value="thriller"]:checked)    .recommendations > li:not(.thriller),
     &:has(input[value="war"]:checked)         .recommendations > li:not(.war),
     &:has(input[value="zombie"]:checked)      .recommendations > li:not(.zombie) {

@@ -180,6 +180,7 @@
     [Murderbot](https://www.imdb.com/title/tt30444310/)
 
     - **Sci-Fi**
+    - **Space**
     - **Action**
     - **Thriller**
     - **Comedy**
@@ -207,6 +208,29 @@
     - 2017-2020
 
     A videogame champion is recruited by time-travelling warriors to save humanity, despite having no useful qualifications. Great humour, good fun.
+
+- ![](_assets/tv/silo.jpg)
+    [Silo](https://www.imdb.com/title/tt14688458/)
+
+    - **Sci-Fi**
+    - **Dystopia**
+    - **Drama**
+    - **Mystery**
+    - 2023-
+
+    10,000 people live in a massive underground bunker, believing the surface is a toxic wasteland, until an engineer uncovers a deep conspiracy. Clever and well done.
+
+- ![](_assets/tv/expanse.jpg)
+    [The Expanse](https://www.imdb.com/title/tt3230854/)
+
+    - **Sci-Fi**
+    - **Space**
+    - **Dystopia**
+    - **Drama**
+    - **Mystery**
+    - 2015-2022
+
+    A gritty thriller set two hundred years in the future where humanity has colonized the solar system. It follows a rag-tag ship crew, a hardened detective, and a UN politician as they race to expose an alien conspiracy threatening interstellar war. A pretty good adaption of James S.A. Corey's novels
 
 - ![](_assets/tv/black-mirror.jpg)
     [Black Mirror](https://www.imdb.com/title/tt2085059/)
@@ -293,6 +317,7 @@
     - [Human Planet](https://www.imdb.com/title/tt1806234/) (2011)
     - [Frozen Planet I](https://www.imdb.com/title/tt2092588/) (2012)
     - [Frozen Planet II](https://www.imdb.com/title/tt9805678/) (2023)
+    - [A Life on Our Planet](https://www.imdb.com/title/tt11989890/) (2020)
 
 - ![](_assets/tv/the-secret-life-of-machines.jpg)
     [The Secret Life of Machines](https://www.imdb.com/title/tt0431571/)
@@ -304,4 +329,27 @@
     - 1988-1993
 
     Tim Hunkin takes everyday machines apart and explains how they work with wit, curiosity and wonderfully improvised models. A pretty old show, but really well done and genuinely informative.
+
+    [Watch them all, remastered, on Tim's YouTube channel](https://www.youtube.com/playlist?list=PLtaR0lZhSyAPLuoSbMA29s3Ry8ZUvKff3)
+
+- ![](_assets/tv/horizon.jpg)
+    [Horizon](https://www.imdb.com/title/tt0318224/episodes)
+
+    - **Science**
+    - **Nature**
+    - **Factual**
+    - 1964
+
+    This UK TV show has created some of the best science-focussed TV for years. Always well produced, always interesting, and covering every topic that has impacted humanity for the past six decades.
+
+- ![](_assets/tv/cosmos.jpg)
+    [Cosmos](https://www.imdb.com/title/tt0081846/)
+    and [Cosmos: A Spacetime Odyssey](https://www.imdb.com/title/tt2395695/)
+
+    - **Science**
+    - **Nature**
+    - **Factual**
+    - 1981 / 2014
+
+    Two amazing documentary series, the original hosted by Carl Sagan, and the later one hosted by Neil deGrasse Tyson. They explore the laws of nature, humanity's historic quest for scientific knowledge, and our place within the universe.
 
