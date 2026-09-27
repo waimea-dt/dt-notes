@@ -3,31 +3,31 @@
  */
 
 .markdown-section .recommendations {
-    --recommendations-item-bg:            var(--plugin-panel-bg);
-    --recommendations-border:             var(--plugin-panel-border);
-    --recommendations-border-hover:       var(--theme-color-4);
-    --recommendations-border-high:        color-mix(in srgb, var(--highlight-color) 50%, var(--plugin-panel-border));
-    --recommendations-border-high-hover:  var(--highlight-color);
-    --recommendations-muted:              var(--color-mono-6);
+    --recommendations-item-bg: var(--plugin-panel-bg);
+    --recommendations-border: var(--plugin-panel-border);
+    --recommendations-border-hover: var(--theme-color-4);
+    --recommendations-border-high: color-mix(in srgb, var(--highlight-color) 50%, var(--plugin-panel-border));
+    --recommendations-border-high-hover: var(--highlight-color);
+    --recommendations-muted: var(--color-mono-6);
 
-    --recommendations-icon-size:          1em;
-    --recommendations-icon-col:           var(--secondary-color-4);
-    --recommendations-icon-col-hover:     var(--secondary-color-6);
-    --recommendations-icon-direction:     column;
-    --recommendations-icon-gap:           var(--gap-tiny);
-    --recommendations-icon-margin:        calc(var(--recommendations-img-width) + var(--padding));
-    --recommendations-icon-top:           auto;
-    --recommendations-icon-bottom:        var(--padding);
-    --recommendations-icon-width:         var(--recommendations-icon-size);
+    --recommendations-icon-size: 1em;
+    --recommendations-icon-col: var(--secondary-color-4);
+    --recommendations-icon-col-hover: var(--secondary-color-6);
+    --recommendations-icon-direction: column;
+    --recommendations-icon-gap: var(--gap-tiny);
+    --recommendations-icon-margin: calc(var(--recommendations-img-width) + var(--padding));
+    --recommendations-icon-top: auto;
+    --recommendations-icon-bottom: var(--padding);
+    --recommendations-icon-width: var(--recommendations-icon-size);
 
-    --recommendations-panel-width:        19rem;
-    --recommendations-panel-height:       10rem;
+    --recommendations-panel-width: 19rem;
+    --recommendations-panel-height: 10rem;
 
-    --recommendations-img-height:         2.5rem;
-    --recommendations-img-width:          2.5rem;
-    --recommendations-img-radius:         0;
-    --recommendations-img-border:         none;
-    --recommendations-img-pos:            absolute;
+    --recommendations-img-height: 2.5rem;
+    --recommendations-img-width: 2.5rem;
+    --recommendations-img-radius: 0;
+    --recommendations-img-border: none;
+    --recommendations-img-pos: absolute;
 
 
     list-style: none;
@@ -48,15 +48,10 @@
     &.media,
     &.websites {
         --recommendations-panel-width: 28rem;
-        --recommendations-panel-height: calc(
-            (1 * var(--recommendations-icon-size)) +
-            (3 * var(--padding)) +
-            var(--recommendations-img-height) +
-            2px
-        );
+        --recommendations-panel-height: calc((1 * var(--recommendations-icon-size)) + (3 * var(--padding)) + var(--recommendations-img-height) + 2px);
 
         --recommendations-img-height: 12rem;
-        --recommendations-img-width:  8rem;
+        --recommendations-img-width: 8rem;
         --recommendations-img-radius: var(--border-radius-small);
         --recommendations-img-border: 1px solid var(--recommendations-border);
         --recommendations-img-pos: static;
@@ -87,7 +82,7 @@
     }
 
     /* Individual tool items */
-    > li {
+    >li {
         border: 2px solid var(--recommendations-border);
         border-radius: var(--border-radius);
         background-color: var(--recommendations-item-bg);
@@ -114,15 +109,15 @@
             margin-bottom: 0;
         }
 
-        > p,
-        > ul,
-        > ol {
+        >p,
+        >ul,
+        >ol {
             margin-right: var(--recommendations-icon-margin);
         }
 
         /* Heading / link styling in recommendation lists */
-        > p,
-        > a {
+        >p,
+        >a {
             margin-block: var(--gap-small);
 
             &:first-of-type {
@@ -134,8 +129,8 @@
             }
         }
 
-        > p > a,
-        > a {
+        >p>a,
+        >a {
             text-decoration: underline;
             text-decoration-color: var(--color-mono-3);
             color: var(--theme-color);
@@ -164,7 +159,7 @@
         }
 
         /* Metadata icons (free, paid, online, desktop) */
-        > .icons {
+        >.icons {
             width: var(--recommendations-icon-width);
             display: flex;
             flex-direction: var(--recommendations-icon-direction);
@@ -214,8 +209,8 @@
         }
 
         /* Sub-lists within tool items */
-        > ul,
-        > ol {
+        >ul,
+        >ol {
             margin-block: var(--gap-small);
             display: flex;
             flex-direction: column;
@@ -228,7 +223,7 @@
                 margin-bottom: 0;
             }
 
-            > li {
+            >li {
                 font-size: var(--font-med);
                 color: var(--recommendations-muted);
                 margin: 0;
@@ -240,6 +235,10 @@
 /* FILTERING ===================================================== */
 
 .markdown-section .recommendations-filter {
+
+    --recommendations-filter-off: var(--color-mono-5);
+    --recommendations-filter-on: var(--theme-color);
+
     position: sticky;
     top: calc(-1 * var(--gap-small));
     z-index: 99;
@@ -255,9 +254,29 @@
     summary {
         background-color: inherit;
         padding: var(--padding-med) var(--padding);
+        color: var(--recommendations-filter-off);
 
-        [open] > &:hover, &:hover {
+        &::marker {
+            color: inherit !important;
+        }
+
+        [open]>&:hover,
+        &:hover {
             background-color: inherit;
+        }
+
+        &:has(~ .recommendations-filter-list label input[value="all"]:checked) {
+            &::after {
+                content: " OFF";
+            }
+        }
+
+        &:has(~ .recommendations-filter-list label input:not([value="all"]):checked) {
+            color: var(--recommendations-filter-on);
+            &::after {
+                content: " ON";
+                color: var(--highlight-color);
+            }
         }
     }
 
@@ -271,42 +290,47 @@
         label {
             text-wrap: nowrap;
             min-width: 6rem;
+
+            &:has(input[value="all"]) {
+                color: var(--recommendations-filter-off);
+            }
         }
     }
 }
 
 .markdown-section {
-    &:has(input[value="action"]:checked)      .recommendations > li:not(.action),
-    &:has(input[value="adventure"]:checked)   .recommendations > li:not(.adventure),
-    &:has(input[value="animated"]:checked)    .recommendations > li:not(.animated),
-    &:has(input[value="biography"]:checked)   .recommendations > li:not(.biography),
-    &:has(input[value="comedy"]:checked)      .recommendations > li:not(.comedy),
-    &:has(input[value="computing"]:checked)   .recommendations > li:not(.computing),
-    &:has(input[value="crime"]:checked)       .recommendations > li:not(.crime),
-    &:has(input[value="desktop"]:checked)     .recommendations > li:not(.desktop),
-    &:has(input[value="drama"]:checked)       .recommendations > li:not(.drama),
-    &:has(input[value="dystopia"]:checked)    .recommendations > li:not(.dystopia),
-    &:has(input[value="factual"]:checked)     .recommendations > li:not(.factual),
-    &:has(input[value="fantasy"]:checked)     .recommendations > li:not(.fantasy),
-    &:has(input[value="free"]:checked)        .recommendations > li:not(.free),
-    &:has(input[value="hacking"]:checked)     .recommendations > li:not(.hacking),
-    &:has(input[value="history"]:checked)     .recommendations > li:not(.history),
-    &:has(input[value="horror"]:checked)      .recommendations > li:not(.horror),
-    &:has(input[value="mystery"]:checked)     .recommendations > li:not(.mystery),
-    &:has(input[value="nature"]:checked)      .recommendations > li:not(.nature),
-    &:has(input[value="online"]:checked)      .recommendations > li:not(.online),
-    &:has(input[value="paid"]:checked)        .recommendations > li:not(.paid),
-    &:has(input[value="philosophy"]:checked)  .recommendations > li:not(.philosophy),
-    &:has(input[value="recommended"]:checked) .recommendations > li:not(.recommended),
-    &:has(input[value="romance"]:checked)     .recommendations > li:not(.romance),
-    &:has(input[value="sci-fi"]:checked)      .recommendations > li:not(.sci-fi),
-    &:has(input[value="science"]:checked)     .recommendations > li:not(.science),
-    &:has(input[value="society"]:checked)     .recommendations > li:not(.society),
-    &:has(input[value="spy"]:checked)         .recommendations > li:not(.spy),
-    &:has(input[value="space"]:checked)       .recommendations > li:not(.space),
-    &:has(input[value="thriller"]:checked)    .recommendations > li:not(.thriller),
-    &:has(input[value="war"]:checked)         .recommendations > li:not(.war),
-    &:has(input[value="zombie"]:checked)      .recommendations > li:not(.zombie) {
+
+    &:has(input[value="action"]:checked) .recommendations>li:not(.action),
+    &:has(input[value="adventure"]:checked) .recommendations>li:not(.adventure),
+    &:has(input[value="animated"]:checked) .recommendations>li:not(.animated),
+    &:has(input[value="biography"]:checked) .recommendations>li:not(.biography),
+    &:has(input[value="comedy"]:checked) .recommendations>li:not(.comedy),
+    &:has(input[value="computing"]:checked) .recommendations>li:not(.computing),
+    &:has(input[value="crime"]:checked) .recommendations>li:not(.crime),
+    &:has(input[value="desktop"]:checked) .recommendations>li:not(.desktop),
+    &:has(input[value="drama"]:checked) .recommendations>li:not(.drama),
+    &:has(input[value="dystopia"]:checked) .recommendations>li:not(.dystopia),
+    &:has(input[value="factual"]:checked) .recommendations>li:not(.factual),
+    &:has(input[value="fantasy"]:checked) .recommendations>li:not(.fantasy),
+    &:has(input[value="free"]:checked) .recommendations>li:not(.free),
+    &:has(input[value="hacking"]:checked) .recommendations>li:not(.hacking),
+    &:has(input[value="history"]:checked) .recommendations>li:not(.history),
+    &:has(input[value="horror"]:checked) .recommendations>li:not(.horror),
+    &:has(input[value="mystery"]:checked) .recommendations>li:not(.mystery),
+    &:has(input[value="nature"]:checked) .recommendations>li:not(.nature),
+    &:has(input[value="online"]:checked) .recommendations>li:not(.online),
+    &:has(input[value="paid"]:checked) .recommendations>li:not(.paid),
+    &:has(input[value="philosophy"]:checked) .recommendations>li:not(.philosophy),
+    &:has(input[value="recommended"]:checked) .recommendations>li:not(.recommended),
+    &:has(input[value="romance"]:checked) .recommendations>li:not(.romance),
+    &:has(input[value="sci-fi"]:checked) .recommendations>li:not(.sci-fi),
+    &:has(input[value="science"]:checked) .recommendations>li:not(.science),
+    &:has(input[value="society"]:checked) .recommendations>li:not(.society),
+    &:has(input[value="spy"]:checked) .recommendations>li:not(.spy),
+    &:has(input[value="space"]:checked) .recommendations>li:not(.space),
+    &:has(input[value="thriller"]:checked) .recommendations>li:not(.thriller),
+    &:has(input[value="war"]:checked) .recommendations>li:not(.war),
+    &:has(input[value="zombie"]:checked) .recommendations>li:not(.zombie) {
         opacity: 0.2;
     }
 }

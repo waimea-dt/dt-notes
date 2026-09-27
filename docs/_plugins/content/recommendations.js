@@ -81,14 +81,12 @@
 
         const allLabel = document.createElement('label')
         const allInput = document.createElement('input')
-        const allText = document.createElement('strong')
 
         allInput.type = 'radio'
         allInput.name = 'recommendations-filter'
         allInput.value = 'all'
         allInput.checked = true
-        allText.textContent = ' View All'
-        allLabel.append(allInput, allText)
+        allLabel.append(allInput, ' View All')
         filterContainer.append(allLabel)
 
         Array.from(metadataValues)
