@@ -72,29 +72,32 @@
         const firstHeading = container.querySelector('h1')
         if (!firstHeading || metadataValues.size === 0) return
 
+        const recommendationItems = Array.from(container.querySelectorAll('.recommendations > li'))
+
         const details = document.createElement('details')
         details.open = false
         details.classList.add('recommendations-filter')
-        details.innerHTML = '<summary>Filters</summary>'
+        details.innerHTML = '<summary>Filter</summary>'
 
         const filterContainer = document.createElement('div')
         filterContainer.className = 'recommendations-filter-list'
 
-        const allLabel = document.createElement('label')
-        const allInput = document.createElement('input')
-        const allIconWrapper = document.createElement('span')
-        const allIcon = document.createElement('i')
+        const offLabel = document.createElement('label')
+        const offInput = document.createElement('input')
+        const offIconWrapper = document.createElement('span')
+        const offIcon = document.createElement('i')
 
-        allInput.type = 'radio'
-        allInput.name = 'recommendations-filter'
-        allInput.value = 'all'
-        allInput.checked = true
-        allIconWrapper.className = 'recommendations-filter-icon'
-        allIconWrapper.setAttribute('aria-hidden', 'true')
-        allIcon.setAttribute('data-lucide', 'circle-off')
-        allIconWrapper.append(allIcon)
-        allLabel.append(allInput, allIconWrapper, 'View All')
-        filterContainer.append(allLabel)
+        offInput.type = 'radio'
+        offInput.name = 'recommendations-filter'
+        offInput.value = 'all'
+        offInput.checked = true
+        offIconWrapper.className = 'recommendations-filter-icon'
+        offIconWrapper.setAttribute('aria-hidden', 'true')
+        offIcon.setAttribute('data-lucide', 'circle-off')
+        offIconWrapper.append(offIcon)
+        offLabel.append(offInput, offIconWrapper, 'Off')
+        appendFilterCount(offLabel, recommendationItems.length)
+        filterContainer.append(offLabel)
 
         Array.from(metadataValues)
             .sort((first, second) => METADATA[first].title.localeCompare(METADATA[second].title))
@@ -119,11 +122,20 @@
                 }
 
                 label.append(METADATA[genre].title)
+                const genreCount = recommendationItems.filter(item => item.classList.contains(genre)).length
+                appendFilterCount(label, genreCount)
                 filterContainer.append(label)
             })
 
         details.append(filterContainer)
         firstHeading.parentElement.insertBefore(details, firstHeading.nextSibling)
+    }
+
+    function appendFilterCount(label, count) {
+        const countSpan = document.createElement('span')
+        countSpan.className = 'recommendations-filter-count'
+        countSpan.textContent = `(${count})`
+        label.append(countSpan)
     }
 
     function processRecommendations(root) {

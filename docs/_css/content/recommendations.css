@@ -235,10 +235,13 @@
 /* FILTERING ===================================================== */
 
 .markdown-section .recommendations-filter {
-    --recommendations-filter-width: 6rem;
-    --recommendations-filter-size: var(--font-med);
-    --recommendations-filter-off: var(--color-mono-5);
-    --recommendations-filter-on:  var(--theme-color);
+    --recommendations-filter-width: 8rem;
+    --recommendations-filter-size:  var(--font-med);
+    --recommendations-filter-icon:  var(--secondary-color);
+    --recommendations-filter-count: var(--color-mono-5);
+    --recommendations-filter-off:   var(--color-mono-5);
+    --recommendations-filter-hover: var(--theme-color);
+    --recommendations-filter-on:    var(--color-text);
 
     position: sticky;
     top: calc(-1 * var(--gap-small));
@@ -276,7 +279,7 @@
             color: var(--recommendations-filter-on);
             &::after {
                 content: " ON";
-                color: var(--highlight-color);
+                color: var(--recommendations-filter-hover);
             }
         }
     }
@@ -284,9 +287,12 @@
     .recommendations-filter-list {
         margin-top: var(--gap);
         display: inline-flex;
-        /* grid-template-columns: repeat( auto-fit, 7.5em ); */
         gap: var(--gap-tiny) var(--gap-large);
         flex-wrap: wrap;
+
+        &:has(input:not([value="all"]):checked) {
+            color: var(--recommendations-filter-off);
+        }
 
         label {
             text-wrap: nowrap;
@@ -296,8 +302,17 @@
             gap: var(--gap-tiny);
             cursor: pointer;
 
+            svg {
+                color: var(--recommendations-filter-icon);
+                transition: all 250ms;
+            }
+
             &:hover {
-                color: var(--recommendations-filter-on);
+                color: var(--recommendations-filter-hover);
+
+                svg {
+                    transform: scale(1.2) rotate(-5deg);
+                }
             }
 
             input {
@@ -310,12 +325,19 @@
                 height: 1.2em;
             }
 
-            &:has(input:checked) {
-                color: var(--recommendations-filter-on);
+            .recommendations-filter-count {
+                color: var(--recommendations-filter-count);
+                font-weight: 400;
+                font-size: 0.8em;
             }
 
-            &:has(input[value="all"]) {
-                /* color: var(--recommendations-filter-off); */
+            &:has(input:checked) {
+                color: var(--recommendations-filter-on);
+                font-weight: 600;
+
+                svg {
+                    color: var(--recommendations-filter-hover);
+                }
             }
         }
     }
