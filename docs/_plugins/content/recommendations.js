@@ -138,6 +138,14 @@
         label.append(countSpan)
     }
 
+    function closeFilterOnOutsideClick(event) {
+        if (!(event.target instanceof Element) || event.target.closest('.recommendations-filter')) return
+
+        document.querySelectorAll('.recommendations-filter[open]').forEach(filter => {
+            filter.open = false
+        })
+    }
+
     function processRecommendations(root) {
         const scope = resolveScope(root)
         const container = scope === document ? document.querySelector('.markdown-section') : scope
@@ -293,6 +301,8 @@
     }
 
     const docsifyRecommendations = function (hook) {
+        document.addEventListener('click', closeFilterOnOutsideClick)
+
         hook.doneEach(function () {
             processRecommendations()
         })

@@ -8,7 +8,7 @@
     transition: transform 800ms var(--home-mac-easing);
 
     &:hover {
-        transform: rotate(3deg);
+        transform: scale(1.05) rotate(3deg);
     }
 }
 
