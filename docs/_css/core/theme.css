@@ -3,7 +3,7 @@
  */
 
 /* Base colors */
- :root {
+:root {
     --color-min:        #000;
     --color-bg:         #1f2428;
     --color-text:       #fff;
@@ -129,7 +129,6 @@
     --link-underline-color-hover: var(--theme-color-6);
 
     /* Typography */
-    --font-family:                Inter, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
     --font-family-mono:           monospace;
     --font-weight-heading:        300;
     --font-size:                  18px;

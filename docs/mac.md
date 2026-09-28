@@ -552,6 +552,13 @@
 
     //==========================================================
 
+    const {
+        sleep,
+        escapeHtml,
+        randomItem,
+        createShuffledIndexes,
+    } = window.DocsifyUtils
+
     const shuffledIndexes = new Map([
         ['jokes', { indexes: createShuffledIndexes(jokes.length),    position: 0 }],
         ['art',   { indexes: createShuffledIndexes(asciiArt.length), position: 0 }],
@@ -575,22 +582,6 @@
 
     //==========================================================
 
-    const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-    const randomItem = arr => arr[Math.floor(Math.random() * arr.length)]
-
-    function createShuffledIndexes(length) {
-        const indexes = Array.from({ length }, (_, index) => index)
-
-        // Fisher-Yates shuffle algorithm
-        for (let index = indexes.length - 1; index > 0; index--) {
-            const swapIndex = Math.floor(Math.random() * (index + 1))
-            ;[indexes[index], indexes[swapIndex]] = [indexes[swapIndex], indexes[index]]
-        }
-
-        return indexes
-    }
-
     function nextRandomItem(key, items) {
         const state = shuffledIndexes.get(key)
         if (!state) return randomItem(items)
@@ -599,14 +590,6 @@
         state.position = (state.position + 1) % state.indexes.length
         return items[index]
     }
-
-    const escapeHtml = text => text.replace(/[&<>"']/g, character => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-    })[character])
 
     function bindBackButton(onBack = showOptions) {
         const backButton = document.getElementById('back')
@@ -633,16 +616,16 @@
             if (node.nodeType === Node.TEXT_NODE) {
                 for (const character of node.textContent) {
                     if (character === '—') {
-                        await wait(LONG_PAUSE)
+                        await sleep(LONG_PAUSE)
                         continue
                     }
                     if (character === '–') {
-                        await wait(SHORT_PAUSE)
+                        await sleep(SHORT_PAUSE)
                         continue
                     }
 
                     parent.append(character)
-                    await wait(characterDelay)
+                    await sleep(characterDelay)
                 }
                 return
             }
@@ -668,11 +651,11 @@
 
         display.innerHTML = ''
 
-        await wait(LINE_PAUSE)
+        await sleep(LINE_PAUSE)
 
         for (const html of htmlLines) {
             await typeHtml(display, html)
-            await wait(LINE_PAUSE)
+            await sleep(LINE_PAUSE)
         }
     }
 

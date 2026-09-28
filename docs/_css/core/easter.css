@@ -1,0 +1,74 @@
+
+:root[data-theme="retro"] {
+    color-scheme: dark;
+
+    /* Typography */
+    --font-family:          'IBM Plex Mono', monospace;
+    --font-family-mono:     var(--font-family);
+    --font-size:            19px;
+    --font-weight:          100;
+    --font-weight-heading:  200;
+
+    /* Base colors */
+    --color-min:            #081100;
+    --color-bg:             #081100;
+    --color-text:           #ccc;
+
+    --theme-color:          #390;
+    --secondary-color:      #4a0;
+    --tertiary-color:       #5c0;
+
+    /* Palette: HEX fallback */
+    --palette-color-1:      #270;
+    --palette-color-2:      #260;
+    --palette-color-3:      #270;
+    --palette-color-4:      #260;
+    --palette-color-5:      #270;
+    --palette-color-6:      #260;
+    --palette-color-7:      #270;
+    --palette-color-8:      #260;
+    --palette-color-9:      #270;
+    --palette-color-10:     #260;
+
+    /* Semantic colors */
+    --color-good:           #490;
+    --color-important:      #5c0;
+    --color-warning:        #380;
+    --color-attention:      #8f0;
+
+    /* Code */
+    --code-color-back:      #000;
+    --code-color-red:       #490;
+    --code-color-orange:    #5c0;
+    --code-color-yellow:    #490;
+    --code-color-green:     #5c0;
+    --code-color-sage:      #490;
+    --code-color-cyan:      #5c0;
+    --code-color-blue:      #490;
+    --code-color-purple:    #5c0;
+    --code-color-pink:      #490;
+}
+
+[data-theme="retro"] :is(.sidebar) {
+   a.app-name-link {
+        img {
+            display: none;
+        }
+    }
+}
+
+[data-theme="retro"] .markdown-section {
+    figure, img, aside:has(figure:only-child) {
+        display: none !important;
+    }
+
+    .recommendations {
+        --recommendations-panel-height: auto !important;
+        --recommendations-icon-margin: calc(var(--recommendations-icon-size) + var(--padding)) !important;
+        --recommendations-icon-width: var(--recommendations-icon-size) !important;
+        --recommendations-icon-direction: column !important;
+        --recommendations-icon-gap: var(--gap-tiny) !important;
+        --recommendations-icon-top: auto !important;
+        --recommendations-icon-bottom: var(--padding) !important;
+    }
+}

@@ -26,7 +26,7 @@
     - [<i data-lucide="clipboard-list"></i> Project Requirements](/process/requirements.md)
 
 - [<i data-lucide="pencil-ruler"></i> UI Design](/ui/)
-    - [<i data-lucide="paintbrush"></i> UI Mockups & Prototypes](/ui/mockups.md)
+    <!-- - [<i data-lucide="paintbrush"></i> UI Mockups & Prototypes](/ui/mockups.md) -->
     - [<i data-lucide="palette"></i> UI Colour Picker](/ui/colour-pick.md)
 
 - [<i data-lucide="database"></i> Databases](/db/)

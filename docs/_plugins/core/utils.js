@@ -14,6 +14,7 @@
  *   isAbsoluteUrl(path)                 - Check if URL is absolute/data URI
  *   resolveSourcePath(src)              - Resolve docs-root relative source path
  *   isSvgImage(img)                     - Detect IMG nodes that point to SVG
+ *   createLucideIcons(options)          - Render Lucide icon placeholders
  *   hexToRgb(hex)                       - Convert #RRGGBB to {r,g,b}
  *   rgbToHex(r,g,b)                     - Convert RGB channels to #RRGGBB
  *   extractMarker(text, marker)         - Remove marker prefix and report match
@@ -21,8 +22,18 @@
  *   renderErrorBox(container, msg, cls) - Render a standard inline error box
  *   processBlocks(lang, fn, options)    - Iterate docsify language blocks safely
  *   processVisualBlocks(lang, fn, opts) - Process visual blocks with mode flags
+ *   randomItem(arr)                     - Return a random item from an array
+ *   createShuffledIndexes(length)       - Create shuffled indexes for a range
  *   shuffleArray(arr)                   - Fisher-Yates shuffle (returns new array)
  *   sleep(ms)                           - Promise that resolves after ms milliseconds
+ *   getTheme(defaultTheme)              - Read the current site theme
+ *   setTheme(theme, defaultTheme)       - Set the document theme attribute
+ *   persistTheme(theme, key)             - Store the selected theme
+ *   themeIcons                          - Lucide icons used by theme toggle
+ *   setThemeIcon(theme, icon)            - Register an icon for a theme
+ *   updateThemeToggleIcon(theme)         - Update and render the theme icon
+ *   dispatchThemeChange(theme)           - Notify plugins of a theme change
+ *   applyTheme(theme, options)           - Set, persist, and broadcast a theme
  *   parseBoolean(value, fallback)       - Parse 'true'/'false' attribute string
  *   parsePositiveInt(value, fallback)   - Parse a positive integer attribute string
  *   generateId(prefix)                  - Generate a short random ID
@@ -121,6 +132,26 @@
         if (!img || img.tagName !== 'IMG') return false
         const src = (img.getAttribute('src') || '').toLowerCase()
         return src.endsWith('.svg') || src.startsWith('data:image/svg+xml')
+    }
+
+    // -------------------------------------------------------------------------
+    // Icons
+    // -------------------------------------------------------------------------
+
+    /**
+     * Render Lucide icon placeholders using the site's standard attributes.
+     */
+    function createLucideIcons(options = {}) {
+        if (!window.lucide?.createIcons) return
+
+        window.lucide.createIcons({
+            attrs: {
+                class: ['icon', 'no-zoom'],
+                'stroke-width': 2,
+                stroke: 'currentColor',
+            },
+            ...options,
+        })
     }
 
     // -------------------------------------------------------------------------
@@ -286,6 +317,20 @@
     // -------------------------------------------------------------------------
 
     /**
+     * Return a random item from an array.
+     */
+    function randomItem(array) {
+        return array[Math.floor(Math.random() * array.length)]
+    }
+
+    /**
+     * Create a shuffled array of indexes from zero to `length - 1`.
+     */
+    function createShuffledIndexes(length) {
+        return shuffleArray(Array.from({ length }, (_, index) => index))
+    }
+
+    /**
      * Fisher-Yates shuffle. Returns a new array; does not mutate the original.
      */
     function shuffleArray(array) {
@@ -306,6 +351,78 @@
      */
     function sleep(ms = 0) {
         return new Promise(resolve => setTimeout(resolve, ms))
+    }
+
+    // -------------------------------------------------------------------------
+    // Theme
+    // -------------------------------------------------------------------------
+
+    const themeIcons = {
+        dark: 'sun',
+        light: 'moon',
+        retro: 'square-terminal',
+    }
+
+    /**
+     * Read the current site theme, defaulting to dark.
+     */
+    function getTheme(defaultTheme = 'dark') {
+        const theme = document.documentElement.getAttribute('data-theme')?.trim()
+        return theme || defaultTheme
+    }
+
+    /**
+     * Set the site's theme attribute and return the normalised theme name.
+     */
+    function setTheme(theme, defaultTheme = 'dark') {
+        const nextTheme = typeof theme === 'string' && theme.trim() ? theme.trim() : defaultTheme
+        document.documentElement.setAttribute('data-theme', nextTheme)
+        return nextTheme
+    }
+
+    /**
+     * Persist the selected theme.
+     */
+    function persistTheme(theme, storageKey = 'theme') {
+        localStorage.setItem(storageKey, theme)
+    }
+
+    /**
+     * Register the Lucide icon used by the theme toggle for a theme.
+     */
+    function setThemeIcon(theme, icon) {
+        if (typeof theme !== 'string' || !theme.trim()) return
+        if (typeof icon !== 'string' || !icon.trim()) return
+        themeIcons[theme.trim()] = icon.trim()
+    }
+
+    /**
+     * Update and render the theme toggle icon, when the toggle exists.
+     */
+    function updateThemeToggleIcon(theme) {
+        const icon = document.getElementById('theme-toggle-icon')
+        if (!icon) return
+
+        icon.setAttribute('data-lucide', themeIcons[theme] || themeIcons.dark)
+        createLucideIcons()
+    }
+
+    /**
+     * Notify plugins that the site theme changed.
+     */
+    function dispatchThemeChange(theme, eventName = 'docsify-theme-change') {
+        window.dispatchEvent(new CustomEvent(eventName, { detail: { theme } }))
+    }
+
+    /**
+     * Set, persist, and broadcast a theme change.
+     */
+    function applyTheme(theme, options = {}) {
+        const nextTheme = setTheme(theme)
+        persistTheme(nextTheme, options.storageKey)
+        updateThemeToggleIcon(nextTheme)
+        dispatchThemeChange(nextTheme, options.eventName)
+        return nextTheme
     }
 
     // -------------------------------------------------------------------------
@@ -417,6 +534,7 @@
         isAbsoluteUrl,
         resolveSourcePath,
         isSvgImage,
+        createLucideIcons,
         hexToRgb,
         rgbToHex,
         extractMarker,
@@ -424,8 +542,18 @@
         renderErrorBox,
         processBlocks,
         processVisualBlocks,
+        randomItem,
+        createShuffledIndexes,
         shuffleArray,
         sleep,
+        getTheme,
+        setTheme,
+        persistTheme,
+        themeIcons,
+        setThemeIcon,
+        updateThemeToggleIcon,
+        dispatchThemeChange,
+        applyTheme,
         parseBoolean,
         parsePositiveInt,
         generateId,

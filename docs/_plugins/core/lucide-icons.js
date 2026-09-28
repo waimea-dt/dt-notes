@@ -12,15 +12,7 @@
 (function () {
     var docsifyLucideIcons = function (hook) {
         hook.doneEach(function () {
-            if (!window.lucide?.createIcons) return
-
-            lucide.createIcons({
-                attrs: {
-                    class: ['icon', 'no-zoom'],
-                    'stroke-width': 2,
-                    stroke: 'currentColor'
-                },
-            })
+            window.DocsifyUtils.createLucideIcons()
         })
     }
 

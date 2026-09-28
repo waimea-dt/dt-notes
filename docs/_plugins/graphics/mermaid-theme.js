@@ -15,18 +15,15 @@
     // Raw source for the current page's mermaid diagrams, captured from markdown
     // since docsify-mermaid replaces each block's DOM content with rendered SVG.
     let mermaidSources = []
-
-    function getTheme() {
-        return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
-    }
+    const { getTheme } = window.DocsifyUtils
 
     function reRenderMermaid() {
         if (!window.mermaid || mermaidSources.length === 0) return
 
-        const theme = getTheme()
+        const theme = getTheme() === 'light' ? 'light' : 'dark'
         window.mermaid.initialize({
             startOnLoad: false,
-            theme: MERMAID_THEME[theme],
+            theme: MERMAID_THEME[theme] || MERMAID_THEME.dark,
             themeVariables: { fontSize: '18px', fontFamily: 'system-ui, sans-serif' }
         })
 
