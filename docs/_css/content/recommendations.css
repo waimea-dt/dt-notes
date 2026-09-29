@@ -245,7 +245,7 @@
 
     position: sticky;
     top: calc(-1 * var(--gap-small));
-    z-index: 99;
+    z-index: 1;
     padding: var(--padding-med) var(--padding);
     font-size: var(--recommendations-filter-size);
     margin-inline: clamp(0px, 5vw, 5vw);
