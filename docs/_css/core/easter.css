@@ -1,3 +1,64 @@
+:root[data-theme="candy"] {
+    color-scheme: light;
+
+    /* Typography */
+    --font-family:          'Shadows Into Light Two', sans-serif;
+    --font-size:            18px;
+    --font-weight:          500;
+    --strong-font-weight:   800;
+    --font-weight-heading:  800;
+
+    /* Sidebar */
+
+
+    /* Base colors */
+    --color-min:        #fff;
+    --color-bg:         #fdf;
+    --color-text:       #037;
+
+    --theme-color:      #f08;
+    --secondary-color:  #09f;
+    --tertiary-color:   #b0f;
+
+    --palette-color-1:  #27d9c9; /* mint humbug */
+    --palette-color-2:  #ad8dfd; /* grape lolly */
+    --palette-color-3:  #fc8a61; /* coral jelly bean */
+    --palette-color-4:  #4ee75f; /* lime sherbet */
+    --palette-color-5:  #63a7fc; /* blueberry gumdrop */
+    --palette-color-6:  #fd83b6; /* bubblegum pink */
+    --palette-color-7:  #e3d625; /* lemon drop */
+    --palette-color-8:  #23c2f3; /* blue raspberry */
+    --palette-color-9:  #f46deb; /* fairy floss */
+    --palette-color-10: #fdb356; /* orange sherbet */
+
+    --palette-color-1:  oklch(0.80 0.135 185); /* mint humbug        #27d9c9 */
+    --palette-color-2:  oklch(0.72 0.160 295); /* grape lolly        #ad8dfd */
+    --palette-color-3:  oklch(0.75 0.150  40); /* coral jelly bean   #fc8a61 */
+    --palette-color-4:  oklch(0.82 0.220 145); /* lime sherbet       #4ee75f */
+    --palette-color-5:  oklch(0.72 0.143 255); /* blueberry gumdrop  #63a7fc */
+    --palette-color-6:  oklch(0.76 0.158 355); /* bubblegum pink     #fd83b6 */
+    --palette-color-7:  oklch(0.86 0.175 105); /* lemon drop         #e3d625 */
+    --palette-color-8:  oklch(0.76 0.138 225); /* blue raspberry     #23c2f3 */
+    --palette-color-9:  oklch(0.74 0.220 330); /* fairy floss        #f46deb */
+    --palette-color-10: oklch(0.82 0.138  70); /* orange sherbet     #fdb356 */
+
+    /* Semantic colors */
+    --color-good:       #00b460;
+    --color-important:  #ceb300;
+    --color-warning:    #d07200;
+    --color-attention:  #d80000;
+
+    :is(.sidebar) {
+        --sidebar-bg:   #bdf !important;
+    }
+
+    --plugin-wrapper-bg: #bdf !important;
+    --plugin-header-bg:  #8cf !important;
+
+    .flash-cards {
+        --flash-question-back-color: #bdf !important;
+    }
+}
 
 :root[data-theme="retro"] {
     color-scheme: dark;
@@ -10,7 +71,7 @@
     --font-weight-heading:  200;
 
     /* Base colors */
-    --color-min:            #081100;
+    --color-min:            #040800;
     --color-bg:             #081100;
     --color-text:           #ccc;
 
@@ -47,28 +108,144 @@
     --code-color-blue:      #490;
     --code-color-purple:    #5c0;
     --code-color-pink:      #490;
-}
 
-[data-theme="retro"] :is(.sidebar) {
-   a.app-name-link {
-        img {
-            display: none;
+    :is(.sidebar) {
+        a.app-name-link {
+            img {
+                display: none;
+            }
+        }
+    }
+
+    .markdown-section {
+        figure, img, aside:has(figure:only-child) {
+            display: none !important;
+        }
+
+        .recommendations {
+            --recommendations-panel-height: auto !important;
+            --recommendations-icon-margin: calc(var(--recommendations-icon-size) + var(--padding)) !important;
+            --recommendations-icon-width: var(--recommendations-icon-size) !important;
+            --recommendations-icon-direction: column !important;
+            --recommendations-icon-gap: var(--gap-tiny) !important;
+            --recommendations-icon-top: auto !important;
+            --recommendations-icon-bottom: var(--padding) !important;
         }
     }
 }
 
-[data-theme="retro"] .markdown-section {
-    figure, img, aside:has(figure:only-child) {
-        display: none !important;
+body {
+    &.spin-360 {
+        animation: spinOnce 500ms ease-in-out forwards;
+    }
+}
+
+@keyframes spinOnce {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#achievements {
+    position: absolute;
+    top: var(--gap);
+    right: var(--gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-med);
+    align-items: flex-end;
+    opacity: 0.2;
+    font-size: var(--font-small);
+    transition: all 250ms;
+
+    .achieve-toggle {
+        color: var(--highlight-color);
+        transition: all 250ms;
     }
 
-    .recommendations {
-        --recommendations-panel-height: auto !important;
-        --recommendations-icon-margin: calc(var(--recommendations-icon-size) + var(--padding)) !important;
-        --recommendations-icon-width: var(--recommendations-icon-size) !important;
-        --recommendations-icon-direction: column !important;
-        --recommendations-icon-gap: var(--gap-tiny) !important;
-        --recommendations-icon-top: auto !important;
-        --recommendations-icon-bottom: var(--padding) !important;
+    .achieve-list {
+        display: none;
+        padding: var(--padding-med);
+        border-radius: var(--border-radius);
+        background-color: var(--color-mono-0);
+        box-shadow: var(--box-shadow);
+        border: 2px solid var(--border-color);
+
+        h4 {
+            color: var(--theme-color);
+            font-size: var(--font-med);
+            text-align: center;
+            line-height: 1;
+
+            span {
+                color: var(--color-mono-5);
+            }
+        }
+
+        ul {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--gap-small);
+            margin: var(--gap-med) 0 0;
+            padding: 0;
+            list-style: none;
+
+            li {
+                border: 2px solid var(--border-color);
+                padding: var(--padding-tiny) var(--padding-small) var(--padding-tiny) var(--padding-tiny);
+                border-radius: var(--border-radius-small);
+                background-color: var(--color-bg);
+                text-align: center;
+                display: flex;
+                align-items: center;
+                gap: var(--gap-med);
+                line-height: 1;
+                opacity: 0.5;
+                transition: all 250ms;
+
+                &.unlocked {
+                    opacity: 1;
+                    background-color: var(--theme-color-1);
+
+                    svg {
+                        color: var(--highlight-color);
+                    }
+                }
+
+                svg {
+                    width: 1.5em;
+                    height: 1.5em;
+                    transition: all 250ms;
+                }
+
+                &:hover {
+                    transform: scale(1.05);
+
+                    &:not(.unlocked) {
+                        opacity: 0.7;
+                    }
+
+                    svg {
+                        transform: scale(1.1) rotate(-5deg);
+                    }
+                }
+            }
+        }
+    }
+
+    &:hover {
+        opacity: 1;
+        font-size: var(--font-size-med);
+
+        .achieve-toggle {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .achieve-list {
+            display: block;
+        }
     }
 }

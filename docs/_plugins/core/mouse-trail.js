@@ -4,7 +4,9 @@
 ;(function () {
     'use strict'
 
-    const TRAIL_ROUTES = ['/mac']
+    // const TRAIL_ROUTES = ['/mac']
+    const TRAIL_ROUTES = []
+    const TRAIL_EFFECT = 'mouse-trails'
 
     const TRAIL_CLASS = 'mouse-trail-item'
     const ROOT_CLASS = 'mouse-trail-root'
@@ -43,6 +45,7 @@
     let lastPointer = null
     let currentTrailSize = ITEM_SIZE_MIN
     let currentTrailSpread = ITEM_SPREAD_MIN
+    let currentRoutePath = '/'
 
     function rand(min, max) {
         return (Math.random() * (max - min)) + min
@@ -132,6 +135,21 @@
         return TRAIL_ROUTES.includes(cleanedPath || '/')
     }
 
+    function isTrailEnabled(path) {
+        if (isTrailRoute(path)) return true
+        return Boolean(window.DocsifyEasterEggs?.hasEffect(TRAIL_EFFECT))
+    }
+
+    function onEffectChange(event) {
+        if (event.detail?.effect !== TRAIL_EFFECT) return
+        if (isTrailEnabled(currentRoutePath)) {
+            void activate()
+        }
+        else {
+            deactivate()
+        }
+    }
+
     function createTrailRoot() {
         if (trailRoot && document.body.contains(trailRoot)) return trailRoot
 
@@ -166,7 +184,7 @@
         window.setTimeout(function () { item.remove() }, lifetimeMs)
     }
 
-    function spawnClickBurst(event) {
+    function spawnClickBurst(x, y) {
         const burstCount = randInt(BURST_COUNT_MIN, BURST_COUNT_MAX + 1)
         const burstItemPath = pickRandomTrailItem() || itemPath
 
@@ -174,8 +192,8 @@
             const angle = rand(0, Math.PI * 2)
             const speedPxPerMs = rand(BURST_SPEED_MIN, BURST_SPEED_MAX)
             const speedPx = speedPxPerMs * SPEED_SCALING
-            const spawnX = event.clientX + rand(-BURST_SPAWN_SPREAD, BURST_SPAWN_SPREAD)
-            const spawnY = event.clientY + rand(-BURST_SPAWN_SPREAD, BURST_SPAWN_SPREAD)
+            const spawnX = x + rand(-BURST_SPAWN_SPREAD, BURST_SPAWN_SPREAD)
+            const spawnY = y + rand(-BURST_SPAWN_SPREAD, BURST_SPAWN_SPREAD)
 
             appendTrailItem(spawnX, spawnY, {
                 imagePath: burstItemPath,
@@ -241,7 +259,7 @@
         if (isEditableTarget(event.target)) return
         if (isUiTarget(event.target)) return
 
-        const nextItemPath = spawnClickBurst(event)
+        const nextItemPath = spawnClickBurst(event.clientX, event.clientY)
         if (nextItemPath) {
             itemPath = nextItemPath
         }
@@ -276,6 +294,10 @@
         window.addEventListener('pointermove', onPointerMove, { passive: true })
         window.addEventListener('click', onClick, { passive: true })
         window.addEventListener('keydown', onKeyDown)
+
+        const burstX = lastPointer ? lastPointer.x : window.innerWidth / 2
+        const burstY = lastPointer ? lastPointer.y : window.innerHeight / 2
+        spawnClickBurst(burstX, burstY)
     }
 
     function deactivate() {
@@ -299,12 +321,18 @@
 
     function docsifyMouseTrail(hook, vm) {
         hook.doneEach(function () {
-            if (isTrailRoute(vm?.route?.path)) {
+            currentRoutePath = vm?.route?.path
+
+            if (isTrailEnabled(currentRoutePath)) {
                 void activate()
                 return
             }
 
             deactivate()
+        })
+
+        hook.init(function () {
+            window.addEventListener('docsify-effect-change', onEffectChange)
         })
     }
 

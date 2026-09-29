@@ -117,10 +117,11 @@
         }
 
         &::after {
-            content: "Digital Tech. @ Waimea College";
+            content: "Digital Tech.\A@ Waimea College";
             font-size: var(--font-size-xl);
             text-align: left;
             font-weight: 300;
+            white-space: pre-wrap;
         }
     }
 

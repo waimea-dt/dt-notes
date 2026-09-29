@@ -360,6 +360,7 @@
     const themeIcons = {
         dark: 'sun',
         light: 'moon',
+        candy: 'party-popper',
         retro: 'square-terminal',
     }
 
@@ -418,6 +419,7 @@
      * Set, persist, and broadcast a theme change.
      */
     function applyTheme(theme, options = {}) {
+        if (theme == null) return
         const nextTheme = setTheme(theme)
         persistTheme(nextTheme, options.storageKey)
         updateThemeToggleIcon(nextTheme)

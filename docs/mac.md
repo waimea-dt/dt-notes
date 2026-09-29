@@ -669,7 +669,7 @@
             </div>`,
         ])
 
-        const chime = new Audio('./_assets/macs/macintosh-chime.wav')
+        const chime = new Audio('./_assets/sounds/macintosh-chime.wav')
         chime.play()
 
         setTimeout(showSmile, SMILE_DELAY)
