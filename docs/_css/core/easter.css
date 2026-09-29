@@ -161,6 +161,10 @@ body {
     font-size: var(--font-small);
     transition: all 250ms;
 
+    @media screen and (max-width: 600px) {
+        display: none;
+    }
+
     .achieve-toggle {
         color: var(--highlight-color);
         transition: all 250ms;
