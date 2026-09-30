@@ -3,13 +3,10 @@
 
     /* Typography */
     --font-family:          'Shadows Into Light Two', sans-serif;
-    --font-size:            18px;
+    --font-size:            19px;
     --font-weight:          500;
     --strong-font-weight:   800;
     --font-weight-heading:  800;
-
-    /* Sidebar */
-
 
     /* Base colors */
     --color-min:        #fff;
@@ -48,10 +45,18 @@
     --color-warning:    #d07200;
     --color-attention:  #d80000;
 
+    /* Sidebar */
     :is(.sidebar) {
         --sidebar-bg:   #bdf !important;
     }
 
+    /* Pastel images */
+    .mouse-trail-root,
+    img {
+        filter: contrast(60%) brightness(120%) saturate(80%);
+    }
+
+    /* Plugin containers */
     --plugin-wrapper-bg: #bdf !important;
     --plugin-header-bg:  #8cf !important;
 
@@ -109,6 +114,7 @@
     --code-color-purple:    #5c0;
     --code-color-pink:      #490;
 
+    /* Sidebar */
     :is(.sidebar) {
         a.app-name-link {
             img {
@@ -117,7 +123,21 @@
         }
     }
 
+    /* Remove images from mouse trails */
+    .mouse-trail-root {
+        /* filter: sepia(100%) hue-rotate(55deg) saturate(300%) brightness(70%) contrast(150%); */
+
+        .mouse-trail-item {
+            background-image: none;
+            background-color: var(--palette-color-2);
+            --trail-angle-start: 0 !important;
+            --trail-angle-end: 0 !important;
+        }
+    }
+
+    /* Remove all images */
     .markdown-section {
+
         figure, img, aside:has(figure:only-child) {
             display: none !important;
         }
@@ -134,13 +154,13 @@
     }
 }
 
-body {
-    &.spin-360 {
-        animation: spinOnce 500ms ease-in-out forwards;
-    }
+/* BARREL ROLL ---------------------------------------- */
+
+body.effect-spin-360 {
+    animation: spin-once 500ms ease-in-out forwards;
 }
 
-@keyframes spinOnce {
+@keyframes spin-once {
     from {
         transform: rotate(0deg);
     }
@@ -148,6 +168,95 @@ body {
         transform: rotate(360deg);
     }
 }
+
+/* GRAVITY ---------------------------------------- */
+
+body.effect-antigravity :is(
+        .markdown-section>h1,
+        .markdown-section>h2,
+        .markdown-section>h3,
+        .markdown-section>div,
+        .markdown-section>p,
+        .markdown-section>ul,
+        .markdown-section>ol,
+        .markdown-section>pre,
+        .markdown-section>table,
+        .markdown-section>aside,
+        .markdown-section>figure,
+        .markdown-section>details,
+        .recommendations>li,
+        .timeline>dt,
+        .timeline>dd,
+        .menu-item,
+        .sidebar,
+        .sidebar-toggle,
+        pagination,
+        img-notes,
+        drag-drop,
+        computer,
+        primm,
+        web-playground
+    ) {
+    --duration: 5200ms;
+    --tilt: -2deg;
+    --lift: -150px;
+    --bounce: 0.1;
+
+    animation: antigravity-float var(--duration) ease-in-out both;
+
+    &:nth-child(2n) {
+        --tilt: -5deg;
+        --lift: -175px;
+        --bounce: 0.12;
+        animation-delay:    calc(0.05 * var(--duration));
+        animation-duration: calc(0.95 * var(--duration));
+    }
+
+    &:nth-child(3n) {
+        --tilt: 4deg;
+        --lift: -125px;
+        --bounce: 0.02;
+        animation-delay:    calc(0.10 * var(--duration));
+        animation-duration: calc(0.90 * var(--duration));
+    }
+
+    &:nth-child(4n) {
+        --tilt: 1deg;
+        --lift: -100px;
+        --bounce: 0.07;
+        animation-delay:    calc(0.15 * var(--duration));
+        animation-duration: calc(0.85 * var(--duration));
+    }
+
+    &:nth-child(7n) {
+        --tilt: 3deg;
+        --lift: -200px;
+        --bounce: 0.05;
+        animation-delay:    calc(0.20 * var(--duration));
+        animation-duration: calc(0.80 * var(--duration));
+    }
+}
+
+@keyframes antigravity-float {
+    0%, 100% {
+        transform: translateY(0) rotate(0);
+    }
+    95% {
+        transform:
+            translateY(var(--lift))
+            rotate(var(--tilt));
+    }
+    97% {
+        transform: translateY(0) rotate(0);
+    }
+    99% {
+        transform:
+            translateY(calc(var(--bounce) * var(--lift)))
+            rotate(calc(var(--bounce) * var(--tilt)));
+    }
+}
+
+/* ACHIEVES ---------------------------------------- */
 
 #achievements {
     position: absolute;

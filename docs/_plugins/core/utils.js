@@ -9,6 +9,8 @@
  * Functions:
  *   escapeHtml(str)                     - Escape HTML special characters
  *   clamp(val, min, max)                - Clamp a number to a range
+ *   rand(min, max)                       - Return a random number in a range
+ *   randInt(min, max)                    - Return a random integer in [min, max)
  *   randomHex(length, segments, sep)    - Random uppercase hex string helper
  *   padDigits(digits, blockSize)        - Left pad digit string to block size
  *   isAbsoluteUrl(path)                 - Check if URL is absolute/data URI
@@ -71,6 +73,20 @@
      */
     function clamp(val, min, max) {
         return Math.min(Math.max(val, min), max)
+    }
+
+    /**
+     * Return a random number in the range [min, max).
+     */
+    function rand(min, max) {
+        return (Math.random() * (max - min)) + min
+    }
+
+    /**
+     * Return a random integer in the range [min, max).
+     */
+    function randInt(min, max) {
+        return Math.floor(rand(min, max))
     }
 
     /**
@@ -531,6 +547,8 @@
     const docsifyUtils = Object.freeze({
         escapeHtml,
         clamp,
+        rand,
+        randInt,
         randomHex,
         padDigits,
         isAbsoluteUrl,

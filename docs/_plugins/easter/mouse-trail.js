@@ -4,6 +4,8 @@
 ;(function () {
     'use strict'
 
+    const { clamp, rand, randInt } = window.DocsifyUtils
+
     // const TRAIL_ROUTES = ['/mac']
     const TRAIL_ROUTES = []
     const TRAIL_EFFECT = 'mouse-trails'
@@ -46,18 +48,6 @@
     let currentTrailSize = ITEM_SIZE_MIN
     let currentTrailSpread = ITEM_SPREAD_MIN
     let currentRoutePath = '/'
-
-    function rand(min, max) {
-        return (Math.random() * (max - min)) + min
-    }
-
-    function randInt(min, max) {
-        return Math.floor(rand(min, max))
-    }
-
-    function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value))
-    }
 
     function speedRatioFromThreshold(speedPxPerMs, maxSpeedPxPerMs) {
         const denominator = maxSpeedPxPerMs - SPEED_THRESHOLD

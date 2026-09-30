@@ -5,7 +5,7 @@
             locked: 'Switch to the light theme without the mouse',
             unlocked: 'You found the secret way to switch to the light theme',
             code: ['l', 'i', 'g', 'h', 't'],
-            message: `Theme unlocked!\nArrrrrrgh, my eyes!`,
+            message: `Theme applied\nArrrrrrgh, my eyes!`,
             theme: 'light',
             effect: null,
             sound: 'ding.wav',
@@ -17,7 +17,7 @@
             locked: 'Switch to the dark theme without the mouse',
             unlocked: 'You found the secret way to switch to the dark theme',
             code: ['d', 'a', 'r', 'k'],
-            message: `Theme unlocked!\nWelcome to the dark side!`,
+            message: `Theme applied\nWelcome to the dark side!`,
             theme: 'dark',
             effect: null,
             sound: 'ding.wav',
@@ -29,7 +29,7 @@
             locked: `You'll ♥ this, if you can find it!`,
             unlocked: 'You found the secret candy theme',
             code: ['<', '3'],
-            message: `Theme unlocked!\nSo soft and squishy!`,
+            message: `Theme applied\nSo soft and squishy!`,
             theme: 'candy',
             effect: null,
             sound: 'tada.wav',
@@ -41,11 +41,11 @@
             locked: 'Only elite haxx0rs will find this',
             unlocked: 'You found the secret retro theme',
             code: ['1', '3', '3', '7'],
-            message: `Theme unlocked!\nWelcome to the 1980s!`,
+            message: `Theme applied\nWelcome to the 1980s!`,
             theme: 'retro',
             effect: null,
             sound: 'terminal.wav',
-            icon: 'square-terminal',
+            icon: 'computer',
             callback: null,
         },
         konami: {
@@ -53,11 +53,35 @@
             locked: `One for the gamer cheats...`,
             unlocked: 'You triggered the secret mouse trails',
             code: ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'],
-            message: `Icons unlocked!`,
+            message: `Trails enabled!`,
             theme: null,
             effect: 'mouse-trails',
             sound: 'bonus.wav',
             icon: 'mouse-pointer-click',
+            callback: null,
+        },
+        matrix: {
+            name: 'Red Pill',
+            locked: `Do you want to know the truth, Neo?`,
+            unlocked: 'You took the red pill and saw the Matrix',
+            code: ['r', 'e', 'd', 'p', 'i', 'l', 'l'],
+            message: `Fasten your seat belt, Dorothy, 'cause Kansas is going bye-bye`,
+            theme: null,
+            effect: 'matrix',
+            sound: 'red-pill.wav',
+            icon: 'pill',
+            callback: null,
+        },
+        life: {
+            name: 'Meaning of Life',
+            locked: `What's the answer to the question?`,
+            unlocked: `You know the answer, but what's the question?!`,
+            code: ['4', '2'],
+            message: `   ____   ___  _   _ _ _____  \n  |  _ \\ / _ \\| \\ | ( )_   _| \n  | | | | | | |  \\| |/  | |   \n  | |_| | |_| | |\\  |   | |   \n _|____/_\\___/|_|_\\_|_ _|_| _ \n|  _ \\ / \\  | \\ | |_ _/ ___| |\n| |_) / _ \\ |  \\| || | |   | |\n|  __/ ___ \\| |\\  || | |___|_|\n|_| /_/   \\_\\_| \\_|___\\____(_)\n\nAnd always have your towel with you!`,
+            theme: null,
+            effect: null,
+            sound: '42.wav',
+            icon: 'galaxy',
             callback: null,
         },
         sudo: {
@@ -69,7 +93,7 @@
             theme: null,
             effect: null,
             sound: 'error.wav',
-            icon: 'crown',
+            icon: 'square-terminal',
             callback: null,
         },
         spin: {
@@ -84,17 +108,17 @@
             icon: 'rotate-cw',
             callback: doSpin,
         },
-        life: {
-            name: 'Meaning of Life',
-            locked: `What's the anser to the question?`,
-            unlocked: 'You know the answer to the question',
-            code: ['4', '2'],
-            message: `   ____   ___  _   _ _ _____  \n  |  _ \\ / _ \\| \\ | ( )_   _| \n  | | | | | | |  \\| |/  | |   \n  | |_| | |_| | |\\  |   | |   \n _|____/_\\___/|_|_\\_|_ _|_| _ \n|  _ \\ / \\  | \\ | |_ _/ ___| |\n| |_) / _ \\ |  \\| || | |   | |\n|  __/ ___ \\| |\\  || | |___|_|\n|_| /_/   \\_\\_| \\_|___\\____(_)\n\nAnd always have your towel with you!`,
+        gravity: {
+            name: 'Anti-Gravity',
+            locked: `It all feels so heavy`,
+            unlocked: 'You turned off gravity!',
+            code: ['f', 'l', 'o', 'a', 't'],
+            message: `Light as a feather!`,
             theme: null,
             effect: null,
-            sound: '42.wav',
-            icon: 'galaxy',
-            callback: null,
+            sound: 'float.wav',
+            icon: 'feather',
+            callback: doGravity,
         },
     }
 
@@ -106,12 +130,18 @@
 
     const { applyTheme, getTheme } = window.DocsifyUtils
 
-    function doSpin() {
+    function timedBodyClass(className, duration) {
         const body = document.querySelector('body')
-        body.classList.add('spin-360')
-        setTimeout(() => {
-            body.classList.remove('spin-360')
-        }, 2000)
+        body.classList.add(className)
+        setTimeout(() => { body.classList.remove(className) }, duration)
+    }
+
+    function doSpin() {
+        timedBodyClass('effect-spin-360', 2000)
+    }
+
+    function doGravity() {
+        timedBodyClass('effect-antigravity', 8000)
     }
 
     function loadAchievements() {
@@ -132,12 +162,10 @@
         window.dispatchEvent(new CustomEvent('docsify-effect-change', { detail: { effect, active } }))
     }
 
-    function logAchievement(id) {
+    function logAchievement(id, enabled) {
         const { name, message } = SECRETS[id]
         if (name && message) {
-            console.group(name)
-            console.log(message)
-            console.groupEnd()
+            console.log(`SECRET: ${name}\n------------------------------\n${enabled ? message : 'Cancelled'}`)
         }
     }
 
@@ -165,7 +193,7 @@
 
     function handleEffect(id) {
         const { effect } = SECRETS[id]
-        if (!effect) return true
+        if (!effect) return false
 
         const effects = loadEffects()
         if (!effects.includes(effect)) {
@@ -182,7 +210,7 @@
 
     function handleTheme(id) {
         const { theme } = SECRETS[id]
-        if (!theme) return true
+        if (!theme) return false
 
         const currentTheme = getTheme()
         if (theme !== currentTheme) {
@@ -191,7 +219,7 @@
         }
         else {
             applyTheme('dark')
-            return false
+            return true
         }
     }
 
@@ -202,10 +230,11 @@
         audio.play()
     }
 
-    function runCallback(id) {
+    function handleCallback(id) {
         const { callback } = SECRETS[id]
-        if (!callback) return
+        if (!callback) return false
         callback(id)
+        return true
     }
 
     function showAchievements() {
@@ -264,14 +293,21 @@
         if (!achievements.includes(id)) saveAchievement(id)
         showAchievements()
 
+        const { effect, theme, callback } = SECRETS[id]
+        const noActions = !effect && !theme && !callback
         const effectApplied = handleEffect(id)
         const themeApplied = handleTheme(id)
-        if (effectApplied || themeApplied) {
-            playSound(id)
-            logAchievement(id)
-        }
+        const callbackRan = handleCallback(id)
 
-        runCallback(id)
+        if (noActions || effectApplied || themeApplied || callbackRan) {
+            playSound(id)
+            logAchievement(id, true)
+        }
+        else {
+            logAchievement(id, false)
+            const audio = new Audio(`./_assets/sounds/negative.wav`)
+            audio.play()
+        }
     }
 
     function isTypingInAField(event) {

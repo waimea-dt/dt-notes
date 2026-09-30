@@ -1,0 +1,48 @@
+.matrix-root {
+    --matrix-back:        var(--color-mono-0);
+    --matrix-colour:      #0f0;
+    --matrix-head-colour: #cfc;
+    --matrix-head-glow:   #6f6;
+
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background-color: var(--matrix-back);
+
+    [data-theme='light'] & {
+        --matrix-colour:      #b04;
+        --matrix-head-colour: #f05;
+        --matrix-head-glow:   #f9b;
+    }
+
+    [data-theme='candy'] & {
+        --matrix-colour:      #f0a;
+        --matrix-head-colour: #f5c;
+        --matrix-head-glow:   #f9d;
+    }
+}
+
+.matrix-item {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--size);
+    height: var(--size);
+    font: bold var(--size) / 1 monospace;
+    text-align: center;
+    color: var(--matrix-colour);
+    animation: matrix-fade 2s ease-out forwards;
+}
+
+/* Must come after .matrix-item so it wins on colour */
+.matrix-head {
+    color: var(--matrix-head-colour);
+    text-shadow: 0 0 8px var(--matrix-head-glow);
+}
+
+@keyframes matrix-fade {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+}
