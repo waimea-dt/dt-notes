@@ -5,6 +5,7 @@
             locked: 'Switch to the light theme without the mouse',
             unlocked: 'You found the secret way to switch to the light theme',
             code: ['l', 'i', 'g', 'h', 't'],
+            command: 'light',
             message: `Theme applied\nArrrrrrgh, my eyes!`,
             theme: 'light',
             effect: null,
@@ -17,6 +18,7 @@
             locked: 'Switch to the dark theme without the mouse',
             unlocked: 'You found the secret way to switch to the dark theme',
             code: ['d', 'a', 'r', 'k'],
+            command: 'dark',
             message: `Theme applied\nWelcome to the dark side!`,
             theme: 'dark',
             effect: null,
@@ -29,6 +31,7 @@
             locked: `You'll ♥ this, if you can find it!`,
             unlocked: 'You found the secret candy theme',
             code: ['<', '3'],
+            command: '<3',
             message: `Theme applied\nSo soft and squishy!`,
             theme: 'candy',
             effect: null,
@@ -41,6 +44,7 @@
             locked: 'Only elite haxx0rs will find this',
             unlocked: 'You found the secret retro theme',
             code: ['1', '3', '3', '7'],
+            command: '1337',
             message: `Theme applied\nWelcome to the 1980s!`,
             theme: 'retro',
             effect: null,
@@ -53,6 +57,7 @@
             locked: `One for the gamer cheats...`,
             unlocked: 'You triggered the secret mouse trails',
             code: ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'],
+            command: 'konami',
             message: `Trails enabled!`,
             theme: null,
             effect: 'mouse-trails',
@@ -65,6 +70,7 @@
             locked: `Do you want to know the truth, Neo?`,
             unlocked: 'You took the red pill and saw the Matrix',
             code: ['r', 'e', 'd', 'p', 'i', 'l', 'l'],
+            command: 'redpill',
             message: `Fasten your seat belt, Dorothy, 'cause Kansas is going bye-bye`,
             theme: null,
             effect: 'matrix',
@@ -77,6 +83,7 @@
             locked: `What's the answer to the question?`,
             unlocked: `You know the answer, but what's the question?!`,
             code: ['4', '2'],
+            command: '42',
             message: `   ____   ___  _   _ _ _____  \n  |  _ \\ / _ \\| \\ | ( )_   _| \n  | | | | | | |  \\| |/  | |   \n  | |_| | |_| | |\\  |   | |   \n _|____/_\\___/|_|_\\_|_ _|_| _ \n|  _ \\ / \\  | \\ | |_ _/ ___| |\n| |_) / _ \\ |  \\| || | |   | |\n|  __/ ___ \\| |\\  || | |___|_|\n|_| /_/   \\_\\_| \\_|___\\____(_)\n\nAnd always have your towel with you!`,
             theme: null,
             effect: null,
@@ -89,6 +96,7 @@
             locked: `You're just a lowly user, for now...`,
             unlocked: 'You tried to gain elevated privileges',
             code: ['s', 'u', 'd', 'o'],
+            command: 'sudo',
             message: `Nice try, but...\nYou're not in the sudo list!`,
             theme: null,
             effect: null,
@@ -101,6 +109,7 @@
             locked: `Spin me right round...`,
             unlocked: 'You spun the page!',
             code: ['3', '6', '0'],
+            command: '360',
             message: `Do a barrel roll!`,
             theme: null,
             effect: null,
@@ -113,6 +122,7 @@
             locked: `It all feels so heavy`,
             unlocked: 'You turned off gravity!',
             code: ['f', 'l', 'o', 'a', 't'],
+            command: 'float',
             message: `Light as a feather!`,
             theme: null,
             effect: null,
@@ -124,9 +134,13 @@
 
     const ACHIEVES_KEY = 'achievements'
     const EFFECTS_KEY = 'effects'
+    const CONSOLE_KEY = 'console'
 
     const recentKeys = []
     const MAX_CODE_LENGTH = Math.max(...Object.values(SECRETS).map((secret) => secret.code.length))
+
+    const TAPS_NEEDED = 5
+    const MAX_TAP_GAP = 600
 
     const { applyTheme, getTheme } = window.DocsifyUtils
 
@@ -223,11 +237,16 @@
         }
     }
 
+    function playSoundFile(filename) {
+        if (!filename) return
+        const audio = new Audio(`./_assets/sounds/${filename}`)
+        audio.play()
+    }
+
     function playSound(id) {
         const { sound } = SECRETS[id]
         if (!sound) return
-        const audio = new Audio(`./_assets/sounds/${sound}`)
-        audio.play()
+        playSoundFile(sound)
     }
 
     function handleCallback(id) {
@@ -237,6 +256,41 @@
         return true
     }
 
+    function unlockConsole() {
+        localStorage.setItem(CONSOLE_KEY, true)
+        playSoundFile('fanfare.wav')
+    }
+
+    function consoleIsUnlocked() {
+        return localStorage.getItem(CONSOLE_KEY)
+    }
+
+    function listenForTaps(element, onUnlock) {
+        let tapCount = 0
+        let resetTimer = null
+
+        element.addEventListener('click', () => {
+            if (consoleIsUnlocked()) return
+
+            tapCount += 1
+            element.dataset.taps = tapCount
+            clearTimeout(resetTimer)
+
+            if (tapCount >= TAPS_NEEDED) {
+                tapCount = 0
+                delete element.dataset.taps
+                unlockConsole()
+                showAchievements()
+                return
+            }
+
+            resetTimer = setTimeout(() => {
+                tapCount = 0
+                delete element.dataset.taps
+            }, MAX_TAP_GAP)
+        })
+    }
+
     function showAchievements() {
         let achieveDiv = document.getElementById('achievements')
         if (achieveDiv) achieveDiv.remove()
@@ -244,28 +298,55 @@
         achieveDiv = document.createElement('div')
         achieveDiv.id = 'achievements'
 
-        const toggle = document.createElement('label')
-        toggle.className = 'achieve-toggle'
-        toggle.innerHTML = '<i data-lucide="trophy"></i>'
+        const achieveToggle = document.createElement('label')
+        achieveToggle.className = 'achieve-toggle'
+        achieveToggle.innerHTML = '<i data-lucide="trophy"></i>'
+        listenForTaps(achieveToggle, null)
 
-        const list = document.createElement('div')
-        list.className = 'achieve-list'
+        const achievePanel = document.createElement('div')
+        achievePanel.className = 'achieve-list'
 
         const achievements = loadAchievements()
         const numPossible = Object.keys(SECRETS).length
         const numAchieved = achievements.length
-        let itemHtml = `
-            <h4>
-                Secrets Unlocked
-                <span>(${numAchieved}/${numPossible})</span>
-            </h4>
-            <ul>
+        const achieveHeading = document.createElement('h4')
+        achieveHeading.innerHTML = `
+            Secrets Unlocked
+            <span>(${numAchieved}/${numPossible})</span>
         `
+        achievePanel.append(achieveHeading)
+
+        if (localStorage.getItem(CONSOLE_KEY)) {
+            const secretConsole = document.createElement('label')
+            secretConsole.className = 'secret-console'
+
+            secretConsoleInput = document.createElement('input')
+            secretConsoleInput.placeholder = 'enter command'
+            secretConsoleInput.autocapitalize = 'off'
+            secretConsoleInput.autocomplete = 'off'
+            secretConsoleInput.spellcheck = false
+
+            secretConsoleInput.addEventListener('keydown', (event) => {
+                if (event.key !== 'Enter') return
+                const match = matchSecretCode(secretConsoleInput.value)
+                if (match)
+                    handleSecretFound(match)
+                else
+                    playSoundFile('nope.wav')
+                secretConsoleInput.value = ''
+            })
+
+            secretConsole.append(secretConsoleInput)
+            achievePanel.append(secretConsole)
+        }
+
+        const achieveList = document.createElement('ul')
+        let listHtml = ''
 
         for (const id in SECRETS) {
             const { icon, name, locked, unlocked } = SECRETS[id]
             const achieved = achievements.includes(id)
-            itemHtml += `
+            listHtml += `
                 <li
                     class="${achieved ? 'unlocked' : ''}"
                     title="${achieved ? unlocked : locked }"
@@ -275,17 +356,28 @@
                 </li>
             `
         }
-        itemHtml += '</ul>'
-        list.innerHTML = itemHtml
+        achieveList.innerHTML = listHtml
+        achievePanel.append(achieveList)
 
         achieveDiv.innerHTML = ''
-        achieveDiv.append(toggle)
-        achieveDiv.append(list)
+        achieveDiv.append(achieveToggle)
+        achieveDiv.append(achievePanel)
 
         const main = document.querySelector('main')
         main.append(achieveDiv)
 
         window.DocsifyUtils.createLucideIcons()
+    }
+
+    function matchSecretCode(text) {
+        const normalisedText = text.trim().toLowerCase()
+
+        const match = Object.entries(SECRETS).find(([, secret]) => {
+            const textCode = secret.command ?? secret.code.join('')
+            return textCode.toLowerCase() === normalisedText
+        })
+
+        return match?.[0] ?? null
     }
 
     function handleSecretFound(id) {
@@ -305,8 +397,7 @@
         }
         else {
             logAchievement(id, false)
-            const audio = new Audio(`./_assets/sounds/negative.wav`)
-            audio.play()
+            playSoundFile('negative.wav')
         }
     }
 

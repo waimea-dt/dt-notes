@@ -270,13 +270,73 @@ body.effect-antigravity :is(
     font-size: var(--font-small);
     transition: all 250ms;
 
-    @media screen and (max-width: 600px) {
+    /* @media screen and (max-width: 600px) {
         display: none;
-    }
+    } */
 
     .achieve-toggle {
         color: var(--highlight-color);
         transition: all 250ms;
+        position: relative;
+
+        &::after {
+            content: "";
+            opacity: 0;
+            transition: all 250ms;
+        }
+
+        &[data-taps] {
+            &::after {
+                opacity: 1;
+                content: attr(data-taps);
+                position: absolute;
+                top: 0.3rem;
+                left: -0.8rem;
+                font-size: 0.6em;
+                width: 1.2em;
+                height: 1.2em;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: var(--color-mono-5);
+                color: var(--color-mono-0);
+                border-radius: 2em;
+                box-shadow: var(--box-shadow-small);
+                transform: rotate(-5deg);
+            }
+
+            &[data-taps="1"] { transform: scale(1.2) rotate(5deg); }
+            &[data-taps="2"] { transform: scale(1.3) rotate(5deg); }
+            &[data-taps="3"] { transform: scale(1.4) rotate(5deg); }
+            &[data-taps="4"] { transform: scale(1.5) rotate(5deg); }
+            &[data-taps="5"] { transform: scale(1.6) rotate(5deg); }
+        }
+    }
+
+    .secret-console {
+        margin-top: var(--gap-med);
+        position: relative;
+        font-family: var(--font-family-mono);
+
+        input {
+            border: 2px solid var(--highlight-color);
+            padding-left: 1.5em;
+            background-color: var(--code-color-back);
+            color: var(--code-color-bright);
+
+            &:focus-within {
+                outline: none;
+                box-shadow: 0 0 0.1em 2px var(--highlight-color);
+            }
+        }
+
+        &::before {
+            content: ">";
+            position: absolute;
+            left: 0.7em;
+            top: 0.35em;
+            color: var(--code-color-normal);
+        }
     }
 
     .achieve-list {
