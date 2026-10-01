@@ -363,7 +363,7 @@
         achieveDiv.append(achieveToggle)
         achieveDiv.append(achievePanel)
 
-        const main = document.querySelector('main')
+        const main = document.querySelector('.content')
         main.append(achieveDiv)
 
         window.DocsifyUtils.createLucideIcons()
