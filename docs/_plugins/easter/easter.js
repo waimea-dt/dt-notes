@@ -300,37 +300,19 @@
         try { localStorage.setItem(ACHIEVES_KEY, JSON.stringify(achievements)) } catch {}
     }
 
-    function saveEffect(id) {
-        const { effect } = SECRETS[id]
-        if (!effect) return
-        let effects = loadEffects()
-        effects = [...effects, effect]
-        try { localStorage.setItem(EFFECTS_KEY, JSON.stringify(effects)) } catch {}
-    }
-
-    function clearEffect(id) {
-        const { effect } = SECRETS[id]
-        if (!effect) return
-        let effects = loadEffects()
-        effects = effects.filter(effectId => effectId !== effect)
-        try { localStorage.setItem(EFFECTS_KEY, JSON.stringify(effects)) } catch {}
-    }
-
     function handleEffect(id) {
         const { effect } = SECRETS[id]
         if (!effect) return false
 
         const effects = loadEffects()
-        if (!effects.includes(effect)) {
-            saveEffect(id)
-            dispatchEffectChange(effect, true)
-            return true
-        }
-        else {
-            clearEffect(id)
-            dispatchEffectChange(effect, false)
-            return false
-        }
+        const active = !effects.includes(effect)
+        const updatedEffects = active
+            ? [...effects, effect]
+            : effects.filter(effectId => effectId !== effect)
+
+        try { localStorage.setItem(EFFECTS_KEY, JSON.stringify(updatedEffects)) } catch {}
+        dispatchEffectChange(effect, active)
+        return active
     }
 
     function handleTheme(id) {
@@ -376,7 +358,7 @@
         return localStorage.getItem(CONSOLE_KEY)
     }
 
-    function listenForTaps(element, onUnlock) {
+    function listenForTaps(element) {
         let tapCount = 0
         let resetTimer = null
 
@@ -425,18 +407,69 @@
         }, duration)
     }
 
-    function showAchievements() {
-        let achieveDiv = document.getElementById('achievements')
-        if (achieveDiv) achieveDiv.remove()
-
-        achieveDiv = document.createElement('div')
-        achieveDiv.id = 'achievements'
-
+    function createAchievementToggle() {
         const achieveToggle = document.createElement('label')
         achieveToggle.className = 'achieve-toggle'
         achieveToggle.innerHTML = '<i data-lucide="trophy"></i>'
-        listenForTaps(achieveToggle, null)
+        listenForTaps(achieveToggle)
+        return achieveToggle
+    }
 
+    function createSecretConsole() {
+        const secretConsole = document.createElement('label')
+        secretConsole.className = 'secret-console'
+
+        const secretConsoleInput = document.createElement('input')
+        secretConsoleInput.placeholder = 'enter command'
+        secretConsoleInput.autocapitalize = 'off'
+        secretConsoleInput.autocomplete = 'off'
+        secretConsoleInput.spellcheck = false
+
+        secretConsoleInput.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') return
+            const match = matchSecretCode(secretConsoleInput.value)
+            if (match)
+                handleSecretFound(match)
+            else
+                playSoundFile('nope.wav')
+            secretConsoleInput.value = ''
+        })
+
+        secretConsole.append(secretConsoleInput)
+        return secretConsole
+    }
+
+    function createAchievementList(achievements) {
+        const achieveList = document.createElement('ul')
+        let listHtml = ''
+
+        for (const id in SECRETS) {
+            const { icon, name, locked, unlocked, visible } = SECRETS[id]
+            if (!visible) continue
+
+            const achieved = achievements.includes(id)
+            listHtml += `
+                <li
+                    class="${achieved ? 'unlocked' : ''}"
+                    title="${achieved ? unlocked : locked }"
+                >
+                    <i data-lucide="${icon}"></i>
+                    ${achieved ? name : 'Not discovered'}
+                </li>
+            `
+        }
+        achieveList.innerHTML = listHtml
+        return achieveList
+    }
+
+    function showAchievements() {
+        const previousAchievements = document.getElementById('achievements')
+        if (previousAchievements) previousAchievements.remove()
+
+        const achieveDiv = document.createElement('div')
+        achieveDiv.id = 'achievements'
+
+        const achieveToggle = createAchievementToggle()
         const achievePanel = document.createElement('div')
         achievePanel.className = 'achieve-list'
 
@@ -450,54 +483,10 @@
         `
         achievePanel.append(achieveHeading)
 
-        if (localStorage.getItem(CONSOLE_KEY)) {
-            const secretConsole = document.createElement('label')
-            secretConsole.className = 'secret-console'
+        if (consoleIsUnlocked()) achievePanel.append(createSecretConsole())
+        achievePanel.append(createAchievementList(achievements))
 
-            secretConsoleInput = document.createElement('input')
-            secretConsoleInput.placeholder = 'enter command'
-            secretConsoleInput.autocapitalize = 'off'
-            secretConsoleInput.autocomplete = 'off'
-            secretConsoleInput.spellcheck = false
-
-            secretConsoleInput.addEventListener('keydown', (event) => {
-                if (event.key !== 'Enter') return
-                const match = matchSecretCode(secretConsoleInput.value)
-                if (match)
-                    handleSecretFound(match)
-                else
-                    playSoundFile('nope.wav')
-                secretConsoleInput.value = ''
-            })
-
-            secretConsole.append(secretConsoleInput)
-            achievePanel.append(secretConsole)
-        }
-
-        const achieveList = document.createElement('ul')
-        let listHtml = ''
-
-        for (const id in SECRETS) {
-            const { icon, name, locked, unlocked, visible } = SECRETS[id]
-            if (visible) {
-                const achieved = achievements.includes(id)
-                listHtml += `
-                    <li
-                        class="${achieved ? 'unlocked' : ''}"
-                        title="${achieved ? unlocked : locked }"
-                    >
-                        <i data-lucide="${icon}"></i>
-                        ${achieved ? name : 'Not discovered'}
-                    </li>
-                `
-            }
-        }
-        achieveList.innerHTML = listHtml
-        achievePanel.append(achieveList)
-
-        achieveDiv.innerHTML = ''
-        achieveDiv.append(achieveToggle)
-        achieveDiv.append(achievePanel)
+        achieveDiv.append(achieveToggle, achievePanel)
 
         const main = document.querySelector('.content')
         main.append(achieveDiv)
