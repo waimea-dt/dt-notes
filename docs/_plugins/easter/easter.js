@@ -12,6 +12,7 @@
             sound: 'ding.wav',
             icon: 'sun',
             callback: null,
+            visible: true,
         },
         dark: {
             name: 'Dark Theme',
@@ -25,6 +26,7 @@
             sound: 'ding.wav',
             icon: 'moon',
             callback: null,
+            visible: true,
         },
         candy: {
             name: 'Candy Theme',
@@ -38,6 +40,7 @@
             sound: 'tada.wav',
             icon: 'party-popper',
             callback: null,
+            visible: true,
         },
         retro: {
             name: 'Retro Theme',
@@ -51,6 +54,7 @@
             sound: 'terminal.wav',
             icon: 'computer',
             callback: null,
+            visible: true,
         },
         konami: {
             name: 'Mouse Trails',
@@ -64,6 +68,7 @@
             sound: 'bonus.wav',
             icon: 'mouse-pointer-click',
             callback: null,
+            visible: true,
         },
         matrix: {
             name: 'Red Pill',
@@ -77,6 +82,7 @@
             sound: 'red-pill.wav',
             icon: 'pill',
             callback: null,
+            visible: true,
         },
         life: {
             name: 'Meaning of Life',
@@ -89,7 +95,8 @@
             effect: null,
             sound: '42.wav',
             icon: 'galaxy',
-            callback: null,
+            callback: doShowAnswer,
+            visible: true,
         },
         sudo: {
             name: 'Sudo',
@@ -102,7 +109,8 @@
             effect: null,
             sound: 'error.wav',
             icon: 'square-terminal',
-            callback: null,
+            callback: doDenied,
+            visible: true,
         },
         spin: {
             name: 'Barrel Roll',
@@ -116,6 +124,7 @@
             sound: 'swoosh.wav',
             icon: 'rotate-cw',
             callback: doSpin,
+            visible: true,
         },
         gravity: {
             name: 'Anti-Gravity',
@@ -129,6 +138,21 @@
             sound: 'float.wav',
             icon: 'feather',
             callback: doGravity,
+            visible: true,
+        },
+        reset: {
+            name: 'Reset',
+            locked: `Reset all your achieves`,
+            unlocked: 'Reset everything!',
+            code: ['r', 'e', 's', 'e', 't'],
+            command: 'reset',
+            message: `Reset everything!`,
+            theme: null,
+            effect: null,
+            sound: 'reset.wav',
+            icon: null,
+            callback: resetAll,
+            visible: false,
         },
     }
 
@@ -148,6 +172,20 @@
         const body = document.querySelector('body')
         body.classList.add(className)
         setTimeout(() => { body.classList.remove(className) }, duration)
+    }
+
+    function resetAll() {
+        localStorage.removeItem(ACHIEVES_KEY)
+        localStorage.removeItem(EFFECTS_KEY)
+        localStorage.removeItem(CONSOLE_KEY)
+    }
+
+    function doShowAnswer() {
+        displayImage('42.webp', 11000)
+    }
+
+    function doDenied() {
+        displayImage('denied.png', 2000)
     }
 
     function doSpin() {
@@ -291,6 +329,29 @@
         })
     }
 
+    function displayImage(filename, duration = 5000) {
+        let imageWrapper = document.getElementById('image-overlay-wrapper')
+        if (!imageWrapper) {
+            imageWrapper = document.createElement('div')
+            imageWrapper.id = 'image-overlay-wrapper'
+        }
+        else {
+            imageWrapper.innerHTML = ''
+        }
+        const body = document.body
+        body.append(imageWrapper)
+
+        const image = document.createElement('img')
+        image.src = `./_assets/eggs/${filename}`
+        image.alt = 'Easter egg!'
+
+        imageWrapper.append(image)
+
+        setTimeout(() => {
+            imageWrapper.remove()
+        }, duration)
+    }
+
     function showAchievements() {
         let achieveDiv = document.getElementById('achievements')
         if (achieveDiv) achieveDiv.remove()
@@ -307,7 +368,7 @@
         achievePanel.className = 'achieve-list'
 
         const achievements = loadAchievements()
-        const numPossible = Object.keys(SECRETS).length
+        const numPossible = Object.values(SECRETS).filter(item => item.visible).length
         const numAchieved = achievements.length
         const achieveHeading = document.createElement('h4')
         achieveHeading.innerHTML = `
@@ -344,17 +405,19 @@
         let listHtml = ''
 
         for (const id in SECRETS) {
-            const { icon, name, locked, unlocked } = SECRETS[id]
-            const achieved = achievements.includes(id)
-            listHtml += `
-                <li
-                    class="${achieved ? 'unlocked' : ''}"
-                    title="${achieved ? unlocked : locked }"
-                >
-                    <i data-lucide="${icon}"></i>
-                    ${achieved ? name : 'Not discovered'}
-                </li>
-            `
+            const { icon, name, locked, unlocked, visible } = SECRETS[id]
+            if (visible) {
+                const achieved = achievements.includes(id)
+                listHtml += `
+                    <li
+                        class="${achieved ? 'unlocked' : ''}"
+                        title="${achieved ? unlocked : locked }"
+                    >
+                        <i data-lucide="${icon}"></i>
+                        ${achieved ? name : 'Not discovered'}
+                    </li>
+                `
+            }
         }
         achieveList.innerHTML = listHtml
         achievePanel.append(achieveList)
@@ -383,13 +446,14 @@
     function handleSecretFound(id) {
         const achievements = loadAchievements()
         if (!achievements.includes(id)) saveAchievement(id)
-        showAchievements()
 
         const { effect, theme, callback } = SECRETS[id]
         const noActions = !effect && !theme && !callback
         const effectApplied = handleEffect(id)
         const themeApplied = handleTheme(id)
         const callbackRan = handleCallback(id)
+
+        showAchievements()
 
         if (noActions || effectApplied || themeApplied || callbackRan) {
             playSound(id)
