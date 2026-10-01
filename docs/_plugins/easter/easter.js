@@ -42,6 +42,20 @@
             callback: null,
             visible: true,
         },
+        nineties: {
+            name: '90s Theme',
+            locked: `Getting online used to be sloooow`,
+            unlocked: 'You found the secret 90s theme',
+            code: ['d', 'i', 'a', 'l', 'u', 'p'],
+            command: 'dialup',
+            message: `Theme applied\nYou are visitor number 000042\nSign my guestbook!`,
+            theme: '90s',
+            effect: null,
+            sound: 'dial-up.wav',
+            icon: 'phone',
+            callback: null,
+            visible: true,
+        },
         retro: {
             name: 'Retro Theme',
             locked: 'Only elite haxx0rs will find this',
@@ -326,7 +340,7 @@
         }
         else {
             applyTheme('dark')
-            return true
+            return false
         }
     }
 
@@ -424,6 +438,7 @@
         secretConsoleInput.autocapitalize = 'off'
         secretConsoleInput.autocomplete = 'off'
         secretConsoleInput.spellcheck = false
+        secretConsoleInput.size = '15'
 
         secretConsoleInput.addEventListener('keydown', (event) => {
             if (event.key !== 'Enter') return
@@ -547,7 +562,10 @@
             if (recentKeys.length > MAX_CODE_LENGTH) recentKeys.shift()
 
             const foundId = Object.keys(SECRETS).find((id) => endsWithCode(SECRETS[id].code))
-            if (foundId) handleSecretFound(foundId)
+            if (foundId) {
+                handleSecretFound(foundId)
+                recentKeys = []
+            }
         })
     }
 
