@@ -112,6 +112,20 @@
             callback: doDenied,
             visible: true,
         },
+        delete: {
+            name: 'Delete It All!',
+            locked: `Never run this on a real server!`,
+            unlocked: 'You deleted everything. Oops!',
+            code: ['r', 'm', ' ', '-', 'r', 'f', ' ', '/'],
+            command: 'rm -rf /',
+            message: `Deleting everything...\nThis is fine.`,
+            theme: null,
+            effect: null,
+            sound: 'uh-oh.wav',
+            icon: 'trash-2',
+            callback: doDelete,
+            visible: true,
+        },
         spin: {
             name: 'Barrel Roll',
             locked: `Spin me right round...`,
@@ -166,7 +180,13 @@
     const TAPS_NEEDED = 5
     const MAX_TAP_GAP = 600
 
-    const { applyTheme, getTheme } = window.DocsifyUtils
+    const DELETE_AVOID = 'script, style, link, meta, [data-keep]' // things we leave alone
+    const DELETE_DURATION = 8000 // ms: roughly how long the whole page should take to vanish
+    const DELETE_MAX_DELAY = 20  // ms: longest random pause between steps
+
+    let isDeleting = false
+
+    const { randInt, shuffleArray, sleep, applyTheme, getTheme } = window.DocsifyUtils
 
     function timedBodyClass(className, duration) {
         const body = document.querySelector('body')
@@ -194,6 +214,59 @@
 
     function doGravity() {
         timedBodyClass('effect-antigravity', 8000)
+    }
+
+    function getRemovableElements() {
+        return Array.from(document.body.querySelectorAll('*'))
+            .filter((element) => element.closest(DELETE_AVOID) === null)
+    }
+
+    async function removeInSteps(elements, duration) {
+        const stepCount = duration / (DELETE_MAX_DELAY / 2)
+        const elementsPerStep = Math.max(1, Math.ceil(elements.length / stepCount))
+
+        for (let index = 0; index < elements.length; index += elementsPerStep) {
+            const targets = elements.slice(index, index + elementsPerStep)
+            targets.forEach((element) => element.classList.add('deleting'))
+            setTimeout(() => {
+                targets.forEach((element) => element.remove())
+            }, 600)
+            await sleep(randInt(0, DELETE_MAX_DELAY))
+        }
+    }
+
+    async function doDelete() {
+        if (isDeleting) return
+        isDeleting = true
+
+        await sleep(2000)
+
+        const elements = getRemovableElements()
+        const leaves = elements.filter((element) => element.children.length === 1)
+        const parents = elements.filter((element) => element.children.length > 1)
+
+        await removeInSteps(shuffleArray(leaves), DELETE_DURATION)
+        await removeInSteps(parents.reverse(), DELETE_DURATION / 4)
+
+        playSoundFile('alert.wav')
+        await sleep(1000)
+
+        const message = document.createElement('pre')
+        message.className = 'rm-message'
+        message.contentEditable = 'true'
+        message.spellcheck = false
+        message.textContent = 'rm: All content deleted.\n\nI hope you had a backup!\n\nroot@dt-notes:~# '
+        document.body.appendChild(message)
+
+        setTimeout(() => {
+            message.focus()
+            const range = document.createRange()
+            const selection = window.getSelection()
+            range.selectNodeContents(message)
+            range.collapse(false)
+            selection.removeAllRanges()
+            selection.addRange(range)
+        }, 0)
     }
 
     function loadAchievements() {
@@ -444,6 +517,8 @@
     }
 
     function handleSecretFound(id) {
+        if (isDeleting) return
+
         const achievements = loadAchievements()
         if (!achievements.includes(id)) saveAchievement(id)
 

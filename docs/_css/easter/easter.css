@@ -277,6 +277,32 @@ body.effect-antigravity :is(
     }
 }
 
+/* DELETED ----------------------------------------- */
+
+:has(.rm-message) {
+    background-color: var(--code-color-back) !important;
+
+    .rm-message {
+        padding: var(--padding);
+        font-size: var(--font-xlarge);
+        font-family: var(--font-family-mono);
+
+        &:focus-visible {
+            outline: none;
+        }
+    }
+}
+
+.deleting {
+    animation: delete 500ms linear forwards;
+}
+
+@keyframes delete {
+    40% {  opacity: 1; transform: translateX(0)     scale(1); }
+    100% { opacity: 0; transform: translateX(100vw) scale(0); }
+}
+
+
 /* ACHIEVES ---------------------------------------- */
 
 #achievements {
