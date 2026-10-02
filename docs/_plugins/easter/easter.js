@@ -194,11 +194,17 @@
     const TAPS_NEEDED = 5
     const MAX_TAP_GAP = 600
 
-    const DELETE_AVOID = 'script, style, link, meta, [data-keep]' // things we leave alone
-    const DELETE_DURATION = 8000 // ms: roughly how long the whole page should take to vanish
-    const DELETE_MAX_DELAY = 20  // ms: longest random pause between steps
+    const DELETE_AVOID = 'script, style, link, meta, [data-keep]'
+    const DELETE_DURATION = 8000
+    const DELETE_MAX_DELAY = 20
+
+    const SOUNDS_PATH = './_assets/sounds/'
+    const EXTRA_SOUNDS = ['alert.wav', 'fanfare.wav', 'nope.wav', 'negative.wav']
+    const EXTRA_LATENCY_MS = 0
 
     let isDeleting = false
+    let audioContext = null
+    const soundCache = new Map() // filename -> Promise<AudioBuffer>
 
     const { randInt, shuffleArray, sleep, applyTheme, getTheme } = window.DocsifyUtils
 
@@ -215,6 +221,8 @@
     }
 
     async function doShowAnswer() {
+        // Wait until the sound is actually audible so the images stay in sync
+        await sleep(getOutputLatencyMs())
         displayImage('answer.png', 1500)
         await sleep(1500)
         displayImage('everything.png', 1500)
@@ -356,10 +364,77 @@
         }
     }
 
-    function playSoundFile(filename) {
+    // --- Audio (Web Audio API) ---
+
+    function getAudioContext() {
+        audioContext ??= new AudioContext()
+        return audioContext
+    }
+
+    function getOutputLatencyMs() {
+        const context = getAudioContext()
+        const latencySeconds = (context.baseLatency ?? 0) + (context.outputLatency ?? 0)
+        return latencySeconds * 1000 + EXTRA_LATENCY_MS
+    }
+
+    function loadSoundBuffer(filename) {
+        if (soundCache.has(filename)) return soundCache.get(filename)
+
+        const loading = fetch(`${SOUNDS_PATH}${filename}`)
+            .then((response) => response.arrayBuffer())
+            .then((data) => getAudioContext().decodeAudioData(data))
+            .catch((error) => {
+                // Forget the failure so a later attempt can retry
+                soundCache.delete(filename)
+                throw error
+            })
+
+        soundCache.set(filename, loading)
+        return loading
+    }
+
+    function getAllSoundFiles() {
+        const secretSounds = Object.values(SECRETS).map((secret) => secret.sound)
+        return [...new Set([...secretSounds, ...EXTRA_SOUNDS])].filter(Boolean)
+    }
+
+    function preloadSounds() {
+        getAllSoundFiles().forEach((filename) => loadSoundBuffer(filename).catch(() => {}))
+    }
+
+    // Mobile browsers keep audio suspended until the first user gesture
+    function setupAudioUnlock() {
+        const unlock = () => {
+            getAudioContext().resume()
+            preloadSounds()
+        }
+
+        // iOS Safari only counts click and touchend as audio-unlocking gestures
+        for (const eventName of ['click', 'touchend', 'keydown']) {
+            window.addEventListener(eventName, unlock, { once: true })
+        }
+    }
+
+    // Resolves at the moment the sound should reach the player's ears
+    async function playSoundFile(filename) {
         if (!filename) return
-        const audio = new Audio(`./_assets/sounds/${filename}`)
-        audio.play()
+
+        try {
+            const context = getAudioContext()
+            // Must be called straight away, before any await, or iOS ignores it
+            if (context.state === 'suspended') context.resume()
+
+            const buffer = await loadSoundBuffer(filename)
+            const source = context.createBufferSource()
+            source.buffer = buffer
+            source.connect(context.destination)
+            source.start()
+
+            await sleep(getOutputLatencyMs())
+        }
+        catch (error) {
+            console.warn(`Could not play ${filename}`, error)
+        }
     }
 
     function playSound(id) {
@@ -586,6 +661,7 @@
 
     function docsifyEasterEggs(hook, vm) {
         hook.mounted(function () {
+            setupAudioUnlock()
             setupSecretCodeListener()
             showAchievements()
             console.log(`Hello!\nIf you're hunting for secrets, keep going!\nPress some keys...` )
