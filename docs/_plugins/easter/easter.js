@@ -1,4 +1,8 @@
 (function () {
+    // code: keys typed on the page. command: text typed into the secret console.
+    // Spaces in either are optional: 'red pill' and 'redpill' both match.
+    // isBusy (optional): while it returns true, re-triggering the secret is ignored entirely.
+    // Callbacks are function declarations further down; hoisting makes them available here.
     const SECRETS = {
         light: {
             name: 'Light Theme',
@@ -88,8 +92,8 @@
             name: 'Red Pill',
             locked: `Do you want to know the truth, Neo?`,
             unlocked: 'You took the red pill and saw the Matrix',
-            code: ['r', 'e', 'd', 'p', 'i', 'l', 'l'],
-            command: 'redpill',
+            code: ['r', 'e', 'd', ' ', 'p', 'i', 'l', 'l'],
+            command: 'red pill',
             message: `Fasten your seat belt, Dorothy, 'cause Kansas is going bye-bye`,
             theme: null,
             effect: 'matrix',
@@ -110,6 +114,7 @@
             sound: '42.wav',
             icon: 'galaxy',
             callback: doShowAnswer,
+            isBusy: () => isShowingAnswer,
             visible: true,
         },
         sudo: {
@@ -180,7 +185,7 @@
             sound: 'reset.wav',
             icon: null,
             callback: resetAll,
-            visible: false,
+            visible: false, // hidden from the achievements list
         },
     }
 
@@ -189,53 +194,96 @@
     const CONSOLE_KEY = 'console'
 
     const recentKeys = []
-    const MAX_CODE_LENGTH = Math.max(...Object.values(SECRETS).map((secret) => secret.code.length))
+    const MAX_CODE_LENGTH = Math.max(...Object.values(SECRETS).map((secret) => withoutSpaces(secret.code).length))
 
+    // Tap the trophy this many times, each within MAX_TAP_GAP ms, to unlock the console
     const TAPS_NEEDED = 5
     const MAX_TAP_GAP = 600
 
-    const DELETE_AVOID = 'script, style, link, meta, [data-keep]'
-    const DELETE_DURATION = 8000
-    const DELETE_MAX_DELAY = 20
+    const DELETE_AVOID = 'script, style, link, meta, [data-keep]' // things we leave alone
+    const DELETE_DURATION = 8000 // ms: roughly how long the whole page should take to vanish
+    const DELETE_MAX_DELAY = 20  // ms: longest random pause between steps
 
     const SOUNDS_PATH = './_assets/sounds/'
+    // Sounds that are played directly rather than through a secret
     const EXTRA_SOUNDS = ['alert.wav', 'fanfare.wav', 'nope.wav', 'negative.wav']
+    // Safari often reports an output latency of 0, so this lets us tune it by ear
     const EXTRA_LATENCY_MS = 0
 
     let isDeleting = false
+    let isShowingAnswer = false
+    let imageTimer = null
     let audioContext = null
     const soundCache = new Map() // filename -> Promise<AudioBuffer>
+    const bodyClassTimers = new Map() // className -> timer id
 
     const { randInt, shuffleArray, sleep, applyTheme, getTheme } = window.DocsifyUtils
 
+    // Re-triggering restarts the timer, so an earlier run can't remove the class early
     function timedBodyClass(className, duration) {
-        const body = document.querySelector('body')
+        const body = document.body
         body.classList.add(className)
-        setTimeout(() => { body.classList.remove(className) }, duration)
+
+        clearTimeout(bodyClassTimers.get(className))
+        const timer = setTimeout(() => {
+            body.classList.remove(className)
+            bodyClassTimers.delete(className)
+        }, duration)
+        bodyClassTimers.set(className, timer)
+    }
+
+    // Storage can throw (e.g. Safari private mode), so every access goes through these
+    function safeGet(key) {
+        try { return localStorage.getItem(key) }
+        catch { return null }
+    }
+
+    function safeSet(key, value) {
+        try { localStorage.setItem(key, value) }
+        catch {}
+    }
+
+    function safeRemove(key) {
+        try { localStorage.removeItem(key) }
+        catch {}
     }
 
     function resetAll() {
-        localStorage.removeItem(ACHIEVES_KEY)
-        localStorage.removeItem(EFFECTS_KEY)
-        localStorage.removeItem(CONSOLE_KEY)
+        const runningEffects = loadEffects()
+
+        safeRemove(ACHIEVES_KEY)
+        safeRemove(EFFECTS_KEY)
+        safeRemove(CONSOLE_KEY)
+
+        // Notify after clearing storage, in case listeners re-read it to decide what to do
+        runningEffects.forEach((effect) => dispatchEffectChange(effect, false))
     }
 
     async function doShowAnswer() {
-        // Wait until the sound is actually audible so the images stay in sync
-        await sleep(getOutputLatencyMs())
-        displayImage('answer.png', 1500)
-        await sleep(1500)
-        displayImage('everything.png', 1500)
-        await sleep(1500)
-        displayImage('life.png', 1000)
-        await sleep(1000)
-        displayImage('universe.png', 1750)
-        await sleep(1750)
-        displayImage('everything.png', 1500)
-        await sleep(1500)
-        displayImage('is.png', 2000)
-        await sleep(2000)
-        displayImage('42.png', 3000)
+        if (isShowingAnswer) return
+        isShowingAnswer = true
+
+        try {
+            // Wait until the sound is actually audible so the images stay in sync
+            await sleep(getOutputLatencyMs())
+            displayImage('answer.png', 1250)
+            await sleep(1250)
+            displayImage('everything.png', 1500)
+            await sleep(1500)
+            displayImage('life.png', 1000)
+            await sleep(1000)
+            displayImage('universe.png', 1750)
+            await sleep(1750)
+            displayImage('everything.png', 1500)
+            await sleep(1500)
+            displayImage('is.png', 2000)
+            await sleep(2000)
+            displayImage('42.png', 3000)
+            await sleep(3000)
+        }
+        finally {
+            isShowingAnswer = false
+        }
     }
 
     function doDenied() {
@@ -256,12 +304,14 @@
     }
 
     async function removeInSteps(elements, duration) {
+        // Random pauses average half of DELETE_MAX_DELAY, so this many steps fills the duration
         const stepCount = duration / (DELETE_MAX_DELAY / 2)
         const elementsPerStep = Math.max(1, Math.ceil(elements.length / stepCount))
 
         for (let index = 0; index < elements.length; index += elementsPerStep) {
             const targets = elements.slice(index, index + elementsPerStep)
             targets.forEach((element) => element.classList.add('deleting'))
+            // Let the 'deleting' CSS transition play before removing
             setTimeout(() => {
                 targets.forEach((element) => element.remove())
             }, 600)
@@ -275,16 +325,18 @@
 
         await sleep(2000)
 
+        // Twigs dissolve in random order, then parents go in reverse DOM order (children first)
         const elements = getRemovableElements()
-        const leaves = elements.filter((element) => element.children.length === 1)
+        const twigs = elements.filter((element) => element.children.length === 1)
         const parents = elements.filter((element) => element.children.length > 1)
 
-        await removeInSteps(shuffleArray(leaves), DELETE_DURATION)
+        await removeInSteps(shuffleArray(twigs), DELETE_DURATION)
         await removeInSteps(parents.reverse(), DELETE_DURATION / 4)
 
         playSoundFile('alert.wav')
         await sleep(1000)
 
+        // An editable <pre> acts as a fake terminal prompt
         const message = document.createElement('pre')
         message.className = 'rm-message'
         message.contentEditable = 'true'
@@ -292,6 +344,7 @@
         message.textContent = 'rm: All content deleted.\n\nI hope you had a backup!\n\nroot@dt-notes:~# '
         document.body.appendChild(message)
 
+        // Wait a tick so the element is in the DOM, then put the caret at the end
         setTimeout(() => {
             message.focus()
             const range = document.createRange()
@@ -304,12 +357,12 @@
     }
 
     function loadAchievements() {
-        try { return JSON.parse(localStorage.getItem(ACHIEVES_KEY)) ?? [] }
+        try { return JSON.parse(safeGet(ACHIEVES_KEY)) ?? [] }
         catch { return [] }
     }
 
     function loadEffects() {
-        try { return JSON.parse(localStorage.getItem(EFFECTS_KEY)) ?? [] }
+        try { return JSON.parse(safeGet(EFFECTS_KEY)) ?? [] }
         catch { return [] }
     }
 
@@ -317,6 +370,7 @@
         return loadEffects().includes(effect)
     }
 
+    // Other plugins (e.g. mouse trails) listen for this to start or stop their effect
     function dispatchEffectChange(effect, active) {
         window.dispatchEvent(new CustomEvent('docsify-effect-change', { detail: { effect, active } }))
     }
@@ -331,20 +385,21 @@
     function saveAchievement(id) {
         let achievements = loadAchievements()
         achievements = [...achievements, id]
-        try { localStorage.setItem(ACHIEVES_KEY, JSON.stringify(achievements)) } catch {}
+        safeSet(ACHIEVES_KEY, JSON.stringify(achievements))
     }
 
     function handleEffect(id) {
         const { effect } = SECRETS[id]
         if (!effect) return false
 
+        // Re-triggering an effect toggles it off
         const effects = loadEffects()
         const active = !effects.includes(effect)
         const updatedEffects = active
             ? [...effects, effect]
             : effects.filter(effectId => effectId !== effect)
 
-        try { localStorage.setItem(EFFECTS_KEY, JSON.stringify(updatedEffects)) } catch {}
+        safeSet(EFFECTS_KEY, JSON.stringify(updatedEffects))
         dispatchEffectChange(effect, active)
         return active
     }
@@ -353,6 +408,7 @@
         const { theme } = SECRETS[id]
         if (!theme) return false
 
+        // Re-triggering the current theme falls back to dark
         const currentTheme = getTheme()
         if (theme !== currentTheme) {
             applyTheme(theme)
@@ -378,10 +434,14 @@
     }
 
     function loadSoundBuffer(filename) {
+        // Cache the promise, not the buffer, so simultaneous requests share one fetch
         if (soundCache.has(filename)) return soundCache.get(filename)
 
         const loading = fetch(`${SOUNDS_PATH}${filename}`)
-            .then((response) => response.arrayBuffer())
+            .then((response) => {
+                if (!response.ok) throw new Error(`Could not load ${filename} (HTTP ${response.status})`)
+                return response.arrayBuffer()
+            })
             .then((data) => getAudioContext().decodeAudioData(data))
             .catch((error) => {
                 // Forget the failure so a later attempt can retry
@@ -399,6 +459,7 @@
     }
 
     function preloadSounds() {
+        // Failures are ignored here; playSoundFile retries and logs when the sound is needed
         getAllSoundFiles().forEach((filename) => loadSoundBuffer(filename).catch(() => {}))
     }
 
@@ -443,20 +504,26 @@
         playSoundFile(sound)
     }
 
+    // Callbacks may be async, so catch failures here rather than leaving them unhandled
+    async function runCallback(callback, id) {
+        try { await callback(id) }
+        catch (error) { console.error(`Secret callback failed for ${id}`, error) }
+    }
+
     function handleCallback(id) {
         const { callback } = SECRETS[id]
         if (!callback) return false
-        callback(id)
+        runCallback(callback, id)
         return true
     }
 
     function unlockConsole() {
-        localStorage.setItem(CONSOLE_KEY, true)
+        safeSet(CONSOLE_KEY, true)
         playSoundFile('fanfare.wav')
     }
 
     function consoleIsUnlocked() {
-        return localStorage.getItem(CONSOLE_KEY)
+        return safeGet(CONSOLE_KEY)
     }
 
     function listenForTaps(element) {
@@ -486,6 +553,7 @@
     }
 
     function displayImage(filename, duration = 5000) {
+        // Reuse one overlay so a new image replaces the old one
         let imageWrapper = document.getElementById('image-overlay-wrapper')
         if (!imageWrapper) {
             imageWrapper = document.createElement('div')
@@ -503,9 +571,9 @@
 
         imageWrapper.append(image)
 
-        setTimeout(() => {
-            imageWrapper.remove()
-        }, duration)
+        // Only the latest image's timer survives, so an old one can't remove a new image
+        clearTimeout(imageTimer)
+        imageTimer = setTimeout(() => imageWrapper.remove(), duration)
     }
 
     function createAchievementToggle() {
@@ -599,24 +667,34 @@
         window.DocsifyUtils.createLucideIcons()
     }
 
+    function withoutSpaces(keys) {
+        return keys.filter((key) => key !== ' ')
+    }
+
+    function removeSpaces(text) {
+        return text.replace(/\s+/g, '')
+    }
+
     function matchSecretCode(text) {
-        const normalisedText = text.trim().toLowerCase()
+        const normalisedText = removeSpaces(text.toLowerCase())
 
         const match = Object.entries(SECRETS).find(([, secret]) => {
+            // Fall back to the joined key sequence when there's no explicit command
             const textCode = secret.command ?? secret.code.join('')
-            return textCode.toLowerCase() === normalisedText
+            return removeSpaces(textCode.toLowerCase()) === normalisedText
         })
 
         return match?.[0] ?? null
     }
 
     function handleSecretFound(id) {
-        if (isDeleting) return
+        if (isDeleting || SECRETS[id].isBusy?.()) return
 
         const achievements = loadAchievements()
         if (!achievements.includes(id)) saveAchievement(id)
 
         const { effect, theme, callback } = SECRETS[id]
+        // Secrets with no theme, effect or callback always count as a success
         const noActions = !effect && !theme && !callback
         const effectApplied = handleEffect(id)
         const themeApplied = handleTheme(id)
@@ -634,32 +712,37 @@
         }
     }
 
+    // Typing in a form field must not trigger secret codes
     function isTypingInAField(event) {
         const tag = event.target.tagName
         return tag === 'INPUT' || tag === 'TEXTAREA' || event.target.isContentEditable
     }
 
+    // Spaces in a code are optional, so they are ignored on both sides
     function endsWithCode(code) {
-        const recent = recentKeys.slice(-code.length)
-        return recent.length === code.length && recent.every((key, i) => key === code[i])
+        const keys = withoutSpaces(code)
+        const recent = recentKeys.slice(-keys.length)
+        return recent.length === keys.length && recent.every((key, i) => key === keys[i])
     }
 
     function setupSecretCodeListener() {
         window.addEventListener('keydown', (event) => {
             if (isTypingInAField(event)) return
+            if (event.key === ' ') return // spaces are optional in codes, so never recorded
 
+            // Letters are lowercased; named keys like ArrowUp are kept as they are
             recentKeys.push(event.key.length === 1 ? event.key.toLowerCase() : event.key)
             if (recentKeys.length > MAX_CODE_LENGTH) recentKeys.shift()
 
             const foundId = Object.keys(SECRETS).find((id) => endsWithCode(SECRETS[id].code))
             if (foundId) {
                 handleSecretFound(foundId)
-                recentKeys.length = 0
+                recentKeys.length = 0 // start fresh so one code can't trigger another
             }
         })
     }
 
-    function docsifyEasterEggs(hook, vm) {
+    function docsifyEasterEggs(hook) {
         hook.mounted(function () {
             setupAudioUnlock()
             setupSecretCodeListener()
