@@ -697,6 +697,7 @@ body.effect-antigravity :is(.markdown-section>h1,
                 &.unlocked {
                     opacity: 1;
                     background-color: var(--theme-color-1);
+                    cursor: pointer;
 
                     svg {
                         color: var(--highlight-color);

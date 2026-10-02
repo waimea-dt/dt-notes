@@ -214,8 +214,20 @@
         localStorage.removeItem(CONSOLE_KEY)
     }
 
-    function doShowAnswer() {
-        displayImage('42.webp', 11000)
+    async function doShowAnswer() {
+        displayImage('answer.png', 1500)
+        await sleep(1500)
+        displayImage('everything.png', 1500)
+        await sleep(1500)
+        displayImage('life.png', 1000)
+        await sleep(1000)
+        displayImage('universe.png', 1750)
+        await sleep(1750)
+        displayImage('everything.png', 1500)
+        await sleep(1500)
+        displayImage('is.png', 2000)
+        await sleep(2000)
+        displayImage('42.png', 3000)
     }
 
     function doDenied() {
@@ -454,26 +466,29 @@
         return secretConsole
     }
 
+    function createAchievementListItem(id, achieved) {
+        const { icon, name, locked, unlocked } = SECRETS[id]
+
+        const item = document.createElement('li')
+        item.className = achieved ? 'unlocked' : ''
+        item.title = achieved ? unlocked : locked
+        item.innerHTML = `<i data-lucide="${icon}"></i>`
+        item.append(achieved ? name : 'Not discovered')
+
+        // Re-triggering only makes sense once a secret has already been found
+        if (achieved) item.addEventListener('click', () => handleSecretFound(id))
+
+        return item
+    }
+
     function createAchievementList(achievements) {
         const achieveList = document.createElement('ul')
-        let listHtml = ''
 
         for (const id in SECRETS) {
-            const { icon, name, locked, unlocked, visible } = SECRETS[id]
-            if (!visible) continue
-
-            const achieved = achievements.includes(id)
-            listHtml += `
-                <li
-                    class="${achieved ? 'unlocked' : ''}"
-                    title="${achieved ? unlocked : locked }"
-                >
-                    <i data-lucide="${icon}"></i>
-                    ${achieved ? name : 'Not discovered'}
-                </li>
-            `
+            if (!SECRETS[id].visible) continue
+            achieveList.append(createAchievementListItem(id, achievements.includes(id)))
         }
-        achieveList.innerHTML = listHtml
+
         return achieveList
     }
 
@@ -564,7 +579,7 @@
             const foundId = Object.keys(SECRETS).find((id) => endsWithCode(SECRETS[id].code))
             if (foundId) {
                 handleSecretFound(foundId)
-                recentKeys = []
+                recentKeys.length = 0
             }
         })
     }
