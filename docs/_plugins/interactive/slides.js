@@ -59,7 +59,27 @@
       .replace(/>/g, '&gt;')
   }
 
+  // `+++ [effect]` starts a reveal step; `+++ list` reveals each top-level list item separately.
+  function applyFragmentMarkers(markdown) {
+    const parts = markdown.split(/^\+\+\+[ \t]*(.*?)[ \t]*$/m)
+    if (parts.length === 1) return markdown
+
+    // split() with a capture group yields [intro, arg1, body1, arg2, body2, ...]
+    let out = parts[0]
+    for (let i = 1; i < parts.length; i += 2) {
+      const arg = parts[i]
+      const classes = arg === 'list' ? 'slides-incremental' : `fragment ${arg}`.trim()
+      out += `\n<div class="${classes}">\n\n${parts[i + 1].trim()}\n\n</div>\n`
+    }
+    return out
+  }
+
+  function applyIncrementalLists(deck) {
+    deck.querySelectorAll('.slides-incremental > :is(ul, ol) > li').forEach((li) => li.classList.add('fragment'))
+  }
+
   function normaliseSlideMarkdown(slideMarkdown) {
+    slideMarkdown = applyFragmentMarkers(slideMarkdown)
     // Keep Mermaid out of Reveal's code-highlighter path.
     return slideMarkdown.replace(/```mermaid\s*\n([\s\S]*?)```/g, function (_match, mermaidCode) {
       const code = (mermaidCode || '').trim()
@@ -225,6 +245,8 @@
       })
 
       reveal.initialize().then(function () {
+        applyIncrementalLists(deck)
+        reveal.sync()
         watchDeckLayout(deck, reveal)
         setupMermaidForDeck(deck, reveal)
         dispatchSlidesRendered(deck)
