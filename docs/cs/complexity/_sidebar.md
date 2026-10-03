@@ -18,6 +18,7 @@
     - [<i data-lucide="git-compare"></i> Best, Worst & Average Case](/cs/complexity/cases.md)
     - [<i data-lucide="lightbulb"></i> Worked Examples](/cs/complexity/examples.md)
     - [<i data-lucide="list-checks"></i> Quiz: Big-O](/cs/complexity/quiz-big-o.md)
+    - [<i data-lucide="presentation"></i> Lessons](/cs/complexity/lessons-intro.md)
 
 - <i data-lucide="boxes"></i> Complexity Classes
     - [<i data-lucide="check-circle"></i> Tractability](/cs/complexity/tractability.md)
