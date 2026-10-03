@@ -15,13 +15,13 @@
     --r-main-font-size:             42px;
     --r-main-color:                 var(--color-text);
 
-    --r-heading-font:               var(--font-famlily);
+    --r-heading-font:               var(--font-family);
     --r-heading-color:              var(--theme-color);
 
     --r-bold-color:                 var(--strong-color);
     --r-italic-color:               var(--em-color);
 
-    --r-list-bullet-color:          var(--theme-color-3);
+    --r-list-bullet-color:          var(--theme-color-5);
 
     --r-link-color:                 var(--link-color);
     --r-link-color-dark:            var(--link-color-hover);
@@ -46,6 +46,7 @@
 
     .slides > section {
         :is(h1, h2, h3, h4, h5, h6) {
+            text-wrap: balance;
             border: none;
         }
 

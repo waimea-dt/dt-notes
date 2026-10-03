@@ -283,44 +283,12 @@
 }
 
 
-/* Content section */
 .markdown-section {
     margin: var(--content-margin-block) auto 0 auto;
     container-type: inline-size;
 
-    /* Headings */
-    :is(h1, h2, h3, h4, h5, h6) {
-        text-wrap: balance;
-        font-weight: var(--font-weight-heading);
-
-        a:hover {
-            text-decoration: none;
-        }
-
-        &:is(h1, h2) {
-            margin-top: 4rem;
-        }
-
-        &:is(h2) {
-            padding-bottom: 0.25em;
-            border-bottom: 1px solid var(--secondary-color-3);
-        }
-
-        &:is(h1) {
-            font-weight: 600;
-            text-align: center;
-        }
-
-        &:is(h1) { color: var(--theme-color); }
-        &:is(h2) { color: var(--secondary-color); }
-        &:is(h3) { color: var(--theme-color-5); }
-        &:is(h4) { color: var(--secondary-color-5); }
-        &:is(h5) { color: var(--theme-color-6); }
-        &:is(h6) { color: var(--secondary-color-6); }
-    }
-
     /* Suppress heading anchor links inside specific containers.
-       Apply .no-heading-links to any wrapper, or add selectors here. */
+    Apply .no-heading-links to any wrapper, or add selectors here. */
     :is(
         aside,
         details,
@@ -389,6 +357,44 @@
     hr {
         margin-block: 4rem;
         border-bottom-color: var(--rule-color);
+    }
+}
+
+/* Content section - theme styles stop at embedded Reveal decks */
+@scope (.markdown-section) to (.reveal) {
+    :scope {
+
+        /* Headings */
+        :is(h1, h2, h3, h4, h5, h6) {
+            text-wrap: balance;
+            font-weight: var(--font-weight-heading);
+
+            a:hover {
+                text-decoration: none;
+            }
+
+            &:is(h1, h2) {
+                margin-top: 4rem;
+            }
+
+            &:is(h2) {
+                padding-bottom: 0.25em;
+                border-bottom: 1px solid var(--secondary-color-3);
+            }
+
+            &:is(h1) {
+                font-weight: 600;
+                text-align: center;
+            }
+
+            &:is(h1) { color: var(--theme-color); }
+            &:is(h2) { color: var(--secondary-color); }
+            &:is(h3) { color: var(--theme-color-5); }
+            &:is(h4) { color: var(--secondary-color-5); }
+            &:is(h5) { color: var(--theme-color-6); }
+            &:is(h6) { color: var(--secondary-color-6); }
+        }
+
     }
 }
 
