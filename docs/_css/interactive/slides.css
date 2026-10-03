@@ -10,11 +10,26 @@
 :root {
     --r-background:                 var(--color-mono-0);
     --r-background-color:           var(--color-mono-0);
+
+    --r-main-font:                  var(--font-family);
+    --r-main-font-size:             42px;
     --r-main-color:                 var(--color-text);
+
+    --r-heading-font:               var(--font-famlily);
     --r-heading-color:              var(--theme-color);
+
+    --r-bold-color:                 var(--strong-color);
+    --r-italic-color:               var(--em-color);
+
+    --r-list-bullet-color:          var(--theme-color-3);
+
     --r-link-color:                 var(--link-color);
     --r-link-color-dark:            var(--link-color-hover);
     --r-link-color-hover:           var(--link-color-hover);
+
+    --r-code-font:                  var(--font-family-mono);
+    --r-inline-code-color:          var(--code-normal);
+
     --r-selection-background-color: var(--theme-color-3);
     --r-selection-color:            var(--color-text);
 }
@@ -113,6 +128,5 @@
         }
     }
 }
-
 
 
