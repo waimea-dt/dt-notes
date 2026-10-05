@@ -109,17 +109,21 @@
                         min-height: 0;
                         max-height: 100%;
                         width: 100%;
+
+                        img {
+                            width: 100%;
+                        }
                     }
                 }
             }
 
         }
 
-        h1 {
+        > h1 {
             color: var(--r-heading-color-h1)
         }
 
-        :is(h1, h2, h3, h4, h5, h6, p) {
+        > :is(h1, h2, h3, h4, h5, h6) {
             text-wrap: pretty;
             border: none;
 
@@ -128,7 +132,10 @@
             }
         }
 
-        
+        p {
+            text-wrap: pretty;
+        }
+
         /* Images */
 
         img {

@@ -1,6 +1,7 @@
 /**
  * docsify-slides.js - Renders <slides>...</slides> blocks as embedded reveal.js presentations.
- * Requires reveal.js and RevealMarkdown to be loaded in index.html
+ * Requires reveal.js (no markdown plugin): slide markdown is compiled by Docsify in
+ * afterEach, so all plugin tags inside slides are processed by their normal doneEach hooks.
  *
  * Usage in markdown:
  *   <slides>
@@ -11,39 +12,9 @@
  */
 
 ;(function () {
-  const { dispatchSlidesRendered, isAbsoluteUrl } = window.DocsifyUtils
+  const { dispatchSlidesRendered } = window.DocsifyUtils
   const stash = {}
   const deckCleanup = new WeakMap()
-
-  // Docsify resolves relative asset paths against the current route for normal
-  // markdown, but slide markdown bypasses that compiler entirely (it's handed
-  // straight to Reveal's own parser), so relative paths must be rewritten here
-  // to be relative to the docs root instead - see docsify-slides.js discussion.
-  function getCurrentRouteDir() {
-    const route = decodeURIComponent(window.location.hash || '')
-      .replace(/^#\/?/, '')
-      .split(/[?#]/)[0]
-
-    if (!route || route.endsWith('/')) return route.replace(/\/$/, '')
-
-    const parts = route.split('/')
-    parts.pop()
-    return parts.join('/')
-  }
-
-  function resolveSlideAssetPath(routeDir, rawPath) {
-    const clean = String(rawPath || '').trim()
-    if (!clean || isAbsoluteUrl(clean) || clean.startsWith('/')) return clean
-
-    const base = `https://slides.invalid/${routeDir ? routeDir + '/' : ''}`
-    return new URL(clean, base).pathname.replace(/^\/+/, '')
-  }
-
-  function resolveSlideAssetPaths(markdown, routeDir) {
-    return markdown
-      .replace(/(!\[[^\]]*]\()([^)\s]+)/g, (match, prefix, path) => `${prefix}${resolveSlideAssetPath(routeDir, path)}`)
-      .replace(/(<[a-zA-Z][\w-]*\b[^>]*\ssrc=["'])([^"']+)/g, (match, prefix, path) => `${prefix}${resolveSlideAssetPath(routeDir, path)}`)
-  }
 
   function registerDeckCleanup(deck, cleanupFn) {
     if (typeof cleanupFn !== 'function') return
@@ -112,13 +83,12 @@
     })
   }
 
-  function buildRevealHTML(index) {
+  // Slides are compiled by Docsify itself (not Reveal's markdown plugin) so the
+  // output is final HTML before any plugin's doneEach hook runs.
+  function buildRevealHTML(index, compiler) {
     const slides = stash[index]
       .split(/\n---\n/)
-      .map((slide) => {
-        const markdown = normaliseSlideMarkdown(slide.trim())
-        return `<section data-markdown><textarea data-template>${markdown}</textarea></section>`
-      })
+      .map((slide) => `<section>${compiler.compile(normaliseSlideMarkdown(slide.trim()))}</section>`)
       .join('\n')
 
     return `
@@ -252,7 +222,7 @@
 
       const reveal = new Reveal(deck, {
         embedded: true,
-        plugins: [RevealMarkdown, RevealHighlight],
+        plugins: [],
         keyboardCondition: 'focused',
         controls: true,
         progress: true,
@@ -276,17 +246,16 @@
     })
   }
 
-  var docsifySlides = function (hook) {
+  var docsifySlides = function (hook, vm) {
     hook.beforeEach(function (content) {
       cleanupDeckWatchers()
       Object.keys(stash).forEach((k) => delete stash[k])
 
-      const routeDir = getCurrentRouteDir()
       let index = 0
       return content.replace(
         /<slides>([\s\S]*?)<\/slides>/g,
         function (_match, markdown) {
-          stash[index] = resolveSlideAssetPaths(markdown, routeDir)
+          stash[index] = markdown
           const placeholder = `<div class="slides-placeholder" data-index="${index}"></div>`
           index++
           return placeholder
@@ -294,17 +263,18 @@
       )
     })
 
-    hook.doneEach(function () {
-      const placeholders = document.querySelectorAll('.slides-placeholder')
-      if (!placeholders.length) return
-
-      placeholders.forEach((placeholder) => {
-        const index = placeholder.getAttribute('data-index')
-        placeholder.outerHTML = buildRevealHTML(index)
-      })
-
-      initDecks()
+    hook.afterEach(function (html) {
+      // Compiling headings registers them in the page TOC, so restore it afterwards.
+      const toc = [...(vm.compiler.toc || [])]
+      const out = html.replace(
+        /<div class="slides-placeholder" data-index="(\d+)"><\/div>/g,
+        (_match, index) => buildRevealHTML(index, vm.compiler)
+      )
+      vm.compiler.toc = toc
+      return out
     })
+
+    hook.doneEach(initDecks)
   }
 
   window.DocsifyUtils.registerPlugin(docsifySlides)
