@@ -83,12 +83,24 @@
     })
   }
 
+  // Slide headings are not page anchors: drop the ids/anchor links Docsify adds, otherwise
+  // they collide with page headings of the same text and the sidebar filter hides those.
+  function stripHeadingAnchors(html) {
+    const template = document.createElement('template')
+    template.innerHTML = html
+    template.content.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+      heading.removeAttribute('id')
+      heading.querySelectorAll(':scope > a.anchor').forEach((anchor) => anchor.replaceWith(...anchor.childNodes))
+    })
+    return template.innerHTML
+  }
+
   // Slides are compiled by Docsify itself (not Reveal's markdown plugin) so the
   // output is final HTML before any plugin's doneEach hook runs.
   function buildRevealHTML(index, compiler) {
     const slides = stash[index]
       .split(/\n---\n/)
-      .map((slide) => `<section>${compiler.compile(normaliseSlideMarkdown(slide.trim()))}</section>`)
+      .map((slide) => `<section>${stripHeadingAnchors(compiler.compile(normaliseSlideMarkdown(slide.trim())))}</section>`)
       .join('\n')
 
     return `
