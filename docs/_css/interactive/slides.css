@@ -108,10 +108,12 @@
                     > * {
                         min-height: 0;
                         max-height: 100%;
+                        max-width: 100%;
                         width: 100%;
 
                         img {
                             width: 100%;
+                            max-width: 100%;
                         }
                     }
                 }
@@ -119,11 +121,11 @@
 
         }
 
-        > h1 {
+        h1 {
             color: var(--r-heading-color-h1)
         }
 
-        > :is(h1, h2, h3, h4, h5, h6) {
+        :is(h1, h2, h3, h4, h5, h6) {
             text-wrap: pretty;
             border: none;
 
@@ -144,8 +146,8 @@
 
         /* Code blocks */
 
-        pre.code-wrapper {
-            font-size: min(4cqh, 0.9em);
+        pre[data-lang] {
+            font-size: min(4cqh, 0.9em) !important;
             padding: 0;
             overflow: auto;
             background-color: var(--code-bg-color);
@@ -154,28 +156,12 @@
                 padding: 1em;
                 overflow: visible;
                 max-height: 500px;
-
-                .hljs-ln {
-                    overflow: visible;
-                }
             }
         }
 
         code {
             font-size: inherit !important;
             line-height: inherit !important;
-
-            .hljs-ln-numbers {
-                display: none !important;
-            }
-
-            .hljs-ln tr {
-                border-top: none !important;
-
-                &:nth-child(even) {
-                    background: none !important;
-                }
-            }
         }
 
         /* Mermaid diagrams */
