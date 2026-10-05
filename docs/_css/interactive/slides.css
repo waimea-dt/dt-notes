@@ -17,6 +17,7 @@
 
     --r-heading-font:               var(--font-family);
     --r-heading-color:              var(--theme-color);
+    --r-heading-color-h1:           var(--theme-color-5);
 
     --r-bold-color:                 var(--strong-color);
     --r-italic-color:               var(--em-color);
@@ -45,11 +46,89 @@
     /* Headings */
 
     .slides > section {
-        :is(h1, h2, h3, h4, h5, h6) {
-            text-wrap: balance;
-            border: none;
+
+        &:not(.stack) {
+            text-align: left;
+            display: flex !important;
+            flex-direction: column;
+            height: 100%;
+            padding: 1em;
+            gap: 1em;
+            justify-content: center;
+
+            * {
+                margin-block: 0;
+                padding-block: 0;
+            }
+
+            :is(p, pre, table, img) {
+                margin-inline: 0;
+                padding-inline: 0;
+            }
+
+            > p:has(> img:first-child:last-child) {
+                flex: 1;
+                min-height: 0;
+                max-height: 50%;
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                    max-width: none;
+                    max-height: none;
+                    object-fit: contain;
+                }
+
+                &:first-of-type:last-of-type {
+                    max-height: 100%;
+                }
+            }
+
+            /* Columns (||| markers) */
+
+            .slides-columns {
+                /* flex: 1; */
+                min-height: 0;
+                max-height: 100%;
+
+                display: grid;
+                grid-template-columns: var(--cols, repeat(auto-fit, minmax(0, 1fr)));
+                grid-template-rows: minmax(0, 1fr);
+                gap: 1em;
+
+                > div {
+                    min-width: 0;
+                    min-height: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1em;
+                    justify-content: center;
+                    align-items: center;
+
+                    > * {
+                        min-height: 0;
+                        max-height: 100%;
+                        width: 100%;
+                    }
+                }
+            }
+
         }
 
+        h1 {
+            color: var(--r-heading-color-h1)
+        }
+
+        :is(h1, h2, h3, h4, h5, h6, p) {
+            text-wrap: pretty;
+            border: none;
+
+            &:first-child:last-child {
+                text-wrap: balance;
+            }
+        }
+
+        
         /* Images */
 
         img {

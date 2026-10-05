@@ -78,8 +78,30 @@
     deck.querySelectorAll('.slides-incremental > :is(ul, ol) > li').forEach((li) => li.classList.add('fragment'))
   }
 
+  // `|||` lines split the slide into pre-content, equal-width columns and post-content;
+  // the first marker may carry widths, e.g. `||| 1fr 2fr`.
+  function applyLayoutMarkers(markdown) {
+    const parts = markdown.split(/^\|\|\|[ \t]*(.*?)[ \t]*$/m)
+    const markerCount = (parts.length - 1) / 2
+    if (markerCount < 3) return applyFragmentMarkers(markdown)
+
+    // parts = [pre, arg1, body1, arg2, body2, ...]; the last body is the post-content
+    const bodies = parts.filter((_part, i) => i % 2 === 0)
+    const [pre, post] = [bodies[0], bodies[bodies.length - 1]]
+    const columns = bodies.slice(1, -1)
+    const widths = /^[\w.%\s()-]+$/.test(parts[1]) ? parts[1] : ''
+    const style = widths ? ` style="--cols: ${widths}"` : ''
+
+    const cells = columns.map((col) => `<div>\n\n${applyFragmentMarkers(col.trim())}\n\n</div>`).join('\n')
+    return [
+      applyFragmentMarkers(pre.trim()),
+      `<div class="slides-columns"${style}>\n${cells}\n</div>`,
+      applyFragmentMarkers(post.trim()),
+    ].join('\n\n')
+  }
+
   function normaliseSlideMarkdown(slideMarkdown) {
-    slideMarkdown = applyFragmentMarkers(slideMarkdown)
+    slideMarkdown = applyLayoutMarkers(slideMarkdown)
     // Keep Mermaid out of Reveal's code-highlighter path.
     return slideMarkdown.replace(/```mermaid\s*\n([\s\S]*?)```/g, function (_match, mermaidCode) {
       const code = (mermaidCode || '').trim()

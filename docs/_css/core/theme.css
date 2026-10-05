@@ -323,6 +323,7 @@
     }
 
     /* Images */
+    p:has(img:first-child:last-child),
     img,
     figure {
         max-width: 100%;

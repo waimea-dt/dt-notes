@@ -27,11 +27,74 @@ Use a `for...of` loop to grab everything.
 
 ---
 
-## Hmmm
+## Incremental List
 
-- Item One <!-- .element: class="fragment" data-fragment-index="1" -->
-- Item Two <!-- .element: class="fragment" data-fragment-index="2" -->
-- Item Three <!-- .element: class="fragment" data-fragment-index="2" -->
++++ list
+
+- **Bold** item one
+- Item two with `code`
+- Item three
+
+---
+
+## Reveal Steps
+
+Always visible.
+
++++
+
+### Step One
+
+First paragraph.
+
++++ fade-up
+
+### Step Two
+
+Second paragraph, with an effect.
+
+---
+
+## Columns
+
+Content before.
+
+|||
+
+Left column:
+
+- One
+- **Two**
+
+|||
+
+![](../_assets/macs/macintosh.svg)
+
+|||
+
+Content after.
+
+---
+
+## Weighted Columns
+
+||| 1fr 2fr
+
+Narrow.
+
+|||
+
+Wide, with steps:
+
++++
+
+Step A
+
++++
+
+Step B
+
+|||
 
 ---
 
