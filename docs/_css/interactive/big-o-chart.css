@@ -21,21 +21,27 @@
 	--bigo-chart-line-color-8:    var(--palette-color-6);
 
 	--bigo-chart-title-color:     var(--theme-color);
+	--bigo-chart-title-font-size: var(--font-med);
 	--bigo-chart-label-color:     var(--theme-color-6);
 	--bigo-chart-note-color:      var(--color-mono-6);
 	--bigo-chart-muted:           var(--color-mono-4);
 
 	--bigo-chart-axis-color:      var(--color-mono-5);
+	--bigo-chart-axis-font-size:  var(--font-small);
 	--bigo-chart-grid-color:      var(--color-mono-2);
 	--bigo-chart-marker-color:    var(--color-mono-5);
 
 	--bigo-chart-tick-color:      var(--color-mono-6);
-	--bigo-chart-tick-size:       var(--font-tiny);
+	--bigo-chart-tick-font-size:  var(--font-tiny);
 
+    --bigo-chart-info-font-size:  var(--font-med);
 	--bigo-chart-slider-accent:   var(--theme-color);
 	--bigo-chart-font-mono:       var(--font-family-mono);
 
-	display: block;
+    --bigo-chart-legend-font-size: var(--font-med);
+    --bigo-chart-legend-color:     var(--color-text);
+
+    display: block;
 	margin: var(--margin-block) 0;
 
 	/* ---- Outer wrapper ---- */
@@ -58,11 +64,11 @@
 				display:     flex;
                 width: 100%;
 				align-items: center;
-				gap:         0.4em;
+				gap:         var(--gap-small);
 				cursor:      pointer;
 				user-select: none;
-				padding:     0.15em 0.5em;
-				border-radius: calc(var(--border-radius) * 0.5);
+				padding:     var(--padding-tiny) var(--padding-small);
+				border-radius: var(--border-radius-small);
 				border:      1px solid transparent;
 				transition:  border-color 120ms, opacity 120ms;
 
@@ -92,21 +98,21 @@
 
 				.bigo-legend-label {
 					font-family:  var(--bigo-chart-font-mono);
-					font-size:    var(--font-small);
+					font-size:    var(--bigo-chart-legend-font-size);
 					font-weight:  600;
-					color:        var(--color-text);
+					color:        var(--bigo-chart-legend-color);
 					white-space:  nowrap;
 				}
 
 				.bigo-legend-title {
-					font-size:  var(--font-tiny);
+					font-size:  var(--bigo-chart-legend-font-size);
 					color:      var(--bigo-chart-note-color);
 					white-space: nowrap;
 				}
 
 				.bigo-legend-value {
 					font-family:  var(--bigo-chart-font-mono);
-					font-size:    var(--font-small);
+					font-size:    var(--bigo-chart-legend-font-size);
 					color:        var(--bigo-chart-label-color);
 					margin-left:  0.25em;
 					min-width:    3.5ch;
@@ -122,7 +128,7 @@
 			gap:         0.6em;
 
 			.bigo-ctrl-label {
-				font-size:    var(--font-small);
+				font-size:    var(--bigo-chart-info-font-size);
 				font-weight:  600;
 				letter-spacing: 0.05em;
 				text-transform: uppercase;
@@ -139,7 +145,7 @@
 
 			.bigo-n-display {
 				font-family:  var(--bigo-chart-font-mono);
-				font-size:    var(--font-med);
+				font-size:    var(--bigo-chart-info-font-size);
 				font-weight:  600;
 				color:        var(--color-text);
 				min-width:    2.5ch;
@@ -166,7 +172,7 @@
 
 	.bigo-tick-y {
 		font-family:  var(--bigo-chart-font-mono);
-		font-size:    9px;
+		font-size:    var(--bigo-chart-tick-font-size);
 		fill:         var(--bigo-chart-tick-color);
 		text-anchor:  end;
 		dominant-baseline: middle;
@@ -174,7 +180,7 @@
 
 	.bigo-tick-x {
 		font-family:  var(--bigo-chart-font-mono);
-		font-size:    9px;
+		font-size:    var(--bigo-chart-tick-font-size);
 		fill:         var(--bigo-chart-tick-color);
 		text-anchor:  middle;
 	}
@@ -234,7 +240,7 @@
 	/* Chart title */
 	.bigo-title {
 		font-family: var(--font-family);
-		font-size: 1em;
+		font-size: var(--bigo-chart-title-font-size);
 		letter-spacing: 0.01em;
 		font-weight: 400;
 		fill: var(--bigo-chart-title-color);
@@ -245,7 +251,7 @@
 	/* Axis labels */
 	.bigo-axis-label {
 		font-family: var(--font-family);
-		font-size: 0.6em;
+		font-size: var(--bigo-chart-axis-font-size);
 		letter-spacing: 0.05em;
 		font-weight: 400;
 		fill: var(--bigo-chart-label-color);

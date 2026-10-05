@@ -62,7 +62,7 @@
 		{
 			id:    'onlogn',
 			label: 'O(N log N)',
-			title: 'Linear-Logarithmic',
+			title: 'Linear-Log.',
 			fn:    n => n * Math.log2(n),
 			maxN:  10000,
 			cssVar: '--bigo-chart-line-color-4',
