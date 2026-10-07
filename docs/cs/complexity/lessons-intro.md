@@ -109,6 +109,8 @@ Covers how effort relates to problem size, and different algorithms have differe
 
 # Measuring Complexity
 
+Complexity is a measure of effort
+
 ---
 
 ## Problem Size, N
@@ -281,9 +283,56 @@ For this algorithm:
 
 ---
 
+## Effort for Different Examples
+
+Each example requires a different level of effort, so each has a different **complexity**...
+
+| Algorithm                            | Complexity        |
+| ------------------------------------ | ----------------- |
+| **Summing** a list                   | **N**             |
+| Accessing **first item** in list     | **1**             |
+| **Sorting** a list using Bubble Sort | **N<sup>2</sup>** |
+
+---
+
+## Example Effort Values
+
+Looking at actual effort values as N increases...
+
+| N         | **Sum** (**N**) | **First** (**1**) | **Sort** (**N<sup>2</sup>**) |
+| --------- | --------------- | ----------------- | ---------------------------- |
+| 1         | 1               | 1                 | 1                            |
+| 10        | 10              | 1                 | 100                          |
+| 100       | 100             | 1                 | 10,000                       |
+| 1,000     | 1,000           | 1                 | 1,000,000                    |
+| 1,000,000 | 1,000,000       | 1                 | 1,000,000,000,000            |
+
+</slides>
+
+
+
+
+## Best, Average and Worst Cases
+
+Covers how effort can vary depending on the state of the initial data, and which case we focus on.
+
+<slides>
+
 # Best, Average and Worst Cases
 
-Considering using a Bubble Sort to sort a list...
+What are these, and which is most important?
+
+---
+
+|||
+
+## Consider using a Bubble Sort to sort a list...
+
+|||
+
+![Bubble sort](_assets/bubblesort.svg)
+
+|||
 
 ---
 
@@ -321,7 +370,7 @@ If this case:
 
 ---
 
-# We focus on the **Worst Case**
+## We focus on the **Worst Case**
 
 - If we understand the worst-case scenario, we can design systems to cope with that.
 - If the situation is not the worst-case, the system will still work just fine.
@@ -339,33 +388,39 @@ Covers how we categorise algorithmic complexity using BigO notation.
 
 # Big-O Notation
 
+How we define the complexity category of an algorithm
+
 ---
 
 ## Effort Varies with N
 
 We know that:
+
++++ list
 - **Effort** can vary as **N increases**
-- The effort depends on the **algorithm** (1, N, N<sup>2</sup>, etc.)
+- The effort depends on the **algorithm**
+- Measuring effort gives the **complexity** (1, N, N<sup>2</sup>, etc.)
 - We focus on the **worst-case** scenario
 
 ---
 
 ## Categorising Algorithms
 
-We group algorithms into **categories** based on **how their effort varies as N increases**, so we group:
+We group algorithms into **categories** based on their **complexity**:
 
-- All the **effort-never-changes** algorithms together
-- All the **effort = N** algorithms together
-- All the **effort = N<sup>2</sup>** algorithms together
++++ list
+- Effort never changes - Complexity **1**
+- Effort varies with N - Complexity **N**
+- Effort varies with N<sup>2</sup> - Complexity **N<sup>2</sup>**
 - etc.
 
 ---
 
 ## Naming the Categories
 
-We use a system called **Big-O Notation** to name the categories. Each name takes the form:
+We use a naming system called **Big-O Notation**. Each name takes the form:
 
-# O(...)
+# **O(**...**)**
 
 *The 'O' means 'order of'*
 
@@ -373,30 +428,33 @@ We refer the them as **Big-O Time Complexity** categories
 
 ---
 
+||| 2fr 3fr
+
 ## Big-O Time Complexities
 
-| Complexity           | Name        |
-| -------------------- | ----------- |
-| **O(1)**             | Constant    |
-| **O(log N)**         | Logarithmic |
-| **O(N)**             | Linear      |
-| **O(N log N)**       | Log-Linear  |
-| **O(N<sup>2</sup>)** | Quadratic   |
-| **O(N<sup>3</sup>)** | Cubic       |
-| **O(2<sup>N</sup>)** | Exponential |
-| **O(N!)**            | Factorial   |
+|||
+
+| Name        | Complexity           |
+| ----------- | -------------------- |
+| Constant    | **O(1)**             |
+| Logarithmic | **O(log N)**         |
+| Linear      | **O(N)**             |
+| Log-Linear  | **O(N log N)**       |
+| Quadratic   | **O(N<sup>2</sup>)** |
+| Cubic       | **O(N<sup>3</sup>)** |
+| Exponential | **O(2<sup>N</sup>)** |
+| Factorial   | **O(N!)**            |
+
+|||
+
 
 ---
 
-<big-o-chart></big-o-chart>
+||| 3fr 2fr
 
----
+# O(1)
 
-||| 1fr 1fr
-
-## **O(1)** - **Constant** Time Complexity
-
-The effort / time taken is **always the same** and doesn't vary as N increases
+## **Constant** Time Complexity
 
 |||
 
@@ -404,18 +462,139 @@ The effort / time taken is **always the same** and doesn't vary as N increases
 
 |||
 
+The effort / time taken is **always the same**, regardless of N
+
+*Example: Accessing the first item in a list*
+
 ---
 
-||| 2fr 1fr
+||| 3fr 2fr
 
-## **O(N)** - **Linear** Time Complexity
+# O(log N)
 
-The effort / time taken is increases **proportinally to N** as N increases
+## **Logarithmic** Time Complexity
+
+|||
+
+![O(log N) chart](_assets/log.png)
+
+|||
+
+The effort / time taken **goes up by 1 every time N doubles**
+
+*Example: Searching a sorted list using a Binary Search*
+
+---
+
+||| 3fr 2fr
+
+# O(N)
+
+## **Linear** Time Complexity
 
 |||
 
 ![O(N) chart](_assets/linear.png)
 
 |||
+
+The effort / time taken increases **proportionally to N**
+
+*Example: Searching an unsorted list using a Linear Search*
+
+---
+
+||| 3fr 2fr
+
+# O(N log N)
+
+## **Log-Linear** Time Complexity
+
+|||
+
+![O(N log N) chart](_assets/log-linear.png)
+
+|||
+
+The effort / time taken increases **slightly steeper than proportional to N**
+
+*Example: Sorting a list using a Quicksort or Merge Sort*
+
+---
+
+||| 3fr 2fr
+
+# O(N<sup>2</sup>)
+
+## **Quadratic** Time Complexity
+
+|||
+
+![O(N^2) chart](_assets/quadratic.png)
+
+|||
+
+The effort / time taken increases with the **square of N**
+
+*Example: Sorting a list using a Bubble Sort*
+
+---
+
+||| 3fr 2fr
+
+# O(N<sup>3</sup>)
+
+## **Cubic** Time Complexity
+
+|||
+
+![O(N^3) chart](_assets/cubic.png)
+
+|||
+
+The effort / time taken increases with the **cube of N**
+
+*Example: Multiplying two matrices*
+
+---
+
+||| 3fr 2fr
+
+# O(2<sup>N</sup>)
+
+## **Exponential** Time Complexity
+
+|||
+
+![O(2^N) chart](_assets/exponential.png)
+
+|||
+
+The effort / time taken increases with the **power of N**
+
+*Example: ???*
+
+---
+
+||| 3fr 2fr
+
+# O(N!)
+
+## **Factorial** Time Complexity
+
+|||
+
+![O(N!) chart](_assets/factorial.png)
+
+|||
+
+The effort / time taken increases with the **factorial of N**
+
+*Example: Finding a brute-force solution to the TSP*
+
+---
+
+<big-o-chart></big-o-chart>
+
 
 </slides>
