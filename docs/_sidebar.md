@@ -10,6 +10,14 @@
 
 #### Menu
 
+- [<i data-lucide="graduation-cap"></i> DT Courses](/courses/)
+    - [<i data-lucide="footprints"></i> 9DTF](/courses/9dtf/)
+    - [<i data-lucide="scooter"></i> 9DTA](/courses/9dta/)
+    - [<i data-lucide="bike"></i> 10DTA](/courses/10dta/)
+    - [<i data-lucide="car"></i> 100DTD](/courses/100dtd/)
+    - [<i data-lucide="plane"></i> 200DTD](/courses/200dtd/)
+    - [<i data-lucide="rocket"></i> 300DTD](/courses/300dtd/)
+
 - [<i data-lucide="binary"></i> Computer Science](/cs/)
     - [<i data-lucide="chart-spline"></i> Complexity & Tractability](/cs/complexity/)
     - [<i data-lucide="file lock"></i> Encryption](/cs/encryption/)
@@ -38,7 +46,6 @@
 
 ---
 
-<!-- - [<i data-lucide="graduation-cap"></i> DT Courses @ Waimea](/courses/) -->
 - [<i data-lucide="pocket-knife"></i> Useful Tools](/tools/)
 - [<i data-lucide="book-open"></i> Glossary of Terms](/_glossary.md)
 

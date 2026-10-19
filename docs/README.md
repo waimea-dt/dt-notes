@@ -15,6 +15,16 @@ How do you create cool things with a computer? How do you add colour to your web
 
 <menu>
 
+### DT Courses
+
+<i data-lucide="graduation-cap"></i>
+
+[Link](/courses/)
+
+Digital Technologies courses at Waimea College
+
+---
+
 ### Computer Science
 
 <i data-lucide="binary"></i>

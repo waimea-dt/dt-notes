@@ -1,19 +1,29 @@
 - [<i data-lucide="home"></i> Home](/)
 <i data-lucide="arrow-down"></i>
 
+- [<i data-lucide="graduation-cap"></i> DT Courses](/courses/)
+<i data-lucide="arrow-down"></i>
+
 <!-- -------------------------- -->
 
-- <i data-lucide="pocket-knife"></i> Courses @ WaiCol
-    - [<i data-lucide="circle-question-mark"></i> Why Take a DT Course?](/courses/)
+#### Menu
 
+- [<i data-lucide="footprints"></i> Year 9 DT Foundation](/courses/9dtf/)
+    - A foundation skills course
 
-- <i data-lucide="scooter"></i> Junior Courses
-    - [<i data-lucide="sparkle"></i> Year 9 DT](/courses/9dt.md)
-    - [<i data-lucide="sparkles"></i> Year 9 CS](/courses/9cs.md)
-    - [<i data-lucide="flame"></i> Year 10 DTCS](/courses/10dtcs.md)
+- [<i data-lucide="scooter"></i> Year 9 DT Advanced](/courses/9dta/)
+    - First steps in programming
 
-- <i data-lucide="rocket"></i> Senior NCEA Courses
-    - [<i data-lucide="square"></i> Level 1 Computer Science](/courses/100cs.md)
-    - [<i data-lucide="rows-2"></i> Level 2 Computer Science](/courses/200cs.md)
-    - [<i data-lucide="rows-3"></i> Level 3 Computer Science](/courses/300cs.md)
+- [<i data-lucide="bike"></i> Year 10 DT Advanced](/courses/10dta/)
+    - Design, web, animation, coding
+
+- [<i data-lucide="car"></i> Level 1 DT Dev & Coding](/courses/100dtd/)
+    - Python, web, HCI
+
+- [<i data-lucide="plane"></i> Level 2 DT Dev & Coding](/courses/200dtd/)
+    - Games, DBs, web
+
+- [<i data-lucide="rocket"></i> Level 3 DT Dev & Coding](/courses/300dtd/)
+    - Games, web apps
+
 
