@@ -70,7 +70,7 @@
 }
 
 /* Icon button layout - flex alignment for text + icon combinations */
-:where(.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check)) {
+:where(.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check)) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -79,13 +79,13 @@
 }
 
 /* Icon-only button sizing */
-:where(.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check):empty) {
+:where(.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check):empty) {
     --butt-icon-size: 1.5em;
     min-inline-size: calc((var(--line-height) * 1em) + (2 * var(--butt-padding-inline)));
 }
 
 /* Icon button base styling - uses CSS mask-image for all icon types */
-.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check)::before {
+.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check)::before {
     content: "";
     inline-size: var(--butt-icon-size);
     block-size: var(--butt-icon-size);
@@ -107,6 +107,7 @@
 .markdown-section .btn-swap::before { mask-image: var(--butt-icon-swap); }
 .markdown-section .btn-sort::before { mask-image: var(--butt-icon-sort); }
 .markdown-section .btn-info::before { mask-image: var(--butt-icon-info); }
+.markdown-section .btn-help::before { mask-image: var(--butt-icon-help); }
 .markdown-section .btn-speak::before { mask-image: var(--butt-icon-speak); }
 .markdown-section .btn-save::before { mask-image: var(--butt-icon-save); }
 .markdown-section .btn-copy::before { mask-image: var(--butt-icon-copy); }
