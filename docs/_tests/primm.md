@@ -183,3 +183,15 @@ print(result)
 ```
 
 </primm>
+
+### JavaScript
+
+<primm language="js">
+
+```js
+const lives = 3
+const hasShield = true
+console.log(hasShield ? lives + 1 : lives)
+```
+
+</primm>

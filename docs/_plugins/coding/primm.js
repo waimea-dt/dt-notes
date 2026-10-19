@@ -23,10 +23,15 @@
  *   </primm>
  *
  * Attributes:
- *   - language: "python" or "kotlin" (default: python)
+ *   - language: "python", "kotlin" or "js" (default: python)
  *   - header: "true" or "false" (default: true)
  *   - title: custom header title text
  *   - sub-title: custom header subtitle text
+ *
+ * Or with JavaScript (runs in the browser, no external service):
+ *   <primm language="js">
+ *   console.log("Hello")
+ *   </primm>
  *
  * Or with Kotlin:
  *   <primm language="kotlin">
@@ -38,6 +43,12 @@
 
 (function () {
     const { generateId, escapeHtml: escapeHtmlStrict, parseHeaderConfig } = window.DocsifyUtils
+
+    const SVG_ICONS = {
+        check: '<svg class="no-zoom" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    }
+
+    const LANGUAGE_ALIASES = { javascript: 'js' }
 
     const FENCED_BLOCK_REGEX = /```([a-zA-Z0-9_+-]+)?\s*\n([\s\S]*?)\n```/
 
@@ -57,7 +68,7 @@
             this.el = el
             const fallbackLanguage = (el.getAttribute('language') || 'python').toLowerCase()
             const parsedContent = this.parseContent(el, fallbackLanguage)
-            this.language = parsedContent.language
+            this.language = LANGUAGE_ALIASES[parsedContent.language] ?? parsedContent.language
             this.code = parsedContent.code
             this.headerConfig = parseHeaderConfig(el)
             this.predictionSaved = false
@@ -199,12 +210,12 @@
             if (!container || this.runnerOutputObserver) return
 
             this.runnerOutputObserver = new MutationObserver(() => {
-                const outputNodes = container.querySelectorAll('codapi-output, .output-wrapper, .code-output, .standard-output')
+                const outputNodes = container.querySelectorAll('codapi-output, .js-run-output, .output-wrapper, .code-output, .standard-output')
                 const hasOutput = Array.from(outputNodes).some((node) => {
                     const text = (node.textContent || '').trim()
                     if (!text) return false
 
-                    if (node.tagName && node.tagName.toLowerCase() === 'codapi-output') {
+                    if (node.matches('codapi-output, .js-run-output')) {
                         return !node.hasAttribute('hidden')
                     }
 
@@ -264,6 +275,10 @@
                 return this.activateKotlinRunner()
             }
 
+            if (this.language === 'js') {
+                return this.activateJsRunner()
+            }
+
             return false
         }
 
@@ -286,6 +301,23 @@
             }
 
             window.docsifyPythonRunner.init(codeDisplay)
+            this.watchForRunnerOutput(codeDisplay)
+            this.runnerInitialised = true
+            return true
+        }
+
+        activateJsRunner() {
+            if (!window.docsifyJsRunner || typeof window.docsifyJsRunner.init !== 'function') {
+                return false
+            }
+
+            const codeDisplay = this.el.querySelector('.primm-code-display')
+            const codeSection = this.el.querySelector('.primm-code-section')
+            if (!codeDisplay || !codeSection) return false
+
+            // init() searches descendants of its root, so pass the parent section
+            codeDisplay.classList.add('js-run')
+            window.docsifyJsRunner.init(codeSection)
             this.watchForRunnerOutput(codeDisplay)
             this.runnerInitialised = true
             return true
