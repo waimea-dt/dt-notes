@@ -42,6 +42,10 @@
  *
  *   </web-playground>
  *
+ * Blocks with id=NAME are hidden from the editors but ALWAYS included in that
+ * playground's output, whether or not any block depends on them. depends=NAME
+ * is only needed to pull in a named block from a different playground on the page.
+ *
  * Attributes:
  *   data-height="40em"  - Set container height (default: 80vh)
  *   data-width="30%"    - Set preview panel width in wide layout (default: 50%)
@@ -95,7 +99,10 @@
     // Extract the content of fenced code blocks (rendered by Docsify as
     // <pre><code class="lang-html/css/js">) from inside a <web-playground>.
     // Returns { html, css, js } where each is { visible, hidden } or null.
-    function parseContents(container, hiddenBlocks) {
+    // ownBlocks: this playground's own ```lang id=NAME blocks ({ lang: [{ name, code }] }).
+    // Those are always included in the output; depends=NAME can also pull in named blocks
+    // defined elsewhere on the page (hiddenBlocks).
+    function parseContents(container, hiddenBlocks, ownBlocks) {
         const result = { html: null, css: null, js: null }
 
         container.querySelectorAll('pre > code').forEach(codeEl => {
@@ -113,16 +120,27 @@
             const dependsName = match[2]
             const visibleCode = codeEl.textContent
 
-            // Get hidden code if this block depends on something
-            const hiddenCode = dependsName ? (hiddenBlocks[`${lang}:${dependsName}`] ?? '') : ''
+            const isOwn = (ownBlocks[lang] ?? []).some(block => block.name === dependsName)
+            const externalCode = dependsName && !isOwn ? (hiddenBlocks[`${lang}:${dependsName}`] ?? '') : ''
 
             result[lang] = {
                 visible: visibleCode,
-                hidden: hiddenCode
+                hidden: joinCode(externalCode, ...(ownBlocks[lang] ?? []).map(block => block.code))
             }
         })
 
-        // HTML is always included; fall back to placeholder if none provided.
+        // Hidden-only languages: no editor, but the code still runs
+        Object.keys(CM_MODE).forEach(lang => {
+            const hasOwn = (ownBlocks[lang] ?? []).length > 0
+            if (result[lang] === null && hasOwn) {
+                result[lang] = {
+                    visible: null,
+                    hidden: joinCode(...ownBlocks[lang].map(block => block.code))
+                }
+            }
+        })
+
+        // HTML is always included; fall back to placeholder if no html at all (visible or hidden).
         if (result.html === null) {
             result.html = {
                 visible: DEFAULT_HTML_CONTENT,
@@ -147,6 +165,11 @@
         return result
     }
 
+    // Join non-empty code chunks with newlines
+    function joinCode(...chunks) {
+        return chunks.filter(Boolean).join('\n')
+    }
+
     // Build a self-contained HTML string for the preview iframe.
     // Combines hidden setup code with visible code.
     function buildSrcdoc(htmlObj, cssObj, jsObj) {
@@ -158,18 +181,18 @@
         parts.push('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
 
         // Combine hidden + visible CSS
-        const fullCss = (cssObj.hidden || '') + (cssObj.hidden && cssObj.visible ? '\n' : '') + (cssObj.visible || '')
+        const fullCss = joinCode(cssObj.hidden, cssObj.visible)
         if (fullCss) parts.push(`<style>\n${fullCss}\n</style>`)
 
         parts.push('</head>')
         parts.push('<body>')
 
         // Combine hidden + visible HTML
-        const fullHtml = (htmlObj.hidden || '') + (htmlObj.hidden && htmlObj.visible ? '\n' : '') + (htmlObj.visible || '')
+        const fullHtml = joinCode(htmlObj.hidden, htmlObj.visible)
         if (fullHtml) parts.push(fullHtml)
 
         // Combine hidden + visible JS
-        const fullJs = (jsObj.hidden || '') + (jsObj.hidden && jsObj.visible ? '\n' : '') + (jsObj.visible || '')
+        const fullJs = joinCode(jsObj.hidden, jsObj.visible)
         if (fullJs) parts.push(`<script>\n${fullJs}\n<\/script>`)
 
         parts.push('</body>')
@@ -387,7 +410,7 @@
         return { editors, iframe, hSplitRef: () => hSplit, containerResizeObserver, removeResizeFallback }
     }
 
-    function initPlayground(container, hiddenBlocks) {
+    function initPlayground(container, hiddenBlocks, ownBlocksByPlayground) {
         if (container.dataset.initialized) return
         container.dataset.initialized = 'true'
 
@@ -400,14 +423,14 @@
         container.style.setProperty('--wp-height', height)
         container.style.setProperty('--wp-width', width)
 
-        const contentObjs = parseContents(container, hiddenBlocks)
+        const contentObjs = parseContents(container, hiddenBlocks, ownBlocksByPlayground[container.dataset.wpIndex] ?? {})
         container.innerHTML = ''
 
         // Extract visible content for editors
         const contents = {}
-        if (contentObjs.html !== null) contents.html = contentObjs.html.visible
-        if (contentObjs.css  !== null) contents.css  = contentObjs.css.visible
-        if (contentObjs.js   !== null) contents.js   = contentObjs.js.visible
+        Object.keys(CM_MODE).forEach(lang => {
+            if (contentObjs[lang]?.visible != null) contents[lang] = contentObjs[lang].visible
+        })
 
         // Determine which panel should be initially maximized
         let initialMaxLang = null
@@ -449,20 +472,27 @@
         // Hidden code blocks extracted from the current page.
         // Keys are "lang:name", values are the raw code strings.
         let hiddenBlocks = {}
+        // Each playground's own id blocks, indexed by playground order on the page
+        let ownBlocksByPlayground = []
 
         hook.beforeEach(function (content) {
             hiddenBlocks = {}
+            ownBlocksByPlayground = []
             content = content.replace(/\r\n/g, '\n')
 
             // Process content inside <web-playground> tags
             content = content.replace(
                 /<web-playground([^>]*)>([\s\S]*?)<\/web-playground>/g,
                 function (match, attrs, innerContent) {
+                    const ownBlocks = {}
+                    const playgroundIndex = ownBlocksByPlayground.push(ownBlocks) - 1
+
                     // Extract ```html id=NAME, ```css id=NAME, ```js id=NAME blocks
                     innerContent = innerContent.replace(
                         /^```(html|css|js) id=(\w+)\n([\s\S]*?)^```$/gm,
                         function (_, lang, name, code) {
                             hiddenBlocks[`${lang}:${name}`] = code
+                            ;(ownBlocks[lang] ??= []).push({ name, code })
                             return '' // Remove from markdown
                         }
                     )
@@ -473,7 +503,7 @@
                         '```$1-depends-$2'
                     )
 
-                    return `<web-playground${attrs}>${innerContent}</web-playground>`
+                    return `<web-playground${attrs} data-wp-index="${playgroundIndex}">${innerContent}</web-playground>`
                 }
             )
 
@@ -482,7 +512,7 @@
 
         hook.doneEach(function () {
             document.querySelectorAll('web-playground:not([data-initialized])').forEach(el => {
-                initPlayground(el, hiddenBlocks)
+                initPlayground(el, hiddenBlocks, ownBlocksByPlayground)
             })
         })
     }
