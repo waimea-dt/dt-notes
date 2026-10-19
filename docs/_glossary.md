@@ -952,7 +952,7 @@
 
 - template
 
-    An HTML file with placeholders that get filled in with data when the page loads
+    Code with placeholders that get filled in with data when the code is run
 
 - cookie
 
