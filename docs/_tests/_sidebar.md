@@ -17,6 +17,7 @@
     - [Python Runner](/_tests/python.md)
     - [Python Coverage](/_tests/coverage.md)
     - [Kotlin Runner](/_tests/kotlin.md)
+    - [JavaScript Runner](/_tests/javascript.md)
     - [PRIMM Widget](/_tests/primm.md)
     - [Trace Table](/_tests/trace-table.md)
     - [Scratch Blocks & Stage](/_tests/scratch.md)

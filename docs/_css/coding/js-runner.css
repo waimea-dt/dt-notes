@@ -1,0 +1,93 @@
+/** JavaScript Code Runner
+ * Editable JS block with run button and output panel
+ */
+.markdown-section .js-run {
+    margin-block: var(--margin-block);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: var(--code-control-back-color);
+
+    pre[class*="language-"] {
+        margin: 0;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    .CodeMirror {
+        height: auto;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+
+        pre.CodeMirror-line,
+        pre.CodeMirror-line-like {
+            padding-inline: var(--padding);
+        }
+    }
+
+    .js-run-button {
+        display: block;
+        width: 100%;
+        height: 2.1rem;
+        padding-left: 2.8rem;
+        margin-bottom: 0;
+        border: none;
+        border-top: 1px solid var(--code-border-color);
+        border-radius: 0;
+        outline: none;
+        box-shadow: none;
+        transform: none;
+        transition: none;
+        font-weight: normal;
+        background-color: var(--code-control-back-color);
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20'><polygon fill='transparent' stroke='%23777' stroke-width='2' stroke-linejoin='round' points='15,10 1,19 1,1'/></svg>");
+        background-repeat: no-repeat;
+        background-size: 16px 20px;
+        background-position: 1.2rem 0.5rem;
+        color: var(--code-control-color);
+        text-align: left;
+        line-height: 1;
+        cursor: pointer;
+
+        &:hover,
+        &:active,
+        &:focus {
+            background-color: var(--code-control-back-color);
+            border-color: transparent;
+            border-top-color: var(--code-border-color);
+        }
+
+        &:hover {
+            background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20'><polygon stroke='%2324a7ff' fill='%2324a7ff' stroke-width='2' stroke-linejoin='round' points='15,10 1,19 1,1'/></svg>");
+            color: var(--code-control-color--high);
+        }
+    }
+
+    .js-run-output {
+        border-top: 1px solid var(--code-border-color);
+
+        &[hidden] {
+            display: none;
+        }
+
+        pre {
+            margin: 0;
+
+            code {
+                display: block;
+                padding: var(--padding);
+                border: none !important;
+                overflow-x: auto;
+            }
+        }
+
+        .js-run-line {
+            font-weight: normal;
+        }
+
+        .js-run-warn {
+            color: var(--code-color-yellow);
+        }
+
+        .js-run-error {
+            color: var(--code-error-color);
+        }
+    }
+}
