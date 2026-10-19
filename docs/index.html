@@ -17,6 +17,14 @@
         })()
     </script>
 
+    <!-- Speaker-view preview frames pass the page route in a query param; restore it before Docsify routes. -->
+    <script>
+        (function () {
+            var page = new URLSearchParams(location.search).get('slides-page')
+            if (page) history.replaceState(null, '', location.pathname + location.search + page)
+        })()
+    </script>
+
     <link rel="icon" href="_assets/macs/macintosh.svg">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -255,6 +263,7 @@
     <script src="//cdn.jsdelivr.net/npm/scratchblocks/build/scratchblocks.min.js"></script>
 
     <script src="//cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js"></script>
 
     <!-- Shared utilities - must load before all other plugin scripts -->
     <script defer src="_plugins/core/utils.js"></script>

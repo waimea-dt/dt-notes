@@ -8,6 +8,10 @@
  *   # Slide One
  *   ---
  *   # Slide Two
+ *
+ *   Note:
+ *   Speaker notes (markdown) - everything after a lone `Note:` line to the end of the slide.
+ *   Click the deck for focus, then press `s` to open the speaker view.
  *   </slides>
  */
 
@@ -97,10 +101,19 @@
 
   // Slides are compiled by Docsify itself (not Reveal's markdown plugin) so the
   // output is final HTML before any plugin's doneEach hook runs.
+  // A line containing only `Note:` starts the speaker notes (the rest of the slide).
+  function buildSlideHTML(slide, compiler) {
+    const [content, ...noteParts] = slide.split(/^Note:[ \t]*$/m)
+    const notes = noteParts.join('\n').trim()
+    const body = stripHeadingAnchors(compiler.compile(normaliseSlideMarkdown(content.trim())))
+    const aside = notes ? `<aside class="notes">${compiler.compile(notes)}</aside>` : ''
+    return `<section>${body}${aside}</section>`
+  }
+
   function buildRevealHTML(index, compiler) {
     const slides = stash[index]
       .split(/\n---\n/)
-      .map((slide) => `<section>${stripHeadingAnchors(compiler.compile(normaliseSlideMarkdown(slide.trim())))}</section>`)
+      .map((slide) => buildSlideHTML(slide, compiler))
       .join('\n')
 
     return `
@@ -228,13 +241,31 @@
     })
   }
 
+  // The speaker view loads `config.url` in preview iframes (with `receiver` appended). That URL
+  // reopens this page and shows only the one deck, full-window (see slides.css).
+  const receiverParams = new URLSearchParams(window.location.search)
+  const isReceiver = receiverParams.has('receiver')
+  const receiverDeckId = `slide-deck-${receiverParams.get('slides-deck')}`
+
+  function getReceiverUrl(deck) {
+    const params = new URLSearchParams({
+      'slides-page': window.location.hash,
+      'slides-deck': deck.id.replace('slide-deck-', ''),
+    })
+    return `${window.location.origin}${window.location.pathname}?${params}`
+  }
+
   function initDecks() {
+    if (isReceiver) document.documentElement.classList.add('slides-receiver')
+
     document.querySelectorAll('.reveal.docsify-slide-deck:not([data-initialized])').forEach((deck) => {
+      if (isReceiver && deck.id !== receiverDeckId) return
       deck.setAttribute('data-initialized', 'true')
 
       const reveal = new Reveal(deck, {
         embedded: true,
-        plugins: [],
+        url: getReceiverUrl(deck),
+        plugins: typeof RevealNotes === 'undefined' ? [] : [RevealNotes],
         keyboardCondition: 'focused',
         controls: true,
         progress: true,

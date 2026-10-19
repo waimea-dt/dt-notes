@@ -25,6 +25,12 @@ console.log(loot[0]) // 'sword' - zero-indexed!
 
 Use a `for...of` loop to grab everything.
 
+Note:
+Speaker notes - click the deck, press `s`.
+
+- Mention **zero-indexing** again
+- Ask for predictions
+
 ---
 
 ## Incremental List

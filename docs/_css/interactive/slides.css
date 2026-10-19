@@ -35,6 +35,30 @@
     --r-selection-color:            var(--color-text);
 }
 
+/* Speaker-view preview frames: show only the one initialised deck, full-window */
+html.slides-receiver {
+    overflow: hidden;
+
+    .markdown-section .docsify-slide-deck {
+        &:not([data-initialized]) {
+            display: none;
+        }
+
+        &[data-initialized] {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            width: 100vw;
+            height: 100vh;
+            aspect-ratio: auto;
+            margin: 0;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+    }
+}
+
 .markdown-section .docsify-slide-deck {
     width: 100%;
     aspect-ratio: 16/9;
