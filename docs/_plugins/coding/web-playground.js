@@ -214,6 +214,14 @@
         const cssObj = get('css')
         const jsObj = get('js')
         const html = buildSrcdoc(htmlObj, cssObj, jsObj)
+
+        // Reloading the iframe can pull focus out of the editor mid-typing,
+        // so hand it back (cursor position is kept by CodeMirror) once loaded.
+        const focusedEditor = Object.values(editors).find(editor => editor.hasFocus())
+        if (focusedEditor) {
+            iframe.addEventListener('load', () => focusedEditor.focus(), { once: true })
+        }
+
         iframe.srcdoc = html
     }
 
