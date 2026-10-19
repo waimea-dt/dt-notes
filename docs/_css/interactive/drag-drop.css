@@ -234,10 +234,14 @@
 
                     &.drag-drop-item-correct-place {
                         border-color: var(--drag-drop-item-correct-border);
+                        /* Inset shadow shows in code mode too, where item borders are 0 */
+                        box-shadow: inset 0 0 0 2px var(--drag-drop-item-correct-border);
                     }
 
                     &.drag-drop-item-wrong-place {
                         border-color: var(--drag-drop-item-wrong-border);
+                        /* Inset shadow shows in code mode too, where item borders are 0 */
+                        box-shadow: inset 0 0 0 2px var(--drag-drop-item-wrong-border);
                     }
 
                     .drag-drop-item-shell {

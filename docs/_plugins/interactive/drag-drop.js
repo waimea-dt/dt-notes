@@ -288,7 +288,7 @@
 
                         <div class="drag-drop-actions">
                             <button class="drag-drop-btn drag-drop-submit btn-check"><span>${UI_TEXT.buttons.submit}</span></button>
-                            <button class="drag-drop-btn drag-drop-help btn-info" aria-label="${UI_TEXT.buttons.help}" title="${UI_TEXT.buttons.help}"></button>
+                            <button class="drag-drop-btn drag-drop-help btn-help" aria-label="${UI_TEXT.buttons.help}" title="${UI_TEXT.buttons.help}"></button>
                             <button class="drag-drop-btn drag-drop-reset btn-reset btn-shuffle" aria-label="${UI_TEXT.buttons.reshuffle}" title="${UI_TEXT.buttons.reshuffle}"></button>
                         </div>
 
