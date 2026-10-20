@@ -1,0 +1,24 @@
+/* Responses for user input (e.g. in PRIMM I phase) */
+
+.markdown-section {
+    textarea.response,
+    input.value {
+        --form-element-border-color: var(--theme-color-3);
+
+        &:focus {
+            --form-element-border-color: var(--theme-color);
+            outline: none;
+        }
+
+        &:is(textarea.response) {
+            width: 100%;
+            min-height: 5.25em;
+            field-sizing: content;
+        }
+
+        &:is(input.value) {
+            width: 4em;
+            text-align: center;
+        }
+    }
+}
