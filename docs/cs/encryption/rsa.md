@@ -6,7 +6,7 @@
 
 RSA relies on a simple fact: **multiplying two large prime numbers is easy, but factoring the result back into those two primes is incredibly hard.**
 
-<modulus value="17" mod="5" title="Modular Arithmetic" sub-title="The building block behind RSA"></modulus>
+<modulus value="17" mod="5" title="Modular Arithmetic" sub-title="The building block behind RSA">
 
 ## Why It's Secure
 
@@ -16,7 +16,7 @@ RSA relies on a simple fact: **multiplying two large prime numbers is easy, but 
 | 2048-bit | Longer than the age of the universe |
 | 4096-bit | Effectively impossible with today's technology |
 
-<big-o algos="rsa-brute rsa-gnfs aes-brute" max="2048" step="x2"></big-o>
+<big-o algos="rsa-brute rsa-gnfs aes-brute" max="2048" step="x2">
 
 > [!IMPORTANT]
 > RSA's security depends entirely on factoring being **intractable**. If a fast factoring method were ever found (quantum computers are a growing concern here), RSA would become insecure overnight.
@@ -83,7 +83,7 @@ Drag these steps into the correct order:
 
 ## Video Overviews
 
-<videoembed id="wXB-V_Keiu8"></videoembed>
+<videoembed id="wXB-V_Keiu8">
 
 
 ## Further Reading

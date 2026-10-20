@@ -15,13 +15,13 @@ Alice and Bob want to agree on a secret encryption key, but they can only commun
 
 ## Interactive Demo (Default: p=23, g=3)
 
-<diffie-hellman intercept></diffie-hellman>
+<diffie-hellman intercept>
 
 ## Smaller Values (p=17, g=5)
 
 Using smaller values makes the calculations easier to follow, but the principle is the same.
 
-<diffie-hellman p="17" g="5"></diffie-hellman>
+<diffie-hellman p="17" g="5">
 
 ## Color Mixing Analogy
 
@@ -32,7 +32,7 @@ The same protocol can be visualized using color mixing! Instead of modular arith
 - **Mixing colors** → like calculating **g^a mod p**
 - **Shared secret color** → both arrive at the same color!
 
-<diffie-hellman colour intercept></diffie-hellman>
+<diffie-hellman colour intercept>
 
 
 ## Why Is This Secure?
@@ -59,9 +59,3 @@ Why? Because computing **a** from **A = g^a mod p** requires solving the **discr
 ## Real-World Application
 
 When you visit a website with HTTPS, your browser and the server use a variant of Diffie-Hellman to establish a shared encryption key. This happens in milliseconds, and no eavesdropper (not even your ISP) can decrypt your traffic.
-
-## Single Tag (no closing tag)
-
-<diffie-hellman p="17" g="7">
-
-Text after the tag should still appear below the widget.

@@ -2,7 +2,7 @@
 
 If your laptop or phone is lost or stolen, **device encryption** ensures nobody can read your files without your password - even if they remove the storage drive and plug it into another computer.
 
-<videoembed id="qzJi6TahOVU"></videoembed>
+<videoembed id="qzJi6TahOVU">
 
 ## How It Works
 

@@ -10,7 +10,7 @@ Two algorithms might take similar time for N=10, but have wildly different perfo
 
 Drag the slider to see how different complexity classes diverge as N increases:
 
-<big-o-chart></big-o-chart>
+<big-o-chart>
 
 Notice how:
 - **Constant** **O(1)** stays flat (doesn't grow at all)
@@ -26,13 +26,13 @@ Let's compare specific complexity classes:
 
 ### Slow Growth - Easy to Solve
 
-<big-o-chart enabled="o1 ologn on"></big-o-chart>
+<big-o-chart enabled="o1 ologn on">
 
 These three grow so slowly that they remain practical even for huge datasets.
 
 ### Polynomial Growth - Reasonable to Solve
 
-<big-o-chart enabled="on on2 on3"></big-o-chart>
+<big-o-chart enabled="on on2 on3">
 
 See how **O(N<sup>2</sup>)** and **O(N<sup>3</sup>)** pull away from linear? This is why we avoid nested loops when possible!
 
@@ -40,7 +40,7 @@ But... it is still possible to find solutions to these problems in a 'reasonable
 
 ### Non-Polynomial Growth - The 'Impossible' Zone
 
-<big-o-chart enabled="on on2 o2n ofact"></big-o-chart>
+<big-o-chart enabled="on on2 o2n ofact">
 
 Exponential and factorial complexities become impractical almost immediately. They're only viable for tiny inputs, and this is what makes finding solutions practically impossible for larger values of N.
 
@@ -130,7 +130,7 @@ See how the N<sup>3</sup> term becomes 99%+ of the total? That's why we ignore t
 
 ## Interactive Exploration
 
-<big-o algos="array-access search sort-bubble tsp-brute knap-brute" step="x2" max="1024"></big-o>
+<big-o algos="array-access search sort-bubble tsp-brute knap-brute" step="x2" max="1024">
 
 Try doubling steps (`x2`) to see exponential exploration of the space!
 

@@ -134,7 +134,7 @@ def huffman_coding(frequencies):
 
 **Problem**: Can only take whole items, not fractions.
 
-<knapsack solve="greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack solve="greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 **Greedy choice**: Take items by value-to-weight ratio
 **Why it fails**: Can't take fractions, so locally optimal ≠ globally optimal
@@ -181,7 +181,7 @@ Capacity = 18
 
 The greedy by ratio can miss the best solution!
 
-<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7 9|2 2|10"></knapsack>
+<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7 9|2 2|10">
 
 See how greedy makes a tempting early choice but misses a better combination!
 
@@ -358,6 +358,6 @@ Sometimes "good enough" is... good enough!
 
 See greedy succeed (fractional) vs fail (0/1):
 
-<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7"></knapsack>
+<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7">
 
 The greedy approach is fast but not always optimal!

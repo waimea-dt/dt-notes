@@ -23,9 +23,9 @@ The notes here cover everything you need for [AS91898](/ncea/91898/as91898.pdf):
 ## Video Overviews
 
 
-<videoembed id="yFZGF8FHSg"></videoembed>
+<videoembed id="yFZGF8FHSg">
 
-<videoembed id="NuyzuNBFWxQ"></videoembed>
+<videoembed id="NuyzuNBFWxQ">
 
 
 ## Further Reading

@@ -2,7 +2,7 @@
 
 Remembering dozens of strong, unique passwords is practically impossible for a human - which is exactly why **password managers** exist.
 
-<videoembed id="DVekqK25UzQ"></videoembed>
+<videoembed id="DVekqK25UzQ">
 
 ## How They Work
 
@@ -42,7 +42,7 @@ Remembering dozens of strong, unique passwords is practically impossible for a h
 
 If you reuse the same password across multiple sites, a single data breach at *any* one of them exposes your account everywhere else too. Password managers make it realistic to use a different password for every account.
 
-<hasher value="MyPassword123" history></hasher>
+<hasher value="MyPassword123" history>
 
 > [!TIP]
 > Notice how similar passwords hash to completely different values. This is exactly why a leaked hash from one site can't easily be reused to guess your password on a different site - *unless* you reused the same password.

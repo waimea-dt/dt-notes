@@ -7,7 +7,7 @@ A **hash function** takes any input - a word, a file, a password - and produces 
 
 ## Try It Yourself
 
-<hasher value="hello"></hasher>
+<hasher value="hello">
 
 ## The Three Key Properties
 
@@ -19,7 +19,7 @@ A **hash function** takes any input - a word, a file, a password - and produces 
 
 Watch the avalanche effect - notice how tiny text changes scramble the entire output:
 
-<hasher value="password" history></hasher>
+<hasher value="password" history>
 
 ## Hashing vs Encryption
 
@@ -90,7 +90,7 @@ Watch the avalanche effect - notice how tiny text changes scramble the entire ou
 
 ## Video Overviews
 
-<videoembed id="cczlpiiu42M"></videoembed>
+<videoembed id="cczlpiiu42M">
 
 
 

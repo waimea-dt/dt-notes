@@ -15,7 +15,7 @@
 
 Older ciphers like DES used short 56-bit keys that became crackable by brute force as computers got faster. AES's larger keys make brute-forcing practically impossible.
 
-<big-o algos="rsa-brute rsa-gnfs aes-brute" max="256" step="x2"></big-o>
+<big-o algos="rsa-brute rsa-gnfs aes-brute" max="256" step="x2">
 
 > [!NOTE]
 > A 128-bit AES key has **340 undecillion** possible values (that's 340 followed by 36 zeros). Even with every computer on Earth working together, brute-forcing it would take far longer than the universe has existed.
@@ -71,9 +71,9 @@ AES doesn't encrypt letter-by-letter like the historical ciphers - it works on 1
 
 ## Video Overviews
 
-<videoembed id="C4ATDMIz5wc"></videoembed>
+<videoembed id="C4ATDMIz5wc">
 
-<videoembed id="O4xNJsjtN6E"></videoembed>
+<videoembed id="O4xNJsjtN6E">
 
 ## Further Reading
 

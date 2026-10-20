@@ -14,14 +14,14 @@ You have a set of **items**, each with a **size**, and any number of **bins**, e
 
 To guarantee the **minimum** number of bins, brute force must try every possible way of assigning items to bins. For N items, this gives a complexity of **O(N<sup>N</sup>)** - even worse than the Knapsack problem's **O(2<sup>N</sup>)**.
 
-<big-o algos="pack-brute" max="12" step="1"></big-o>
+<big-o algos="pack-brute" max="12" step="1">
 
 > [!NOTE]
 > Like the [Knapsack Problem](/cs/complexity/knapsack.md), Bin Packing is **NP-hard** - easy to check whether a packing is valid, but hard to guarantee it uses the fewest bins possible.
 
 ### Try It Yourself
 
-<bin-packing capacity="10" items="3 5 8 3 5 9"></bin-packing>
+<bin-packing capacity="10" items="3 5 8 3 5 9">
 
 Watch brute force test different ways of grouping items into bins to find the optimal packing.
 
@@ -29,7 +29,7 @@ Watch brute force test different ways of grouping items into bins to find the op
 
 Instead of checking every possible arrangement, **Next Fit** packs items sequentially: if the current item doesn't fit in the current bin, open a **new** bin.
 
-<bin-packing method="next-fit" capacity="10"></bin-packing>
+<bin-packing method="next-fit" capacity="10">
 
 - **Time**: **O(N)** - very fast!
 - **Quality**: simple, but often wastes space - once a bin is skipped, it's never used again
@@ -38,14 +38,14 @@ Instead of checking every possible arrangement, **Next Fit** packs items sequent
 
 **Best Fit** checks *all* currently open bins, and places each item into the one with the **least remaining space** that can still fit it.
 
-<bin-packing method="best-fit" capacity="10"></bin-packing>
+<bin-packing method="best-fit" capacity="10">
 
 - **Time**: **O(N log N)** - still fast
 - **Quality**: usually packs tighter than Next Fit, but still not guaranteed optimal
 
 ## Comparing Approaches
 
-<big-o algos="pack-brute pack-next-fit pack-best-fit" max="12" step="1"></big-o>
+<big-o algos="pack-brute pack-next-fit pack-best-fit" max="12" step="1">
 
 | Approach   | Complexity        | Guaranteed Optimal? |
 | ---------- | ------------------ | -------------------- |

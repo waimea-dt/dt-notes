@@ -2,7 +2,7 @@
 
 A **VPN** creates an encrypted "tunnel" between your device and a VPN server, hiding your traffic from your internet provider, your school network, or anyone snooping nearby.
 
-<videoembed id="gJWe4YV70kk"></videoembed>
+<videoembed id="gJWe4YV70kk">
 
 ## How a VPN Works
 

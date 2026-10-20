@@ -4,37 +4,37 @@ Interactive converter for learning binary, decimal, and hexadecimal number syste
 
 ## Decimal to Binary
 
-<convertor from="dec" to="bin" value="123" bits="8"></convertor>
+<convertor from="dec" to="bin" value="123" bits="8">
 
 ## Binary to Decimal
 
-<convertor from="bin" to="dec" value="11010110" bits="8"></convertor>
+<convertor from="bin" to="dec" value="11010110" bits="8">
 
 ## Decimal to Hexadecimal
 
-<convertor from="dec" to="hex" value="255" bits="8"></convertor>
+<convertor from="dec" to="hex" value="255" bits="8">
 
 ## Hexadecimal to Decimal
 
-<convertor from="hex" to="dec" value="7F" bits="8"></convertor>
+<convertor from="hex" to="dec" value="7F" bits="8">
 
 ## Binary to Hexadecimal
 
-<convertor from="bin" to="hex" value="10101111" bits="8"></convertor>
+<convertor from="bin" to="hex" value="10101111" bits="8">
 
 ## Binary to Hexadecimal (Nibble Linking)
 
-<convertor from="bin" to="hex" value="10101111" bits="8" nibbles></convertor>
+<convertor from="bin" to="hex" value="10101111" bits="8" nibbles>
 
-<convertor from="bin" to="hex" value="1010" bits="4" nibbles></convertor>
+<convertor from="bin" to="hex" value="1010" bits="4" nibbles>
 
 ## Hexadecimal to Binary
 
-<convertor from="hex" to="bin" value="C5" bits="8"></convertor>
+<convertor from="hex" to="bin" value="C5" bits="8">
 
 ## Small Values (4-bit)
 
-<convertor from="dec" to="hex" value="15" bits="4"></convertor>
+<convertor from="dec" to="hex" value="15" bits="4">
 
 ## Interactive Features
 
@@ -73,9 +73,3 @@ Experiment with different values and conversions. Some interesting numbers to tr
 - **Pattern numbers**: 85 (binary: 01010101), 170 (binary: 10101010)
 - **Max 8-bit**: 255 (binary: 11111111, hex: FF)
 - **Common values**: 127, 192, 168 (IP address components)
-
-## Single Tag (no closing tag)
-
-<convertor from="bin" to="hex" value="10101111" bits="8">
-
-Text after the tag should still appear below the widget.

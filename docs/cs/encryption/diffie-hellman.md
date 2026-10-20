@@ -8,7 +8,7 @@
 Diffie-Hellman uses [modulo arithmetic](/cs/encryption/modulo.md) - numbers 'wrapping around' like a clock - to make combining secrets easy, but reversing them practically impossible.
 
 
-<diffie-hellman p="17" g="5"></diffie-hellman>
+<diffie-hellman p="17" g="5">
 
 > [!IMPORTANT]
 > In reality, small numbers like `p = 17` as used above, are far too small for real security. Instead:
@@ -19,7 +19,7 @@ Diffie-Hellman uses [modulo arithmetic](/cs/encryption/modulo.md) - numbers 'wra
 
 If an eavesdropper, Eve, is monitoring the communications, she sees *everything* exchanged **publicly**, but still can't work out the shared secret without knowing Alice and Bob's private values...
 
-<diffie-hellman intercept></diffie-hellman>
+<diffie-hellman intercept>
 
 > [!NOTE]
 > The problem Eve needs to solve to crack Alice and Bob's private keys is called the **Discrete Logarithm Problem** - given the public numbers, working backwards to find the private ones is computationally intractable (effectively impossible) for large enough numbers.
@@ -79,9 +79,9 @@ Drag these steps into the correct order:
 
 ## Video Overviews
 
-<videoembed id="YEBfamv-_do"></videoembed>
+<videoembed id="YEBfamv-_do">
 
-<videoembed id="NmM9HA2MQGI"></videoembed>
+<videoembed id="NmM9HA2MQGI">
 
 
 ## Further Reading

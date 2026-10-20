@@ -8,13 +8,13 @@ A **digital signature** proves that a message or file really came from a specifi
 2. The sender encrypts that hash with their **private key** - this encrypted hash is the signature
 3. Anyone can verify it using the sender's **public key**: decrypt the signature to get the original hash, then hash the document themselves and compare
 
-<digital-sig file="contract.pdf"></digital-sig>
+<digital-sig file="contract.pdf">
 
 ## Detecting Tampering
 
 If even one character of the document changes after signing, the hashes will no longer match:
 
-<digital-sig file="contract.pdf" tamper></digital-sig>
+<digital-sig file="contract.pdf" tamper>
 
 > [!IMPORTANT]
 > This is why digital signatures provide two guarantees at once: **authenticity** (it really came from that person) and **integrity** (it hasn't been altered).
@@ -81,7 +81,7 @@ Drag these steps into the correct order:
 
 ## Video Overview
 
-<videoembed id="OZtmNEfQ6ag"></videoembed>
+<videoembed id="OZtmNEfQ6ag">
 
 ## Further Reading
 

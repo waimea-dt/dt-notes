@@ -261,7 +261,7 @@ How many operations will it take to put them into order?
 
 ## Example 3 - Sorting a List of Values
 
-<videoembed id="Cq7SMsQBEUw"></videoembed>
+<videoembed id="Cq7SMsQBEUw">
 
 ---
 
@@ -594,7 +594,7 @@ The effort / time taken increases with the **factorial of N**
 
 ---
 
-<big-o-chart></big-o-chart>
+<big-o-chart>
 
 
 </slides>

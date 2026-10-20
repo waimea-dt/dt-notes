@@ -6,12 +6,12 @@
 
 **Binary search** repeatedly halves a **sorted** list - **O(log N)**.
 
-<algo-race type="search" size="100" target="67"></algo-race>
+<algo-race type="search" size="100" target="67">
 
 > [!TIP]
 > Binary search only works on **sorted** data - sorting first is only worth it if you'll search **many times**, since sorting is 'expensive'.
 
-<big-o algos="search" max="1000000" step="x10"></big-o>
+<big-o algos="search" max="1000000" step="x10">
 
 ## Sorting: Quadratic vs Log-Linear
 
@@ -19,9 +19,9 @@
 
 **Merge sort** splits the list in half, sorts each half, then merges - **O(N log N)**.
 
-<algo-race type="sort" size="100"></algo-race>
+<algo-race type="sort" size="100">
 
-<big-o algos="sort-bubble sort-merge" max="1000000" step="x10"></big-o>
+<big-o algos="sort-bubble sort-merge" max="1000000" step="x10">
 
 > [!NOTE]
 > You can never sort by comparing items faster than **O(N log N)** in the worst case - this is the best possible complexity for a general-purpose sort.
@@ -94,11 +94,11 @@ endfor
 
 The second approach is around **90x faster** for N of 1000, and the gap grows with bigger lists:
 
-<big-o algos="big-o-quadratic big-o-log-linear" max="1000000000" step="x10"></big-o>
+<big-o algos="big-o-quadratic big-o-log-linear" max="1000000000" step="x10">
 
 Here is a visual comparison of the complexities of the two approaches:
 
-<big-o-chart max="10000" value="10" enabled="on2 onlogn"></big-o-chart>
+<big-o-chart max="10000" value="10" enabled="on2 onlogn">
 
 
 

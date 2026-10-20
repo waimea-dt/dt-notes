@@ -37,7 +37,7 @@
 
 Try it below - notice that the same key appears on both sides:
 
-<sym-asym mode="symmetric"></sym-asym>
+<sym-asym mode="symmetric">
 
 ## The Key Distribution Problem
 

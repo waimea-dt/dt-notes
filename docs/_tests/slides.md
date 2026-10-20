@@ -1,4 +1,4 @@
-﻿# Reveal.js Slides
+# Reveal.js Slides
 
 Normal docs content here...
 
@@ -142,11 +142,11 @@ Hello, Human!
 
 ---
 
-<excalidraw src="_assets/test.excalidraw" alt="Excalidraw test scene"></excalidraw>
+<excalidraw src="_assets/test.excalidraw" alt="Excalidraw test scene">
 
 ---
 
-<videoembed id="62xlzGs8LXA"></videoembed>
+<videoembed id="62xlzGs8LXA">
 
 
 ---

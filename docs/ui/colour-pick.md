@@ -12,5 +12,5 @@ Features:
 - <i data-lucide="crosshair"></i> Click icon to **focus** instead on any colour swatch
 - <i data-lucide="copy"></i> Click icon to **copy** any colour swatch
 
-<colours></colours>
+<colours>
 

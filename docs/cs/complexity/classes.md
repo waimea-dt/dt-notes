@@ -15,7 +15,7 @@ Computer scientists sort problems into classes based on how hard they are to **s
 
 This is the relationship between the classes:
 
-<p-np header="false"></p-np>
+<p-np header="false">
 
 > [!TIP]
 > **NP** does not mean 'non-polynomial', it means '**non-deterministic polynomial time**'
@@ -78,7 +78,7 @@ Problems that are **hard to solve** (assumed to be **intractable**), but which a
 
 ## Classes and Example Problems
 
-<p-np markers></p-np>
+<p-np markers>
 
 
 > [!ATTENTION]
@@ -101,13 +101,13 @@ Problems that are **hard to solve** (assumed to be **intractable**), but which a
 
 Explore examples of problems in each complexity class:
 
-<p-np mode="problems"></p-np>
+<p-np mode="problems">
 
 ### Solving vs Verifying
 
 See why each problem fits into a particular class by looking at finding a solution vs verifying a solution:
 
-<p-np mode="verify"></p-np>
+<p-np mode="verify">
 
 
 ## Key Terms
@@ -154,7 +154,7 @@ See why each problem fits into a particular class by looking at finding a soluti
 
 ## Try It Yourself
 
-<tsp cities="10"></tsp>
+<tsp cities="10">
 
 Increase the number of cities - notice how quickly finding the *best* route becomes impractical, even though checking any one route is instant.
 

@@ -9,7 +9,7 @@ Symmetric encryption is fast and simple - but it has one massive weakness: **bot
 
 If Eve is monitoring Alice and Bob's communications and **intercepts** the key and encrypted message, she is able to read it:
 
-<sym-asym mode="symmetric" intercept intercept-key></sym-asym>
+<sym-asym mode="symmetric" intercept intercept-key>
 
 > [!IMPORTANT]
 > Notice that once Eve has the key, encryption is completely broken - she can decrypt everything. This is the **key distribution problem**, and it affected every symmetric cipher throughout history, including the [Enigma machine](/cs/encryption/enigma.md).

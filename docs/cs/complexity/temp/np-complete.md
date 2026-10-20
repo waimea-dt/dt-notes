@@ -26,7 +26,7 @@ If you can transform problem A into problem B efficiently, and solve B, you've a
 
 ## Visualizing the Landscape
 
-<p-np markers></p-np>
+<p-np markers>
 
 NP-Complete problems sit at the **intersection** of NP and NP-Hard - they're both:
 - Verifiable in polynomial time (in NP)
@@ -37,7 +37,7 @@ NP-Complete problems sit at the **intersection** of NP and NP-Hard - they're bot
 ### 1. Traveling Salesman Problem (Decision Version)
 **Question**: Is there a route visiting all cities with total distance ≤ K?
 
-<tsp cities="10"></tsp>
+<tsp cities="10">
 
 Try it yourself - see how long it takes to check all routes!
 
@@ -49,7 +49,7 @@ Try it yourself - see how long it takes to check all routes!
 ### 2. 0/1 Knapsack (Decision Version)
 **Question**: Can you pack items with total value ≥ V within weight limit W?
 
-<knapsack capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 - **Verify**: Check weight and sum values → **O(N)** ✅ Easy
 - **Find**: Check all subsets → **O(2<sup>N</sup>)** ❌ Hard
@@ -145,7 +145,7 @@ Get close to optimal quickly.
 ### 2. Heuristics
 Use problem-specific strategies that often work well.
 
-<knapsack solve="greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack solve="greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 Greedy by value-to-weight ratio is fast but not always optimal!
 
@@ -159,7 +159,7 @@ Some restricted versions are tractable.
 ### 4. Exact Solutions for Small Inputs
 Use brute force when n is small enough.
 
-<tsp cities="8"></tsp>
+<tsp cities="8">
 
 For 8 cities, brute force completes in under a second!
 
@@ -178,7 +178,7 @@ If your problem resembles these, check if it's a known NP-Complete problem!
 
 ## Compare Complexity Classes
 
-<p-np mode="problems"></p-np>
+<p-np mode="problems">
 
 See where NP-Complete problems sit relative to P problems!
 
@@ -186,7 +186,7 @@ See where NP-Complete problems sit relative to P problems!
 
 Compare optimal vs approximate solutions:
 
-<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7 9|2"></knapsack>
+<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7 9|2">
 
 Notice how much faster the greedy approach is, even if it's not always optimal!
 

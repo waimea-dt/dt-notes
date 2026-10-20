@@ -7,32 +7,26 @@ TLS uses a hybrid model:
 
 ## Default
 
-<tls></tls>
+<tls>
 
 Use top-right toggle to switch between TLS 1.2 and TLS 1.3 flow.
 
 ## Different domain
 
-<tls domain="portal.school.nz"></tls>
+<tls domain="portal.school.nz">
 
 ## Force TLS 1.2 mode
 
-<tls version="1.2"></tls>
+<tls version="1.2">
 
 ## Force TLS 1.3 mode
 
-<tls version="1.3"></tls>
+<tls version="1.3">
 
 ## With interception view
 
-<tls intercept></tls>
+<tls intercept>
 
 ## Custom domain + interception
 
-<tls domain="payments.school.nz" intercept></tls>
-
-## Single Tag (no closing tag)
-
-<tls>
-
-Text after the tag should still appear below the widget.
+<tls domain="payments.school.nz" intercept>

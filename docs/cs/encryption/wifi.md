@@ -2,7 +2,7 @@
 
 WiFi networks broadcast data through the air, meaning anyone nearby with the right equipment could listen in - unless the network is properly encrypted. **WPA2** and **WPA3** are the security protocols that protect modern WiFi.
 
-<videoembed id="ZJS1bWzySxo"></videoembed>
+<videoembed id="ZJS1bWzySxo">
 
 ## Key Features
 

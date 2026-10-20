@@ -46,7 +46,7 @@ def binary_search(arr, target, low, high):
 **How it divides**: Each recursion halves the search space
 **Why it's fast**: log<sub>2</sub> N levels of recursion
 
-<algo-race type="search" size="200"></algo-race>
+<algo-race type="search" size="200">
 
 Binary search's dramatic efficiency comes from the divide-and-conquer approach!
 
@@ -90,7 +90,7 @@ def merge(left, right):
 **How it divides**: Splits array into halves (log N levels)
 **Why it's fast**: Each level does **O(N)** work, log N levels total
 
-<algo-race type="sort" size="100"></algo-race>
+<algo-race type="sort" size="100">
 
 See how merge sort dominates bubble sort!
 
@@ -218,7 +218,7 @@ By Master Theorem: log<sub>2</sub> 7 ≈ 2.807, so **T(N) = O(N<sup>2.807</sup>)
 
 ## Visualization
 
-<big-o algos="search sort" max="100"></big-o>
+<big-o algos="search sort" max="100">
 
 Compare divide-and-conquer algorithms (binary search, merge sort) with simpler approaches!
 
@@ -281,6 +281,6 @@ Total: N × log N levels = O(N log N)
 
 ## Interactive Comparison
 
-<algo-race type="sort" size="150"></algo-race>
+<algo-race type="sort" size="150">
 
 Merge Sort (divide and conquer) vs Bubble Sort (simple iteration) - see the dramatic difference!

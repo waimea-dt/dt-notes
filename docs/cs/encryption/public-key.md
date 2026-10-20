@@ -35,13 +35,13 @@
 
 ## Try It Yourself
 
-<sym-asym mode="asymmetric" message="Meet at midnight!"></sym-asym>
+<sym-asym mode="asymmetric" message="Meet at midnight!">
 
 ## Why Interception Doesn't Matter
 
 Try it with Eve watching - notice she can see the public key and the encrypted message, but still can't read it:
 
-<sym-asym mode="asymmetric" intercept intercept-key></sym-asym>
+<sym-asym mode="asymmetric" intercept intercept-key>
 
 > [!IMPORTANT]
 > This is the breakthrough: **the public key never needs to be secret.** Only the private key does, and that never has to travel anywhere.
@@ -58,11 +58,11 @@ Try it with Eve watching - notice she can see the public key and the encrypted m
 
 ## Video Overviews
 
-<videoembed id="AQDCe585Lnc"></videoembed>
+<videoembed id="AQDCe585Lnc">
 
-<videoembed id="6-JjHa-qLPk"></videoembed>
+<videoembed id="6-JjHa-qLPk">
 
-<videoembed id="GSIDS_lvRv4"></videoembed>
+<videoembed id="GSIDS_lvRv4">
 
 
 ## Key Terms

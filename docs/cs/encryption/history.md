@@ -70,9 +70,9 @@ Every cipher in this timeline was eventually broken or replaced - not because th
 
 ## Video Overviews of the History of Cryptography
 
-<videoembed id="ZLCEBFJP1ew"></videoembed>
+<videoembed id="ZLCEBFJP1ew">
 
-<videoembed id="g3WUVO5-SnA"></videoembed>
+<videoembed id="g3WUVO5-SnA">
 
 ## Key Terms
 

@@ -2,40 +2,34 @@
 
 ## WPA2 - Default
 
-<wifi></wifi>
+<wifi>
 
 ---
 
 ## WPA2 - Custom SSID
 
-<wifi security="wpa2" ssid="HomeNetwork"></wifi>
+<wifi security="wpa2" ssid="HomeNetwork">
 
 ---
 
 ## WPA2 - With Intercept
 
-<wifi security="wpa2" ssid="CafeWiFi" intercept></wifi>
+<wifi security="wpa2" ssid="CafeWiFi" intercept>
 
 ---
 
 ## WPA3 - Default
 
-<wifi security="wpa3"></wifi>
+<wifi security="wpa3">
 
 ---
 
 ## WPA3 - Custom SSID
 
-<wifi security="wpa3" ssid="SchoolWiFi-5G"></wifi>
+<wifi security="wpa3" ssid="SchoolWiFi-5G">
 
 ---
 
 ## WPA3 - With Intercept
 
-<wifi security="wpa3" ssid="OfficeNet" intercept></wifi>
-
-## Single Tag (no closing tag)
-
-<wifi>
-
-Text after the tag should still appear below the widget.
+<wifi security="wpa3" ssid="OfficeNet" intercept>

@@ -78,7 +78,7 @@ Notice how binary search barely grows compared to linear search!
 
 Watch how these two search algorithms race against each other:
 
-<algo-race type="search" size="100"></algo-race>
+<algo-race type="search" size="100">
 
 Adjust the size to see how the gap widens as N increases.
 

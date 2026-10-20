@@ -52,7 +52,7 @@ Lighter and darker variations of the primary colour for depth and variety
 
 See the [Colour Tools](/tools/des-colour.md) list for some great websites and tools to help you choose colours, and check out these videos for help with colour:
 
-<videoembed playlist-grid id="7PRSqUwAuis,mq8LYj6kRyE,_2LLXnUdUIc,DjA0oiMI3ME,C1rQQ_YpgcI"></videoembed>
+<videoembed playlist-grid id="7PRSqUwAuis,mq8LYj6kRyE,_2LLXnUdUIc,DjA0oiMI3ME,C1rQQ_YpgcI">
 
 
 ## Accessibility Considerations

@@ -32,7 +32,7 @@ end
 
 See how the algorithm builds a route very quickly by always choosing the nearest city:
 
-<tsp solve="nn" cities="20"></tsp>
+<tsp solve="nn" cities="20">
 
 > [!NOTE]
 > A brute-force solution for 20 cities would take years to computer, whilst NN takes **milliseconds**. However, the solution is **far from optimal**.
@@ -75,7 +75,7 @@ end
 
 See how we first build an NN route, then refine it by testing edge swaps. 2-Opt systematically '**untangles**' any crossing edges...
 
-<tsp solve="2opt" cities="20" history></tsp>
+<tsp solve="2opt" cities="20" history>
 
 
 ## Comparing Algorithms
@@ -84,13 +84,13 @@ See how we first build an NN route, then refine it by testing edge swaps. 2-Opt 
 
 Let's compare NN and Brute-Force head-to-head to see the speed vs. quality trade-off:
 
-<tsp solve="compare-nn" cities="10" history></tsp>
+<tsp solve="compare-nn" cities="10" history>
 
 ### Brute-Force vs 2-Opt
 
 Now let's see how 2-Opt (NN + refinement) compares to the optimal solution:
 
-<tsp solve="compare-2opt" cities="10" history></tsp>
+<tsp solve="compare-2opt" cities="10" history>
 
 > [!NOTE]
 > Notice how much closer 2-Opt gets to optimal compared to raw NN. The refinement phase typically gets within a few percent of optimal.

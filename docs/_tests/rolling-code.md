@@ -2,40 +2,34 @@
 
 ## Default
 
-<rolling-code></rolling-code>
+<rolling-code>
 
 ---
 
 ## Custom Counter Start
 
-<rolling-code counter="123"></rolling-code>
+<rolling-code counter="123">
 
 ---
 
 ## Narrow Window
 
-<rolling-code counter="123" window="4"></rolling-code>
+<rolling-code counter="123" window="4">
 
 ---
 
 ## Small Drift (Still Valid)
 
-<rolling-code counter="123" window="8" drift="2"></rolling-code>
+<rolling-code counter="123" window="8" drift="2">
 
 ---
 
 ## Large Drift (Rejected)
 
-<rolling-code counter="123" window="8" drift="20"></rolling-code>
+<rolling-code counter="123" window="8" drift="20">
 
 ---
 
 ## With Intercept View
 
-<rolling-code counter="250" window="10" intercept></rolling-code>
-
-## Single Tag (no closing tag)
-
-<rolling-code counter="100" window="5">
-
-Text after the tag should still appear below the widget.
+<rolling-code counter="250" window="10" intercept>

@@ -8,7 +8,7 @@
 >
 > **If we can quickly check that a solution is correct, can we also quickly find that solution?**
 
-<videoembed id="YX40hbAHx3s"></videoembed>
+<videoembed id="YX40hbAHx3s">
 
 > [!TIP]
 > See [P, NP, NP-Complete, NP-Hard](/cs/complexity/classes.md) for a refresher on what each class actually means.
@@ -18,7 +18,7 @@
 
 Based on the complexity classes...
 
-<p-np markers></p-np>
+<p-np markers>
 
 ... the P vs NP question becomes:
 
@@ -58,7 +58,7 @@ This is the assumption almost everything below relies on:
 
 In a hypothetical "P = NP" world, problems that were :
 
-<p-np markers collapse></p-np>
+<p-np markers collapse>
 
 If it turned out that P = NP, the implications would be huge:
 

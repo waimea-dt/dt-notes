@@ -10,9 +10,9 @@ The table below contains 15 common passwords. Their hashes are shown, but the pa
 2. Copy the 64-character hash
 3. Paste it into the **Stolen hash** field and hit **Start**
 
-<hasher value="password"></hasher>
+<hasher value="password">
 
-<rainbow></rainbow>
+<rainbow>
 
 ## Defeating the Attack with Salting
 
@@ -20,7 +20,7 @@ A **salt** is a random value added to the password before hashing. Even if the a
 
 Hash `password` below with the salt enabled, then try to crack it with the rainbow table above.
 
-<hasher value="password" salted></hasher>
+<hasher value="password" salted>
 
 ## Try an Unknown Password
 
@@ -31,9 +31,3 @@ The rainbow table only works on passwords it already knows. Hash something not i
 - **Weak passwords are instantly crackable** - if your password appears in a rainbow table, a stolen hash gives it away immediately
 - **Rainbow tables are huge** - real ones cover billions of password/hash combinations
 - **The fix is salting** - adding a unique random value before hashing means the pre-computed table is useless (coming soon)
-
-## Single Tag (no closing tag)
-
-<rainbow>
-
-Text after the tag should still appear below the widget.

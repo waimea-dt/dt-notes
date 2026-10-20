@@ -19,7 +19,7 @@ Finding the **shortest possible route** through every city is **O(N!)** - imposs
 
 Instead, use the **nearest neighbour heuristic**: always travel to the closest unvisited city.
 
-<tsp cities="10"></tsp>
+<tsp cities="10">
 
 - **Time**: **O(N<sup>2</sup>)** - fast!
 - **Quality**: typically about 25% longer than the optimal route
@@ -30,7 +30,7 @@ Checking every possible combination of items is **O(2<sup>N</sup>)**.
 
 Instead, use a **greedy heuristic**: pack items with the best value-to-weight ratio first.
 
-<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 - **Time**: **O(N log N)** - fast!
 - **Quality**: usually good, but can sometimes miss the best combination

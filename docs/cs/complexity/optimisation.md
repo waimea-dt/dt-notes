@@ -10,7 +10,7 @@ There's often more than one way to design an algorithm for the same problem. The
 
 **Example**: Merge sort splits a list in half, sorts each half, then merges them back together - **O(N log N)**.
 
-<algo-race type="sort" size="100"></algo-race>
+<algo-race type="sort" size="100">
 
 **Works well when**: subproblems don't depend on each other (e.g. binary search, merge sort).
 
@@ -20,7 +20,7 @@ Make the **best choice available right now**, without looking ahead, and never g
 
 **Example**: Given a knapsack, always pack the item with the best value-to-weight ratio first.
 
-<knapsack solve="greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack solve="greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 **Works well when**: the locally best choice always leads to the globally best result (e.g. picking the earliest-finishing activity). **Fails** when it doesn't - greedy can lock in a choice that blocks a better overall solution.
 
@@ -30,7 +30,7 @@ Break a problem into **overlapping** subproblems, and **remember** each answer s
 
 **Example**: Solving the Knapsack problem by building up a table of "best value so far" for every weight limit, instead of checking every subset from scratch.
 
-<knapsack solve="dynamic" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack solve="dynamic" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 **Works well when**: the same smaller calculation would otherwise be repeated many times.
 

@@ -27,7 +27,7 @@ The **accent colour** should **contrast** with the primary colour to draw attent
 
 Try selecting different primary colours to see how the accent colour and shades are automatically generated:
 
-<colours></colours>
+<colours>
 
 ## Tips for Choosing Colours
 
@@ -83,15 +83,15 @@ These colours stand out and reflect creativity and innovation.
 
 ### No Header
 
-<colours header="false"></colours>
+<colours header="false">
 
 ### Custom Title
 
-<colours title="Pick Your Palette"></colours>
+<colours title="Pick Your Palette">
 
 ### Custom Title and Subtitle
 
-<colours title="Brand Colours" sub-title="Choose colours that reflect your identity"></colours>
+<colours title="Brand Colours" sub-title="Choose colours that reflect your identity">
 
 ### Gaming Brands
 
@@ -116,9 +116,3 @@ Think about:
 - Who is the target audience?
 - What colours would appeal to them?
 - How can the accent colour guide user actions?
-
-## Single Tag (no closing tag)
-
-<colours>
-
-Text after the tag should still appear below the widget.

@@ -177,5 +177,5 @@ Ideally, a system is so intuitive that no manual is needed. But when users do ne
 
 Here is a playlist of short videos that explain each heuristic...
 
-<videoembed playlist-grid id="cTtc90jCULU,0TAt9Pln51g,MXuk-fdbr0A,Ibndy9KLOSQ,imS9s1DUY-I,6glQPp6q4Jc,LoTdRTBB8BQ,ZgbRmeWDgd0,cCun-ReLTFI,iIQVRzatb50"></videoembed>
+<videoembed playlist-grid id="cTtc90jCULU,0TAt9Pln51g,MXuk-fdbr0A,Ibndy9KLOSQ,imS9s1DUY-I,6glQPp6q4Jc,LoTdRTBB8BQ,ZgbRmeWDgd0,cCun-ReLTFI,iIQVRzatb50">
 

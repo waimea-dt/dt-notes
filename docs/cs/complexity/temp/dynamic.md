@@ -138,7 +138,7 @@ def fib_optimized(n):
 
 DP shines here where greedy fails!
 
-<knapsack solve="dynamic" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack solve="dynamic" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 Watch the DP table fill up as it solves subproblems!
 
@@ -172,7 +172,7 @@ def knapsack_dp(items, capacity):
 
 **Key insight**: Each cell `dp[i][w]` depends on previously computed cells, demonstrating overlapping subproblems!
 
-<knapsack solve="compare-dynamic" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7"></knapsack>
+<knapsack solve="compare-dynamic" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7">
 
 Compare DP (optimal, fast) vs brute force (optimal, slow)!
 
@@ -415,11 +415,11 @@ Usually: **Number of subproblems × Time per subproblem**
 
 ## Interactive Exploration
 
-<knapsack solve="dynamic" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7 9|2"></knapsack>
+<knapsack solve="dynamic" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7 9|2">
 
 Watch how DP builds up optimal solutions from subproblems!
 
-<big-o algos="knap-brute knap-dynamic knap-greedy" max="25"></big-o>
+<big-o algos="knap-brute knap-dynamic knap-greedy" max="25">
 
 Compare complexity: DP is much better than brute force but not quite as fast as greedy (which isn't optimal)!
 

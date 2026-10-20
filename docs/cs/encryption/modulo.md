@@ -27,7 +27,7 @@ You already know how do do modulo arithmetic! Think of counting hours on a **clo
 
 For example, let's **count forward 31 hours** on a **12 hour clock face** (we're doing `31 mod 12`)...
 
-<modulus value="31" mod="12"></modulus>
+<modulus value="31" mod="12">
 
 > [!NOTE]
 > It's for this reason that modulo arithmetic is often called **Clock Arithmetic**
@@ -36,7 +36,7 @@ For example, let's **count forward 31 hours** on a **12 hour clock face** (we're
 
 We can do this for any modulus by changing the clock face. Let's try `99 mod 17`. We need a clock face with **17 numbers**...
 
-<modulus value="99" mod="17"></modulus>
+<modulus value="99" mod="17">
 
 ## Some Examples
 
@@ -44,7 +44,7 @@ We can do this for any modulus by changing the clock face. Let's try `99 mod 17`
 
 Here we can see the time calculation mentioned above: What time of day will it be **67 hours from 3AM**? We need to do `(3 + 67) mod 24`...
 
-<modulus value="70" mod="24"></modulus>
+<modulus value="70" mod="24">
 
 ... it's `22`, or **10PM**
 
@@ -52,7 +52,7 @@ Here we can see the time calculation mentioned above: What time of day will it b
 
 And here we can see use a modulus of 2 to check is a value is even or odd: `n mod 2 = 0` if **even** and `= 1` if **odd**. Is **27 even or odd**? Let's try `27 mod 2`...
 
-<modulus value="27" mod="2"></modulus>
+<modulus value="27" mod="2">
 
 ... it's `1`, so 27 must be **odd**!
 

@@ -158,7 +158,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ## Quick Reference
 
-<big-o-chart></big-o-chart>
+<big-o-chart>
 
 
 | Complexity           | Name        | Small N (100)     | Large N (10,000)    | Practical?        |

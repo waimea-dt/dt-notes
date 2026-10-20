@@ -146,7 +146,7 @@ Smoke
 
 ### excalidraw.js ([tests](/_tests/excalidraw.md))
 
-<excalidraw src="_tests/_assets/smoke.excalidraw"></excalidraw>
+<excalidraw src="_tests/_assets/smoke.excalidraw">
 
 
 ### svg-zoom.js ([tests](/_tests/mermaid.md))
@@ -159,7 +159,7 @@ A[Smoke] --> B[Test]
 
 ### videos.js ([tests](/_tests/video-embed.md))
 
-<videoembed id="_u03uI-zCCk"></videoembed>
+<videoembed id="_u03uI-zCCk">
 
 
 
@@ -476,7 +476,7 @@ console.log("Smoke!")
 
 ### colours.js ([tests](/_tests/colours.md))
 
-<colours></colours>
+<colours>
 
 
 ### accessibility.js ([tests](/_tests/accessibility.md))
@@ -541,7 +541,7 @@ CREATE TABLE smoke (
 
 ### convertor.js ([tests](/_tests/convertor.md))
 
-<convertor from="bin" to="hex" value="10101111" bits="8"></convertor>
+<convertor from="bin" to="hex" value="10101111" bits="8">
 
 
 ### data.js ([tests](/_tests/binary.md))
@@ -556,37 +556,37 @@ show dec 255 as hex-bytes
 
 ### big-o-chart.js ([tests](/_tests/big-o-chart.md))
 
-<big-o-chart></big-o-chart>
+<big-o-chart>
 
 
 ### big-o.js ([tests](/_tests/big-o.md))
 
-<big-o algos="search" max="10"></big-o>
+<big-o algos="search" max="10">
 
 
 ### algo-race.js ([tests](/_tests/algo-race.md))
 
-<algo-race type="search" size="20"></algo-race>
+<algo-race type="search" size="20">
 
 
 ### p-np.js ([tests](/_tests/p-np.md))
 
-<p-np markers></p-np>
+<p-np markers>
 
 
 ### tsp.js ([tests](/_tests/tsp.md))
 
-<tsp></tsp>
+<tsp>
 
 
 ### knapsack.js ([tests](/_tests/knapsack.md))
 
-<knapsack></knapsack>
+<knapsack>
 
 
 ### bin-packing.js ([tests](/_tests/bin-packing.md))
 
-<bin-packing></bin-packing>
+<bin-packing>
 
 
 
@@ -604,7 +604,7 @@ Smoke
 
 ### modulus.js ([tests](/_tests/modulus.md))
 
-<modulus></modulus>
+<modulus>
 
 
 ### sub-cipher.js ([tests](/_tests/sub-cipher.md))
@@ -616,41 +616,41 @@ Smoke Test
 
 ### sym-asym.js ([tests](/_tests/sym-asym.md))
 
-<sym-asym mode="asymmetric" message="Smoke Test!"></sym-asym>
+<sym-asym mode="asymmetric" message="Smoke Test!">
 
 
 ### diffie-hellman.js ([tests](/_tests/diffie-hellman.md))
 
-<diffie-hellman></diffie-hellman>
+<diffie-hellman>
 
 
 ### digital-sig.js ([tests](/_tests/digital-sig.md))
 
-<digital-sig></digital-sig>
+<digital-sig>
 
 
 ### rolling-code.js ([tests](/_tests/rolling-code.md))
 
-<rolling-code></rolling-code>
+<rolling-code>
 
 
 ### tls.js ([tests](/_tests/tls.md))
 
-<tls></tls>
+<tls>
 
 
 ### wifi.js ([tests](/_tests/wifi.md))
 
-<wifi></wifi>
+<wifi>
 
 
 ### hasher.js ([tests](/_tests/hasher.md))
 
-<hasher value="smoke"></hasher>
+<hasher value="smoke">
 
 
 ### rainbow.js ([tests](/_tests/rainbow.md))
 
-<rainbow></rainbow>
+<rainbow>
 
 

@@ -22,7 +22,7 @@ Searching an unsorted list of N items for a value:
 
 Try it yourself:
 
-<algo-race type="search" size="100"></algo-race>
+<algo-race type="search" size="100">
 
 > [!IMPORTANT]
 > We usually focus on the **worst case**. It guarantees performance - you know your algorithm will never be slower than that, no matter what input it's given.

@@ -18,21 +18,21 @@ Think of the modulus as a clock face with that many positions (0 to n-1). When y
 
 ## Interactive Demo (Default: 30 mod 12)
 
-<modulus></modulus>
+<modulus>
 
 ## Try Different Values
 
 ### Small Example: 7 mod 3
 
-<modulus value="7" mod="3"></modulus>
+<modulus value="7" mod="3">
 
 ### Larger Example: 42 mod 8
 
-<modulus value="42" mod="8"></modulus>
+<modulus value="42" mod="8">
 
 ### Zero Remainder: 20 mod 5
 
-<modulus value="20" mod="5"></modulus>
+<modulus value="20" mod="5">
 
 ## Real-World Uses
 
@@ -65,19 +65,13 @@ Use the sliders above to explore:
 
 ### Custom Title
 
-<modulus value="15" mod="7" title="Remainder Challenge"></modulus>
+<modulus value="15" mod="7" title="Remainder Challenge">
 
 ### Custom Title and Subtitle
 
-<modulus value="17" mod="5" title="Clock Maths" sub-title="Count forward and see where you land"></modulus>
+<modulus value="17" mod="5" title="Clock Maths" sub-title="Count forward and see where you land">
 
 ### No Header
 
-<modulus value="10" mod="3" header="false"></modulus>
+<modulus value="10" mod="3" header="false">
 - How many complete rotations do you make with large values?
-
-## Single Tag (no closing tag)
-
-<modulus value="10" mod="3">
-
-Text after the tag should still appear below the widget.

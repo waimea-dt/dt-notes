@@ -18,8 +18,8 @@ User interfaces are the point of interaction between users and digital systems. 
 
 **World's Shortest UI/UX Design Course** - This is a really good, quick intro to the design process and tools to use from concept to completed site/app...
 
-<videoembed id="wIuVvCuiJhU"></videoembed>
+<videoembed id="wIuVvCuiJhU">
 
 Also, watch this short video that promotes simplicity in design: **Everything will be simpler and you WILL be happy**...
 
-<videoembed id="04j-kUj1Zhg"></videoembed>
+<videoembed id="04j-kUj1Zhg">

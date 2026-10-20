@@ -58,7 +58,7 @@ This split matters more than any individual notation:
 
 Drag the slider to see how each complexity grows as N increases:
 
-<big-o-chart></big-o-chart>
+<big-o-chart>
 
 > [!TIP]
 > Notice how **O(1)** and **O(log N)** barely move, **O(N)** climbs steadily, and **O(2<sup>N</sup>)** / **O(N!)** shoot off the chart almost immediately.

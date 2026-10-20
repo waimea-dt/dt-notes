@@ -14,9 +14,9 @@ Instead of thinking about the maths, let's instead consider mixing paint...
 4. Each adds their *own* secret colour to the mixture they received
 5. Both arrive at the **same final colour** - but Eve can't reverse-mix paint to find the secret colours!
 
-<videoembed id="YEBfamv-_do"></videoembed>
+<videoembed id="YEBfamv-_do">
 
-<diffie-hellman colour intercept></diffie-hellman>
+<diffie-hellman colour intercept>
 
 > [!NOTE]
 > Mixing paint is easy, but *un-mixing* it is practically impossible. Diffie-Hellman uses maths that is easy to do one way, but incredibly hard to reverse.

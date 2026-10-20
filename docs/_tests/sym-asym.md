@@ -11,19 +11,19 @@ Encryption protects data by transforming it into an unreadable format. There are
 
 In symmetric encryption, Alice and Bob must **share a secret key** before they can communicate securely. This is fast and efficient, but how do they safely share the key in the first place?
 
-<sym-asym mode="symmetric"></sym-asym>
+<sym-asym mode="symmetric">
 
 ### With Message Interception Only
 
 Eve can see the encrypted message, but not the key:
 
-<sym-asym mode="symmetric" intercept></sym-asym>
+<sym-asym mode="symmetric" intercept>
 
 ### With Key Interception (Key Distribution Problem!)
 
 Eve intercepts both the key AND the message - disaster!
 
-<sym-asym mode="symmetric" intercept intercept-key></sym-asym>
+<sym-asym mode="symmetric" intercept intercept-key>
 
 ### Key Points
 - ✅ **Fast**: AES is ~1000x faster than RSA
@@ -41,19 +41,19 @@ Eve intercepts both the key AND the message - disaster!
 
 In asymmetric encryption, Bob generates a **public/private key pair**. He can share the public key openly - anyone can use it to encrypt messages, but only Bob's private key can decrypt them!
 
-<sym-asym mode="asymmetric" message="I like cheese!"></sym-asym>
+<sym-asym mode="asymmetric" message="I like cheese!">
 
 ### With Message Interception Only
 
 Eve can see the encrypted message and the public key, but still can't decrypt:
 
-<sym-asym mode="asymmetric" intercept></sym-asym>
+<sym-asym mode="asymmetric" intercept>
 
 ### Eve Has Public Key Too
 
 Even when Eve intercepts the public key, she still can't decrypt the message!
 
-<sym-asym mode="asymmetric" intercept intercept-key></sym-asym>
+<sym-asym mode="asymmetric" intercept intercept-key>
 
 ### Key Points
 - ✅ **No pre-shared secrets**: Public keys can be shared openly
@@ -97,13 +97,7 @@ This gives you the **security of asymmetric** encryption with the **speed of sym
 ## Try Different Messages
 
 ### Symmetric with custom message
-<sym-asym mode="symmetric" message="Top Secret Plans"></sym-asym>
+<sym-asym mode="symmetric" message="Top Secret Plans">
 
 ### Asymmetric with custom message
-<sym-asym mode="asymmetric" message="Meet at midnight!"></sym-asym>
-
-### Single tag (no closing tag)
-
-<sym-asym mode="symmetric" message="No closing tag">
-
-Text after the tag should still appear below the widget.
+<sym-asym mode="asymmetric" message="Meet at midnight!">

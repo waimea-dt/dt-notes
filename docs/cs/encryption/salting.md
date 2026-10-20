@@ -6,18 +6,18 @@ If two users have the same password, hashing it alone produces the same hash for
 
 Attackers pre-compute huge tables of common passwords and their hashes (a **rainbow table**). If your stored hash matches one in the table, your password is instantly known - no cracking required.
 
-<rainbow></rainbow>
+<rainbow>
 
 > [!TIP]
 > Hash a common password like "password123" using the tool below, then paste the result into the rainbow table attack above to see how fast it's cracked.
 
-<hasher value="password123"></hasher>
+<hasher value="password123">
 
 ## The Fix: Salting
 
 A **salt** is random data added to a password before hashing. Even if two users choose the identical password, their salts differ - so their final hashes are completely different.
 
-<hasher value="password" salted></hasher>
+<hasher value="password" salted>
 
 > [!NOTE]
 > The salt itself isn't secret - it's stored alongside the hash. Its job isn't to hide the password further, it's to make every hash **unique**, so pre-computed rainbow tables become useless.

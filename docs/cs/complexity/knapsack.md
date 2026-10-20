@@ -16,7 +16,7 @@ In the **0/1 Knapsack Problem**, each item can be used **once or not at all** - 
 
 ## Try It Yourself
 
-<knapsack capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 Watch the brute force approach test every subset of items to find the optimal combination!
 
@@ -30,15 +30,15 @@ For N items, there are **2<sup>N</sup>** possible subsets to check - each item i
 | 20    | 1,048,576        |
 | 30    | 1,073,741,824    |
 
-<big-o algos="knap-brute" max="80" step="10"></big-o>
+<big-o algos="knap-brute" max="80" step="10">
 
-<knapsack speed="slow" capacity="25" items="2|3 3|4 4|5 5|8 7|9"></knapsack>
+<knapsack speed="slow" capacity="25" items="2|3 3|4 4|5 5|8 7|9">
 
 ## A Faster (But Imperfect) Approach
 
 Instead of checking every subset, a **greedy heuristic** sorts items by **value-to-weight ratio** and takes the best ones first:
 
-<knapsack solve="greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10"></knapsack>
+<knapsack solve="greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10">
 
 - **Time**: **O(N log N)** - fast!
 - **Quality**: usually good, but can be wrong
@@ -53,7 +53,7 @@ Instead of checking every subset, a **greedy heuristic** sorts items by **value-
 
 Capacity = 10. Greedy takes A first (value 6) and can't fit anything else. The **optimal** answer is B + C (value 10)!
 
-<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7 9|2"></knapsack>
+<knapsack solve="compare-greedy" capacity="25" items="2|3 3|4 4|5 5|8 7|9 9|10 5|7 9|2">
 
 > [!NOTE]
 > There's also a smarter exact method, **dynamic programming**, that avoids checking every subset - see [Algorithm Design & Optimisation](optimisation.md).
@@ -90,5 +90,5 @@ Capacity = 10. Greedy takes A first (value 6) and can't fit anything else. The *
 
 ## Complexity Comparison
 
-<big-o algos="knap-brute knap-dynamic knap-greedy" max="25"></big-o>
+<big-o algos="knap-brute knap-dynamic knap-greedy" max="25">
 

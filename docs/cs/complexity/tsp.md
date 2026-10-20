@@ -22,14 +22,14 @@ This is one of the most famous problems in computer science.
 
 The TSP is **NP-hard**. To find the optimal solution requires a **brute-force** approach: we need to test _every possible route_. For N cities, there are **(N-1)!/2** unique routes to check (we can fix the starting city and ignore direction) - giving a complexity of **O(N!)**.
 
-<big-o algos="tsp-brute" max="25" step=5></big-o>
+<big-o algos="tsp-brute" max="25" step=5>
 
 > [!NOTE]
 > With a complexity of **O(N!)** then effort required to solve the TSP **explodes** at relatively low values of N.
 
 ### Try It Yourself
 
-<tsp cities="8" history></tsp>
+<tsp cities="8" history>
 
 Start with 8 cities, then try increasing to 15 or 20 - watch how quickly it becomes impractical!
 

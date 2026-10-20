@@ -37,55 +37,55 @@ Notice the **factorial growth**-each additional city multiplies the time by N. B
 
 Use the slider to adjust the number of cities (3–30), then click **Start** to watch the algorithm search for the best route. The default of 8 cities completes in under a second.
 
-<tsp></tsp>
+<tsp>
 
 ## Different starting points
 
 Start with fewer cities (6) for a faster demonstration:
 
-<tsp cities="6"></tsp>
+<tsp cities="6">
 
 ## Slower Speed
 
 See the progress, slowly:
 
-<tsp cities="8" speed="slow"></tsp>
+<tsp cities="8" speed="slow">
 
 ## High Speed
 
 See the progress, very fast:
 
-<tsp cities="8" speed="fast"></tsp>
+<tsp cities="8" speed="fast">
 
 ## Instant Speed
 
 See the progress, instantly (no animation):
 
-<tsp cities="8" speed="instant"></tsp>
+<tsp cities="8" speed="instant">
 
 ## Tracking improvements
 
 Add the `history` attribute to see how the algorithm finds better routes over time. The history panel shows the 10 most recent improvements (scrollable list of last 100):
 
-<tsp cities="10" history></tsp>
+<tsp cities="10" history>
 
 ## Larger problems
 
 Try 10 cities to see how the search takes significantly longer:
 
-<tsp cities="11"></tsp>
+<tsp cities="11">
 
 ## Much Larger problems
 
 Try 12 cities to see impractical computation times (warning: takes ~55 minutes on average hardware):
 
-<tsp cities="12"></tsp>
+<tsp cities="12">
 
 ## The Impossibility
 
 Want to try 20 or 30 cities? Go ahead and use the slider-but the "Estimated Remaining" time will show why brute force is fundamentally broken for this problem.
 
-<tsp cities="20"></tsp>
+<tsp cities="20">
 
 ## How it works
 
@@ -126,7 +126,7 @@ The trade-off? The route might not be optimal, but it's usually pretty good (typ
 
 See how it builds a route by always choosing the nearest city:
 
-<tsp solve="nn" cities="12"></tsp>
+<tsp solve="nn" cities="12">
 
 Notice:
 - **Green highlighted city**: Current position
@@ -138,13 +138,13 @@ Notice:
 
 With NN, even 30 cities is instant:
 
-<tsp solve="nn" cities="30"></tsp>
+<tsp solve="nn" cities="30">
 
 For brute force, 30 cities would take longer than the age of the universe. With NN? Less than a second.
 
 ### See the progress...
 
-<tsp solve="nn" cities="30" history></tsp>
+<tsp solve="nn" cities="30" history>
 
 
 ---
@@ -169,7 +169,7 @@ Key insight: 2-Opt systematically untangles crossing edges. Each swap that impro
 
 See how it builds an NN route, then refines it by testing edge swaps:
 
-<tsp solve="2opt" cities="15" history></tsp>
+<tsp solve="2opt" cities="15" history>
 
 Notice:
 - **Phase 1 (NN)**: Quick greedy construction
@@ -180,7 +180,7 @@ Notice:
 
 2-Opt can handle much larger problems than brute force:
 
-<tsp solve="2opt" cities="25" history></tsp>
+<tsp solve="2opt" cities="25" history>
 
 For 25 cities, brute force would take longer than the age of the universe. 2-Opt? A few seconds.
 
@@ -192,7 +192,7 @@ For 25 cities, brute force would take longer than the age of the universe. 2-Opt
 
 Let's compare NN and Brute Force head-to-head to see the speed vs. quality trade-off:
 
-<tsp solve="compare-nn" cities="10"></tsp>
+<tsp solve="compare-nn" cities="10">
 
 The comparison shows:
 - **NN distance & time**: How good was the greedy solution? How fast was it?
@@ -201,19 +201,19 @@ The comparison shows:
 
 Try it with 11 or 12 cities-NN finishes instantly, but brute force takes minutes!
 
-<tsp solve="compare-nn" cities="11" history></tsp>
+<tsp solve="compare-nn" cities="11" history>
 
 ### 2-Opt vs Brute Force
 
 Now let's see how 2-Opt (NN + refinement) compares to the optimal solution:
 
-<tsp solve="compare-2opt" cities="10" history></tsp>
+<tsp solve="compare-2opt" cities="10" history>
 
 Notice how much closer 2-Opt gets to optimal compared to raw NN! The refinement phase typically gets within a few percent of optimal.
 
 Try larger problems:
 
-<tsp solve="compare-2opt" cities="11" history></tsp>
+<tsp solve="compare-2opt" cities="11" history>
 
 ---
 
@@ -228,9 +228,3 @@ Try larger problems:
 ---
 
 **Challenge**: Run the comparisons with different city counts. At what point does 2-Opt become "good enough" given how much faster it is than brute force?
-
-## Single Tag (no closing tag)
-
-<tsp>
-
-Text after the tag should still appear below the widget.

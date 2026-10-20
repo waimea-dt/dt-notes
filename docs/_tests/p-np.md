@@ -27,17 +27,17 @@ Most computer scientists believe **P ≠ NP**, meaning some problems are fundame
 
 This shows the relationship between P, NP, NP-hard, and NP-complete (as the overlap):
 
-<p-np></p-np>
+<p-np>
 
 Show markers on the same diagram:
 
-<p-np markers></p-np>
+<p-np markers>
 
 ## The Key Distinction: Verification vs Solving
 
 The fundamental difference between P and NP-Complete problems is the gap between **verifying** a solution and **finding** it:
 
-<p-np mode="verify"></p-np>
+<p-np mode="verify">
 
 ### Why This Matters
 
@@ -51,11 +51,11 @@ This is why problems like the Travelling Salesperson Problem are so difficult—
 
 Toggle between the standard view and a collapsed "P = NP" view:
 
-<p-np collapse></p-np>
+<p-np collapse>
 
 Collapsed view with markers:
 
-<p-np collapse markers></p-np>
+<p-np collapse markers>
 
 If P = NP were true:
 - 🔓 **Cryptography would break** (factoring large numbers would become easy)
@@ -69,17 +69,17 @@ But most experts believe this won't happen—P ≠ NP is almost certainly true.
 
 Explore examples of problems in each complexity class:
 
-<p-np mode="problems"></p-np>
+<p-np mode="problems">
 
 ## Header Customisation
 
 ### Custom Title and Subtitle
 
-<p-np title="P vs NP Explorer" sub-title="Explore complexity classes and their relationships"></p-np>
+<p-np title="P vs NP Explorer" sub-title="Explore complexity classes and their relationships">
 
 ### No Header
 
-<p-np header="false"></p-np>
+<p-np header="false">
 
 ## P Problems (Efficient to Solve)
 
@@ -189,9 +189,3 @@ Check out related visualizers:
 ---
 
 *Note: The P vs NP question has been unsolved since 1971. If you think you've proven P = NP or P ≠ NP, consult with professional mathematicians before submitting to journals—most "proofs" contain subtle errors.*
-
-## Single Tag (no closing tag)
-
-<p-np markers collapse>
-
-Text after the tag should still appear below the widget.

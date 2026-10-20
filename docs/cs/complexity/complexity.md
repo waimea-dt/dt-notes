@@ -24,7 +24,7 @@ When guessing your friend's number, imagine you can make 1 guess every 2 seconds
 
 See the two algorithms running side-by-side:
 
-<algo-race type="search" size="100" target="67"></algo-race>
+<algo-race type="search" size="100" target="67">
 
 > [!TIP]
 > Try doubling N to 200. You should see that the second algorithm only needs one more step on average.
@@ -37,7 +37,7 @@ The second algorithm above (its correct name is a 'Binary Search') require less 
 
 Here is a chart with these two complexities highlighted:
 
-<big-o-chart max="1000" value="5" enabled="on ologn"></big-o-chart>
+<big-o-chart max="1000" value="5" enabled="on ologn">
 
 > [!TIP]
 > Use the slider above to see how the effort required for the two different complexities changes as **N** (the input size) grows. Notice the growing difference between **Linear, O(N)** and **Logarithmic, O(log N)**
