@@ -7,6 +7,13 @@ console.log("Hello, player one!")
 console.log("Score:", 9000, "- it's over 9000!")
 ```
 
+## Indented blocks
+
+1. This runnable block sits inside a list:
+    ```js run
+    console.log("The list did not break!")
+    ```
+
 ## Objects and Arrays
 
 ```js run

@@ -8,7 +8,7 @@ Right now your game is a painting. In this lesson you'll make it **react to you*
 2. Where does a `pos(0, 0)` object appear?
 3. Why do we load sprites before we use them?
 
-## Learning goals
+## Learning Goals
 
 - [ ] I can react to key presses with `onKeyDown`
 - [ ] I can move an object with `move()`
@@ -267,9 +267,38 @@ Finished early? Try these. Pick the ones that sound fun.
 
 ## Exit ticket
 
-1. How many times per second does `onUpdate` run?
-2. Which is used for holding a key down: `onKeyDown` or `onKeyPress`?
-3. Why do we move the player by changing its position, rather than redrawing it?
+Without looking back, answer these three questions:
+
+<quiz>
+
+- # About how often does `onUpdate` run?
+
+    ---
+
+    - [ ] Once when the game starts
+    - [ ] Once per key press
+    - [x] Every frame, about 60 times per second
+    - [ ] Once per second
+
+- # Which input handler repeats while a key is held?
+
+    ---
+
+    - [x] `onKeyDown`
+    - [ ] `onKeyPress`
+    - [ ] `onUpdate`
+    - [ ] `move`
+
+- # Why change an object's position to move it?
+
+    ---
+
+    - [ ] Kaplay cannot draw objects more than once
+    - [ ] Position only changes when the game starts
+    - [x] Kaplay updates and draws objects each frame
+    - [ ] It prevents the keyboard from working
+
+</quiz>
 
 ## Check yourself
 

@@ -4,42 +4,52 @@ Games are all about **decisions** ("is the player still alive?") and **repetitio
 
 ## Warm-up
 
-Without looking at Lesson 1, answer in your notebook:
+Without looking at Lesson 1, answer the following:
 
 1. When would you use `let` instead of `const`?
-2. What does `` `Level ${3 + 1}` `` show?
+
+    <textarea class="response" placeholder="Your answer..."></textarea>
+
+2. What does `` `Level ${3 + 1}` ``(js) show?
+
+    <textarea class="response" placeholder="Your answer..."></textarea>
+
 3. What are the three types of value we met last time?
 
-## Learning goals
+    <textarea class="response" placeholder="Your answer..."></textarea>
 
-- [ ] I can make choices with `if`, `else if` and `else`
-- [ ] I can compare values with `===`, `<`, `>=` and so on
-- [ ] I can combine conditions with `&&` (and), `||` (or) and `!` (not)
-- [ ] I can repeat code with `for` and `while` loops
-- [ ] I can write a simple function
+
+## Learning Goals
+
+- [ ] I can make **choices** / **decisions** with `if`, `else if` and `else`
+- [ ] I can **compare** values with `===`, `<`, `>=` and so on
+- [ ] I can **combine conditions** with `&&` (and), `||` (or) and `!` (not)
+- [ ] I can **repeat** code with `for` and `while` loops
+- [ ] I can write a simple **function**
 
 ## Python vs JavaScript
 
-| Idea | Python | JavaScript |
-|---|---|---|
-| Choices | `if x > 5:` / `elif` / `else:` | `if (x > 5) {` / `else if` / `else {` |
-| Equal? | `==` | `===` |
-| Not equal? | `!=` | `!==` |
-| And / or / not | `and` / `or` / `not` | `&&` / `\|\|` / `!` |
-| Counting loop | `for i in range(5):` | `for (let i = 0; i < 5; i++) {` |
-| While loop | `while x > 0:` | `while (x > 0) {` |
-| Blocks | Indentation | Curly braces `{ }` |
-| Function | `def heal(hp):` | `function heal(hp) {` |
+| Idea           | Python                                                 | JavaScript                                                |
+| -------------- | ------------------------------------------------------ | --------------------------------------------------------- |
+| Choices        | `if x > 5:`(python) / `elif`(python) / `else:`(python) | `if (x > 5) {...}`(js) / `else if`(js) / `else {...}`(js) |
+| Equal?         | `==`(python)                                           | `===`(js)                                                 |
+| Not equal?     | `!=`(python)                                           | `!==`(js)                                                 |
+| And / or / not | `and`(python) / `or`(python) / `not`(python)           | `&&`(js) / `\|\|`(js) / `!`(js)                           |
+| Counting loop  | `for i in range(5):`(python)                           | `for (let i = 0; i < 5; i++) {...}`(js)                   |
+| While loop     | `while x > 0:`(python)                                 | `while (x > 0) {...}`(js)                                |
+| Blocks         | Indentation                                            | Curly braces `{...}`(js)                                  |
+| Function       | `def heal(hp):`(python)                                | `function heal(hp) {...}`(js)                             |
 
-> **Tip:** In JS the indentation is just for humans. The `{ }` braces are what the computer reads. Keep your indentation tidy anyway!
+> [!TIP]
+> In JS the indentation is just for humans. The `{...}` braces are what the computer reads. Keep your indentation tidy anyway!
 
 ---
 
-## 1. Predict
+## 1. Predict then Run
 
-Write your prediction for each snippet in your notebook.
+For each snippet, write what you think the code will do, then run it to check.
 
-**Snippet 1**
+<primm title="Snippet 1" sub-title="Choose what the hero says">
 
 ```js
 const health = 0
@@ -51,7 +61,9 @@ if (health > 0) {
 }
 ```
 
-**Snippet 2**
+</primm>
+
+<primm title="Snippet 2" sub-title="Find the medal for this score">
 
 ```js
 const score = 85
@@ -65,7 +77,9 @@ if (score >= 100) {
 }
 ```
 
-**Snippet 3**
+</primm>
+
+<primm title="Snippet 3" sub-title="Compare the value and its type">
 
 ```js
 const answer = "42"
@@ -73,7 +87,9 @@ console.log(answer === 42)
 console.log(answer === "42")
 ```
 
-**Snippet 4**
+</primm>
+
+<primm title="Snippet 4" sub-title="Check whether both conditions are true">
 
 ```js
 const hasKey = true
@@ -84,7 +100,9 @@ if (hasKey && doorIsLocked) {
 }
 ```
 
-**Snippet 5**
+</primm>
+
+<primm title="Snippet 5" sub-title="Count three enemies">
 
 ```js
 for (let i = 1; i <= 3; i++) {
@@ -92,7 +110,9 @@ for (let i = 1; i <= 3; i++) {
 }
 ```
 
-**Snippet 6**
+</primm>
+
+<primm title="Snippet 6" sub-title="Watch the lives count down">
 
 ```js
 let lives = 3
@@ -104,91 +124,11 @@ while (lives > 0) {
 console.log("Game over")
 ```
 
-## 2. Run
+</primm>
 
-<web-playground data-height="26em">
+## 2. Investigate
 
-```html id=base
-<pre id="output"></pre>
-```
-
-```css id=base
-body {
-    margin: 0;
-    padding: 0.75rem;
-    background: #0f172a;
-    color: #e2e8f0;
-    font-family: monospace;
-}
-```
-
-```js id=base
-const outputBox = document.getElementById('output')
-const asText = (item) => typeof item === 'object' ? JSON.stringify(item) : String(item)
-
-console.log = (...items) => {
-    outputBox.textContent += items.map(asText).join(' ') + '\n'
-}
-
-window.addEventListener('error', (event) => {
-    outputBox.textContent += 'ERROR: ' + event.message + '\n'
-})
-```
-
-```js depends=base
-console.log("--- Snippet 1 ---")
-const health = 0
-
-if (health > 0) {
-    console.log("Still fighting!")
-} else {
-    console.log("Game over")
-}
-
-console.log("--- Snippet 2 ---")
-const score = 85
-
-if (score >= 100) {
-    console.log("Gold medal")
-} else if (score >= 50) {
-    console.log("Silver medal")
-} else {
-    console.log("Keep practising")
-}
-
-console.log("--- Snippet 3 ---")
-const answer = "42"
-console.log(answer === 42)
-console.log(answer === "42")
-
-console.log("--- Snippet 4 ---")
-const hasKey = true
-const doorIsLocked = true
-
-if (hasKey && doorIsLocked) {
-    console.log("Click! The door opens")
-}
-
-console.log("--- Snippet 5 ---")
-for (let i = 1; i <= 3; i++) {
-    console.log(`Enemy ${i} appears`)
-}
-
-console.log("--- Snippet 6 ---")
-let lives = 3
-
-while (lives > 0) {
-    console.log(`Lives left: ${lives}`)
-    lives = lives - 1
-}
-console.log("Game over")
-```
-
-</web-playground>
-
-## 3. Investigate
-
-### 3a. Anatomy of a `for` loop
+### 2a. Anatomy of a `for` loop
 
 ```js
 for (let i = 1; i <= 3; i++) {
@@ -204,7 +144,7 @@ The brackets hold three parts, separated by semicolons:
 | Keep going while | `i <= 3` | Check this *before every lap* |
 | After each lap | `i++` | Add 1 to the counter (same as `i = i + 1`) |
 
-### 3b. Trace it
+### 2b. Trace it
 
 Be the computer! Fill in this table for the loop below.
 
@@ -223,7 +163,7 @@ for (let i = 1; i <= 5; i++) {
 | 5 | | | |
 | 6 | | | |
 
-### 3c. Questions
+### 2c. Questions
 
 1. Why does Snippet 3 print `false` the first time?
 2. In Snippet 6, what would happen if we **forgot** the line `lives = lives - 1`? (Don't run it! Explain it.)
@@ -232,9 +172,9 @@ for (let i = 1; i <= 5; i++) {
 
 > **Rule of thumb:** Use `===` and `!==` every time. Avoid `==`. It's too relaxed about types and causes surprises.
 
-## 4. Parsons Problems
+## 3. Parsons Problems
 
-### 4a. Countdown
+### 3a. Countdown
 
 Put the lines in order so the program prints **Lives left: 3**, then **2**, then **1**, then **Game over**.
 
@@ -272,7 +212,7 @@ Put the lines in order so the program prints **Lives left: 3**, then **2**, then
 
 </drag-drop>
 
-### 4b. Boss checker
+### 3b. Boss checker
 
 Monster number `i` is checked like this: **legendary** if divisible by 15, otherwise **boss** if divisible by 3, otherwise **loot** if divisible by 5, otherwise **normal**.
 
@@ -310,9 +250,9 @@ Monster number `i` is checked like this: **legendary** if divisible by 15, other
 
 > **Think about it:** What would go wrong if the `i % 3` check came *before* the `i % 15` check?
 
-## 5. Modify
+## 4. Modify
 
-### 5a. Bug hunt
+### 4a. Bug hunt
 
 This code runs without crashing, but it does the **wrong thing**. Read what it's *supposed* to do, run it, and fix the two bugs.
 
@@ -363,7 +303,7 @@ for (let i = 1; i < 3; i++) {
 
 </web-playground>
 
-### 5b. Functions
+### 4b. Functions
 
 A **function** is a named chunk of code you can use again and again.
 
@@ -422,7 +362,7 @@ console.log(takeDamage(20, 35))
 
 > **Sneak preview:** Kaplay uses functions all the time, often written in a shorter style called an **arrow function**: `() => { ... }`. It's a function without a name that Kaplay calls for us at the right moment. We'll use them from Lesson 3.
 
-## 6. Make: Monster Parade
+## 5. Make: Monster Parade
 
 Write a program that loops through monsters numbered 1 to 20 and prints:
 
@@ -482,6 +422,48 @@ for (let i = 1; i <= 20; i++) {
 
 ## Exit ticket
 
-1. Write an `if` statement that prints "Game over" when `lives` is `0`.
-2. How many times does `for (let i = 0; i < 4; i++)` run its code?
-3. Why is `===` better than `==`?
+Without looking back, answer these three questions:
+
+<quiz>
+
+- # What will this code print?
+
+    ```js
+    const lives = 0
+    if (lives === 0) {
+        console.log("Game over")
+    }
+    ```
+
+    ---
+
+    - [x] `Game over`
+    - [ ] `0`
+    - [ ] Nothing
+    - [ ] `Error`
+
+- # How many times will this loop run?
+
+    ```js
+    for (let i = 0; i < 4; i++) {
+        console.log(i)
+    }
+    ```
+
+    ---
+
+    - [ ] 3
+    - [x] 4
+    - [ ] 5
+    - [ ] Forever
+
+- # Why use `===` instead of `==`?
+
+    ---
+
+    - [x] It checks both value and type
+    - [ ] It makes the code run faster
+    - [ ] It changes a value
+    - [ ] It checks only the type
+
+</quiz>

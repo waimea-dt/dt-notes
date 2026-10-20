@@ -8,7 +8,7 @@ Time to stop printing words and start drawing pictures! **Kaplay** is a JavaScri
 2. What's the difference between `=` and `===`?
 3. What does `i++` do?
 
-## Learning goals
+## Learning Goals
 
 - [ ] I can start a Kaplay game with `kaplay()`
 - [ ] I understand screen coordinates (and why `y` goes *down*)
@@ -266,6 +266,35 @@ loadSprite("ghost", ghostImage)
 
 ## Exit ticket
 
-1. Where is the point `(0, 0)` on the screen?
-2. What's a component? Give two examples.
-3. Why use a loop instead of copying `add()` ten times?
+Without looking back, answer these three questions:
+
+<quiz>
+
+- # Where is the point `(0, 0)` on the screen?
+
+    ---
+
+    - [x] The top-left corner
+    - [ ] The bottom-left corner
+    - [ ] The centre
+    - [ ] The top-right corner
+
+- # What is a component in Kaplay?
+
+    ---
+
+    - [ ] A complete game
+    - [x] A part that gives a game object an ability or property
+    - [ ] A point on the screen
+    - [ ] A JavaScript variable
+
+- # Why use a loop to add ten ghosts?
+
+    ---
+
+    - [ ] It makes each ghost move
+    - [ ] It loads the ghost picture
+    - [x] It repeats the same instructions without copying them
+    - [ ] It changes the screen size
+
+</quiz>
