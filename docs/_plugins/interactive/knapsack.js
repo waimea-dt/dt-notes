@@ -1363,6 +1363,7 @@
     }
 
     const docsifyKnapsack = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'knapsack'))
         hook.doneEach(processKnapsack)
     }
 

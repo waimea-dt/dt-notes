@@ -123,3 +123,9 @@ This version uses one main visual language for all solvers:
 - **no full brute-force tree** by default, because it becomes noisy fast and stops helping once the item count grows
 
 That means students keep one mental model while each solver gets one extra teaching aid only when it matters.
+
+## Single Tag (no closing tag)
+
+<knapsack>
+
+Text after the tag should still appear below the widget.

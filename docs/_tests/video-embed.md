@@ -87,3 +87,9 @@ The plugin automatically:
 - Displays thumbnails in a responsive grid
 - Highlights the currently playing video
 - Autoplays videos when thumbnails are clicked
+
+## Single Tag (no closing tag)
+
+<videoembed id="_u03uI-zCCk">
+
+Text after the tag should still appear below the video.

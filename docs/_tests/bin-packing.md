@@ -108,3 +108,9 @@ Tries all possible packings to find the absolute minimum number of bins. Guarant
 - **Memory Management**: Allocating variable-sized blocks in computer memory
 - **Task Scheduling**: Assigning tasks to time slots or processors
 - **Cutting Stock**: Minimizing waste when cutting materials
+
+## Single Tag (no closing tag)
+
+<bin-packing capacity="10" items="3 5 8 3 5 9">
+
+Text after the tag should still appear below the widget.

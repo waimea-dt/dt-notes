@@ -1103,6 +1103,7 @@
     // =========================================================================
 
     function plugin(hook, vm) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'bin-packing'))
         hook.doneEach(() => {
             const elements = document.querySelectorAll('bin-packing')
             elements.forEach(element => {

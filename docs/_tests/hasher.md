@@ -71,3 +71,9 @@ Try refreshing the salt...
 Showing binary
 
 <hasher value="password" binary></hasher>
+
+## Single Tag (no closing tag)
+
+<hasher value="password">
+
+Text after the tag should still appear below the widget.

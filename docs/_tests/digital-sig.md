@@ -15,3 +15,9 @@
 ## Custom filename + tamper
 
 <digital-sig file="grades.csv" tamper></digital-sig>
+
+## Single Tag (no closing tag)
+
+<digital-sig file="report.pdf">
+
+Text after the tag should still appear below the widget.

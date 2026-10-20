@@ -223,6 +223,7 @@
     }
 
     const docsifyRainbow = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'rainbow'))
         hook.doneEach(processRainbowTables)
     }
 

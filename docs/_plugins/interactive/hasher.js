@@ -306,6 +306,7 @@
     }
 
     const docsifyHasher = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'hasher'))
         hook.doneEach(processHashers)
     }
 

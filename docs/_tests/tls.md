@@ -30,3 +30,9 @@ Use top-right toggle to switch between TLS 1.2 and TLS 1.3 flow.
 ## Custom domain + interception
 
 <tls domain="payments.school.nz" intercept></tls>
+
+## Single Tag (no closing tag)
+
+<tls>
+
+Text after the tag should still appear below the widget.

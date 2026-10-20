@@ -33,3 +33,9 @@
 ## WPA3 - With Intercept
 
 <wifi security="wpa3" ssid="OfficeNet" intercept></wifi>
+
+## Single Tag (no closing tag)
+
+<wifi>
+
+Text after the tag should still appear below the widget.

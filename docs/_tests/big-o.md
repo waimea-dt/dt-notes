@@ -99,3 +99,9 @@ Understanding how algorithms behave in different scenarios. Notice how some algo
 <big-o best-worst algos="search" max="100" step="10"></big-o>
 
 <big-o best-worst algos="sort" max="100" step="10"></big-o>
+
+## Single Tag (no closing tag)
+
+<big-o algos="search" max="50" step="10">
+
+Text after the tag should still appear below the widget.

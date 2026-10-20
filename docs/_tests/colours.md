@@ -116,3 +116,9 @@ Think about:
 - Who is the target audience?
 - What colours would appeal to them?
 - How can the accent colour guide user actions?
+
+## Single Tag (no closing tag)
+
+<colours>
+
+Text after the tag should still appear below the widget.

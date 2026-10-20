@@ -31,3 +31,9 @@ The rainbow table only works on passwords it already knows. Hash something not i
 - **Weak passwords are instantly crackable** - if your password appears in a rainbow table, a stolen hash gives it away immediately
 - **Rainbow tables are huge** - real ones cover billions of password/hash combinations
 - **The fix is salting** - adding a unique random value before hashing means the pre-computed table is useless (coming soon)
+
+## Single Tag (no closing tag)
+
+<rainbow>
+
+Text after the tag should still appear below the widget.

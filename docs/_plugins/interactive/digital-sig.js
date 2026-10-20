@@ -576,6 +576,7 @@
     }
 
     const docsifyPlugin = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'digital-sig'))
         hook.doneEach(processPlugin)
     }
 

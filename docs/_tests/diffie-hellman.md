@@ -59,3 +59,9 @@ Why? Because computing **a** from **A = g^a mod p** requires solving the **discr
 ## Real-World Application
 
 When you visit a website with HTTPS, your browser and the server use a variant of Diffie-Hellman to establish a shared encryption key. This happens in milliseconds, and no eavesdropper (not even your ISP) can decrypt your traffic.
+
+## Single Tag (no closing tag)
+
+<diffie-hellman p="17" g="7">
+
+Text after the tag should still appear below the widget.

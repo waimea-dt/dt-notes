@@ -988,6 +988,7 @@
     }
 
     const docsifyWiFi = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'wifi'))
         hook.doneEach(processWiFi)
     }
 

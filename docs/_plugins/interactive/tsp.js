@@ -1601,6 +1601,7 @@
     // -------------------------------------------------------------------------
 
     var docsifyTSP = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'tsp'));
         hook.doneEach(processTSP);
     };
 

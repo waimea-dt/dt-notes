@@ -966,6 +966,7 @@
     }
 
     const docsifyDiffieHellman = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'diffie-hellman'))
         hook.doneEach(processDiffieHellman)
     }
 

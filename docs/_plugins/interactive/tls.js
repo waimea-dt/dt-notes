@@ -629,6 +629,7 @@
     }
 
     const docsifyPlugin = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'tls'))
         hook.doneEach(processPlugin)
     }
 

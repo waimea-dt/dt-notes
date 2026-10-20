@@ -228,3 +228,9 @@ Try larger problems:
 ---
 
 **Challenge**: Run the comparisons with different city counts. At what point does 2-Opt become "good enough" given how much faster it is than brute force?
+
+## Single Tag (no closing tag)
+
+<tsp>
+
+Text after the tag should still appear below the widget.

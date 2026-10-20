@@ -795,6 +795,7 @@
     // -------------------------------------------------------------------------
 
         window.DocsifyUtils.registerPlugin(hook => {
+            hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'big-o'))
             hook.doneEach(() => processBigO())
         }, false)
 

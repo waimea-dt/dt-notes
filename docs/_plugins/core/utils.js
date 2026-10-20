@@ -529,6 +529,22 @@
     // -------------------------------------------------------------------------
 
     /**
+     * Give bare custom tags a closing tag, so authors can write `<my-tag attr>` on its own.
+     * Browsers treat unknown elements as open until closed, so a bare tag would swallow
+     * the content that follows it. Run on the rendered HTML (e.g. in hook.afterEach).
+     * Already-closed tags and tags inside code blocks (escaped by then) are left alone.
+     *
+     * @param {string}    html - Rendered HTML.
+     * @param {...string} tags - Tag names, e.g. 'p-np', 'big-o'.
+     * @returns {string}
+     */
+    function closeSingleTags(html, ...tags) {
+        const names = tags.map(tag => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+        const pattern = new RegExp(`<(${names})((?:\\s(?:"[^"]*"|'[^']*'|[^>"'])*?)?)\\s*\\/?>(?!\\s*<\\/\\1>)`, 'g')
+        return html.replace(pattern, (_, tag, attrs) => `<${tag}${attrs}></${tag}>`)
+    }
+
+    /**
      * Register a Docsify plugin function.
      *
      * @param {Function} fn       - The plugin function (receives hook, vm).
@@ -577,6 +593,7 @@
         parseBoolean,
         parsePositiveInt,
         generateId,
+        closeSingleTags,
         dispatchSlidesRendered,
         onSlidesRendered,
         registerPlugin,

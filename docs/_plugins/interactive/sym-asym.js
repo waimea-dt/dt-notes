@@ -707,6 +707,7 @@
     }
 
     const docsifySymAsym = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'sym-asym'))
         hook.doneEach(processSymAsym)
     }
 

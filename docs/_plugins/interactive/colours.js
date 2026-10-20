@@ -901,9 +901,7 @@
     }
 
     function colourPickerPlugin(hook, vm) {
-        hook.afterEach(function (html, next) {
-            next(html)
-        })
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'colours'))
 
         hook.doneEach(function () {
             const elements = document.querySelectorAll('colours')

@@ -189,3 +189,9 @@ Check out related visualizers:
 ---
 
 *Note: The P vs NP question has been unsolved since 1971. If you think you've proven P = NP or P ≠ NP, consult with professional mathematicians before submitting to journals—most "proofs" contain subtle errors.*
+
+## Single Tag (no closing tag)
+
+<p-np markers collapse>
+
+Text after the tag should still appear below the widget.

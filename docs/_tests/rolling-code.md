@@ -33,3 +33,9 @@
 ## With Intercept View
 
 <rolling-code counter="250" window="10" intercept></rolling-code>
+
+## Single Tag (no closing tag)
+
+<rolling-code counter="100" window="5">
+
+Text after the tag should still appear below the widget.

@@ -563,6 +563,7 @@
 	// -------------------------------------------------------------------------
 
 	window.DocsifyUtils.registerPlugin(hook => {
+		hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'big-o-chart'))
 		hook.doneEach(() => processBigOChart())
 	}, false)
 

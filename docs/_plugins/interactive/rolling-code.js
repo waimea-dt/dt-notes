@@ -519,6 +519,7 @@
     }
 
     const docsifyRollingCode = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'rolling-code'))
         hook.doneEach(processRollingCode)
     }
 

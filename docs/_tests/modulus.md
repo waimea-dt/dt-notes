@@ -75,3 +75,9 @@ Use the sliders above to explore:
 
 <modulus value="10" mod="3" header="false"></modulus>
 - How many complete rotations do you make with large values?
+
+## Single Tag (no closing tag)
+
+<modulus value="10" mod="3">
+
+Text after the tag should still appear below the widget.

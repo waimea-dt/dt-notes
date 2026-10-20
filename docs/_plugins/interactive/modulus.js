@@ -528,6 +528,7 @@
 
     // Install plugin
     window.DocsifyUtils.registerPlugin(hook => {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'modulus'))
         hook.doneEach(() => processModulus())
     }, false)
 

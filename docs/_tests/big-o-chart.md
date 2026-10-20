@@ -25,3 +25,9 @@ Drag the slider right to watch the curves diverge. The exponential curve dominat
 
 <big-o-chart enabled="ologn onlogn on2 o2n ofact"></big-o-chart>
 
+## Single Tag (no closing tag)
+
+<big-o-chart enabled="on on2">
+
+Text after the tag should still appear below the widget.
+

@@ -73,3 +73,9 @@ Experiment with different values and conversions. Some interesting numbers to tr
 - **Pattern numbers**: 85 (binary: 01010101), 170 (binary: 10101010)
 - **Max 8-bit**: 255 (binary: 11111111, hex: FF)
 - **Common values**: 127, 192, 168 (IP address components)
+
+## Single Tag (no closing tag)
+
+<convertor from="bin" to="hex" value="10101111" bits="8">
+
+Text after the tag should still appear below the widget.

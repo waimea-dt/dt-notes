@@ -40,14 +40,7 @@
     iframe.setAttribute('allowfullscreen', '')
   }
 
-  // Step 1: Add closing tags before markdown is parsed
-  function addClosingTags(content) {
-    // Match <videoembed ...> tags that aren't already closed
-    // This regex finds opening tags that aren't followed by </videoembed>
-    return content.replace(/<videoembed([^>]*)>(?![\s\S]*?<\/videoembed>)/g, '<videoembed$1></videoembed>')
-  }
-
-  // Step 2: Convert properly closed videoembed tags to iframes
+  // Convert closed videoembed tags to iframes
   async function processVideoEmbeds(root) {
     const scope = resolveScope(root)
     const selector = scope === document ? '.markdown-section videoembed' : 'videoembed'
@@ -182,8 +175,7 @@
   }
 
   var docsifyVideoEmbed = function (hook) {
-    // Add closing tags before markdown is parsed
-    hook.beforeEach(addClosingTags)
+    hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'videoembed'))
     // Convert to iframes after DOM is ready
     // Docsify v5 doneEach may pass a lifecycle object instead of a DOM root.
     // Call without arguments so processVideoEmbeds resolves document scope.

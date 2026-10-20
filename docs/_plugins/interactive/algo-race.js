@@ -1391,6 +1391,7 @@
 // -------------------------------------------------------------------------
 
 window.DocsifyUtils.registerPlugin(function (hook) {
+    hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'algo-race'))
     hook.doneEach(function () {
         const elements = document.querySelectorAll('algo-race')
         elements.forEach(el => new AlgoRaceVisualizer(el))

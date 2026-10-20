@@ -852,6 +852,7 @@
     // -------------------------------------------------------------------------
 
     const docsifyConvertor = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'convertor'))
         hook.doneEach(function () {
             processConvertors()
         })

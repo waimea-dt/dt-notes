@@ -79,3 +79,9 @@ Test with 200 items to see the dramatic efficiency difference between Bubble Sor
 Even with small arrays (30 items), Merge Sort is more efficient than Bubble Sort.
 
 <algo-race type="sort" size="30"></algo-race>
+
+## Single Tag (no closing tag)
+
+<algo-race type="sort" size="20">
+
+Text after the tag should still appear below the widget.

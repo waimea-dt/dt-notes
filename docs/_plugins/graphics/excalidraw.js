@@ -162,6 +162,7 @@
     window.addEventListener('docsify-theme-change', retheme)
 
     const docsifyExcalidraw = function (hook) {
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'excalidraw'))
         hook.doneEach(function () {
             processExcalidrawBlocks()
         })

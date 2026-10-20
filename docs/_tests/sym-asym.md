@@ -101,3 +101,9 @@ This gives you the **security of asymmetric** encryption with the **speed of sym
 
 ### Asymmetric with custom message
 <sym-asym mode="asymmetric" message="Meet at midnight!"></sym-asym>
+
+### Single tag (no closing tag)
+
+<sym-asym mode="symmetric" message="No closing tag">
+
+Text after the tag should still appear below the widget.

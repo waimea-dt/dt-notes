@@ -1048,9 +1048,7 @@
     }
 
     function pnpPlugin(hook, vm) {
-        hook.afterEach(function (html, next) {
-            next(html)
-        })
+        hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'p-np'))
 
         hook.doneEach(function () {
             const pnpElements = document.querySelectorAll('p-np')
