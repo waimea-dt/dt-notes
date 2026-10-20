@@ -5,7 +5,7 @@
 :root {
     /* Typography */
     --code-font-family:          var(--font-family-mono);
-    --code-font-size:            var(--font-base);
+    /* --code-font-size:            var(--font-base); */
     --code-line-height:          1.4;
     --code-output-line-height:   1.2;
 
