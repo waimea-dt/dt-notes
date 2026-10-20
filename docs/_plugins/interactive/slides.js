@@ -285,6 +285,7 @@
         watchDeckLayout(deck, reveal)
         setupMermaidForDeck(deck, reveal)
         dispatchSlidesRendered(deck)
+        deck.setAttribute('data-slides-ready', 'true')
       })
     })
   }

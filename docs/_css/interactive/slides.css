@@ -8,8 +8,8 @@
    created .reveal-viewport wrapper - an ancestor, unreachable via CSS - picks
    these up too. */
 :root {
-    --r-background:                 var(--color-mono-0);
-    --r-background-color:           var(--color-mono-0);
+    --r-background:                 var(--theme-color-0);
+    --r-background-color:           var(--theme-color-0);
 
     --r-main-font:                  var(--font-family);
     --r-main-font-size:             42px;
@@ -67,6 +67,11 @@ html.slides-receiver {
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
 
+    /* Hide raw slide content until reveal.js has laid it out */
+    &:not([data-slides-ready]) > .slides {
+        visibility: hidden;
+    }
+
     /* Headings */
 
     .slides > section {
@@ -79,6 +84,13 @@ html.slides-receiver {
             padding: 1em;
             gap: 1em;
             justify-content: center;
+
+            > .fragment {
+                display: flex !important;
+                flex-direction: column;
+                gap: 1em;
+                justify-content: center;
+            }
 
             * {
                 margin-block: 0;
@@ -189,6 +201,10 @@ html.slides-receiver {
         code {
             font-size: inherit !important;
             line-height: inherit !important;
+
+            &:not([class*="language-"]) {
+                color: var(--theme-color);
+            }
         }
 
         /* Mermaid diagrams */
