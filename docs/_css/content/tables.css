@@ -65,6 +65,18 @@
         text-align: left;
         border: 1px solid var(--table-border-color);
 
+        &[align="left"] {
+            text-align: left;
+        }
+
+        &[align="center"] {
+            text-align: center;
+        }
+
+        &[align="right"] {
+            text-align: right;
+        }
+
         &:first-child {
             border-left: none;
         }

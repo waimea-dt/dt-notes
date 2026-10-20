@@ -44,6 +44,11 @@
             font-weight: 600;
             color: var(--plugin-header-title);
         }
+
+        .primm-subtitle {
+            margin: 0;
+            color: var(--plugin-header-subtitle);
+        }
     }
 
     .primm-body {
@@ -240,18 +245,3 @@
     }
 }
 
-
-/* Responses during an Investigate phase */
-
-.markdown-section textarea.response {
-    --form-element-border-color: var(--theme-color-3);
-
-    width: 100%;
-    min-height: 5.25em;
-    field-sizing: content;
-
-    &:focus {
-        --form-element-border-color: var(--theme-color);
-        outline: none;
-    }
-}
