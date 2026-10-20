@@ -165,8 +165,18 @@
     const docsifyJsRunner = function (hook) {
         hook.beforeEach(function (content) {
             return content.replace(
-                /^```(?:js|javascript)\s+run\r?\n([\s\S]*?)^```/gm,
-                (match, body) => `<div class="${RUNNER_CLASS}">\n\n\`\`\`js\n${body}\`\`\`\n\n</div>`
+                /^([ \t]*)```(?:js|javascript)\s+run[ \t]*\r?\n([\s\S]*?)^\1```[ \t]*\r?$/gm,
+                (match, indent, body) => {
+                    const codeLines = body.replace(/\r?\n$/, '').split(/\r?\n/)
+                    const indentedBody = codeLines
+                        .map(line => {
+                            const codeLine = line.startsWith(indent) ? line.slice(indent.length) : line
+                            return codeLine ? `${indent}${codeLine}` : ''
+                        })
+                        .join('\n')
+
+                    return `${indent}<div class="${RUNNER_CLASS}">\n\n${indent}\`\`\`js\n${indentedBody}\n${indent}\`\`\`\n\n${indent}</div>`
+                }
             )
         })
 
