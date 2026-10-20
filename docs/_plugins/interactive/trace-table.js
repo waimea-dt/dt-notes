@@ -11,14 +11,15 @@
  *   - play-pause toggle / next / reset controls
  *
  * Fence usage
+ * - Supported fence languages: python, kotlin, and js/javascript (e.g. ```js trace)
  * - Basic trace block:
  *     ```python trace
  *     x = 0
  *     for i in range(3):
  *         x = x + i
  *     ```
- * - Hide mode (rows invisible until revealed while stepping):
- *     ```python trace hide
+ * - Rows are invisible until revealed while stepping (default). To show all rows up front:
+ *     ```python trace show
  *     ...
  *     ```
  * - Blank worksheet mode (editable table, no controls or execution):
@@ -40,7 +41,10 @@
  * - Branching: if / elif / else
  * - Loops: for var in range(...), for var in iterable (list/string), while condition
  * - Loop control: break, continue
- * - Output: print(...)
+ * - Output: print(...) / println(...) / console.log(...)
+ * - JavaScript subset: let/const/var, ++/--, compound assignment, if / else if / else (braces),
+ *   while, for (init; test; update), for...of, arr.push(x), arr[i] = x, template literals.
+ *   Function bodies are skipped; input directives are not supported.
  * - Expression features: arithmetic/boolean expressions, True/False/None, and/or/not, len(...)
  * - String interpolation in print via basic f-string replacement
  *
@@ -69,7 +73,7 @@
         maxWhileIterations: 1000,
         autoplayDelayMs: 900,
         blockAttributes: {
-            hide: 'hide',
+            show: 'show',
             blank: 'blank'
         },
         cssClasses: {
@@ -129,7 +133,7 @@
                 if (ch === quote && text[i - 1] !== '\\') quote = null
                 continue
             }
-            if (ch === '\'' || ch === '"') {
+            if (ch === '\'' || ch === '"' || ch === '`') {
                 quote = ch
                 cur += ch
                 continue
@@ -193,6 +197,14 @@
 
         formatNullLiteral() {
             return 'None'
+        }
+
+        formatBoolean(value) {
+            return value ? 'True' : 'False'
+        }
+
+        get prismLanguage() {
+            return this.language
         }
 
         tryEvaluatePrintInterpolation(_trimmed, _env, _evalExpr, _formatOutputValue) {
@@ -829,9 +841,221 @@
         }
     }
 
+    class JavaScriptTraceLanguageAdapter extends TraceLanguageAdapter {
+        constructor() {
+            super('javascript')
+        }
+
+        // Expressions are already valid JS, so skip the Python-to-JS rewrites.
+        toJsExpr(expr) {
+            return expr
+        }
+
+        formatNullLiteral() {
+            return 'null'
+        }
+
+        formatBoolean(value) {
+            return value ? 'true' : 'false'
+        }
+
+        parseSimpleStatement(text, lineIndex) {
+            const trimmed = text.trim().replace(/;$/, '').trim()
+            if (!trimmed) return null
+
+            if (trimmed === 'break') return { type: 'break', lineIndex }
+            if (trimmed === 'continue') return { type: 'continue', lineIndex }
+
+            const printMatch = trimmed.match(/^console\.(?:log|info)\((.*)\)$/)
+            if (printMatch) return { type: 'print', argsText: printMatch[1], lineIndex }
+
+            const pushMatch = trimmed.match(/^([A-Za-z_$][\w$]*)\.push\((.*)\)$/)
+            if (pushMatch) return { type: 'list_append', varName: pushMatch[1], expr: pushMatch[2], lineIndex }
+
+            const indexAssignMatch = trimmed.match(/^([A-Za-z_$][\w$]*)\s*\[(.+)\]\s*=(?!=)\s*(.+)$/)
+            if (indexAssignMatch) {
+                return {
+                    type: 'list_set',
+                    varName: indexAssignMatch[1],
+                    indexExpr: indexAssignMatch[2].trim(),
+                    expr: indexAssignMatch[3],
+                    lineIndex
+                }
+            }
+
+            const augAssignMatch = trimmed.match(/^([A-Za-z_$][\w$]*)\s*(\*\*|[+\-*/%])=\s*(.+)$/)
+            if (augAssignMatch) {
+                const [, name, op, rhs] = augAssignMatch
+                return { type: 'assign', varName: name, expr: `${name} ${op} (${rhs})`, lineIndex }
+            }
+
+            const incMatch = trimmed.match(/^([A-Za-z_$][\w$]*)(\+\+|--)$/) || trimmed.match(/^(\+\+|--)([A-Za-z_$][\w$]*)$/)
+            if (incMatch) {
+                const isPostfix = /^[A-Za-z_$]/.test(incMatch[1])
+                const name = isPostfix ? incMatch[1] : incMatch[2]
+                const op = (isPostfix ? incMatch[2] : incMatch[1]) === '++' ? '+' : '-'
+                return { type: 'assign', varName: name, expr: `${name} ${op} 1`, lineIndex }
+            }
+
+            const declareMatch = trimmed.match(/^(?:let|var)\s+([A-Za-z_$][\w$]*)$/)
+            if (declareMatch) return { type: 'declare', varName: declareMatch[1], lineIndex }
+
+            const assignMatch = trimmed.match(/^(?:(?:let|const|var)\s+)?([A-Za-z_$][\w$]*)\s*=(?!=)\s*(.+)$/)
+            if (assignMatch) return { type: 'assign', varName: assignMatch[1], expr: assignMatch[2], lineIndex }
+
+            return null
+        }
+
+        parseProgram(source) {
+            const adapter = this
+            const lines = source.split('\n').map(line => line.replace(/\s+$/, ''))
+            const NAME = '[A-Za-z_$][\\w$]*'
+            const ELSE_IF = /^else\s+if\s*\((.+)\)\s*\{$/
+            const ELSE = /^else\s*\{$/
+
+            function isIgnorable(index) {
+                const t = lines[index].trim()
+                return !t || t.startsWith('//')
+            }
+
+            function skipIgnorable(fromIndex) {
+                let i = fromIndex
+                while (i < lines.length && isIgnorable(i)) i++
+                return i
+            }
+
+            // Skips an unsupported block (e.g. a function body) so its contents are not traced.
+            function skipBlock(startIndex) {
+                let depth = 0
+                for (let i = startIndex; i < lines.length; i++) {
+                    for (const ch of lines[i]) {
+                        if (ch === '{') depth++
+                        if (ch === '}') depth--
+                    }
+                    if (depth <= 0) return i + 1
+                }
+                return lines.length
+            }
+
+            // Returns the else/else-if header on a closing line (`} else {`) or on the next line, if any.
+            function findElseHeader(closeIndex) {
+                const closing = lines[closeIndex].trim()
+                const sameLine = closing.replace(/^\}\s*/, '')
+                if (sameLine) return { text: sameLine, lineIndex: closeIndex }
+                const nextIndex = skipIgnorable(closeIndex + 1)
+                if (nextIndex >= lines.length) return null
+                const nextText = lines[nextIndex].trim()
+                return ELSE_IF.test(nextText) || ELSE.test(nextText) ? { text: nextText, lineIndex: nextIndex } : null
+            }
+
+            function parseIfChain(startIndex, firstTest) {
+                const branches = []
+                let body = parseBlock(startIndex + 1)
+                branches.push({ kind: 'if', test: firstTest, body: body.statements, lineIndex: startIndex })
+
+                while (body.closeIndex < lines.length) {
+                    const header = findElseHeader(body.closeIndex)
+                    const elifMatch = header && header.text.match(ELSE_IF)
+                    if (elifMatch) {
+                        body = parseBlock(header.lineIndex + 1)
+                        branches.push({ kind: 'elif', test: elifMatch[1], body: body.statements, lineIndex: header.lineIndex })
+                        continue
+                    }
+                    if (header && ELSE.test(header.text)) {
+                        body = parseBlock(header.lineIndex + 1)
+                        branches.push({ kind: 'else', body: body.statements, lineIndex: header.lineIndex })
+                    }
+                    break
+                }
+                return { statement: { type: 'ifchain', branches, lineIndex: startIndex }, nextIndex: body.closeIndex + 1 }
+            }
+
+            function parseBlock(startIndex) {
+                const statements = []
+                let i = startIndex
+
+                while (i < lines.length) {
+                    i = skipIgnorable(i)
+                    if (i >= lines.length) break
+                    const trimmed = lines[i].trim()
+                    if (trimmed.startsWith('}')) return { statements, closeIndex: i }
+
+                    const ifMatch = trimmed.match(/^if\s*\((.+)\)\s*\{$/)
+                    if (ifMatch) {
+                        const chain = parseIfChain(i, ifMatch[1])
+                        statements.push(chain.statement)
+                        i = chain.nextIndex
+                        continue
+                    }
+
+                    const whileMatch = trimmed.match(/^while\s*\((.+)\)\s*\{$/)
+                    if (whileMatch) {
+                        const body = parseBlock(i + 1)
+                        statements.push({ type: 'while', test: whileMatch[1], body: body.statements, lineIndex: i })
+                        i = body.closeIndex + 1
+                        continue
+                    }
+
+                    const forOfMatch = trimmed.match(new RegExp(`^for\\s*\\(\\s*(?:const|let|var)?\\s*(${NAME})\\s+of\\s+(.+)\\)\\s*\\{$`))
+                    if (forOfMatch) {
+                        const body = parseBlock(i + 1)
+                        statements.push({
+                            type: 'for',
+                            varName: forOfMatch[1],
+                            iterableType: 'iterable',
+                            iterableExpr: forOfMatch[2].trim(),
+                            body: body.statements,
+                            lineIndex: i
+                        })
+                        i = body.closeIndex + 1
+                        continue
+                    }
+
+                    const forMatch = trimmed.match(/^for\s*\((.*?);(.*?);(.*?)\)\s*\{$/)
+                    if (forMatch) {
+                        const body = parseBlock(i + 1)
+                        statements.push({
+                            type: 'cfor',
+                            init: adapter.parseSimpleStatement(forMatch[1], i),
+                            test: forMatch[2].trim() || 'true',
+                            update: adapter.parseSimpleStatement(forMatch[3], i),
+                            body: body.statements,
+                            lineIndex: i
+                        })
+                        i = body.closeIndex + 1
+                        continue
+                    }
+
+                    if (trimmed.endsWith('{')) {
+                        i = skipBlock(i)
+                        continue
+                    }
+
+                    const simple = adapter.parseSimpleStatement(trimmed, i)
+                    if (simple) statements.push(simple)
+                    i++
+                }
+
+                return { statements, closeIndex: lines.length }
+            }
+
+            // A stray closing brace at the top level must not end parsing early.
+            const statements = []
+            let i = 0
+            while (i < lines.length) {
+                const block = parseBlock(i)
+                statements.push(...block.statements)
+                i = block.closeIndex + 1
+            }
+
+            return { lines, statements }
+        }
+    }
+
     const TRACE_LANGUAGE_ADAPTERS = {
         python: new PythonTraceLanguageAdapter(),
-        kotlin: new KotlinTraceLanguageAdapter()
+        kotlin: new KotlinTraceLanguageAdapter(),
+        javascript: new JavaScriptTraceLanguageAdapter()
     }
 
     function getLanguageAdapter(sourceLanguage) {
@@ -857,7 +1081,7 @@
             return `[${value.map(item => formatOutputValue(item, adapter)).join(', ')}]`
         }
         if (value === null || value === undefined) return adapter.formatNullLiteral()
-        if (typeof value === 'boolean') return value ? 'True' : 'False'
+        if (typeof value === 'boolean') return adapter.formatBoolean(value)
         return String(value)
     }
 
@@ -1092,6 +1316,25 @@
                 return
             }
 
+            if (stmt.type === 'cfor') {
+                let guard = 0
+                if (stmt.init) execStmt(stmt.init)
+                while (true) {
+                    const passed = Boolean(evalExpr(stmt.test, env, adapter))
+                    snapshot(stmt.lineIndex, { kind: 'control', conditionResult: passed })
+                    if (!passed) break
+                    guard += 1
+                    if (guard > maxWhileIterations) {
+                        throw new Error(`${TRACE_TABLE_CONFIG.uiText.errors.whileLimit} (${maxWhileIterations} iterations)`)
+                    }
+                    const flow = execBlock(stmt.body)
+                    if (flow === CONTROL_FLOW.BREAK) break
+                    if (flow && flow !== CONTROL_FLOW.CONTINUE) return flow
+                    if (stmt.update) execStmt(stmt.update)
+                }
+                return
+            }
+
             if (stmt.type === 'while') {
                 let guard = 0
                 while (true) {
@@ -1193,6 +1436,12 @@
                     return
                 }
 
+                if (stmt.type === 'cfor') {
+                    walk([stmt.init, stmt.update].filter(Boolean))
+                    walk(stmt.body)
+                    return
+                }
+
                 if (stmt.type === 'while') {
                     walk(stmt.body)
                     return
@@ -1226,7 +1475,7 @@
                     return
                 }
 
-                if (stmt.type === 'for' || stmt.type === 'while') {
+                if (stmt.type === 'for' || stmt.type === 'while' || stmt.type === 'cfor') {
                     pushLine(stmt.lineIndex)
                     walk(stmt.body)
                     return
@@ -1282,7 +1531,7 @@
         }
         if (value === null || value === undefined) return adapter.formatNullLiteral()
         if (typeof value === 'string') return `'${value}'`
-        if (typeof value === 'boolean') return value ? 'True' : 'False'
+        if (typeof value === 'boolean') return adapter.formatBoolean(value)
         return String(value)
     }
 
@@ -1294,7 +1543,7 @@
         }
         if (value === null || value === undefined) return `<span class="token constant">${adapter.formatNullLiteral()}</span>`
         if (typeof value === 'string') return `<span class="token string">'${escapeHtml(value)}'</span>`
-        if (typeof value === 'boolean') return `<span class="token boolean">${value ? 'True' : 'False'}</span>`
+        if (typeof value === 'boolean') return `<span class="token boolean">${adapter.formatBoolean(value)}</span>`
         if (typeof value === 'number') return `<span class="token number">${escapeHtml(String(value))}</span>`
         return escapeHtml(String(value))
     }
@@ -1313,13 +1562,16 @@
     }
 
     function getTraceRenderOptions(preEl, codeEl) {
-        const hideClass = TRACE_TABLE_CONFIG.blockAttributes.hide
+        const showClass = TRACE_TABLE_CONFIG.blockAttributes.show
         const blankClass = TRACE_TABLE_CONFIG.blockAttributes.blank
         const codeClass = codeEl.className || ''
-        const sourceLanguage = /language-kotlin/.test(codeClass) ? 'kotlin' : 'python'
+        const sourceLanguage = /language-(?:javascript|js)\b/.test(codeClass) ? 'javascript'
+            : /language-kotlin/.test(codeClass) ? 'kotlin' : 'python'
+        const blankTemplate = preEl.classList.contains(blankClass) || codeEl.classList.contains(blankClass)
+        const showAll = preEl.classList.contains(showClass) || codeEl.classList.contains(showClass)
         return {
-            hideUntilRun: preEl.classList.contains(hideClass) || codeEl.classList.contains(hideClass),
-            blankTemplate: preEl.classList.contains(blankClass) || codeEl.classList.contains(blankClass),
+            hideUntilRun: !blankTemplate && !showAll,
+            blankTemplate,
             sourceLanguage,
             headerConfig: parseFenceHeaderConfig(preEl)
         }
@@ -1673,7 +1925,7 @@
     const docsifyTraceTable = function (hook) {
         hook.afterEach(function (html) {
             return html.replace(
-                /<pre\b[^>]*\blanguage-(?:python|kotlin)\s+trace\b[^>]*>[\s\S]*?<\/pre>/g,
+                /<pre\b[^>]*\blanguage-(?:python|kotlin|javascript|js)\s+trace\b[^>]*>[\s\S]*?<\/pre>/g,
                 (preBlock) => `<div class="trace-table-block">${preBlock}</div>`
             )
         })

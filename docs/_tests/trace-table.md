@@ -25,7 +25,7 @@ else:
 
 ## Example
 
-```python trace hide
+```python trace show
 go = False
 name = input("Name: ")    # INPUT: Bob
 print(f"Hello, {name}!")
@@ -320,6 +320,45 @@ while (true) {
     }
 }
 println(num!!)
+```
+
+## JavaScript
+
+```js trace
+let total = 0
+for (let i = 1; i <= 4; i++) {
+    total += i
+}
+console.log(`Total: ${total}`)
+```
+
+```js trace
+const scores = [3, 8, 5]
+let best = 0
+for (const s of scores) {
+    if (s > best) {
+        best = s
+    } else {
+        console.log("not higher: " + s)
+    }
+}
+console.log(best)
+```
+
+```javascript trace
+let n = 10
+let steps = 0
+while (n !== 1) {
+    if (n % 2 === 0) {
+        n = n / 2
+    }
+    else if (n > 1) {
+        n = 3 * n + 1
+    }
+    steps++
+}
+let done = n === 1
+console.log(steps, done)
 ```
 
 ## Header Customisation

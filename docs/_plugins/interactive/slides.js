@@ -255,6 +255,11 @@
     return `${window.location.origin}${window.location.pathname}?${params}`
   }
 
+  // CodeMirror editors built while their slide was display:none render blank until refreshed.
+  function refreshEditors(slide) {
+    slide?.querySelectorAll('.CodeMirror').forEach((el) => el.CodeMirror?.refresh())
+  }
+
   function initDecks() {
     if (isReceiver) document.documentElement.classList.add('slides-receiver')
 
@@ -286,6 +291,8 @@
         setupMermaidForDeck(deck, reveal)
         dispatchSlidesRendered(deck)
         deck.setAttribute('data-slides-ready', 'true')
+        refreshEditors(reveal.getCurrentSlide())
+        reveal.on('slidechanged', (event) => refreshEditors(event.currentSlide))
       })
     })
   }
@@ -321,6 +328,8 @@
     hook.doneEach(initDecks)
   }
 
-  window.DocsifyUtils.registerPlugin(docsifySlides)
+  // Appended (not prepended) so every other plugin's beforeEach rewrites the markdown
+  // (e.g. ```js run fences) before the slide content is stashed out of the page.
+  window.DocsifyUtils.registerPlugin(docsifySlides, false)
 })()
 
