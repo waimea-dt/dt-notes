@@ -1,17 +1,12 @@
-# Lesson 1: Variables
+# Week 1: Things the Move
+
 
 <slides>
 
-# Variables
+# Introduction
 
----
-
-## Today
-
-- Declaring: `const` and `let`
-- Types: Strings, numbers, booleans
-- Showing: `console.log`
-- Template literals
+Note:
+Starting with the basics of JavaScript and how data is stored in variables
 
 ---
 
@@ -29,6 +24,9 @@ let coins = 5
 console.log(`You have ${coins} coins`)
 ```
 
+Note:
+JavaScript is no different to Python - just some syntax differences
+
 ---
 
 |            | Python          | JS                 |
@@ -39,11 +37,38 @@ console.log(`You have ${coins} coins`)
 | Comment    | `# Comment`     | `// Comment`       |
 | Booleans   | `True`, `False` | `true`, `false`    |
 | Names      | `my_score`      | `myScore`          |
+| Blocks     | *Indentation*   | `{ ... }`          |
 
+</slides>
+
+
+
+<slides>
+
+# Lesson 1: Variables
+
+Note:
+Starting with the basics of JavaScript and how data is stored in variables
 
 ---
 
-### `let` for values that can change
+## Learning
+
+- **Declaring** variables: `const` and `let`
+- Variable **types**: Strings, numbers, booleans
+- **Displaying** variables: `console.log(...)` and **template literals**
+
+---
+
+## Declaring Variables
+
+Declaring a variable = **creating** and **naming** it
+
+JavaScript has *two* ways to do this...
+
+---
+
+### `let` for variables that **can change**
 
 ```js
 let health = 100           // can change
@@ -53,7 +78,7 @@ health = health - 25       // fine
 
 ---
 
-### `const` for values that never change
+### `const` for constants that **can't change**
 
 ```js
 const heroName = "Pixel"   // can't change
@@ -63,9 +88,22 @@ heroName = "Nobody"        // CRASH!
 
 ---
 
-### Start with `const`
+## Start with `const`
 
 ### Switch to `let` only if you need to
+
+---
+
+## Assigning Values
+
+Assigning a value to a variable = **storing** data in it
+
+We use the assignment operator: `=`
+
+```js
+let name = "Dave"   // Assign String 'Dave' to name
+let age = 21        // Assign Number 21 to age
+```
 
 ---
 
@@ -82,9 +120,26 @@ console.log(typeof 120)    // "number"
 console.log(typeof "120")  // "string"
 ```
 
+Note:
+JS has very few primitive types
+
+---
+
+## Displaying Variable Values
+
+Use `console.log(...)` to show values
+
+```js
+const name = "Pierre"
+
+console.log(name)      // "Pierre"
+```
+
 ---
 
 ## Template Literals
+
+Can place variables within other text...
 
 ```js
 const player = "Bean"
@@ -93,32 +148,52 @@ const score = 120
 console.log(`${player} scored ${score} points`)
 ```
 
-Backticks <kbd>`</kbd>, not apostrophes <kbd>'</kbd>!
+Note: **Backticks** <kbd>`</kbd>, not apostrophes <kbd>'</kbd>!
 
 ---
 
-## Predict!
+# PRIMM Tasks
 
-Write your answers in your notebook.
+**P**redict, **R**un, **I**nvestigate, **M**odify, **M**ake,
+
+---
+
+## Predict...
+
 
 ```js
 let coins = 5
 coins = coins + 3
-console.log(coins)
+console.log(`Coins: ${coins}`)
 ```
 
-```js
-const lives = 3
-lives = 2
-console.log(lives)
++++
+
+## Run...
+
++++
+
+
+```
+Coins: 8
 ```
 
 Note:
-Give 2 minutes. Then pair-share. Then run snippets live. Worksheet has all six snippets.
+- What is this code going to do - be precise!
+- Discuss in pairs
+
 
 ---
 
-## Now run it
+## Run...
+
+```js run
+let coins = 5
+coins = coins + 3
+console.log(`Coins: ${coins}`)
+```
+
+---
 
 Open the Lesson 1 worksheet.
 

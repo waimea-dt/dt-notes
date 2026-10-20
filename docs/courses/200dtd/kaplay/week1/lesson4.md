@@ -73,15 +73,6 @@ onKeyDown("right", () => {
 <script src="https://unpkg.com/kaplay@4000.0.0-alpha.27.1/dist/kaplay.js"></script>
 ```
 
-```css id=kaplay
-body {
-    margin: 0;
-    background: #0f172a;
-    display: flex;
-    justify-content: center;
-}
-```
-
 ```js id=kaplay
 const gemImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABV0lEQVR4nO2XvQ3CMBCFD0SRBgagQpmDigGyAEMwARUTZIgskAFSZYMsQJWSImkoIpnqkInP9p3tCAo+iYbEvuf3/BeAP5FU46Ri2q9TFI8RsQlplJW1URD/e16KlaQv0ctYaH86wu2wM55d7wP0TSsSIYoAi7vYn46kQzZYSrFDLE6NHrneBwAA6JsWAPyReAXMR+0qPheBQlwinBFwLPfhi4RUNrcc4Ywe0V0AsEdiLMMUo6bAPvuyVrqIDzWS2RsLijAisDkgsR+ZxwBgTkr2PkB1luJ9Q8DzUqxwwqSGWpKkA0uIsO0H1ggoEVxbqSVo24yijuMUOAWkiCJqK6ZE+GKQnAMsAaFw7wUsAUsuTbYDughbDPpdgHsrEkXAcWLRK9nPkJW1yruHqsbp/cu7hwo5TYMcoKKQWo+IG+joHyTn7SaqryCyslbVOAVZn4zYb8Ov8wLOT9xyaH0ItQAAAABJRU5ErkJggg=="
 const ghostImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAArElEQVR4nGNgGOmAkRxNH7/+/I9Ljp+bnSQziVaMz1JKHMNEK8uJ1YfXheRajA3gCg2cIUBNy/GZR1QU0BJgdQC1fY/P3AEPAYyEgc/3ckqGcPaje+dJlocB5ARJdAggG04OHxcY8CgYdQDRDkBPVKTycQGScgG1AFm5gFZg1AGjDiDoAELNKkrl8ToAphmXIZTKE3QAPQBOB6C7mtp8nIBQSUht+QGPglEwCgCqd07Y6LGzvAAAAABJRU5ErkJggg=="
@@ -173,24 +164,6 @@ Put the code in an order that works. Remember our rule: **set up, create things,
 Start with this code and complete the tasks one at a time. Test after each change!
 
 <web-playground data-height="24em">
-
-```html id=kaplay
-<script src="https://unpkg.com/kaplay@4000.0.0-alpha.27.1/dist/kaplay.js"></script>
-```
-
-```css id=kaplay
-body {
-    margin: 0;
-    background: #0f172a;
-    display: flex;
-    justify-content: center;
-}
-```
-
-```js id=kaplay
-const gemImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABV0lEQVR4nO2XvQ3CMBCFD0SRBgagQpmDigGyAEMwARUTZIgskAFSZYMsQJWSImkoIpnqkInP9p3tCAo+iYbEvuf3/BeAP5FU46Ri2q9TFI8RsQlplJW1URD/e16KlaQv0ctYaH86wu2wM55d7wP0TSsSIYoAi7vYn46kQzZYSrFDLE6NHrneBwAA6JsWAPyReAXMR+0qPheBQlwinBFwLPfhi4RUNrcc4Ywe0V0AsEdiLMMUo6bAPvuyVrqIDzWS2RsLijAisDkgsR+ZxwBgTkr2PkB1luJ9Q8DzUqxwwqSGWpKkA0uIsO0H1ggoEVxbqSVo24yijuMUOAWkiCJqK6ZE+GKQnAMsAaFw7wUsAUsuTbYDughbDPpdgHsrEkXAcWLRK9nPkJW1yruHqsbp/cu7hwo5TYMcoKKQWo+IG+joHyTn7SaqryCyslbVOAVZn4zYb8Ov8wLOT9xyaH0ItQAAAABJRU5ErkJggg=="
-const ghostImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAArElEQVR4nGNgGOmAkRxNH7/+/I9Ljp+bnSQziVaMz1JKHMNEK8uJ1YfXheRajA3gCg2cIUBNy/GZR1QU0BJgdQC1fY/P3AEPAYyEgc/3ckqGcPaje+dJlocB5ARJdAggG04OHxcY8CgYdQDRDkBPVKTycQGScgG1AFm5gFZg1AGjDiDoAELNKkrl8ToAphmXIZTKE3QAPQBOB6C7mtp8nIBQSUht+QGPglEwCgCqd07Y6LGzvAAAAABJRU5ErkJggg=="
-```
 
 ```html depends=kaplay
 <!-- Kaplay is already loaded for you. Write your game in the JS tab. -->

@@ -94,6 +94,14 @@ console.log(lives)
 
 Answer these in your notebook.
 
+
+```js trace header="false"
+let coins = 5
+coins = coins + 3
+console.log(coins)
+```
+
+
 1. Snippet 2 changed the value of `coins`. Snippet 6 tried to change `lives` and **crashed**. What's the difference between `let` and `const`?
 
 2. Which of these should be `const` and which should be `let`? Explain your choices.
