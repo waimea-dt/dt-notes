@@ -108,7 +108,7 @@ lives = 2
 console.log(lives)
 ```
 
-<textarea class="response" placeholder="Your answer..."></textarea>
+<response>
 
 > [!TIP]
 > Start with `const`. Only switch to `let` if the value needs to change later.
@@ -119,7 +119,7 @@ console.log(lives)
 Which of these should be `const` and which should be `let`? Explain your choices.
 
 | Variable for...               | `const`                 | `let`                   | Reason  |
-| ----------------------------- | ----------------------- | ----------------------- | ------- |
+| ----------------------------- | :---------------------: | :---------------------: | ------- |
 | the name of your character    | <input type="checkbox"> | <input type="checkbox"> | <input placeholder="Explain..."> |
 | the number of coins collected | <input type="checkbox"> | <input type="checkbox"> | <input placeholder="Explain..."> |
 | the maximum number of lives   | <input type="checkbox"> | <input type="checkbox"> | <input placeholder="Explain..."> |
@@ -136,14 +136,14 @@ const score = 120
 console.log(`${player} scored ${score} points`)
 ```
 
-<textarea class="response" placeholder="Your answer..."></textarea>
+<response>
 
 
 ### 4. The `typeof` command
 
 What does `typeof` tell us?
 
-<textarea class="response" placeholder="Your answer..."></textarea>
+<response>
 
 Try it on a these different data values...
 
@@ -158,7 +158,7 @@ console.log(typeof true)
 
 JS has no `int` or `str` labels like some languages. How does it know what type a value is?
 
-<textarea class="response" placeholder="Your answer..."></textarea>
+<response>
 
 Can you explain the output of this code?
 
@@ -172,7 +172,7 @@ console.log(typeof age)
 console.log(typeof notes)
 ```
 
-<textarea class="response" placeholder="Explain..."></textarea>
+<response placeholder="Explain...">
 
 
 ### 6. Program flow
@@ -227,7 +227,7 @@ console.log(boss + coins)
 console.log(boss - coins)
 ```
 
-<textarea class="response" placeholder="Observations..."></textarea>
+<response placeholder="Observations...">
 
 
 ## Modify
