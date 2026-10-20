@@ -52,12 +52,20 @@
  *   show-html           - Show HTML panel with placeholder if no content provided
  *   show-css            - Show CSS panel with placeholder if no content provided
  *   show-js             - Show JS panel with placeholder if no content provided
+ *   hide-html           - No HTML panel and no default HTML injected (e.g. JS-only games).
+ *   hide-css            - No CSS panel (overrides show-css)
+ *   hide-js             - No JS panel (overrides show-js)
+ *                         hide-* options still include hidden id=NAME blocks of that language.
+ *   hidden              - Render nothing; id=NAME blocks inside are still available to later playgrounds via depends=NAME
+ *   html-only           - Only the HTML panel (same as hide-css hide-js)
+ *   css-only            - Only the CSS panel (same as hide-html hide-js)
+ *   js-only             - Only the JS panel (same as hide-html hide-css)
  *   max-html            - Start with HTML panel maximized
  *   max-css             - Start with CSS panel maximized
  *   max-js              - Start with JS panel maximized
  *
  * Panels are shown if they have content OR if show-* attribute is present.
- * HTML is always shown (with default placeholder if no content provided).
+ * HTML is always shown (with default placeholder if no content provided) unless hidden by a hide-* or *-only attribute.
  * CSS and JS are only shown if they have content or show-css/show-js is set.
  * If max-* is specified, line-count proportional sizing is skipped.
  */
@@ -140,29 +148,26 @@
             }
         })
 
-        // HTML is always included; fall back to placeholder if no html at all (visible or hidden).
-        if (result.html === null) {
-            result.html = {
-                visible: DEFAULT_HTML_CONTENT,
-                hidden: ''
-            }
-        }
+        const defaults = { html: DEFAULT_HTML_CONTENT, css: DEFAULT_CSS_CONTENT, js: DEFAULT_JS_CONTENT }
 
-        // CSS and JS get default content if show-* attribute is present but no content provided.
-        if (result.css === null && container.hasAttribute('show-css')) {
-            result.css = {
-                visible: DEFAULT_CSS_CONTENT,
-                hidden: ''
+        Object.keys(CM_MODE).forEach(lang => {
+            if (isLangHidden(container, lang)) {
+                // No panel and no placeholder. Author-supplied hidden (id=NAME) code still runs.
+                result[lang] = result[lang]?.hidden ? { visible: null, hidden: result[lang].hidden } : null
+            } else if (result[lang] === null && (lang === 'html' || container.hasAttribute(`show-${lang}`))) {
+                // HTML always gets a placeholder; CSS and JS only with show-css / show-js.
+                result[lang] = { visible: defaults[lang], hidden: '' }
             }
-        }
-        if (result.js === null && container.hasAttribute('show-js')) {
-            result.js = {
-                visible: DEFAULT_JS_CONTENT,
-                hidden: ''
-            }
-        }
+        })
 
         return result
+    }
+
+    // A panel is hidden by hide-LANG, or by a *-only attribute naming a different language.
+    function isLangHidden(container, lang) {
+        if (container.hasAttribute(`hide-${lang}`)) return true
+        const onlyLangs = Object.keys(CM_MODE).filter(name => container.hasAttribute(`${name}-only`))
+        return onlyLangs.length > 0 && !onlyLangs.includes(lang)
     }
 
     // Join non-empty code chunks with newlines
@@ -444,6 +449,14 @@
     function initPlayground(container, hiddenBlocks, ownBlocksByPlayground) {
         if (container.dataset.initialized) return
         container.dataset.initialized = 'true'
+
+        // Hidden playgrounds render nothing; their id=NAME blocks were already
+        // registered in beforeEach for use by later playgrounds.
+        if (container.hasAttribute('hidden')) {
+            container.innerHTML = ''
+            container.style.display = 'none'
+            return
+        }
 
         const height = container.dataset.height ?? '80vh'
         const width = container.dataset.width ?? '50%'
