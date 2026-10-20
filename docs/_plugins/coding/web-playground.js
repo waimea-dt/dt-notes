@@ -170,6 +170,27 @@
         return chunks.filter(Boolean).join('\n')
     }
 
+    // Runs first in every preview. Scripts inside the iframe (e.g. a game calling canvas.focus())
+    // would otherwise scroll the parent page to the playground on load.
+    const NO_SCROLL_FOCUS_SHIM = `<script>
+(function () {
+    const nativeFocus = HTMLElement.prototype.focus
+    HTMLElement.prototype.focus = function (options) {
+        return nativeFocus.call(this, { preventScroll: true, ...options })
+    }
+})()
+<\/script>`
+
+    // Preview iframes are srcdoc documents, so relative URLs in student code would resolve against
+    // the site root. A <base> pointing at the current page's folder makes "assets/..." work as taught.
+    function getPageBaseUrl() {
+        const isHistoryMode = window.$docsify?.routerMode === 'history'
+        const routePath = isHistoryMode ? location.pathname : location.hash.replace(/^#/, '').split('?')[0]
+        const routeDir = routePath.replace(/[^/]*$/, '').replace(/^\//, '')
+        const root = isHistoryMode ? location.origin + '/' : location.href.split('#')[0].replace(/[^/]*$/, '')
+        return new URL(routeDir, root).href
+    }
+
     // Build a self-contained HTML string for the preview iframe.
     // Combines hidden setup code with visible code.
     function buildSrcdoc(htmlObj, cssObj, jsObj) {
@@ -178,7 +199,9 @@
         parts.push('<html>')
         parts.push('<head>')
         parts.push('<meta charset="utf-8">')
+        parts.push(`<base href="${getPageBaseUrl()}">`)
         parts.push('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
+        parts.push(NO_SCROLL_FOCUS_SHIM)
 
         // Combine hidden + visible CSS
         const fullCss = joinCode(cssObj.hidden, cssObj.visible)
