@@ -37,11 +37,19 @@
     pointer-events: none;
     z-index: 1000;
 
-    /* Lucide info icon - inline SVG */
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>');
-    background-repeat: no-repeat;
-    background-position: var(--space-small) 0.7rem;
-    background-size: 1.2rem 1.2rem;
+    &::after {
+        content: "";
+        position: absolute;
+        top: 0.6em;
+        left: var(--space-small);
+        height: 1.2rem;
+        width: 1.2rem;
+        mask-image: var(--butt-icon-info);
+        background-color: currentColor;
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: contain;
+    }
 }
 
 .dt-tooltip.is-visible {

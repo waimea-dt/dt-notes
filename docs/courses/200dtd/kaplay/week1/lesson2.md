@@ -21,11 +21,11 @@ Without looking at Lesson 1, answer the following:
 
 ## Learning Goals
 
-- [ ] I can make **choices** / **decisions** with `if`, `else if` and `else`
-- [ ] I can **compare** values with `===`, `<`, `>=` and so on
-- [ ] I can **combine conditions** with `&&` (and), `||` (or) and `!` (not)
-- [ ] I can **repeat** code with `for` and `while` loops
-- [ ] I can write a simple **function**
+- <check> I can make **choices** / **decisions** with `if`, `else if` and `else`
+- <check> I can **compare** values with `===`, `<`, `>=` and so on
+- <check> I can **combine conditions** with `&&` (and), `||` (or) and `!` (not)
+- <check> I can **repeat** code with `for` and `while` loops
+- <check> I can write a simple **function**
 
 ## Python vs JavaScript
 

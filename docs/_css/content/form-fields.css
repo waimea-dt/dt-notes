@@ -16,7 +16,8 @@
 
         &:is(textarea.response) {
             width: 100%;
-            min-height: 5.25em;
+            min-width: 10rem;
+            min-height: 3.5em;
             field-sizing: content;
         }
 
@@ -30,5 +31,18 @@
         outline: 2px solid var(--highlight-color);
         outline-offset: 2px;
         border-radius: 3px;
+    }
+
+    li:has(input[type=checkbox][data-persist-bound]:first-child) {
+        list-style: none;
+        position: relative;
+        padding-left: 0.5em;
+
+        input[type=checkbox] {
+            display: inline-block;
+            position: absolute;
+            left: -1.25em;
+            top: 0.21em;
+        }
     }
 }

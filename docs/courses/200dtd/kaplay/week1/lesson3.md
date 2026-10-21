@@ -25,11 +25,11 @@ Try not to loop back at the previous lessons...
 
 ## Learning Goals
 
-- [ ] I can start a **Kaplay** game with `kaplay()`
-- [ ] I understand **screen coordinates** (and why `y` goes *down*)
-- [ ] I can **add** things with `add([...])` and components like `rect()`, `pos()` and `color()`
-- [ ] I can load and show a **sprite**
-- [ ] I can use a `for` loop to **add lots of things** at once
+- <check> I can start a **Kaplay** game with `kaplay()`
+- <check> I understand **screen coordinates** (and why `y` goes *down*)
+- <check> I can **add** things with `add([...])` and components like `rect()`, `pos()` and `color()`
+- <check> I can load and show a **sprite**
+- <check> I can use a `for` loop to **add lots of things** at once
 
 
 ## The Big Idea: Components

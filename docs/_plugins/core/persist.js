@@ -23,7 +23,7 @@
  *   - Saved values only restore if the page version they were based on is unchanged.
  *   - Values equal to the page version are not stored.
  *   - Edited elements get the .persist-edited class.
- *   - Editors get a top-right reset icon (CSS pseudo element) when edited.
+ *   - Editors get a top-right "Reset code" button (with tooltip) when edited.
  *   - A "Clear Answers" button is added to the page when anything is tracked.
  */
 
@@ -31,8 +31,12 @@
     const STORAGE_PREFIX = 'dtnotes:'
     const EDITED_CLASS = 'persist-edited'
     const HOST_CLASS = 'persist-host'
-    const CLEAR_BUTTON_CLASS = 'persist-clear-all'
     const HEADING_SELECTOR = 'h1,h2,h3,h4,h5,h6'
+
+    const CLEAR_BUTTON_CLASS = 'persist-clear-all'
+    const RESET_BUTTON_CLASS = 'persist-reset-code'
+    const CLEAR_BUTTON_TEXT  = 'Clear My Edits'
+    const CLEAR_CONFIRM_TEXT = 'Clear all your saved answers, inputs and edited code on this page?'
 
     // Everything tracked on the current page, so "Clear Answers" can reset it live.
     const registry = new Set()
@@ -124,7 +128,10 @@
         const storageKey = buildKey(el, type, sub)
         const base = hashValue(original)
         const isOriginal = value => JSON.stringify(value) === JSON.stringify(original)
-        const markEdited = edited => indicator.classList.toggle(EDITED_CLASS, edited)
+        const markEdited = edited => {
+            indicator.classList.toggle(EDITED_CLASS, edited)
+            updateClearButton()
+        }
 
         const saved = readRecord(storageKey)
         if (saved?.base === base && !isOriginal(saved.value)) {
@@ -153,6 +160,7 @@
 
         registry.add({ indicator, reset })
         ensureClearButton(el)
+        updateClearButton()
 
         return { save, reset }
     }
@@ -173,15 +181,15 @@
         el.addEventListener(isCheckbox ? 'change' : 'input', save)
     }
 
-    // The reset icon is the editor's ::after pseudo element, so hit-test it by its computed box.
-    function isResetIconClick(host, event) {
-        if (event.target !== host) return false
-        const style = getComputedStyle(host, '::after')
-        const rect = host.getBoundingClientRect()
-        const right = rect.right - parseFloat(style.right)
-        const top = rect.top + parseFloat(style.top)
-        return event.clientX >= right - parseFloat(style.width) && event.clientX <= right
-            && event.clientY >= top && event.clientY <= top + parseFloat(style.height)
+    function createResetButton(reset) {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = RESET_BUTTON_CLASS
+        button.dataset.tooltip = 'Reset code'
+        button.setAttribute('aria-label', 'Reset code')
+        button.innerHTML = '<i data-lucide="list-restart"></i>'
+        button.addEventListener('click', reset)
+        return button
     }
 
     function bindEditor(cm, { el, type, sub, original = cm.getValue(), read, write }) {
@@ -204,9 +212,8 @@
         })
 
         cm.on('change', save)
-        host.addEventListener('click', event => {
-            if (isResetIconClick(host, event)) reset()
-        })
+        host.append(createResetButton(reset))
+        window.DocsifyUtils?.createLucideIcons()
     }
 
     // -------------------------------------------------------------------------
@@ -214,13 +221,21 @@
     // -------------------------------------------------------------------------
 
     function clearPage() {
-        if (!window.confirm('Clear all your saved answers and code on this page?')) return
+        if (!window.confirm(CLEAR_CONFIRM_TEXT)) return
 
         removeRecordsWithPrefix(`${STORAGE_PREFIX}${getRouteKey()}:`)
         registry.forEach(entry => {
             if (entry.indicator.isConnected) entry.reset()
             else registry.delete(entry)
         })
+    }
+
+    // The button is only shown while something on the page is edited
+    function updateClearButton() {
+        const button = document.querySelector(`.${CLEAR_BUTTON_CLASS}`)
+        if (!button) return
+        button.hidden = ![...registry].some(entry =>
+            entry.indicator.isConnected && entry.indicator.classList.contains(EDITED_CLASS))
     }
 
     function ensureClearButton(el) {
@@ -230,7 +245,8 @@
         const button = document.createElement('button')
         button.type = 'button'
         button.className = CLEAR_BUTTON_CLASS
-        button.innerHTML = '<i data-lucide="list-restart"></i><span>Clear Answers</span>'
+        button.hidden = true
+        button.innerHTML = `<i data-lucide="list-restart"></i><span>${CLEAR_BUTTON_TEXT}</span>`
         button.addEventListener('click', clearPage)
         root.append(button)
 

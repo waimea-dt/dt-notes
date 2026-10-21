@@ -4,10 +4,10 @@ You already know Python. JavaScript (JS) is a different language, but many of th
 
 ## Learning Goals
 
-- [ ] I can **declare** a variable with `const` and `let`
-- [ ] I know three **types** of value: string, number and boolean
-- [ ] I can **display** a value with `console.log`
-- [ ] I can build a message with a **template literal**
+- <check> I can **declare** a variable with `const` and `let`
+- <check> I know three **types** of value: string, number and boolean
+- <check> I can **display** a value with `console.log`
+- <check> I can build a message with a **template literal**
 
 ## Python vs JavaScript
 
@@ -118,12 +118,12 @@ console.log(lives)
 
 Which of these should be `const` and which should be `let`? Explain your choices.
 
-| Variable for...               | `const`                 | `let`                   | Reason  |
-| ----------------------------- | :---------------------: | :---------------------: | ------- |
-| the name of your character    | <input type="checkbox"> | <input type="checkbox"> | <input placeholder="Explain..."> |
-| the number of coins collected | <input type="checkbox"> | <input type="checkbox"> | <input placeholder="Explain..."> |
-| the maximum number of lives   | <input type="checkbox"> | <input type="checkbox"> | <input placeholder="Explain..."> |
-| whether the player is alive   | <input type="checkbox"> | <input type="checkbox"> | <input placeholder="Explain..."> |
+| Variable for...               | `const` |  `let`  | Reason                           |
+| ----------------------------- | :-----: | :-----: | -------------------------------- |
+| the name of your character    | <check> | <check> | <response placeholder="Explain..."> |
+| the number of coins collected | <check> | <check> | <response placeholder="Explain..."> |
+| the maximum number of lives   | <check> | <check> | <response placeholder="Explain..."> |
+| whether the player is alive   | <check> | <check> | <response placeholder="Explain..."> |
 
 
 ### 3. String templates
@@ -280,10 +280,10 @@ console.log(`Gold: ${gold}`)
 
 Your program must:
 
-- [ ] use `const` for things that never change
-- [ ] use `let` for at least one thing that changes
-- [ ] include a **string**, a **number** and a **boolean**
-- [ ] print the card using template literals
+- <check> use `const` for things that never change
+- <check> use `let` for at least one thing that changes
+- <check> include a **string**, a **number** and a **boolean**
+- <check> print the card using template literals
 
 
 ```js run
