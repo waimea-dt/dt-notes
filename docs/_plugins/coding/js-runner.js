@@ -96,7 +96,9 @@
             lineNumbers: false,
             autoCloseBrackets: true,
             matchBrackets: true,
-            indentUnit: 4,
+            indentUnit:        4,
+            tabSize:           4,
+            indentWithTabs: false,
             viewportMargin: Infinity,
             styleActiveLine: true,
         })

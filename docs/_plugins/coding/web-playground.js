@@ -262,8 +262,10 @@
             theme:             'material-darker',
             lineNumbers:       false,
             lineWrapping:      true,
-            tabSize:           2,
+            tabSize:           4,
+            indentUnit:        4,
             indentWithTabs:    false,
+            extraKeys:         { Tab: 'insertSoftTab' },
             autoCloseBrackets: true,
             autoCloseTags:     true,
         })

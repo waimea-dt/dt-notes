@@ -60,6 +60,8 @@
                 autoCloseBrackets: true,
                 matchBrackets:     true,
                 indentUnit:        4,
+                tabSize:           4,
+                indentWithTabs:    false,
                 lineWrapping:      false,
                 viewportMargin:    Infinity,
                 styleActiveLine:   true,
