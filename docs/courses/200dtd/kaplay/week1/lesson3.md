@@ -2,21 +2,37 @@
 
 Time to stop printing words and start drawing pictures! **Kaplay** is a JavaScript library that does the hard work of making games: drawing, sound, keyboard, collisions and more. You just describe what you want.
 
-## Warm-up
+## Warm-Up
+
+Try not to loop back at the previous lessons...
 
 1. Write a `for` loop that prints the numbers 1 to 5.
+
+    ```js run
+    // Print the numbers 1 to 5
+
+
+    ```
+
 2. What's the difference between `=` and `===`?
+
+    <response>
+
 3. What does `i++` do?
+
+    <response>
+
 
 ## Learning Goals
 
-- [ ] I can start a Kaplay game with `kaplay()`
-- [ ] I understand screen coordinates (and why `y` goes *down*)
-- [ ] I can add things with `add([...])` and components like `rect()`, `pos()` and `color()`
-- [ ] I can load and show a sprite
-- [ ] I can use a `for` loop to add lots of things at once
+- [ ] I can start a **Kaplay** game with `kaplay()`
+- [ ] I understand **screen coordinates** (and why `y` goes *down*)
+- [ ] I can **add** things with `add([...])` and components like `rect()`, `pos()` and `color()`
+- [ ] I can load and show a **sprite**
+- [ ] I can use a `for` loop to **add lots of things** at once
 
-## The big idea: components
+
+## The Big Idea: Components
 
 In Kaplay, everything on screen is a **game object**. You make one by giving `add()` a **list of components**. Each component adds one ability or one property.
 
@@ -30,19 +46,22 @@ add([
 
 Think of it like building a character sheet: pick the traits you want.
 
-| Component | What it does | Example |
-|---|---|---|
-| `rect(w, h)` | Draws a rectangle | `rect(60, 40)` |
-| `circle(radius)` | Draws a circle | `circle(25)` |
-| `sprite(name)` | Draws a picture | `sprite("bean")` |
-| `text(words)` | Shows words | `text("Hello!")` |
-| `pos(x, y)` | Sets the position | `pos(200, 150)` |
-| `color(r, g, b)` | Sets the colour (0 to 255 each) | `color(255, 0, 0)` |
-| `anchor(point)` | Which part of the object sits on `pos` | `anchor("center")` |
+| Component            | What it does                               | Example                |
+| -------------------- | ------------------------------------------ | ---------------------- |
+| `rect(w, h)`(js)     | Draws a rectangle                          | `rect(60, 40)`(js)     |
+| `circle(radius)`(js) | Draws a circle                             | `circle(25)`(js)       |
+| `sprite(name)`(js)   | Draws a picture                            | `sprite("bean")`(js)   |
+| `text(words)`(js)    | Shows words                                | `text("Hello!")`(js)   |
+| `pos(x, y)`(js)      | Sets the position                          | `pos(200, 150)`(js)    |
+| `color(r, g, b)`(js) | Sets the colour (0 to 255 each)            | `color(255, 0, 0)`(js) |
+| `anchor(point)`(js)  | Which part of the object sits on `pos`(js) | `anchor("center")`(js) |
 
 ## Where is `(0, 0)`?
 
-In maths class, `y` goes **up**. On a screen, `y` goes **down**!
+In maths class, `y`(js) goes **up**.
+
+On a **screen**, `y`(js) goes **down**!
+
 
 ```
 (0,0) ----------> x gets bigger
@@ -52,53 +71,21 @@ In maths class, `y` goes **up**. On a screen, `y` goes **down**!
 y gets bigger
 ```
 
-So `pos(100, 50)` means *100 across, 50 down*, measured from the **top-left** corner.
+So `pos(100, 50)`(js) means *100 across, 50 down*, measured from the **top-left** corner.
 
-> **Handy helpers:** `width()` gives the width of the game screen and `height()` gives the height. `pos(width() / 2, height() / 2)` is always the middle.
+> [!TIP]
+> Helper functions:`width()`(js) gives the width of the game screen and `height()`(js) gives the height. `pos(width() / 2, height() / 2)`(js) is always the centre of the screen.
 
----
 
-## 1. Predict
+## Predict
 
-Look at this code. In your notebook, sketch where you think things will appear on a 400 by 300 screen.
+*DON'T PEEK AT THE RUN PART BEFORE YOU DO THIS!*
+
+Look at this code:
 
 ```js
-kaplay({ width: 400, height: 300, background: [20, 20, 40] })
-
-add([
-    rect(60, 60),
-    pos(100, 100),
-    color(0, 200, 120),
-])
-
-add([
-    circle(30),
-    pos(300, 200),
-    color(255, 100, 100),
-])
-```
-
-## 2. Run
-
-Press **Run** and compare it with your sketch.
-
-<web-playground max-js>
-
-```html id=kaplay
-<script src="https://unpkg.com/kaplay@4000.0.0-alpha.27.1/dist/kaplay.js"></script>
-```
-
-```js id=kaplay
-const gemImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABV0lEQVR4nO2XvQ3CMBCFD0SRBgagQpmDigGyAEMwARUTZIgskAFSZYMsQJWSImkoIpnqkInP9p3tCAo+iYbEvuf3/BeAP5FU46Ri2q9TFI8RsQlplJW1URD/e16KlaQv0ctYaH86wu2wM55d7wP0TSsSIYoAi7vYn46kQzZYSrFDLE6NHrneBwAA6JsWAPyReAXMR+0qPheBQlwinBFwLPfhi4RUNrcc4Ywe0V0AsEdiLMMUo6bAPvuyVrqIDzWS2RsLijAisDkgsR+ZxwBgTkr2PkB1luJ9Q8DzUqxwwqSGWpKkA0uIsO0H1ggoEVxbqSVo24yijuMUOAWkiCJqK6ZE+GKQnAMsAaFw7wUsAUsuTbYDughbDPpdgHsrEkXAcWLRK9nPkJW1yruHqsbp/cu7hwo5TYMcoKKQWo+IG+joHyTn7SaqryCyslbVOAVZn4zYb8Ov8wLOT9xyaH0ItQAAAABJRU5ErkJggg=="
-const ghostImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAArElEQVR4nGNgGOmAkRxNH7/+/I9Ljp+bnSQziVaMz1JKHMNEK8uJ1YfXheRajA3gCg2cIUBNy/GZR1QU0BJgdQC1fY/P3AEPAYyEgc/3ckqGcPaje+dJlocB5ARJdAggG04OHxcY8CgYdQDRDkBPVKTycQGScgG1AFm5gFZg1AGjDiDoAELNKkrl8ToAphmXIZTKE3QAPQBOB6C7mtp8nIBQSUht+QGPglEwCgCqd07Y6LGzvAAAAABJRU5ErkJggg=="
-```
-
-```html depends=kaplay
-<!-- Kaplay is already loaded for you. Write your game in the JS tab. -->
-```
-
-```js depends=kaplay
 kaplay({
+    width: 400, height: 500,
     background: [20, 20, 40]
 })
 
@@ -110,60 +97,120 @@ add([
 
 add([
     circle(30),
-    pos(300, 200),
+    pos(300, 400),
+    color(255, 100, 100),
+])
+```
+
+Predict what you think things will appear on a 400 pixel wide by 500 pixel high screen. Be specific - you might find it easier to sketch it out on paper.
+
+<response>
+
+> [!TIP]
+> **Colours** are defined using three values for the primary light colours: **red**, **green** and **blue**. Each value can be from **0 to 255**. The values set how much of each primary colour is mixed to form the final colour (using [additive colour mixing](https://rmit.pressbooks.pub/colourtheory1/chapter/additive-and-subtractive-colour-systems/)).
+>
+> So:
+> - `color(0, 0, 0)`(js) would be **black**
+> - `color(255, 255, 255)`(js) would be **white**
+> - `color(255, 0, 0)`(js) would be **bright red**
+> - `color(0, 100, 0)`(js) would be **dark green**
+
+
+## Run
+
+<web-playground hidden>
+
+```html id=kaplay
+<script src="https://unpkg.com/kaplay@4000.0.0-alpha.27.1/dist/kaplay.js"></script>
+```
+
+```css id=kaplay
+body {
+    background: black;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+}
+```
+</web-playground>
+
+Here is the Kaplay code running in a web view. Compare it with your prediction - any differences?
+
+<web-playground data-height="32em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+kaplay({
+    width: 400, height: 500,
+    background: [20, 20, 40]
+})
+
+add([
+    rect(60, 60),
+    pos(100, 100),
+    color(0, 200, 120),
+])
+
+add([
+    circle(30),
+    pos(300, 400),
     color(255, 100, 100),
 ])
 ```
 
 </web-playground>
 
-## 3. Investigate
 
-Answer these in your notebook. You can experiment in the playground above.
 
-1. The green square is at `pos(100, 100)`. Which corner of the square sits at that point?
-2. The circle is at `pos(300, 200)`. Which part of the circle sits at that point? Is it the same part as the square?
-3. What happens if you **delete** the `pos(...)` line from the square?
-4. What happens if you delete the `color(...)` line?
-5. What's the order of the components? Does it matter if you swap `pos` and `color`?
-6. What do you think `anchor("center")` will do? Try adding it to the square.
+## Investigate
 
-## 4. Modify: sprites
+### Positioning
+
+The green square uses `pos(100, 100)`(js). Which corner of the square sits at that point?
+
+<response>
+
+The circle is at `pos(300, 400)`(js). Which part of the circle sits at that point? Is it the same part as the square?
+
+<response>
+
+What happens if you **delete** the `pos(...)`(js) line from the square? How about for the circle?
+
+<response>
+
+### Colours
+
+What happens if you delete the `color(...)`(js) line?
+
+<response>
+
+### Component Order
+
+What's the order of the components? Does it matter if you swap `pos`(js) and `color`?
+
+<response>
+
+### Anchoring
+
+What do you think `anchor("center")`(js) will do? Try adding it to the square.
+
+<response>
+
+
+## Modify
+
+### Sprites
 
 A **sprite** is a picture. We load it first, then use it with `sprite("name")`.
 
 ```js
-loadBean()                          // loads Kaplay's built-in bean
-loadSprite("ghost", ghostImage)     // loads our own picture and names it "ghost"
-
-add([
-    sprite("bean"),
-    pos(200, 150),
-    anchor("center"),
-])
-```
-
-> **In your starter project**, pictures live in `assets/images/`, so you'd write `loadSprite("ghost", "assets/images/ghost.png")`. In this playground the picture is stored in a variable called `ghostImage` for you.
-
-Your tasks:
-
-1. Add a ghost in each corner of the screen
-2. Put the bean in the exact centre using `width()` and `height()`
-3. Change the background colour
-
-<web-playground max-js>
-
-```html depends=kaplay
-<!-- Kaplay is already loaded for you. Write your game in the JS tab. -->
-```
-
-```js depends=kaplay
-kaplay({
-    background: [20, 20, 40]
-})
-
-loadBean()
-loadSprite("ghost", ghostImage)
+loadBean()                                      // loads Kaplay's built-in bean
+loadSprite("ghost", "assets/images/ghost.png")  // loads an image and names it "ghost"
 
 add([
     sprite("bean"),
@@ -178,58 +225,81 @@ add([
 ])
 ```
 
+> [!NOTE]
+> In your Kaplay projects, we have a folder called `assets` and inside that we place images in an `images` folder, sounds in a `sounds` folder, etc. So that is why you'd write `loadSprite("ghost", "assets/images/ghost.png")`(js)
+
+
+### Surrounded by Ghosts
+
+Your tasks:
+
+1. Add a ghost in each corner of the screen
+2. Put the bean in the exact centre using `width()`(js) and `height()`(js)
+3. Change the background colour
+
+<web-playground data-height="32em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+kaplay({
+    width: 400, height: 500,
+    background: [20, 20, 40]
+})
+
+loadBean()
+loadSprite("ghost", "assets/images/ghost.png")
+
+add([
+    sprite("bean"),
+    pos(200, 150),
+    anchor("center"),
+])
+
+add([
+    sprite("ghost"),
+    pos(50, 50),
+    anchor("center"),
+])
+```
+
 </web-playground>
 
-## 5. Loops for the win
 
-Imagine adding ten ghosts by copy-pasting ten `add()` blocks. Yikes! Remember loops?
+## Make
+
+### Loops for the Win
+
+Imagine adding ten ghosts by copy-pasting ten `add()`(js) blocks. Yikes! Remember **loops**?
 
 ```js
 for (let i = 0; i < 10; i++) {
     add([
         sprite("ghost"),
-        pos(20 + i * 38, 40),
+        pos(50, 50 + i * 45),
         anchor("center"),
     ])
 }
 ```
 
-### Parsons Problem
+1. In the first lap `i` is `0`. What is the `y` position of the first ghost? How about the second? And the third?
 
-Order these chunks so the game shows a row of ghosts.
+    <response>
 
-<drag-drop mode="code" title="Ghost Row" sub-title="Start the engine, load the picture, then draw!">
+2. What does `i * 45` do?
 
-1.
-    ```js
-    kaplay({ width: 400, height: 300 })
-    ```
+    <response>
 
-2.
-    ```js
-    loadSprite("ghost", ghostImage)
-    ```
+3. If we change `45` to `60`, what happens to the ghosts? Why might some ghosts go off the screen?
 
-3.
-    ```js
-    for (let i = 0; i < 10; i++) {
-        add([
-            sprite("ghost"),
-            pos(20 + i * 38, 40),
-            anchor("center"),
-        ])
-    }
-    ```
+    <response>
 
-</drag-drop>
 
-### Investigate the loop
-
-1. In the first lap `i` is `0`. What is the `x` position of the first ghost? And the second?
-2. What does `i * 38` do?
-3. Change `38` to `60`. What happens to the row? Why might some ghosts go off the screen?
-
-## 6. Make: Ghost Parade
+### Ghost Parade
 
 Design a pattern using loops. Pick **one** to start:
 
@@ -238,17 +308,22 @@ Design a pattern using loops. Pick **one** to start:
 - A diagonal line of ghosts
 - Alternating colours of rectangles like a rainbow
 
-<web-playground max-js>
+<web-playground data-height="32em" js-only>
 
 ```html depends=kaplay
-<!-- Kaplay is already loaded for you. Write your game in the JS tab. -->
+```
+
+```css depends=kaplay
 ```
 
 ```js depends=kaplay
-kaplay({ width: 400, height: 300, background: [20, 20, 40] })
+kaplay({
+    width: 400, height: 500,
+    background: [20, 20, 40]
+})
 
 loadBean()
-loadSprite("ghost", ghostImage)
+loadSprite("ghost", "assets/images/ghost.png")
 
 // Your pattern goes here!
 
@@ -256,15 +331,17 @@ loadSprite("ghost", ghostImage)
 
 </web-playground>
 
-### Stretch challenges
 
-- Put a loop **inside** a loop to make a full grid of ghosts
+### Stretch Challenges
+
+- Put a loop **inside** a loop ('**nested**' loops) to make a full grid of ghosts
 - Use `rand(min, max)` for a random `x` and `y`, so the ghosts scatter!
-- Make each ghost a slightly different colour (hint: `color(i * 25, 100, 200)`)
+- Make each rectangle a slightly different colour (hint: `color(i * 25, 100, 200)`)
 
----
 
-## Exit ticket
+
+
+## Exit Ticket
 
 Without looking back, answer these three questions:
 
@@ -279,12 +356,21 @@ Without looking back, answer these three questions:
     - [ ] The centre
     - [ ] The top-right corner
 
+- # What does `add([...])`(js) do in Kaplay?
+
+    ---
+
+    - [ ] Starts up the game
+    - [ ] Gives a game object an ability or property
+    - [ ] Colours a point on the screen
+    - [x] Creates a new game object (shape, sprite, etc.)
+
 - # What is a component in Kaplay?
 
     ---
 
     - [ ] A complete game
-    - [x] A part that gives a game object an ability or property
+    - [x] It gives a game object an ability or property
     - [ ] A point on the screen
     - [ ] A JavaScript variable
 
@@ -294,7 +380,7 @@ Without looking back, answer these three questions:
 
     - [ ] It makes each ghost move
     - [ ] It loads the ghost picture
-    - [x] It repeats the same instructions without copying them
+    - [x] It repeats the same instructions without copy/pasting them
     - [ ] It changes the screen size
 
 </quiz>
