@@ -1,0 +1,62 @@
+/* Saved answers / code (see _plugins/core/persist.js) */
+
+.markdown-section {
+    position: relative;
+
+    /* Page-level "Clear Answers" button, top-left of the content */
+    .persist-clear-all {
+        all: unset;
+        position: absolute;
+        top: calc(var(--content-margin-block) * -0.7);
+        left: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4em;
+        font-size: 0.8rem;
+        opacity: 0.3;
+        cursor: pointer;
+        transition: opacity 0.2s;
+
+        &:hover,
+        &:focus-visible {
+            opacity: 1;
+        }
+
+        .icon {
+            width: 1.1em;
+            height: 1.1em;
+        }
+    }
+
+    /* Saved PRIMM prediction */
+    .persist-edited .primm-prediction-output {
+        outline: 1px solid var(--highlight-color);
+    }
+
+    /* Edited code editors: highlight border, plus a reset icon (pseudo element) top-right */
+    .CodeMirror.persist-edited {
+        --persist-reset-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 5H3'/%3E%3Cpath d='M7 12H3'/%3E%3Cpath d='M7 19H3'/%3E%3Cpath d='M12 18a5 5 0 0 0 9-3 4.5 4.5 0 0 0-4.5-4.5c-1.33 0-2.54.54-3.41 1.41L11 14'/%3E%3Cpath d='M11 10v4h4'/%3E%3C/svg%3E");
+
+        outline: 1px solid var(--highlight-color);
+        outline-offset: -1px;
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            z-index: 10;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: currentColor;
+            mask: var(--persist-reset-icon) center / 80% no-repeat;
+            opacity: 0.25;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        &:hover::after {
+            opacity: 0.7;
+        }
+    }
+}

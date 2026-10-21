@@ -63,8 +63,18 @@
         })
     }
 
+    // The editor only holds the editable part of the code (Kotlin Playground keeps the
+    // hidden prefix/suffix separately), so the whole editor value can be saved and restored.
+    function persistKotlinEditors(containers) {
+        containers.forEach(function (container) {
+            const cm = container?.querySelector('.CodeMirror')?.CodeMirror
+            if (cm) window.DocsifyPersist?.bindEditor(cm, { el: container, type: 'kotlin' })
+        })
+    }
+
     function initKotlinRunnerBlocks(root = document) {
         const kotlinCodeSelector = '.kotlin-run pre code.lang-kotlin, .kotlin-run pre code.language-kotlin'
+        const kotlinContainers = []
         const kotlinCodeBlocks = window.DocsifyUtils.processBlocks('kotlin', codeBlock => {
             codeBlock.dataset.kotlinRunnerInitialized = 'true'
             codeBlock.classList.add('kotlin-runner-target')
@@ -72,6 +82,8 @@
             codeBlock.setAttribute('data-autocomplete', 'true')
             // codeBlock.setAttribute('lines', 'true')
             codeBlock.setAttribute('match-brackets', 'true')
+            // Kotlin Playground replaces the code block, so remember its container now
+            kotlinContainers.push(codeBlock.closest('.kotlin-run'))
         }, {
             root,
             selector: kotlinCodeSelector,
@@ -80,11 +92,15 @@
 
         if (!kotlinCodeBlocks.length) return
 
+        // Mark all containers up front so each one's position under its heading is known
+        kotlinContainers.forEach(container => { if (container) container.dataset.persistType = 'kotlin' })
+
         KotlinPlayground('.kotlin-runner-target').then(function () {
             kotlinCodeBlocks.forEach(function (codeBlock) {
                 codeBlock.classList.remove('kotlin-runner-target')
             })
             stripInjectedSemicolons(root)
+            persistKotlinEditors(kotlinContainers)
         }).catch(function (err) {
             kotlinCodeBlocks.forEach(function (codeBlock) {
                 codeBlock.classList.remove('kotlin-runner-target')

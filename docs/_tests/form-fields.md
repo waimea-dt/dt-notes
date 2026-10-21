@@ -26,3 +26,8 @@ Name: <value>
 <response placeholder="x">
 <value>
 ```
+
+
+## Saved answers
+
+Type in the fields above and refresh - values persist (highlighted border). Use **Clear Answers** (top-left) to reset the page.

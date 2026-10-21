@@ -73,6 +73,8 @@
             cm.on('change', () => {
                 code.textContent = hiddenCode ? hiddenCode + '\n' + cm.getValue() : cm.getValue()
             })
+
+            window.DocsifyPersist?.bindEditor(cm, { el: snippet, type: 'python', original: visibleCode })
         })
     }
 

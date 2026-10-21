@@ -255,8 +255,8 @@
 
     const CM_MODE = { html: 'htmlmixed', css: 'css', js: 'javascript' }
 
-    function createEditor(el, content, type) {
-        return CodeMirror(el, {
+    function createEditor(el, content, type, container) {
+        const editor = CodeMirror(el, {
             value:             content,
             mode:              CM_MODE[type],
             theme:             'material-darker',
@@ -269,6 +269,9 @@
             autoCloseBrackets: true,
             autoCloseTags:     true,
         })
+
+        window.DocsifyPersist?.bindEditor(editor, { el: container, type: 'playground', sub: type, original: content })
+        return editor
     }
 
     // Build the widget: editors column on the left, live preview on the right.
@@ -321,7 +324,7 @@
             pane.appendChild(code)
 
             editorsCol.appendChild(pane)
-            editors[name] = createEditor(code, content, name)
+            editors[name] = createEditor(code, content, name, container)
         })
 
         // Re-render the preview after every edit, debounced so it's not thrashing the iframe.

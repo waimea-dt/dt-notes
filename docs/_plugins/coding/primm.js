@@ -82,6 +82,36 @@
 
             this.render()
             this.bindEvents()
+            this.bindPersistence()
+        }
+
+        // The saved prediction text is restored by re-saving it (which locks the widget and
+        // starts the runner); resetting rebuilds the widget back to its unsaved state.
+        bindPersistence() {
+            const persisted = window.DocsifyPersist?.bindCustom({
+                el: this.el,
+                type: 'primm',
+                original: '',
+                read: () => (this.predictionSaved ? this.predictionOutputEl.textContent : ''),
+                write: value => {
+                    if (value) {
+                        this.predictionInputEl.value = value
+                        this.savePrediction()
+                    } else {
+                        this.resetWidget()
+                    }
+                },
+            })
+            this.persistSave = persisted?.save
+        }
+
+        resetWidget() {
+            this.runnerOutputObserver?.disconnect()
+            this.runnerOutputObserver = null
+            this.predictionSaved = false
+            this.runnerInitialised = false
+            this.render()
+            this.bindEvents()
         }
 
         render() {
@@ -261,6 +291,8 @@
             } else {
                 this.setStatus(UI_TEXT.statusUnavailable, 'unavailable')
             }
+
+            this.persistSave?.()
         }
 
         activateLanguageRunner() {

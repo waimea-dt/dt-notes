@@ -86,11 +86,12 @@
         return () => finish()
     }
 
-    function createEditor(pre, code) {
+    function createEditor(container, pre, code) {
         if (!window.CodeMirror) return () => code.textContent
 
+        const original = code.textContent.replace(/\n$/, '')
         const editor = CodeMirror(editorEl => pre.parentNode.insertBefore(editorEl, pre), {
-            value: code.textContent.replace(/\n$/, ''),
+            value: original,
             mode: 'javascript',
             theme: 'material-darker',
             lineNumbers: false,
@@ -104,6 +105,7 @@
         })
         pre.style.display = 'none'
 
+        window.DocsifyPersist?.bindEditor(editor, { el: container, type: 'js', original })
         return () => editor.getValue()
     }
 
@@ -126,7 +128,7 @@
         const code = pre?.querySelector('code')
         if (!code) return
 
-        const getCode = createEditor(pre, code)
+        const getCode = createEditor(container, pre, code)
         const { button, output, outputCode } = buildControls()
         container.append(button, output)
 

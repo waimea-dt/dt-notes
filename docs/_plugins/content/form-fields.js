@@ -16,9 +16,9 @@
     const DEFAULT_PLACEHOLDER = 'Your answer...'
 
     const FIELDS = {
-        response: attrs => `<textarea class="response" placeholder="${escapeHtml(attrs.placeholder ?? DEFAULT_PLACEHOLDER)}"></textarea>`,
-        value: () => '<input class="value">',
-        check: attrs => `<input type="checkbox"${'checked' in attrs ? ' checked' : ''}>`
+        response: attrs => `<textarea class="response" data-form-field="textarea" placeholder="${escapeHtml(attrs.placeholder ?? DEFAULT_PLACEHOLDER)}"></textarea>`,
+        value: () => '<input class="value" data-form-field="input">',
+        check: attrs => `<input type="checkbox" data-form-field="checkbox"${'checked' in attrs ? ' checked' : ''}>`
     }
 
     const TAG_PATTERN = new RegExp(`<(${Object.keys(FIELDS).join('|')})((?:\\s(?:"[^"]*"|'[^']*'|[^>"'])*?)?)\\s*\\/?>(?:\\s*<\\/\\1>)?`, 'g')
@@ -38,6 +38,13 @@
 
     const docsifyFormFields = function (hook) {
         hook.afterEach(replaceFields)
+
+        // Saved answers are restored here (see core/persist.js)
+        hook.doneEach(function () {
+            document.querySelectorAll('[data-form-field]').forEach(el => {
+                window.DocsifyPersist?.bindField(el, el.dataset.formField)
+            })
+        })
     }
 
     window.DocsifyUtils.registerPlugin(docsifyFormFields)
