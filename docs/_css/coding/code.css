@@ -134,7 +134,7 @@
 /* Inline code */
 .markdown-section code:not([class*="lang-"]):not([class*="language-"]),
 .markdown-section :not(pre) > code[class*="language-"] {
-    padding: 0.05em 0.5em;
+    padding: 0.1em 0.3em 0.15em;
     border: 1px solid var(--code-border-color);
     border-radius: 0.3em;
 }
