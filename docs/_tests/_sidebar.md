@@ -46,6 +46,7 @@
     - [Unicode Lucide](/_tests/unicode-lucide.md)
     - [Definitions](/_tests/definitions.md)
     - [Video Embeds](/_tests/video-embed.md)
+    - [GitHub Repo Links](/_tests/github-repo.md)
 
 - <i data-lucide="bar-chart-2"></i> Visualisation
     - [Timeline](/_tests/timeline.md)
