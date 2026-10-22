@@ -56,6 +56,7 @@
  *   hide-css            - No CSS panel (overrides show-css)
  *   hide-js             - No JS panel (overrides show-js)
  *                         hide-* options still include hidden id=NAME blocks of that language.
+ *   hide-all            - No code panels at all; code still runs and the output fills the whole block
  *   hidden              - Render nothing; id=NAME blocks inside are still available to later playgrounds via depends=NAME
  *   html-only           - Only the HTML panel (same as hide-css hide-js)
  *   css-only            - Only the CSS panel (same as hide-html hide-js)
@@ -151,7 +152,11 @@
         const defaults = { html: DEFAULT_HTML_CONTENT, css: DEFAULT_CSS_CONTENT, js: DEFAULT_JS_CONTENT }
 
         Object.keys(CM_MODE).forEach(lang => {
-            if (isLangHidden(container, lang)) {
+            if (container.hasAttribute('hide-all')) {
+                // No panels, but all code (including the normally visible blocks) still runs.
+                const code = joinCode(result[lang]?.hidden, result[lang]?.visible)
+                result[lang] = code ? { visible: null, hidden: code } : null
+            } else if (isLangHidden(container, lang)) {
                 // No panel and no placeholder. Author-supplied hidden (id=NAME) code still runs.
                 result[lang] = result[lang]?.hidden ? { visible: null, hidden: result[lang].hidden } : null
             } else if (result[lang] === null && (lang === 'html' || container.hasAttribute(`show-${lang}`))) {
@@ -165,7 +170,7 @@
 
     // A panel is hidden by hide-LANG, or by a *-only attribute naming a different language.
     function isLangHidden(container, lang) {
-        if (container.hasAttribute(`hide-${lang}`)) return true
+        if (container.hasAttribute('hide-all') || container.hasAttribute(`hide-${lang}`)) return true
         const onlyLangs = Object.keys(CM_MODE).filter(name => container.hasAttribute(`${name}-only`))
         return onlyLangs.length > 0 && !onlyLangs.includes(lang)
     }
@@ -283,9 +288,13 @@
             return gutter
         }
 
+        // With no visible editors (hide-all) the preview fills the whole block
+        const hasEditors = Object.keys(contents).length > 0
+        container.classList.toggle('wp-no-editors', !hasEditors)
+
         const editorsCol = document.createElement('div')
         editorsCol.className = 'wp-editors'
-        container.appendChild(editorsCol)
+        if (hasEditors) container.appendChild(editorsCol)
 
         const previewCol = document.createElement('div')
         previewCol.className = 'wp-preview'
@@ -410,6 +419,7 @@
         // stay in sync with the CSS container query layout.
         let hSplit = null
         function syncHorizontalSplit() {
+            if (!hasEditors) return
             const isWide = container.getBoundingClientRect().width >= WIDE_LAYOUT_BREAKPOINT_PX
             if (isWide && !hSplit) {
                 const containerWidth = container.getBoundingClientRect().width

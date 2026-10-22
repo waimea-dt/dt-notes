@@ -139,6 +139,16 @@
     }
 
 
+    /* hide-all: preview is the only column, filling the whole block */
+    &.wp-no-editors {
+        height: var(--wp-height, 20em);
+
+        .wp-preview {
+            flex: 1;
+            height: 100%;
+        }
+    }
+
     /* Preview column */
     .wp-preview {
         display: flex;

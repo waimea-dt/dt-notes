@@ -346,6 +346,26 @@ body {
 
 </web-playground>
 
+## hide-all (output only)
+
+No code panels are shown, but the code still runs and the output fills the block.
+
+<web-playground hide-all data-height="12em">
+
+```html
+<h1 id="msg">Hello</h1>
+```
+
+```css
+body { font-family: system-ui, sans-serif; text-align: center; }
+```
+
+```js
+document.getElementById('msg').textContent = 'Output only!'
+```
+
+</web-playground>
+
 ## Height checks
 
 Small:
