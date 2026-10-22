@@ -73,6 +73,7 @@
 
 (function () {
 
+    const UPDATE_DEBOUNCE_MS = 1500
     const WIDE_LAYOUT_BREAKPOINT_PX = 900
     const DEFAULT_HTML_CONTENT = '<h1>Hello, World!</h1>\n<p>This is a test page</p>'
     const DEFAULT_CSS_CONTENT = '/* Add CSS rules here */'
@@ -341,7 +342,7 @@
         Object.values(editors).forEach(ed => {
             ed.on('change', () => {
                 clearTimeout(debounceTimer)
-                debounceTimer = setTimeout(() => renderPreview(iframe, editors, contentObjs), 400)
+                debounceTimer = setTimeout(() => renderPreview(iframe, editors, contentObjs), UPDATE_DEBOUNCE_MS)
             })
         })
 
