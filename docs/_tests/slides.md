@@ -67,14 +67,15 @@ Content before.
 
 |||
 
-Left column:
+### Left column
 
-- One
-- **Two**
+As nightmarishly lethal, memetically programmed death-machines went...
 
 |||
 
-![](../_assets/macs/macintosh.svg)
+### Right column
+
+... these were the nicest you could ever hope to meet.
 
 |||
 

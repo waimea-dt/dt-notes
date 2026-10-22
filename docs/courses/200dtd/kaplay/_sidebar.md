@@ -14,10 +14,9 @@
 
 #### Menu
 
-- Week 1: Things that Move
-    - [Lesson 1: Variables](/courses/200dtd/kaplay/week1/lesson1.md)
-    - [Lesson 2: Choices & Loops](/courses/200dtd/kaplay/week1/lesson2.md)
-    - [Lesson 3: Hello, Kaplay](/courses/200dtd/kaplay/week1/lesson3.md)
-    - [Lesson 4: Make it Move](/courses/200dtd/kaplay/week1/lesson4.md)
-    - [<i data-lucide="square-play"></i> Slides](/courses/200dtd/kaplay/week1/teach.md)
+- [Week 1: Things that Move](/courses/200dtd/kaplay/week1/)
+- [Week 2: ](/courses/200dtd/kaplay/week2/)
+- [Week 3: ](/courses/200dtd/kaplay/week3/)
+- [Week 4: ](/courses/200dtd/kaplay/week4/)
+- [Week 5: ](/courses/200dtd/kaplay/week5/)
 

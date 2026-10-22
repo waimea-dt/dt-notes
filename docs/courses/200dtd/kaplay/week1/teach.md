@@ -1,6 +1,8 @@
 # Week 1: Things the Move
 
 
+## Introduction
+
 <slides>
 
 # Introduction
@@ -42,6 +44,166 @@ JavaScript is no different to Python - just some syntax differences
 </slides>
 
 
+## Overview of PRIMM
+
+<slides>
+
+# PRIMM
+
+### **P**redict, **R**un, **I**nvestigate, **M**odify, **M**ake
+
+---
+
+## **PRIMM** is a framework for learning programming
+
+It is based on good research and evidence of effectiveness
+
+---
+
+## **P**redict...
+
+Look at some existing code and **write a prediction** of what you think it will do
+
+Note:
+- Aims to reinforce reading and understanding code
+- Reveals issues with learners early one
+- Low risk - no ownership of code
+
+---
+
+## **P**redict...
+
+```js
+let coins = 5
+coins = coins + 3
+console.log(`Coins: ${coins}`)
+```
+
++++
+
+I predict this will... **show the number 8**
+
+Note:
+- What is this code going to do - be precise!
+- Discuss in pairs
+
+---
+
+## **R**un...
+
+**Run the code** your were looking at to see if it matches your predictions
+
+Note:
+- Validates mental model of code
+- Code is supplied, so no risk of errors
+
+---
+
+## **R**un...
+
+```js
+let coins = 5
+coins = coins + 3
+console.log(`Coins: ${coins}`)
+```
+
++++
+
+`Coins: 8`
+
++++
+
+Reflection... **The output showed the word 'Coins' too, not just the value 8**
+
+Note:
+- Matches prediction
+- Exactly?!
+
+---
+
+## **I**nvestigate...
+
+**Look deeper** into the code and how it works via various exercises
+
+Note:
+- Deepens understanding
+- Acquire vocabulary
+
+---
+
+## **I**nvestigate...
+
+|||
+
+Trace this code...
+
+```js
+let hp = 100
+hp = hp - 50 // Ouch!
+console.log(hp)
+hp = hp + 25 // Heal
+console.log(hp)
+```
+
+|||
+
++++
+
+| Line | `hp` | Output |
+| :--: | :--: | :----: |
+|  1   | 100  |  ---   |
+|  2   |  50  |  ---   |
+|  3   |  50  |   50   |
+|  4   |  75  |  ---   |
+|  5   |  75  |   75   |
+
+|||
+
+Note:
+- Might also rearrange code into correct order, debug code, etc.
+
+---
+
+## **M**odify...
+
+Make **changes** to some existing code: modify values, logic, etc.
+
+Note:
+- Safe, low-risk for students - not their code
+- Shifts to being their code
+- Grows confidence
+
+---
+
+## **M**odify...
+
+Fix this bug...
+
+```js run
+let score = 10
+console.log(Score)
+```
+
+Note:
+- What does the error say?
+- ReferenceError: Score is not defined
+- Case sensitivity
+- READ the red text!
+
+---
+
+## **M**ake
+
+Create a **new program** from scratch using the knowledge you have gained
+
+Note:
+- Pair up...?
+- Early finishers do stretch tasks
+
+</slides>
+
+
+## Lesson 1: JS vs Python, variables, etc.
 
 <slides>
 
@@ -150,110 +312,49 @@ console.log(`${player} scored ${score} points`)
 
 Note: **Backticks** <kbd>`</kbd>, not apostrophes <kbd>'</kbd>!
 
----
-
-# PRIMM Tasks
-
-**P**redict, **R**un, **I**nvestigate, **M**odify, **M**ake,
-
----
-
-## Predict...
-
-
-```js
-let coins = 5
-coins = coins + 3
-console.log(`Coins: ${coins}`)
-```
-
-+++
-
-## Run...
-
-+++
-
-
-```
-Coins: 8
-```
-
-Note:
-- What is this code going to do - be precise!
-- Discuss in pairs
-
-
----
-
-## Run...
-
-```js run
-let coins = 5
-coins = coins + 3
-console.log(`Coins: ${coins}`)
-```
-
----
-
-Open the Lesson 1 worksheet.
-
-Do **Predict**, then **Run**, then **Investigate**.
-
-Note:
-Circulate. Look for students who predicted that Snippet 6 would print 2. Ask them to explain their thinking.
-
----
-
-## Parsons Problem
-
-Put the lines in order:
-
-- `console.log(...)`
-- `health = health - 25`
-- `let health = 100`
-- `const heroName = "Pixel"`
-
-Note:
-Do this live on the board first, then students try on the worksheet. The computer reads top to bottom.
-
----
-
-## Bug hunt
-
-```js
-let score = 10
-console.log(Score)
-```
-
-What does the error say?
-
-Note:
-ReferenceError: Score is not defined. Case sensitivity. Teach them to READ the red text.
-
----
-
-## Your turn: character card
-
-Make a card for your own game character.
-
-- a string, a number, a boolean
-- at least one `let`
-- template literals
-
-Note:
-Make step. Pair up. Early finishers do the damage-over-three-hits stretch.
-
----
-
-## Exit ticket
-
-1. `const` vs `let`?
-2. What does `` `Score: ${10 + 5}` `` show?
-3. Is `"true"` the same as `true`?
-
-Note:
-Collect on paper or have them answer verbally on the way out. Use the answers to plan the lesson 2 starter.
-
-
 
 </slides>
+
+
+
+## Lesson 2:
+
+<slides>
+
+# Lesson 2:
+
+</slides>
+
+
+
+
+## Lesson 3:
+
+<slides>
+
+# Lesson 3:
+
+</slides>
+
+
+
+
+## Lesson 4:
+
+<slides>
+
+# Lesson 4:
+
+</slides>
+
+
+
+
+## Lesson 5:
+
+<slides>
+
+# Lesson 5:
+
+</slides>
+
