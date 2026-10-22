@@ -14,9 +14,12 @@
 
 #### Menu
 
-- [Week 1: Things that Move](/courses/200dtd/kaplay/week1/)
-- [Week 2: ](/courses/200dtd/kaplay/week2/)
-- [Week 3: ](/courses/200dtd/kaplay/week3/)
-- [Week 4: ](/courses/200dtd/kaplay/week4/)
-- [Week 5: ](/courses/200dtd/kaplay/week5/)
+- [<i data-lucide="gamepad-2"></i> Week 1: **Things that Move**](/courses/200dtd/kaplay/week1/)
+
+- [<i data-lucide="gamepad-2"></i> Week 2: ](/courses/200dtd/kaplay/week2/)
+
+- [<i data-lucide="gamepad-2"></i> Week 3: ](/courses/200dtd/kaplay/week3/)
+
+- [<i data-lucide="gamepad-2"></i> Week 4: ](/courses/200dtd/kaplay/week4/)
+
 

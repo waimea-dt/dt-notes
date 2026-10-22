@@ -95,11 +95,12 @@
     }
 
     /* Individual card styling */
-    .menu-item a {
+    .menu-item > a {
         display: grid;
         grid-template-areas:
             "name icon"
-            "description description";
+            "description description"
+            "links links";
         grid-template-columns: 1fr var(--topic-menu-icon-size);
         gap: var(--topic-menu-gap);
         padding: var(--topic-menu-gap);
@@ -152,6 +153,19 @@
             grid-area: description;
             color: var(--topic-menu-text-color);
             font-size: var(--font-small);
+        }
+
+        /* Lists of links inside a card: keep them out of the card-link styling */
+        > ul,
+        > ol {
+            grid-area: links;
+            padding-left: 1.2em;
+            font-size: var(--font-small);
+
+            a {
+                color: var(--topic-menu-text-color);
+                text-decoration: underline;
+            }
         }
 
         &:hover {

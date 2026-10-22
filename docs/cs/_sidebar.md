@@ -11,7 +11,7 @@
 - [<i data-lucide="chart-spline"></i> Complexity & Tractability](/cs/complexity/)
     - Some problems are harder than others; learn why
 
-- [<i data-lucide="file lock"></i> Encryption](/cs/encryption/)
+- [<i data-lucide="file-lock"></i> Encryption](/cs/encryption/)
     - Learn how we keep things secret across open networks
 
 - [<i data-lucide="binary"></i> Data Representation](/cs/data-rep/)

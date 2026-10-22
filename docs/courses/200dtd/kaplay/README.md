@@ -4,12 +4,62 @@
 
 Welcome, game makers! Over the next five weeks you'll learn the **JavaScript** programming language, a game development library called **Kaplay**, and the game-making tools you need to build your own games. Then you'll spend four more weeks designing and building a game of your own.
 
+<menu>
+
+### Week 1: Things That Move
+
+<i data-lucide="gamepad-2"></i>
+
+[Link](/courses/200dtd/kaplay/week1/)
+
+Text here
+
+- [Lesson 1: Variables](/courses/200dtd/kaplay/week1/lesson1.md)
+- [Lesson 2: Choices & Loops](/courses/200dtd/kaplay/week1/lesson2.md)
+- [Lesson 3: Hello, Kaplay](/courses/200dtd/kaplay/week1/lesson3.md)
+- [Lesson 4: Make it Move](/courses/200dtd/kaplay/week1/lesson4.md)
+
+---
+
+### Week 2:
+
+<i data-lucide="gamepad-2"></i>
+
+[Link](/courses/200dtd/kaplay/week2/)
+
+Text here
+
+---
+
+### Week 3:
+
+<i data-lucide="gamepad-2"></i>
+
+[Link](/courses/200dtd/kaplay/week3/)
+
+Text here
+
+---
+
+### Week 4:
+
+<i data-lucide="gamepad-2"></i>
+
+[Link](/courses/200dtd/kaplay/week4/)
+
+Text here
+
+
+</menu>
+
+
 By the end you'll be able to make games with:
 
 - **characters** you can move around
 - **story**, **dialogue** and choices that matter
 - **enemies**, **bullets** and **explosions**
 - **maps**, **platforms**, **gravity** and **jumping**
+
 
 ## Course Outline
 
@@ -44,12 +94,4 @@ The course uses an approach called **PRIMM**:
 | **M**ake        | Build something new using what you've learned.              |
 
 Getting a prediction wrong is not a failure. It's the best moment for learning, because your brain just found out something it didn't know.
-
-You'll also meet:
-
-- **Parsons Problems**: the code is all there, but jumbled up. Put the lines in the right order.
-- **Bug hunts**: something is broken. Find it and fix it.
-- **Tracing tables**: act like the computer and work out the values, step by step.
-
-Every week you'll finish one small **prototype**. It doesn't need to be a full game, it just needs to work and teach you something. And if you finish early, every prototype has a **Level Up** list of extra challenges.
 
