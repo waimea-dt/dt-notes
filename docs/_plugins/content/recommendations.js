@@ -306,14 +306,6 @@
         hook.doneEach(function () {
             processRecommendations()
         })
-
-        hook.ready(function () {
-            if (window.DocsifyUtils?.onSlidesRendered) {
-                window.DocsifyUtils.onSlidesRendered(function (root) {
-                    processRecommendations(root)
-                })
-            }
-        })
     }
 
     if (window.DocsifyUtils?.registerPlugin) {

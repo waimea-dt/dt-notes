@@ -502,11 +502,6 @@
         hook.doneEach(function () {
             processDBs()
         })
-        hook.ready(function () {
-            window.DocsifyUtils.onSlidesRendered(function (root) {
-                processDBs(root)
-            })
-        })
     }
 
     window.DocsifyUtils.registerPlugin(docsifyDatabase)

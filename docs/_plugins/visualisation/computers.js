@@ -114,11 +114,6 @@
         hook.doneEach(function () {
             processComputers()
         })
-        hook.ready(function () {
-            window.DocsifyUtils.onSlidesRendered(function (root) {
-                processComputers(root)
-            })
-        })
     }
 
     window.DocsifyUtils.registerPlugin(docsifyComputers)

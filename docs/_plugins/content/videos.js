@@ -182,10 +182,6 @@
     hook.doneEach(function () {
       processVideoEmbeds()
     })
-    // Hook into slide rendering
-    hook.ready(() => {
-      window.DocsifyUtils.onSlidesRendered(root => processVideoEmbeds(root))
-    })
   }
 
   window.DocsifyUtils.registerPlugin(docsifyVideoEmbed)

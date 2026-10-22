@@ -203,7 +203,7 @@ Store items in order, retrieve them by index.
 
 ```js
 const loot = ['sword', 'shield', 'potion']
-console.log(loot[0]) // 'sword' â€” zero-indexed!
+console.log(loot[0]) // 'sword' - zero-indexed!
 ```
 
 ---
@@ -211,6 +211,177 @@ console.log(loot[0]) // 'sword' â€” zero-indexed!
 # Looping Through Loot
 
 Use a `for...of` loop to grab everything.
+
+</slides>
+
+Back to normal docs...
+
+## Plugins Inside Slides
+
+Page plugins (their markdown and HTML hooks) should work the same inside a deck. Two decks on the page also checks that speaker notes stay with the deck they were opened from.
+
+<slides>
+
+# Plugins Inside Slides
+
+Inline hint: `let coins = 5`(js)
+
+---
+
+## Runnable Python
+
+```python run
+print("Hello from a slide")
+```
+
+Note:
+Speaker notes for the second deck - `s` should open this deck only.
+
+---
+
+## Code Fence With Markers
+
+```md
+---
++++
+Note:
+```
+
+Markers inside a fence stay as code.
+
+---
+
+## Unclosed Single Tag
+
+<convertor>
+
+Content after the tag stays on the slide.
+
+---
+
+## Mermaid
+
+```mermaid
+graph LR
+A[Start] --> B[Finish]
+```
+
+---
+
+## Captioned Image
+
+<captioned>
+
+![Mac](../_assets/macs/macintosh-happy.svg)
+
+Hello, human!
+
+</captioned>
+
+---
+
+## Callouts
+
+> [!TIP]
+> Callouts are processed by the page's normal doneEach pass.
+
+> [!WARNING]
+> This one should have a title and icon too.
+
+---
+
+## Sequence
+
+<sequence direction="horizontal">
+
+1. ## One
+
+2. ## Two
+
+3. ## Three
+
+</sequence>
+
+---
+
+## Hierarchy
+
+<hierarchy>
+
+- Waimea College
+
+    - Staff
+
+        - Teaching
+        - Support
+
+    - Students
+
+        - Juniors
+        - !! Seniors
+
+</hierarchy>
+
+---
+
+## Structure
+
+<structure>
+
+- Web Server
+
+    - Server Application
+    - Programming Language
+
+</structure>
+
+---
+
+## Timeline
+
+<timeline>
+
+- 1967: Steve
+- 1978: Jemma
+- 2011: Eva Rose
+
+</timeline>
+
+---
+
+## Image Notes
+
+<img-notes>
+
+<img src="_tests/_assets/ui-demo.png" alt="UI shop demo screen">
+
+1. Brand area [1.5, 2, 10, 5]
+
+    The **brand block** anchors the page.
+
+2. Add to cart CTA [57, 75, 25, 9]
+
+    The main action.
+
+</img-notes>
+
+---
+
+## Speech
+
+<speak>
+
+![](../_assets/macs/macintosh.svg)
+
+Hello from the third deck!
+
+</speak>
+
+---
+
+## Plugins Inside Slides
+
+Same heading text as the page heading above - the sidebar entry must still work.
 
 </slides>
 

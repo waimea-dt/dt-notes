@@ -54,11 +54,6 @@
     hook.doneEach(function () {
       processSequences()
     })
-    hook.ready(function () {
-      window.DocsifyUtils.onSlidesRendered(function (root) {
-        processSequences(root)
-      })
-    })
   }
 
   window.DocsifyUtils.registerPlugin(docsifySequence)

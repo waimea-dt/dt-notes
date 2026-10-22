@@ -73,11 +73,6 @@
     hook.doneEach(function () {
       processCaptions()
     })
-    hook.ready(function () {
-      window.DocsifyUtils.onSlidesRendered(function (root) {
-        processCaptions(root)
-      })
-    })
   }
 
   window.DocsifyUtils.registerPlugin(docsifyCaptions)

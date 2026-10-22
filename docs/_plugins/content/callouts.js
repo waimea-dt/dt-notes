@@ -185,10 +185,6 @@
             window.addEventListener('hashchange', function () {
                 runCalloutPass(document)
             })
-
-            window.DocsifyUtils.onSlidesRendered(function (root) {
-                runCalloutPass(root)
-            })
         })
     }
 

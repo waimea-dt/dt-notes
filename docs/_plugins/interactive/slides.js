@@ -1,23 +1,29 @@
 /**
  * docsify-slides.js - Renders <slides>...</slides> blocks as embedded reveal.js presentations.
- * Requires reveal.js (no markdown plugin): slide markdown is compiled by Docsify in
- * afterEach, so all plugin tags inside slides are processed by their normal doneEach hooks.
+ * Requires reveal.js (no markdown plugin).
  *
- * Usage in markdown:
+ * How it works: slides are a layout over the page, not a separate document. In beforeEach the
+ * slide markers are rewritten into plain HTML wrappers (<section>, <aside>, fragment divs) with
+ * the slide markdown left in place, so Docsify compiles the whole page in ONE pass. Every other
+ * plugin's beforeEach / afterEach / doneEach therefore treats slide content like page content.
+ * This plugin is registered last so those hooks have already run when it finishes the markup
+ * (afterEach) and starts reveal.js (doneEach).
+ *
+ * Usage in markdown (markers must be alone on their line; ignored inside code fences):
  *   <slides>
  *   # Slide One
- *   ---
+ *   ---                 start a new slide
  *   # Slide Two
+ *   +++ [effect]        start a reveal step, e.g. `+++ fade-up` (`+++ list` steps through list items)
+ *   ||| [widths]        three or more lines make columns, e.g. `||| 1fr 2fr` (content before the
+ *                       first and after the last marker spans the full width)
  *
- *   Note:
- *   Speaker notes (markdown) - everything after a lone `Note:` line to the end of the slide.
+ *   Note:               speaker notes (markdown) - everything after it to the end of the slide
  *   Click the deck for focus, then press `s` to open the speaker view.
  *   </slides>
  */
 
 ;(function () {
-  const { dispatchSlidesRendered } = window.DocsifyUtils
-  const stash = {}
   const deckCleanup = new WeakMap()
 
   function registerDeckCleanup(deck, cleanupFn) {
@@ -27,26 +33,69 @@
     deckCleanup.set(deck, list)
   }
 
-  function escapeHtml(text) {
-    return String(text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
+  const FENCE = /^[ \t]*(`{3,}|~{3,})(.*)$/
+  const MARKERS = {
+    slide: /^---[ \t]*$/,
+    note: /^Note:[ \t]*$/,
+    step: /^\+\+\+[ \t]*(.*?)[ \t]*$/,
+    column: /^\|\|\|[ \t]*(.*?)[ \t]*$/,
+  }
+  const DECK_END = '<!-- /slides-deck -->'
+  const DECK_BLOCK = /<div class="reveal docsify-slide-deck"[\s\S]*?<!-- \/slides-deck -->/g
+  const HEADING_ANCHOR = /<(h[1-6]) id="[^"]*" tabindex="-1"><a href="[^"]*" data-id="[^"]*" class="anchor">([\s\S]*?)<\/a><\/\1>/g
+
+  // Calls visit(line, inCode) for each line; fence lines and lines inside a fenced block are code.
+  function scanLines(markdown, visit) {
+    let fence = null
+    markdown.split('\n').forEach((line) => {
+      const match = line.match(FENCE)
+      const wasInFence = Boolean(fence)
+      if (match && !fence) fence = match[1]
+      else if (match && match[1][0] === fence[0] && match[1].length >= fence.length && !match[2].trim()) fence = null
+      visit(line, wasInFence || Boolean(match))
+    })
+  }
+
+  // Splits at whole-line markers outside code: n markers give n + 1 trimmed chunks, and `args`
+  // holds each marker's argument (capture group 1).
+  function splitAtMarkers(markdown, marker) {
+    const chunks = [[]]
+    const args = []
+    scanLines(markdown, (line, inCode) => {
+      const match = inCode ? null : line.match(marker)
+      if (!match) return chunks[chunks.length - 1].push(line)
+      args.push(match[1] || '')
+      chunks.push([])
+    })
+    return { chunks: chunks.map((lines) => lines.join('\n').trim()), args }
+  }
+
+  // HTML wrappers need blank lines around the markdown so Docsify still compiles what is inside.
+  function wrapBlock(open, body, close) {
+    return `${open}\n\n${body}\n\n${close}`
+  }
+
+  const joinBlocks = (blocks) => blocks.filter(Boolean).join('\n\n')
+
+  // Slide headings are not page headings: keep them out of the sidebar's sub-menu.
+  function excludeHeadingsFromToc(markdown) {
+    const lines = []
+    scanLines(markdown, (line, inCode) => {
+      lines.push(!inCode && /^#{1,6}[ \t]+\S/.test(line) ? `${line.trimEnd()} {docsify-ignore}` : line)
+    })
+    return lines.join('\n')
   }
 
   // `+++ [effect]` starts a reveal step; `+++ list` reveals each top-level list item separately.
-  function applyFragmentMarkers(markdown) {
-    const parts = markdown.split(/^\+\+\+[ \t]*(.*?)[ \t]*$/m)
-    if (parts.length === 1) return markdown
-
-    // split() with a capture group yields [intro, arg1, body1, arg2, body2, ...]
-    let out = parts[0]
-    for (let i = 1; i < parts.length; i += 2) {
-      const arg = parts[i]
-      const classes = arg === 'list' ? 'slides-incremental' : `fragment ${arg}`.trim()
-      out += `\n<div class="${classes}">\n\n${parts[i + 1].trim()}\n\n</div>\n`
-    }
-    return out
+  function applyStepMarkers(markdown) {
+    const { chunks, args } = splitAtMarkers(markdown, MARKERS.step)
+    return joinBlocks(
+      chunks.map((chunk, i) => {
+        if (i === 0) return chunk
+        const classes = args[i - 1] === 'list' ? 'slides-incremental' : `fragment ${args[i - 1]}`.trim()
+        return wrapBlock(`<div class="${classes}">`, chunk, '</div>')
+      })
+    )
   }
 
   function applyIncrementalLists(deck) {
@@ -55,74 +104,42 @@
 
   // `|||` lines split the slide into pre-content, equal-width columns and post-content;
   // the first marker may carry widths, e.g. `||| 1fr 2fr`.
-  function applyLayoutMarkers(markdown) {
-    const parts = markdown.split(/^\|\|\|[ \t]*(.*?)[ \t]*$/m)
-    const markerCount = (parts.length - 1) / 2
-    if (markerCount < 3) return applyFragmentMarkers(markdown)
+  function applyColumnMarkers(markdown) {
+    const { chunks, args } = splitAtMarkers(markdown, MARKERS.column)
+    if (args.length < 3) return applyStepMarkers(markdown)
 
-    // parts = [pre, arg1, body1, arg2, body2, ...]; the last body is the post-content
-    const bodies = parts.filter((_part, i) => i % 2 === 0)
-    const [pre, post] = [bodies[0], bodies[bodies.length - 1]]
-    const columns = bodies.slice(1, -1)
-    const widths = /^[\w.%\s()-]+$/.test(parts[1]) ? parts[1] : ''
-    const style = widths ? ` style="--cols: ${widths}"` : ''
+    const [pre, ...rest] = chunks
+    const post = rest.pop()
+    const style = /^[\w.%\s()-]+$/.test(args[0]) ? ` style="--cols: ${args[0]}"` : ''
+    const cells = rest.map((column) => wrapBlock('<div>', applyStepMarkers(column), '</div>'))
 
-    const cells = columns.map((col) => `<div>\n\n${applyFragmentMarkers(col.trim())}\n\n</div>`).join('\n')
-    return [
-      applyFragmentMarkers(pre.trim()),
-      `<div class="slides-columns"${style}>\n${cells}\n</div>`,
-      applyFragmentMarkers(post.trim()),
-    ].join('\n\n')
+    return joinBlocks([
+      applyStepMarkers(pre),
+      wrapBlock(`<div class="slides-columns"${style}>`, joinBlocks(cells), '</div>'),
+      applyStepMarkers(post),
+    ])
   }
 
-  function normaliseSlideMarkdown(slideMarkdown) {
-    slideMarkdown = applyLayoutMarkers(slideMarkdown)
-    // Keep Mermaid out of Reveal's code-highlighter path.
-    return slideMarkdown.replace(/```mermaid\s*\n([\s\S]*?)```/g, function (_match, mermaidCode) {
-      const code = (mermaidCode || '').trim()
-      const hasInitDirective = /^%%\{\s*init\s*:/m.test(code)
-      const slideInitDirective = '%%{init: {"flowchart": {"htmlLabels": false}, "themeVariables": {"fontFamily": "system-ui, sans-serif", "fontSize": "16px"}}}%%\n'
-      const preparedCode = hasInitDirective ? code : `${slideInitDirective}${code}`
-      return `<div data-slides-mermaid="true">\n${escapeHtml(preparedCode)}\n</div>`
-    })
+  function buildSlide(slideMarkdown) {
+    const [content, ...notes] = splitAtMarkers(slideMarkdown, MARKERS.note).chunks
+    const notesBlock = joinBlocks(notes)
+    return joinBlocks([
+      '<section>',
+      excludeHeadingsFromToc(applyColumnMarkers(content)),
+      notesBlock && wrapBlock('<aside class="notes">', notesBlock, '</aside>'),
+      '</section>',
+    ])
+  }
+
+  function buildDeck(markdown, index) {
+    const slides = splitAtMarkers(markdown, MARKERS.slide).chunks.map(buildSlide)
+    return `\n\n<div class="reveal docsify-slide-deck" id="slide-deck-${index}">\n<div class="slides">\n\n${joinBlocks(slides)}\n\n</div>\n</div>\n${DECK_END}\n\n`
   }
 
   // Slide headings are not page anchors: drop the ids/anchor links Docsify adds, otherwise
-  // they collide with page headings of the same text and the sidebar filter hides those.
-  function stripHeadingAnchors(html) {
-    const template = document.createElement('template')
-    template.innerHTML = html
-    template.content.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
-      heading.removeAttribute('id')
-      heading.querySelectorAll(':scope > a.anchor').forEach((anchor) => anchor.replaceWith(...anchor.childNodes))
-    })
-    return template.innerHTML
-  }
-
-  // Slides are compiled by Docsify itself (not Reveal's markdown plugin) so the
-  // output is final HTML before any plugin's doneEach hook runs.
-  // A line containing only `Note:` starts the speaker notes (the rest of the slide).
-  function buildSlideHTML(slide, compiler) {
-    const [content, ...noteParts] = slide.split(/^Note:[ \t]*$/m)
-    const notes = noteParts.join('\n').trim()
-    const body = stripHeadingAnchors(compiler.compile(normaliseSlideMarkdown(content.trim())))
-    const aside = notes ? `<aside class="notes">${compiler.compile(notes)}</aside>` : ''
-    return `<section>${body}${aside}</section>`
-  }
-
-  function buildRevealHTML(index, compiler) {
-    const slides = stash[index]
-      .split(/\n---\n/)
-      .map((slide) => buildSlideHTML(slide, compiler))
-      .join('\n')
-
-    return `
-      <div class="reveal docsify-slide-deck" id="slide-deck-${index}">
-        <div class="slides">
-          ${slides}
-        </div>
-      </div>
-    `
+  // they collide with page headings of the same text.
+  function stripDeckHeadingAnchors(html) {
+    return html.replace(DECK_BLOCK, (deck) => deck.replace(HEADING_ANCHOR, '<$1>$2</$1>'))
   }
 
   function watchDeckLayout(deck, reveal) {
@@ -180,58 +197,6 @@
     registerDeckCleanup(deck, cleanup)
   }
 
-  function setupMermaidForDeck(deck, reveal) {
-    const mermaidApi = window.mermaid
-    if (!mermaidApi || typeof mermaidApi.run !== 'function') return
-
-    let renderQueue = Promise.resolve()
-
-    const renderSlideMermaid = function (slide) {
-      if (!slide) return Promise.resolve()
-
-      const nodes = Array.from(slide.querySelectorAll('[data-slides-mermaid="true"]:not([data-slides-mermaid-rendered="true"])'))
-      if (!nodes.length) return Promise.resolve()
-
-      nodes.forEach((node) => {
-        node.classList.add('mermaid')
-      })
-
-      return mermaidApi.run({ nodes }).then(function () {
-        nodes.forEach((node) => {
-          node.setAttribute('data-slides-mermaid-rendered', 'true')
-        })
-      }).catch(function (error) {
-        console.error('Failed to render Mermaid in slides.', error)
-      }).finally(function () {
-        if (typeof reveal.layout === 'function') {
-          reveal.layout()
-        }
-      })
-    }
-
-    const renderCurrentSlide = function () {
-      renderQueue = renderQueue.then(function () {
-        return renderSlideMermaid(reveal.getCurrentSlide())
-      })
-      return renderQueue
-    }
-
-    const onSlideChanged = function () {
-      renderCurrentSlide()
-    }
-
-    if (typeof reveal.on === 'function') {
-      reveal.on('slidechanged', onSlideChanged)
-      registerDeckCleanup(deck, function () {
-        if (typeof reveal.off === 'function') {
-          reveal.off('slidechanged', onSlideChanged)
-        }
-      })
-    }
-
-    renderCurrentSlide()
-  }
-
   function cleanupDeckWatchers() {
     document.querySelectorAll('.reveal.docsify-slide-deck[data-initialized]').forEach((deck) => {
       const cleanups = deckCleanup.get(deck)
@@ -239,6 +204,38 @@
       cleanups.forEach((cleanup) => cleanup())
       deckCleanup.delete(deck)
     })
+  }
+
+  // Reveal's notes plugin keeps one speaker window (and one deck) per plugin instance, and every
+  // instance answers the window's remote-control messages. So all decks share a single instance,
+  // which is re-pointed at whichever deck asks for the speaker view (`s`).
+  const NOTES_WINDOW_NAME = 'reveal.js - Notes'
+  const sharedNotes = typeof RevealNotes === 'undefined' ? null : RevealNotes()
+  let notesDeck = null
+
+  function openSpeakerView(reveal) {
+    if (notesDeck && notesDeck !== reveal) window.open('', NOTES_WINDOW_NAME)?.close()
+    notesDeck = reveal
+    sharedNotes.init(reveal)
+    sharedNotes.open()
+  }
+
+  // The speaker window syncs navigation back with bare `{method: 'setState'}` messages, which every
+  // deck's own Reveal message listener would act on. Decks disable that listener (`postMessage: false`)
+  // and this one forwards the messages to the connected deck only.
+  function onSpeakerViewMessage(event) {
+    if (!notesDeck || typeof event.data !== 'string' || !event.data.startsWith('{"method":"setState"')) return
+    try {
+      const { args } = JSON.parse(event.data)
+      notesDeck.setState(args[0])
+    } catch (_error) {}
+  }
+
+  window.addEventListener('message', onSpeakerViewMessage)
+
+  const speakerViewPlugin = {
+    id: 'docsify-slides-notes',
+    init: (reveal) => reveal.addKeyBinding({ keyCode: 83, key: 'S', description: 'Speaker notes' }, () => openSpeakerView(reveal)),
   }
 
   // The speaker view loads `config.url` in preview iframes (with `receiver` appended). That URL
@@ -270,7 +267,8 @@
       const reveal = new Reveal(deck, {
         embedded: true,
         url: getReceiverUrl(deck),
-        plugins: typeof RevealNotes === 'undefined' ? [] : [RevealNotes],
+        postMessage: isReceiver,
+        plugins: sharedNotes ? [speakerViewPlugin] : [],
         keyboardCondition: 'focused',
         controls: true,
         progress: true,
@@ -288,8 +286,6 @@
         applyIncrementalLists(deck)
         reveal.sync()
         watchDeckLayout(deck, reveal)
-        setupMermaidForDeck(deck, reveal)
-        dispatchSlidesRendered(deck)
         deck.setAttribute('data-slides-ready', 'true')
         refreshEditors(reveal.getCurrentSlide())
         reveal.on('slidechanged', (event) => refreshEditors(event.currentSlide))
@@ -297,39 +293,22 @@
     })
   }
 
-  var docsifySlides = function (hook, vm) {
+  const docsifySlides = function (hook) {
     hook.beforeEach(function (content) {
       cleanupDeckWatchers()
-      Object.keys(stash).forEach((k) => delete stash[k])
 
       let index = 0
-      return content.replace(
-        /<slides>([\s\S]*?)<\/slides>/g,
-        function (_match, markdown) {
-          stash[index] = markdown
-          const placeholder = `<div class="slides-placeholder" data-index="${index}"></div>`
-          index++
-          return placeholder
-        }
-      )
+      return content.replace(/<slides>([\s\S]*?)<\/slides>/g, (_match, markdown) => buildDeck(markdown, index++))
     })
 
-    hook.afterEach(function (html) {
-      // Compiling headings registers them in the page TOC, so restore it afterwards.
-      const toc = [...(vm.compiler.toc || [])]
-      const out = html.replace(
-        /<div class="slides-placeholder" data-index="(\d+)"><\/div>/g,
-        (_match, index) => buildRevealHTML(index, vm.compiler)
-      )
-      vm.compiler.toc = toc
-      return out
-    })
+    hook.afterEach(stripDeckHeadingAnchors)
 
     hook.doneEach(initDecks)
   }
 
-  // Appended (not prepended) so every other plugin's beforeEach rewrites the markdown
-  // (e.g. ```js run fences) before the slide content is stashed out of the page.
+  // Appended (not prepended) so every other plugin's hooks run before this one's: their
+  // beforeEach rewrites (e.g. ```js run fences) are in place before the markup is built, and
+  // their afterEach transforms have already processed the slide HTML.
   window.DocsifyUtils.registerPlugin(docsifySlides, false)
 })()
 

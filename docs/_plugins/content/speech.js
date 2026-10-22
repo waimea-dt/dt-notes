@@ -17,7 +17,6 @@
  */
 
 ;(function () {
-  const { onSlidesRendered } = window.DocsifyUtils
   let fontIsReady = false
 
   function resolveScope(root) {
@@ -142,10 +141,6 @@
 
     hook.ready(function () {
       runSpeechPass()
-
-      onSlidesRendered(function (root) {
-        runSpeechPass(root)
-      })
     })
   }
 

@@ -135,11 +135,6 @@
     hook.doneEach(function () {
       processTimelines()
     })
-    hook.ready(function () {
-      window.DocsifyUtils.onSlidesRendered(function (root) {
-        processTimelines(root)
-      })
-    })
   }
 
   window.DocsifyUtils.registerPlugin(docsifyTimeline)

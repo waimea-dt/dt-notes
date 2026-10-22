@@ -83,12 +83,6 @@
     hook.doneEach(function () {
       processHierarchies()
     })
-
-    hook.ready(function () {
-      window.DocsifyUtils.onSlidesRendered(function (root) {
-        processHierarchies(root)
-      })
-    })
   }
 
   window.DocsifyUtils.registerPlugin(docsifyHierarchies)

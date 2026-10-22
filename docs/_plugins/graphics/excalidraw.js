@@ -19,7 +19,7 @@
         return root && typeof root.querySelectorAll === 'function' ? root : document
     }
 
-    const { resolveSourcePath, renderErrorBox, onSlidesRendered } = window.DocsifyUtils
+    const { resolveSourcePath, renderErrorBox } = window.DocsifyUtils
 
     const SCENE_CACHE = new Map()
     let exportToSvgPromise = null
@@ -165,12 +165,6 @@
         hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'excalidraw'))
         hook.doneEach(function () {
             processExcalidrawBlocks()
-        })
-
-        hook.ready(function () {
-            onSlidesRendered(function (root) {
-                processExcalidrawBlocks(root)
-            })
         })
     }
 

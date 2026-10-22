@@ -209,8 +209,7 @@ html.slides-receiver {
 
         /* Mermaid diagrams */
 
-        .mermaid,
-        [data-slides-mermaid="true"] {
+        .mermaid {
             width: min(90%, 90cqw);
             height: min(90%, 90cqh);
             max-width: 90%;

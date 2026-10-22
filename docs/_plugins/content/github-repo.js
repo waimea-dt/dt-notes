@@ -71,9 +71,6 @@
     const docsifyGithubRepo = function (hook) {
         hook.afterEach(html => window.DocsifyUtils.closeSingleTags(html, 'github'))
         hook.doneEach(() => processGithubTags())
-        hook.ready(() => {
-            window.DocsifyUtils.onSlidesRendered(root => processGithubTags(root))
-        })
     }
 
     window.DocsifyUtils.registerPlugin(docsifyGithubRepo)

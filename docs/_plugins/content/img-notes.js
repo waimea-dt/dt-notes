@@ -338,11 +338,6 @@
         hook.doneEach(function () {
             processImgNotes()
         })
-        hook.ready(function () {
-            window.DocsifyUtils.onSlidesRendered(function (root) {
-                processImgNotes(root)
-            })
-        })
     }
 
     window.DocsifyUtils.registerPlugin(docsifyImgNotes)

@@ -39,8 +39,6 @@
  *   parseBoolean(value, fallback)       - Parse 'true'/'false' attribute string
  *   parsePositiveInt(value, fallback)   - Parse a positive integer attribute string
  *   generateId(prefix)                  - Generate a short random ID
- *   dispatchSlidesRendered(root)        - Dispatch shared slide-render event
- *   onSlidesRendered(callback)          - Listen for shared slide-render event
  *   registerPlugin(fn, prepend)         - Register a Docsify plugin function
  *   parseHeaderConfig(el, defaults)     - Parse header/title/sub-title attributes from a plugin element
  */
@@ -496,35 +494,6 @@
     }
 
     // -------------------------------------------------------------------------
-    // Slide event helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Dispatch the shared slide-rendered event with the owning deck root.
-     */
-    function dispatchSlidesRendered(root) {
-        document.dispatchEvent(new CustomEvent('docsify-slides:rendered', {
-            detail: { root }
-        }))
-    }
-
-    /**
-     * Listen for the shared slide-rendered event.
-     * Returns an unsubscribe function.
-     */
-    function onSlidesRendered(callback) {
-        const handler = function (event) {
-            callback(event?.detail?.root || document, event)
-        }
-
-        document.addEventListener('docsify-slides:rendered', handler)
-
-        return function unsubscribe() {
-            document.removeEventListener('docsify-slides:rendered', handler)
-        }
-    }
-
-    // -------------------------------------------------------------------------
     // Plugin registration
     // -------------------------------------------------------------------------
 
@@ -594,8 +563,6 @@
         parsePositiveInt,
         generateId,
         closeSingleTags,
-        dispatchSlidesRendered,
-        onSlidesRendered,
         registerPlugin,
         parseHeaderConfig,
     })

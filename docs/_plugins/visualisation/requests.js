@@ -349,11 +349,6 @@
     hook.doneEach(function () {
       processRequests()
     })
-    hook.ready(function () {
-      window.DocsifyUtils.onSlidesRendered(function (root) {
-        processRequests(root)
-      })
-    })
   }
 
   window.DocsifyUtils.registerPlugin(docsifyRequests)

@@ -75,11 +75,6 @@
     hook.doneEach(function () {
       processCards()
     })
-    hook.ready(function () {
-      window.DocsifyUtils.onSlidesRendered(function (root) {
-        processCards(root)
-      })
-    })
   }
 
   window.DocsifyUtils.registerPlugin(docsifyCards)

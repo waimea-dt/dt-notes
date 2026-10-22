@@ -99,11 +99,6 @@
         hook.doneEach(function () {
             processMenu()
         })
-        hook.ready(function () {
-            window.DocsifyUtils.onSlidesRendered(function (root) {
-                processMenu(root)
-            })
-        })
     }
 
     window.DocsifyUtils.registerPlugin(docsifyMenu)

@@ -74,11 +74,6 @@
     hook.doneEach(function () {
       processStructures()
     })
-    hook.ready(function () {
-      window.DocsifyUtils.onSlidesRendered(function (root) {
-        processStructures(root)
-      })
-    })
   }
 
   window.DocsifyUtils.registerPlugin(docsifyStructure)
