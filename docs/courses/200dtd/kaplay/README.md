@@ -10,67 +10,79 @@ Welcome, game makers! Over the next five weeks you'll learn the **JavaScript** p
 
 <i data-lucide="gamepad-2"></i>
 
-[Link](/courses/200dtd/kaplay/week1/)
+[Link](/courses/200dtd/kaplay/week1-intro.md)
 
-Text here
-
-- [Lesson 1: Variables](/courses/200dtd/kaplay/week1/lesson1.md)
-- [Lesson 2: Choices & Loops](/courses/200dtd/kaplay/week1/lesson2.md)
-- [Lesson 3: Hello, Kaplay](/courses/200dtd/kaplay/week1/lesson3.md)
-- [Lesson 4: Make it Move](/courses/200dtd/kaplay/week1/lesson4.md)
+- [Lesson 1: Variables](/courses/200dtd/kaplay/week1-lesson1.md)
+- [Lesson 2: Choices & Loops](/courses/200dtd/kaplay/week1-lesson2.md)
+- [Lesson 3: Hello, Kaplay](/courses/200dtd/kaplay/week1-lesson3.md)
+- [Lesson 4: Game - **Wander**](/courses/200dtd/kaplay/week1-lesson4.md)
 
 ---
 
-### Week 2:
+### Week 2: Clicks, Counts & State
 
 <i data-lucide="gamepad-2"></i>
 
-[Link](/courses/200dtd/kaplay/week2/)
+[Link](/courses/200dtd/kaplay/week2-intro.md)
 
-Text here
+- [Lesson 1: ](/courses/200dtd/kaplay/week2-lesson1.md)
+- [Lesson 2: ](/courses/200dtd/kaplay/week2-lesson2.md)
+- [Lesson 3: ](/courses/200dtd/kaplay/week2-lesson3.md)
+- [Lesson 4: Game - **Whack-a-Bug**](/courses/200dtd/kaplay/week2-lesson4.md)
 
 ---
 
-### Week 3:
+### Week 3: Dialogue & Storylines
 
 <i data-lucide="gamepad-2"></i>
 
-[Link](/courses/200dtd/kaplay/week3/)
+[Link](/courses/200dtd/kaplay/week3-intro.md)
 
-Text here
+- [Lesson 1: ](/courses/200dtd/kaplay/week3-lesson1.md)
+- [Lesson 2: ](/courses/200dtd/kaplay/week3-lesson2.md)
+- [Lesson 3: ](/courses/200dtd/kaplay/week3-lesson3.md)
+- [Lesson 4: Game - **The Wizard's Help Desk**](/courses/200dtd/kaplay/week3-lesson4.md)
 
 ---
 
-### Week 4:
+### Week 4: Flying, Shooting, Explosions
 
 <i data-lucide="gamepad-2"></i>
 
-[Link](/courses/200dtd/kaplay/week4/)
+[Link](/courses/200dtd/kaplay/week4-intro.md)
 
-Text here
+- [Lesson 1: ](/courses/200dtd/kaplay/week4-lesson1.md)
+- [Lesson 2: ](/courses/200dtd/kaplay/week4-lesson2.md)
+- [Lesson 3: ](/courses/200dtd/kaplay/week4-lesson3.md)
+- [Lesson 4: Game - **Space Invaders-ish**](/courses/200dtd/kaplay/week4-lesson4.md)
+
+---
+
+### Week 5: Gravity, Physics & Platforms
+
+<i data-lucide="gamepad-2"></i>
+
+[Link](/courses/200dtd/kaplay/week5-intro.md)
+
+- [Lesson 1: ](/courses/200dtd/kaplay/week5-lesson1.md)
+- [Lesson 2: ](/courses/200dtd/kaplay/week5-lesson2.md)
+- [Lesson 3: ](/courses/200dtd/kaplay/week5-lesson3.md)
+- [Lesson 4: Game - **Coin Dash**](/courses/200dtd/kaplay/week5-lesson4.md)
+
+---
+
+### Project: Design & Create a Game
+
+<i data-lucide="gamepad-2"></i>
+
+[Link](/courses/200dtd/kaplay/project-intro.md)
+
+- [Game Design](/courses/200dtd/kaplay/project-design.md)
+- [Game Development](/courses/200dtd/kaplay/project-dev.md)
+- [Game Testing](/courses/200dtd/kaplay/project-testing.md)
 
 
 </menu>
-
-
-By the end you'll be able to make games with:
-
-- **characters** you can move around
-- **story**, **dialogue** and choices that matter
-- **enemies**, **bullets** and **explosions**
-- **maps**, **platforms**, **gravity** and **jumping**
-
-
-## Course Outline
-
-| Week                                        | Theme                           | Game                   |
-| ------------------------------------------- | ------------------------------- | ---------------------- |
-| [1](/courses/200dtd/kaplay/week1/README.md) | Things That Move                | Wander                 |
-| [2](/courses/200dtd/kaplay/week2/README.md) | Clicks, Counters and Game State | Whack-a-Bug            |
-| [3](/courses/200dtd/kaplay/week3/README.md) | Dialogue and Story              | The Wizard's Help Desk |
-| [4](/courses/200dtd/kaplay/week4/README.md) | Space Shooter                   | Space Invaders-ish     |
-| [5](/courses/200dtd/kaplay/week5/README.md) | Platformer                      | Coin Dash              |
-| 6-9                                         | Assessment project              | Your own game          |
 
 
 ## Useful Links
@@ -81,7 +93,7 @@ By the end you'll be able to make games with:
 - [The Modern JavaScript Tutorial](https://javascript.info/)
 
 
-## How the Course Works
+## Learning via **PRIMM**
 
 The course uses an approach called **PRIMM**:
 
