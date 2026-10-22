@@ -284,7 +284,7 @@ Time for your first game!
 
 You are going to make a simple game where the player wanders about the screen, picking up mushrooms, whilst a bunch of ghosts watch them:
 
-<web-playground data-height="32em" hide-all>
+<web-playground data-height="38em" hide-all>
 
 ```html depends=kaplay
 ```
@@ -294,6 +294,7 @@ You are going to make a simple game where the player wanders about the screen, p
 
 ```js
 kaplay({
+    width: 800, height: 600,
     background: [30, 60, 90]
 })
 
@@ -302,16 +303,17 @@ loadSprite("ghost", "assets/images/ghost.png")
 loadSprite("mushroom", "assets/images/mushroom.png")
 
 const playerSpeed = 200
-const playerMargin = 20
+const playerMargin = 30
 
 let ghostSpeed = 10
 const numGhosts = 8
 const ghostMargin = 80
 
-const numMushrooms = 8
+const numMushrooms = 12
 const mushroomMargin = 50
 
 const ghostSpacing = (width() - 2 * ghostMargin) / (numGhosts - 1)
+
 for (let i = 0; i < numGhosts; i++) {
     add([
         sprite("ghost"),
@@ -372,9 +374,9 @@ onUpdate("mushroom", (mushroom) => {
 })
 
 onUpdate("ghost", (ghost) => {
-    ghost.move(ghostSpeed, 0)
+    ghost.move(0, ghostSpeed)
 
-    if (rand(1, 100) > 98) {
+    if (ghost.pos.y > ghostMargin + 30 || ghost.pos.y < ghostMargin) {
         ghostSpeed = -ghostSpeed
     }
 })
@@ -403,8 +405,12 @@ Your game must have:
 
 - <check> A **row of ghosts** across the top of the screen (from Lesson 3)
 - <check> A **player** (the bean) controlled with the **arrow keys**
-- <check> At least **8 mushrooms** scattered at **random** positions
+- <check> At least **8 mushrooms** scattered at **random** positions (see tip below)
 - <check> **Mushrooms disappear** when the player touches them
+
+> [!TIP]
+> We can use the `rand(from, to)`(js) function to generate random numbers in a range. So a random `x` position would be `rand(0, width())`(js)
+
 
 #### How to Make Objects Disappear
 
@@ -424,29 +430,26 @@ onUpdate("mushroom", (mushroom) => {
 
 For this to work, each mushroom needs the **tag** `"mushroom"` in its component list. A tag is just a word in quotes:
 
-```js
+```js [5]
 add([
     sprite("mushroom"),
-    pos(rand(40, width() - 40), rand(100, height() - 40)),
+    pos(...),
     anchor("center"),
     "mushroom",
 ])
 ```
-> [!TIP]
-> We can use the `rand(from, to)`(js) function to generate random numbers in a range
-
 
 ## Level Up
 
 Finished early? Try these. Pick the ones that sound fun.
 
-| Challenge                                    | Hint                                                |
-| -------------------------------------------- | --------------------------------------------------- |
-| Stop the bean walking off the screen         | `if (player.pos.x < 0) { player.pos.x = 0 }`(js)    |
-| Flip the bean to face the way it's going     | `player.flipX = true`(js)                           |
-| Show **"Mushrooms left: 8"** on screen       | `text()` component and `get("mushroom").length`(js) |
-| Make the ghosts drift left and right         | `onUpdate` and `ghost.move(...)`(js)                |
-| Win message when all mushrooms are collected | `if (get("mushroom").length === 0)`(js)             |
+| Challenge                                        | Hint                                                |
+| ------------------------------------------------ | --------------------------------------------------- |
+| **Stop the bean walking off** the screen         | `if (player.pos.x < 0) { player.pos.x = 0 }`(js)    |
+| Flip the bean to **face the way it's going**     | `player.flipX = true`(js)                           |
+| Show **"Mushrooms left: 8"** on screen           | `text()` component and `get("mushroom").length`(js) |
+| Make the ghosts **drift up and down**            | `onUpdate` and `ghost.move(...)`(js)                |
+| **Win message** when all mushrooms are collected | `if (get("mushroom").length === 0)`(js)             |
 
 
 
