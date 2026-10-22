@@ -26,7 +26,7 @@ Try not to loop back at the previous lessons...
 - <check> I understand that `onUpdate(...)`(js) runs **every frame**, over and over
 - <check> I can store **speed** in a variable so it's easy to change
 
-## How a Game Works: The Main Loop
+## The Big Idea: **The Game Loop**
 
 A game isn't a single run of code. It's a loop that runs about **60 times a second**. Each lap is called a **frame**.
 
@@ -53,24 +53,25 @@ Typically, a single frame involves:
 
 Kaplay runs that main game loop for you. You just tell it what should happen by defining **event handler** functions:
 
-| Function                                 | When your code runs                       |
-| ---------------------------------------- | ----------------------------------------- |
-| `onKeyDown("right", () => { ... })`(js)  | *Every frame* while right arrow held down |
-| `onKeyPress("space", () => { ... })`(js) | *Once* when space is first pressed        |
-| `onUpdate(() => { ... })`(js)            | *Every frame*, always                     |
+| Function                                   | When your code runs                        |
+| ------------------------------------------ | ------------------------------------------ |
+| `onUpdate(() => { ... })`(js)              | Runs *every frame*, always                 |
+| `onKeyPress("space", () => { ... })`(js)   | Runs *just once* when key is first pressed |
+| `onKeyDown("space", () => { ... })`(js)    | Runs *every frame* while key held down     |
+| `onKeyRelease("space", () => { ... })`(js) | Runs *just once* when key is released      |
 
 > [!NOTE]
 > The `() => { ... }`(js) part is called an **arrow function**, mentioned last lesson. This is a nameless function that runs when the appropriate action takes place.
 
 
-## Predict
+## **P**redict
 
 Look at this Kaplay program:
 
 ```js
 kaplay({
     width: 400, height: 500,
-    background: [20, 20, 40]
+    background: [30, 60, 90]
 })
 
 loadBean()
@@ -106,7 +107,7 @@ What will happen if you **hold down** the right arrow for **two seconds**?
 <response>
 
 
-## Run
+## **R**un
 
 <web-playground hidden>
 
@@ -141,7 +142,7 @@ Here is the Kaplay code running in a web view. Compare it with your prediction -
 ```js
 kaplay({
     width: 400, height: 500,
-    background: [20, 20, 40]
+    background: [30, 60, 90]
 })
 
 loadBean()
@@ -162,7 +163,7 @@ onKeyDown("right", () => {
 </web-playground>
 
 
-## Investigate
+## **I**nvestigate
 
 ### Trace the Frames
 
@@ -206,7 +207,7 @@ Why is `playerSpeed` stored in a variable at the top, instead of typing `240` di
 
 
 
-## Modify
+## **M**odify
 
 Start with this code and complete the tasks one at a time. Test after each change!
 
@@ -221,7 +222,7 @@ Start with this code and complete the tasks one at a time. Test after each chang
 ```js
 kaplay({
     width: 400, height: 500,
-    background: [20, 20, 40]
+    background: [30, 60, 90]
 })
 
 loadBean()
@@ -248,10 +249,17 @@ onKeyDown("right", () => {
 Tasks:
 
 1. <check> Add **up and down** controls (remember: `y` goes **down** the screen!)
-2. <check> Make the **W**, **A**, **S** and **D** keys work too
+2. <check> Make the **W**, **A**, **S** and **D** keys work too (see tip below)
 3. <check> Make the bean faster, then slower. What feels right?
 4. <check> **Sprint key**: make the bean move faster while **Shift** is held.
     *(hint: you can update `playerSpeed` when the Shift key is pressed / released)*
+
+> [!TIP]
+> The `onKeyDown(...)`(js), `onKeyPress(...)`(js) and `onKeyRelease(...)`(js) functions can all respond to **multiple keys**. Put the keys into a list: `["up", "w"]`(js) and pass this as the first argument:
+>
+> ```js
+> onKeyDown(["up", "w"], () => {...})
+> ```
 
 
 ### Bug hunt
@@ -264,66 +272,181 @@ Now press **up and right together**. Is the bean's speed the same as moving in a
 
 <response>
 
-We'll look at *why* this happens another day. A mathematician might call it the **Pythagoras problem**.
+We'll look at *why* this happens and what we can do about it another day (a mathematician might call it the **Pythagoras problem**!)
 
----
 
-## Make: Wander
 
-Time for your first prototype! Open your **starter project** (download it from the [Week 1 overview](/kaplay/week1/README.md)) and finish `main.js`.
+## **M**ake
+
+Time for your first game!
+
+### Wander Game
+
+You are going to make a simple game where the player wanders about the screen, picking up mushrooms, whilst a bunch of ghosts watch them:
+
+<web-playground data-height="32em" hide-all>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+kaplay({
+    background: [30, 60, 90]
+})
+
+loadBean()
+loadSprite("ghost", "assets/images/ghost.png")
+loadSprite("mushroom", "assets/images/mushroom.png")
+
+const playerSpeed = 200
+const playerMargin = 20
+
+let ghostSpeed = 10
+const numGhosts = 8
+const ghostMargin = 80
+
+const numMushrooms = 8
+const mushroomMargin = 50
+
+const ghostSpacing = (width() - 2 * ghostMargin) / (numGhosts - 1)
+for (let i = 0; i < numGhosts; i++) {
+    add([
+        sprite("ghost"),
+        pos(ghostMargin + i * ghostSpacing, ghostMargin),
+        anchor("center"),
+        "ghost",
+    ])
+}
+
+for (let i = 0; i < numMushrooms; i++) {
+    add([
+        sprite("mushroom"),
+        pos(
+            rand(mushroomMargin, width() - mushroomMargin),
+            rand(mushroomMargin + ghostMargin * 2, height() - mushroomMargin)
+        ),
+        anchor("center"),
+        "mushroom",
+    ])
+}
+
+const count = add([
+    text("Mushrooms left: ???"),
+    pos(width() / 2, height() - 25),
+    anchor("center"),
+])
+
+const player = add([
+    sprite("bean"),
+    pos(width() / 2, height() / 2),
+    anchor("center"),
+])
+
+onKeyDown(["left",  "a"], () => { player.move(-playerSpeed, 0); player.flipX = true })
+onKeyDown(["right", "d"], () => { player.move(playerSpeed, 0);  player.flipX = false })
+onKeyDown(["up",    "w"], () => { player.move(0, -playerSpeed) })
+onKeyDown(["down",  "s"], () => { player.move(0, playerSpeed) })
+
+onUpdate(() => {
+    if (player.pos.x < playerMargin)            { player.pos.x = playerMargin }
+    if (player.pos.x > width() - playerMargin)  { player.pos.x = width() - playerMargin }
+    if (player.pos.y < playerMargin)            { player.pos.y = playerMargin }
+    if (player.pos.y > height() - playerMargin) { player.pos.y = height() - playerMargin }
+
+    const mushroomCount = get("mushroom").length
+    if (mushroomCount === 0) {
+        count.text = "You collected them all!"
+    }
+    else {
+        count.text = `Mushrooms left: ${mushroomCount}`
+    }
+})
+
+onUpdate("mushroom", (mushroom) => {
+    if (player.pos.dist(mushroom.pos) < 30) {
+        destroy(mushroom)
+    }
+})
+
+onUpdate("ghost", (ghost) => {
+    ghost.move(ghostSpeed, 0)
+
+    if (rand(1, 100) > 98) {
+        ghostSpeed = -ghostSpeed
+    }
+})
+
+```
+
+</web-playground>
+
+
+### Repo Setup
+
+<github repo="waimea-dt/kaplay-starter" title="Kaplay Starter" subtitle="A repo to kick-off your Kaplay games">
+
+1. Create a **new repo** from the **template** repo above
+2. Name it **kaplay-wander-game**
+3. **Clone** it to your computer
+4. Open the repo it in your **code editor**
+5. Launch the **live server** to see the game running in a browser
+
+> [!IMPORTANT]
+> You can't just open the `index.html` file by double-clicking it. The page needs to be served up by a web server so that the images, etc. can be loaded correctly by Kaplay. In **VS Code**, the **Live Server** extension launches a small server with a single click.
+
+### Create the Game
 
 Your game must have:
 
-- <check> A row of ghosts across the top of the screen (from Lesson 3)
-- <check> A player (the bean) controlled with the arrow keys
-- <check> At least 8 gems scattered at random positions
-- <check> Gems disappear when the player touches them
+- <check> A **row of ghosts** across the top of the screen (from Lesson 3)
+- <check> A **player** (the bean) controlled with the **arrow keys**
+- <check> At least **8 mushrooms** scattered at **random** positions
+- <check> **Mushrooms disappear** when the player touches them
 
-### How to make gems disappear
+#### How to Make Objects Disappear
 
-We haven't met collisions yet (that's coming in Week 4), so for now we'll measure the **distance** between the player and each gem. If it's small enough, they're touching.
+We haven't met collisions yet (that's coming in a later week), so for now we'll measure the **distance** between the player and each mushroom. If it's small enough, they're touching.
 
 ```js
-// Runs every frame for every object tagged "gem"
-onUpdate("gem", (gem) => {
-    if (player.pos.dist(gem.pos) < 30) {
-        destroy(gem)
+// Runs every frame for every object tagged "mushroom"
+onUpdate("mushroom", (mushroom) => {
+    if (player.pos.dist(mushroom.pos) < 30) {
+        destroy(mushroom)
     }
 })
 ```
 
-For this to work, each gem needs the **tag** `"gem"` in its component list. A tag is just a word in quotes:
+> [!TIP]
+> We can find the distance between two objects using `object.pos.dist(otherObject)`(js)
+
+For this to work, each mushroom needs the **tag** `"mushroom"` in its component list. A tag is just a word in quotes:
 
 ```js
 add([
-    sprite("gem"),
+    sprite("mushroom"),
     pos(rand(40, width() - 40), rand(100, height() - 40)),
     anchor("center"),
-    "gem",
+    "mushroom",
 ])
 ```
-
-### Make-it-work checklist
-
-- [ ] `loadSprite` for `"gem"` and `"ghost"` is at the top
-- [ ] The player is stored in a `const` called `player`
-- [ ] The gems are made with a loop
-- [ ] `onUpdate("gem", ...)` checks the distance
-- [ ] Speed is stored in a variable, not typed everywhere
-
+> [!TIP]
+> We can use the `rand(from, to)`(js) function to generate random numbers in a range
 
 
 ## Level Up
 
 Finished early? Try these. Pick the ones that sound fun.
 
-| Challenge                                | Hint                                             |
-| ---------------------------------------- | ------------------------------------------------ |
-| Stop the bean walking off the screen     | `if (player.pos.x < 0) { player.pos.x = 0 }`(js) |
-| Flip the bean to face the way it's going | `player.flipX = true`(js)                        |
-| Show **"Gems left: 8"** on screen        | `text()` component and `get("gem").length`(js)   |
-| Make the ghosts drift left and right     | `onUpdate` and `ghost.move(...)`(js)             |
-| Win message when all gems are collected  | `if (get("gem").length === 0)`(js)               |
+| Challenge                                    | Hint                                                |
+| -------------------------------------------- | --------------------------------------------------- |
+| Stop the bean walking off the screen         | `if (player.pos.x < 0) { player.pos.x = 0 }`(js)    |
+| Flip the bean to face the way it's going     | `player.flipX = true`(js)                           |
+| Show **"Mushrooms left: 8"** on screen       | `text()` component and `get("mushroom").length`(js) |
+| Make the ghosts drift left and right         | `onUpdate` and `ghost.move(...)`(js)                |
+| Win message when all mushrooms are collected | `if (get("mushroom").length === 0)`(js)             |
 
 
 

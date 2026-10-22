@@ -32,9 +32,11 @@ Try not to loop back at the previous lessons...
 - <check> I can use a `for` loop to **add lots of things** at once
 
 
-## The Big Idea: Components
+## The Big Idea: **Objects** and **Components**
 
-In Kaplay, everything on screen is a **game object**. You make one by giving `add()` a **list of components**. Each component adds one ability or one property.
+In Kaplay, everything on screen is a **game object**. You create an object using the `add(...)`(js) function.
+
+Kaplay needs to know what an object looks like and how it should behave, so we pass a **list of components** to the `add(...)`(js) function:
 
 ```js
 add([
@@ -44,19 +46,27 @@ add([
 ])
 ```
 
-Think of it like building a character sheet: pick the traits you want.
+Think of it like building a character sheet: pick the traits you want. There are many components in Kaplay. These are some of the common one:
 
-| Component            | What it does                               | Example                |
-| -------------------- | ------------------------------------------ | ---------------------- |
-| `rect(w, h)`(js)     | Draws a rectangle                          | `rect(60, 40)`(js)     |
-| `circle(radius)`(js) | Draws a circle                             | `circle(25)`(js)       |
-| `sprite(name)`(js)   | Draws a picture                            | `sprite("bean")`(js)   |
-| `text(words)`(js)    | Shows words                                | `text("Hello!")`(js)   |
-| `pos(x, y)`(js)      | Sets the position                          | `pos(200, 150)`(js)    |
-| `color(r, g, b)`(js) | Sets the colour (0 to 255 each)            | `color(255, 0, 0)`(js) |
-| `anchor(point)`(js)  | Which part of the object sits on `pos`(js) | `anchor("center")`(js) |
+| Component                    | What it does                               | Example                        |
+| ---------------------------- | ------------------------------------------ | ------------------------------ |
+| `rect(w, h)`(js)             | Draws a rectangle                          | `rect(60, 40)`(js)             |
+| `circle(radius)`(js)         | Draws a circle                             | `circle(25)`(js)               |
+| `sprite(name)`(js)           | Draws an image                             | `sprite("bean")`(js)           |
+| `text(words)`(js)            | Shows words                                | `text("Hello!")`(js)           |
+| `color(r, g, b)`(js)         | Sets the RGB colour (0 to 255 each)        | `color(255, 0, 0)`(js)         |
+| `outline(width, colour)`(js) | Adds an outline to a shape                 | `outline(3, rgb(0, 0, 0))`(js) |
+| `opacity(level)`(js)         | Transparency (0, invisible to 1, opaque)   | `opacity(0.5)`(js)             |
+| `pos(x, y)`(js)              | Sets the position                          | `pos(200, 150)`(js)            |
+| `anchor(point)`(js)          | Which part of the object sits on `pos`(js) | `anchor("center")`(js)         |
+| `scale(x, y)`(js)            | Stretches the object in x and y directions | `scale(2, 2)`(js)              |
+| `rotate(degrees)`(js)        | Rotates the object to a given angle        | `rotate(90)`(js)               |
 
-## Where is `(0, 0)`?
+> [!NOTE]
+> We will get into more complex gameplay later with components for tracking health, managing collisions, applying gravity, etc.
+
+
+## Where is **(0, 0)**?
 
 In maths class, `y`(js) goes **up**.
 
@@ -77,7 +87,7 @@ So `pos(100, 50)`(js) means *100 across, 50 down*, measured from the **top-left*
 > Helper functions:`width()`(js) gives the width of the game screen and `height()`(js) gives the height. `pos(width() / 2, height() / 2)`(js) is always the centre of the screen.
 
 
-## Predict
+## **P**redict
 
 *DON'T PEEK AT THE RUN PART BEFORE YOU DO THIS!*
 
@@ -86,7 +96,7 @@ Look at this code:
 ```js
 kaplay({
     width: 400, height: 500,
-    background: [20, 20, 40]
+    background: [30, 60, 90]
 })
 
 add([
@@ -116,7 +126,7 @@ Predict what you think things will appear on a 400 pixel wide by 500 pixel high 
 > - `color(0, 100, 0)`(js) would be **dark green**
 
 
-## Run
+## **R**un
 
 <web-playground hidden>
 
@@ -147,7 +157,7 @@ Here is the Kaplay code running in a web view. Compare it with your prediction -
 ```js
 kaplay({
     width: 400, height: 500,
-    background: [20, 20, 40]
+    background: [30, 60, 90]
 })
 
 add([
@@ -167,7 +177,7 @@ add([
 
 
 
-## Investigate
+## **I**nvestigate
 
 ### Positioning
 
@@ -202,7 +212,7 @@ What do you think `anchor("center")`(js) will do? Try adding it to the square.
 <response>
 
 
-## Modify
+## **M**odify
 
 ### Sprites
 
@@ -248,7 +258,7 @@ Your tasks:
 ```js
 kaplay({
     width: 400, height: 500,
-    background: [20, 20, 40]
+    background: [30, 60, 90]
 })
 
 loadBean()
@@ -270,7 +280,7 @@ add([
 </web-playground>
 
 
-## Make
+## **M**ake
 
 ### Loops for the Win
 
@@ -319,7 +329,7 @@ Design a pattern using loops. Pick **one** to start:
 ```js depends=kaplay
 kaplay({
     width: 400, height: 500,
-    background: [20, 20, 40]
+    background: [30, 60, 90]
 })
 
 loadBean()

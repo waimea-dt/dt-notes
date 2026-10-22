@@ -9,7 +9,7 @@ You already know Python. JavaScript (JS) is a different language, but many of th
 - <check> I can **display** a value with `console.log`
 - <check> I can build a message with a **template literal**
 
-## Python vs JavaScript
+## Python vs **JavaScript**
 
 | Idea                               | Python                         | JavaScript                       |
 | ---------------------------------- | ------------------------------ | -------------------------------- |
@@ -26,7 +26,7 @@ You already know Python. JavaScript (JS) is a different language, but many of th
 
 
 
-## Predict then Run
+## **P**redict then **R**un
 
 For each snippet below, write what you think the code will do, then run it to see if your prediction was correct.
 
@@ -90,7 +90,7 @@ console.log(lives)
 </primm>
 
 
-## Investigate
+## **I**nvestigate
 
 ### 1. Difference between `let` and `const`
 
@@ -230,7 +230,7 @@ console.log(boss - coins)
 <response placeholder="Observations...">
 
 
-## Modify
+## **M**odify
 
 ### Bug Hunt
 
@@ -274,7 +274,7 @@ console.log(`Gold: ${gold}`)
 ```
 
 
-## Make
+## **M**ake
 
 **Design a character card for a game character of your own.**
 

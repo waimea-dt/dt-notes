@@ -27,7 +27,7 @@ Without looking at Lesson 1, answer the following:
 - <check> I can **repeat** code with `for` and `while` loops
 - <check> I can write a simple **function**
 
-## Python vs JavaScript
+## Python vs **JavaScript**
 
 | Idea           | Python                                                 | JavaScript                                                |
 | -------------- | ------------------------------------------------------ | --------------------------------------------------------- |
@@ -46,7 +46,7 @@ Without looking at Lesson 1, answer the following:
 
 
 
-## Predict then Run
+## **P**redict then **R**un
 
 For each snippet, write what you think the code will do, then run it to check.
 
@@ -127,7 +127,9 @@ console.log("Game over")
 
 </primm>
 
-## Investigate
+
+
+## **I**nvestigate
 
 ### 1. Comparisons
 
@@ -295,7 +297,7 @@ This system issues fines for speeding in an urban **50kph** zone. The fines are 
 
 
 
-## Modify
+## **M**odify
 
 ### Bug Hunt
 
@@ -347,7 +349,7 @@ Try it, then:
 > Kaplay uses functions all the time, often written in a shorter style called an **arrow function**: `() => { ... }`(js). It's a function without a name that Kaplay calls for us at the right moment. We'll use them from Lesson 3.
 
 
-## Make
+## **M**ake
 
 ### Monster Parade
 
