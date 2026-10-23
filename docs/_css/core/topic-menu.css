@@ -96,13 +96,10 @@
 
     /* Individual card styling */
     .menu-item > a {
-        display: grid;
-        grid-template-areas:
-            "name icon"
-            "description description"
-            "links links";
-        grid-template-columns: 1fr var(--topic-menu-icon-size);
+        display: flex;
+        flex-direction: column;
         gap: var(--topic-menu-gap);
+        position: relative;
         padding: var(--topic-menu-gap);
         height: 100%;
         text-decoration: none;
@@ -122,19 +119,22 @@
         > * {
             transition: all 250ms;
             margin: 0;
-            align-self: center;
         }
 
         > :first-child {
-            grid-area: name;
             color: var(--color-text);
             font-size: var(--font-xlarge);
             font-weight: 500;
+            text-align: left;
             line-height: 1.2;
+            padding-right: calc(var(--topic-menu-gap) + var(--topic-menu-icon-size));
+            min-height: var(--topic-menu-icon-size);
         }
 
         > :has(svg.icon, i.si) {
-            grid-area: icon;
+            position: absolute;
+            top: var(--topic-menu-gap);
+            right: var(--topic-menu-gap);
 
             svg.icon,
             i.si::before {
@@ -155,9 +155,7 @@
             font-size: var(--font-small);
         }
 
-        /* Lists of links inside a card: keep them out of the card-link styling */
-        > ul,
-        > ol {
+        > :is(ul, ol):has(a) {
             grid-area: links;
             padding-left: 1.2em;
             font-size: var(--font-small);
