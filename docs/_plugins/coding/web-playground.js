@@ -314,6 +314,14 @@
         previewCol.appendChild(iframe)
 
         const editors = {}
+        const reloadBtn = document.createElement('button')
+        reloadBtn.type = 'button'
+        reloadBtn.className = 'wp-reload'
+        reloadBtn.dataset.tooltip = 'Reload preview'
+        reloadBtn.setAttribute('aria-label', 'Reload preview')
+        reloadBtn.addEventListener('click', () => renderPreview(iframe, editors, contentObjs))
+        previewCol.appendChild(reloadBtn)
+
         const paneEls = []
 
         Object.entries(contents).forEach(([name, content]) => {

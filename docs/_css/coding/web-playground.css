@@ -151,6 +151,7 @@
 
     /* Preview column */
     .wp-preview {
+        position: relative;
         display: flex;
         flex-direction: column;
         min-height: 0;
@@ -158,6 +159,27 @@
 
         @container (min-width: 900px) {
             height: 100%;
+        }
+
+        /* Reload button, top-right (styled like the persist "Reset code" button) */
+        .wp-reload {
+            all: unset;
+            position: absolute;
+            top: var(--gap-small);
+            right: var(--gap-small);
+            z-index: 10;
+            width: 1.4rem;
+            height: 1.4rem;
+            cursor: pointer;
+            opacity: 0.15;
+            transition: opacity 0.2s;
+            background-color: currentcolor;
+            mask: var(--butt-icon-reset) center / contain no-repeat;
+
+            &:hover,
+            &:focus-visible {
+                opacity: 0.8;
+            }
         }
 
         /* Result iframe */
