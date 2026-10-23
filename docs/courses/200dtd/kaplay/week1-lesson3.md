@@ -130,17 +130,10 @@ Predict what you think will appear on a 400 pixel wide by 500 pixel high screen.
 
 <web-playground hidden>
 
-```html id=kaplay
-<script src="https://unpkg.com/kaplay@4000.0.0-alpha.27.1/dist/kaplay.js"></script>
+```html id=kaplay load=_assets/kaplay.html
 ```
 
-```css id=kaplay
-body {
-    background: black;
-    height: 100vh;
-    display: grid;
-    place-items: center;
-}
+```css id=kaplay load=_assets/kaplay.css
 ```
 </web-playground>
 

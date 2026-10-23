@@ -306,7 +306,7 @@ Squash them **before they vanish**...
 ...and before **time runs out**!
 
 Note:
-Show the demo on the Week 2 intro page. Mention the friendly ladybird (a Level Up)
+Show the demo on the Week 2 intro page. Mention the friendly ghost (a Level Up)
 
 ---
 
@@ -360,7 +360,7 @@ Specific feedback: "The bugs vanish before I can click them" beats "It's rubbish
 
 ## Level Up
 
-- A friendly **ladybird**
+- A friendly **ghost**
 - Bugs get **faster**
 - **Lives** instead of a timer
 - A **high score**

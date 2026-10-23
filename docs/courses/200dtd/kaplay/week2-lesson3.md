@@ -110,19 +110,11 @@ Fill in what you think the screen will show at each time:
 
 <web-playground hidden>
 
-```html id=kaplay
-<script src="https://unpkg.com/kaplay@4000.0.0-alpha.27.1/dist/kaplay.js"></script>
+```html id=kaplay load=_assets/kaplay.html
 ```
 
-```css id=kaplay
-body {
-    background: black;
-    height: 100vh;
-    display: grid;
-    place-items: center;
-}
+```css id=kaplay load=_assets/kaplay.css
 ```
-
 </web-playground>
 
 Run the code and watch it for 10 seconds. Compare it with your prediction - any differences?
