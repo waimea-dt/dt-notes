@@ -24,7 +24,7 @@ Game: **Wander**
 
 [Link](/courses/200dtd/kaplay/week2-intro.md)
 
-Notes here
+Respond to the **mouse**, track **state** like score and lives, and use **timers** and **randomness**
 
 Game: **Whack-a-Bug**
 

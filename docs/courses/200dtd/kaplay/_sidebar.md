@@ -21,10 +21,10 @@
     - [Lesson 4: Moving Things](/courses/200dtd/kaplay/week1-lesson4.md)
 
 - [<i data-lucide="mouse-pointer-click"></i> Week 2: Clicks, Counts & State](/courses/200dtd/kaplay/week2-intro.md)
-    - [Lesson 1: ](/courses/200dtd/kaplay/week2-lesson1.md)
-    - [Lesson 2: ](/courses/200dtd/kaplay/week2-lesson2.md)
-    - [Lesson 3: ](/courses/200dtd/kaplay/week2-lesson3.md)
-    - [Lesson 4: ](/courses/200dtd/kaplay/week2-lesson4.md)
+    - [Lesson 1: Mouse Events](/courses/200dtd/kaplay/week2-lesson1.md)
+    - [Lesson 2: Game State](/courses/200dtd/kaplay/week2-lesson2.md)
+    - [Lesson 3: Timers & Randomness](/courses/200dtd/kaplay/week2-lesson3.md)
+    - [Lesson 4: Whack-a-Bug](/courses/200dtd/kaplay/week2-lesson4.md)
 
 - [<i data-lucide="message-circle-text"></i> Week 3: Dialogue & Storylines](/courses/200dtd/kaplay/week3-intro.md)
     - [Lesson 1: ](/courses/200dtd/kaplay/week3-lesson1.md)

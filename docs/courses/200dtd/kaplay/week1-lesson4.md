@@ -298,7 +298,7 @@ You are going to make a simple game where the player wanders about the screen, p
 1. Create a **new repo** from the **template** repo above
 2. Name it **kaplay-wander-game**
 3. **Clone** it to your computer
-4. Open the repo it in your **code editor**
+4. Open the repo in your **code editor**
 5. Launch the **live server** to see the game running in a browser
 
 > [!IMPORTANT]
@@ -331,7 +331,7 @@ onUpdate("mushroom", (mushroom) => {
 ```
 
 > [!TIP]
-> We can find the distance between two objects using `object.pos.dist(otherObject)`(js)
+> We can find the distance between two objects using `object.pos.dist(otherObject.pos)`(js)
 
 For this to work, each mushroom needs the **tag** `"mushroom"` in its component list. A tag is just a word in quotes:
 

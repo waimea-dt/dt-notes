@@ -46,7 +46,7 @@ add([
 ])
 ```
 
-Think of it like building a character sheet: pick the traits you want. There are many components in Kaplay. These are some of the common one:
+Think of it like building a character sheet: pick the traits you want. There are many components in Kaplay. These are some of the common ones:
 
 | Component                    | What it does                               | Example                        |
 | ---------------------------- | ------------------------------------------ | ------------------------------ |
@@ -112,7 +112,7 @@ add([
 ])
 ```
 
-Predict what you think things will appear on a 400 pixel wide by 500 pixel high screen. Be specific - you might find it easier to sketch it out on paper.
+Predict what you think will appear on a 400 pixel wide by 500 pixel high screen. Be specific - you might find it easier to sketch it out on paper.
 
 <response>
 

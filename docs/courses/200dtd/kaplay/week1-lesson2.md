@@ -255,8 +255,8 @@ Put the lines in order so the program prints **Lives left: 3**, then **2**, then
 
 This system issues fines for speeding in an urban **50kph** zone. The fines are as follows:
 - **$500** if speed is **more than 75kph**
-- **$100** if speed is **60kph to 75kph**
-- **warning** if speed is **50kph to 60kph**
+- **$100** if speed is **more than 60kph, up to 75kph**
+- **warning** if speed is **more than 50kph, up to 60kph**
 - **nothing** otherwise
 
 <drag-drop mode="code" title="Speeding" sub-title="Does the order of the checks matter? Try it!">
@@ -291,7 +291,7 @@ This system issues fines for speeding in an urban **50kph** zone. The fines are 
 
 </drag-drop>
 
-**Think about it**: What would go wrong if the `speed > 50`(js) check came *before* the `speed > 50`(js) check?
+**Think about it**: What would go wrong if the `speed > 50`(js) check came *before* the `speed > 75`(js) check?
 
 <response>
 
@@ -346,7 +346,7 @@ Try it, then:
 
 
 > [!NOTE]
-> Kaplay uses functions all the time, often written in a shorter style called an **arrow function**: `() => { ... }`(js). It's a function without a name that Kaplay calls for us at the right moment. We'll use them from Lesson 3.
+> Kaplay uses functions all the time, often written in a shorter style called an **arrow function**: `() => { ... }`(js). It's a function without a name that Kaplay calls for us at the right moment. We'll use them from Lesson 4.
 
 
 ## **M**ake

@@ -145,7 +145,7 @@ What does `typeof` tell us?
 
 <response>
 
-Try it on a these different data values...
+Try it on these different data values...
 
 ```js run
 console.log(typeof "Kevin")
