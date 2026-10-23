@@ -33,8 +33,8 @@
         }
     }
 
-    /* Saved PRIMM prediction */
-    .persist-edited .primm-prediction-output {
+    /* Custom widgets mark the elements holding the student's saved answer with data-persist-answer */
+    .persist-edited [data-persist-answer]:not([hidden]) {
         outline: 1px solid var(--highlight-color);
     }
 

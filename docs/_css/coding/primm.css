@@ -60,22 +60,25 @@
             "code"
             "predict"
             "controls"
-            "status";
+            "status"
+            "observe";
 
         @container (min-width: 400px) {
             grid-template-columns: auto 1fr;
             grid-template-areas:
                 "code     code"
                 "predict  predict"
-                "controls status";
+                "controls status"
+                "observe  observe";
         }
 
         @container (min-width: 900px) {
             grid-template-columns: 3fr 2fr;
-            grid-template-rows: auto auto 1fr;
+            grid-template-rows: auto auto auto 1fr;
             grid-template-areas:
                 "code predict"
                 "code status"
+                "code observe"
                 "code controls";
         }
     }
@@ -114,6 +117,41 @@
         }
     }
 
+    .primm-prediction-input,
+    .primm-observations-input {
+        width: 100%;
+        min-height: 100px;
+        padding: var(--primm-padding-small);
+        border: 1px solid var(--primm-prediction-border);
+        border-radius: var(--plugin-wrapper-radius);
+        background-color: var(--primm-prediction-bg);
+        color: var(--primm-text);
+        font-family: var(--font-family-mono);
+        font-size: var(--font-base);
+        line-height: 1.5;
+        resize: vertical;
+        transition: border-color 0.2s ease;
+
+        &[hidden] {
+            display: none;
+        }
+
+        &:focus {
+            outline: none;
+            border-color: var(--theme-color);
+            box-shadow: 0 0 0 2px rgba(var(--theme-rgb), 0.1);
+        }
+
+        &:disabled {
+            background-color: var(--color-mono-2);
+            opacity: 0.6;
+        }
+    }
+
+    .primm-observations-input {
+        grid-area: observe;
+    }
+
     /* Prediction Section */
     .primm-prediction-section {
         grid-area: predict;
@@ -124,32 +162,6 @@
             font-weight: 500;
             color: var(--plugin-header-subtitle);
             margin-bottom: var(--primm-gap-small);
-        }
-
-        .primm-prediction-input {
-            width: 100%;
-            min-height: 100px;
-            padding: var(--primm-padding-small);
-            border: 1px solid var(--primm-prediction-border);
-            border-radius: var(--plugin-wrapper-radius);
-            background-color: var(--primm-prediction-bg);
-            color: var(--primm-text);
-            font-family: var(--font-family-mono);
-            font-size: var(--font-base);
-            line-height: 1.5;
-            resize: vertical;
-            transition: border-color 0.2s ease;
-
-            &:focus {
-                outline: none;
-                border-color: var(--theme-color);
-                box-shadow: 0 0 0 2px rgba(var(--theme-rgb), 0.1);
-            }
-
-            &:disabled {
-                background-color: var(--color-mono-2);
-                opacity: 0.6;
-            }
         }
 
         .primm-prediction-output {
@@ -189,6 +201,10 @@
 
         .primm-btn {
             width: 100%;
+
+            &[hidden] {
+                display: none;
+            }
 
             svg {
                 width: 18px;

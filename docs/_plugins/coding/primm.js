@@ -56,8 +56,10 @@
         title: 'PRIMM: Predict & Run',
         subtitle: '',
         predict: 'What do you predict this code will do?',
+        predictionsPlaceholder: 'Type your prediction here...',
         savePrediction: 'Save Prediction',
         statusWaiting: 'Waiting for your prediction...',
+        observationsPlaceholder: 'Type your observations here...',
         statusSaved: 'Predication saved. Now run the code...',
         statusReflect: 'Was your prediction correct?',
         statusUnavailable: 'Runner unavailable',
@@ -92,17 +94,33 @@
                 el: this.el,
                 type: 'primm',
                 original: '',
-                read: () => (this.predictionSaved ? this.predictionOutputEl.textContent : ''),
+                read: () => (this.predictionSaved
+                    ? JSON.stringify({ prediction: this.predictionOutputEl.textContent, observations: this.observationsInputEl.value })
+                    : ''),
                 write: value => {
                     if (value) {
-                        this.predictionInputEl.value = value
+                        const { prediction, observations } = this.parseSaved(value)
+                        this.predictionInputEl.value = prediction
                         this.savePrediction()
+                        if (observations) {
+                            this.observationsInputEl.value = observations
+                            this.showObservations()
+                        }
                     } else {
                         this.resetWidget()
                     }
                 },
             })
             this.persistSave = persisted?.save
+        }
+
+        // Older saves were the plain prediction string
+        parseSaved(value) {
+            try {
+                const data = JSON.parse(value)
+                if (data && typeof data.prediction === 'string') return data
+            } catch { /* plain string */ }
+            return { prediction: value, observations: '' }
         }
 
         resetWidget() {
@@ -144,10 +162,10 @@
                                 <textarea
                                     id="${predictionId}"
                                     class="primm-prediction-input"
-                                    placeholder="Type your prediction here..."
+                                    placeholder="${UI_TEXT.predictionsPlaceholder}"
                                     spellcheck="false"
                                 ></textarea>
-                                <pre class="primm-prediction-output" style="display: none;"></pre>
+                                <pre class="primm-prediction-output" data-persist-answer style="display: none;"></pre>
                             </div>
                         </div>
 
@@ -160,6 +178,15 @@
 
                         <!-- Status -->
                         <p class="primm-status" data-status="waiting">${UI_TEXT.statusWaiting}</p>
+
+                        <!-- Observations (shown after run) -->
+                        <textarea
+                            class="primm-observations-input"
+                            data-persist-answer
+                            placeholder="${UI_TEXT.observationsPlaceholder}"
+                            spellcheck="false"
+                            hidden
+                        ></textarea>
                     </div>
                 </div>
             `
@@ -170,6 +197,7 @@
             this.codeBlockEl = this.el.querySelector('.primm-code')
             this.predictionInputEl = this.el.querySelector('.primm-prediction-input')
             this.predictionOutputEl = this.el.querySelector('.primm-prediction-output')
+            this.observationsInputEl = this.el.querySelector('.primm-observations-input')
             this.savePredictionButtonEl = this.el.querySelector('.primm-save-btn')
             this.statusEl = this.el.querySelector('.primm-status')
 
@@ -222,6 +250,14 @@
 
         bindEvents() {
             this.savePredictionButtonEl.addEventListener('click', () => this.savePrediction())
+            this.observationsInputEl.addEventListener('input', () => this.persistSave?.())
+        }
+
+        showObservations() {
+            this.runnerOutputObserver?.disconnect()
+            this.runnerOutputObserver = null
+            this.setStatus(UI_TEXT.statusReflect, 'reflect')
+            this.observationsInputEl.hidden = false
         }
 
         setStatus(message, state, showCheck = false) {
@@ -254,9 +290,7 @@
 
                 if (!hasOutput) return
 
-                this.setStatus(UI_TEXT.statusReflect, 'reflect')
-                this.runnerOutputObserver.disconnect()
-                this.runnerOutputObserver = null
+                this.showObservations()
             })
 
             this.runnerOutputObserver.observe(container, {
@@ -283,8 +317,8 @@
             this.predictionOutputEl.style.display = 'block'
             this.predictionOutputEl.textContent = prediction
 
-            // Disable save and hand code block off to existing language runner
-            this.savePredictionButtonEl.disabled = true
+            // Hide save and hand code block off to existing language runner
+            this.savePredictionButtonEl.hidden = true
 
             if (this.activateLanguageRunner()) {
                 this.setStatus(UI_TEXT.statusSaved, 'saved', true)

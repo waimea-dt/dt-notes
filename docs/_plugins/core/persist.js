@@ -4,7 +4,9 @@
  * Exposes window.DocsifyPersist for other plugins:
  *   bindField(el, type)           - Persist a textarea / input / checkbox
  *   bindCustom({ el, type, original, read, write }) - Persist a widget with its own state;
- *                                   returns { save } to call after each change
+ *                                   returns { save } to call after each change.
+ *                                   Mark answer elements inside el with data-persist-answer
+ *                                   to get the edited highlight outline.
  *   bindEditor(cm, options)       - Persist a CodeMirror editor
  *
  * bindEditor options: { el, type, sub, original, read, write }
