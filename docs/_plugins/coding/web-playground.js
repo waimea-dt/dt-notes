@@ -42,6 +42,14 @@
  *
  *   </web-playground>
  *
+ * Loading code from files (path relative to the current page; a leading / means docs root):
+ *   ```js load=_assets/wander.js
+ *   ```
+ *   ```js id=base load=_assets/base.js
+ *   ```
+ * The file content replaces the (empty) block body. Without id the block is a normal
+ * editable block; with id=NAME it is hidden. depends=NAME can be combined with load.
+ *
  * Blocks with id=NAME are hidden from the editors but ALWAYS included in that
  * playground's output, whether or not any block depends on them. depends=NAME
  * is only needed to pull in a named block from a different playground on the page.
@@ -528,17 +536,61 @@
         renderPreview(iframe, editors, contentObjs)
     }
 
-    function docsifyWebPlayground(hook) {
+    const PLAYGROUND_RE = /<web-playground[^>]*>[\s\S]*?<\/web-playground>/g
+    const LOAD_FENCE_RE = /^```(html|css|js)([^\n]*?)\bload=(\S+)([^\n]*)\n([\s\S]*?)^```$/gm
+
+    // Paths starting with / (or a URL) are docs-root relative; others are relative to the current page.
+    function resolveLoadPath(path, pageFile) {
+        if (path.startsWith('/') || window.DocsifyUtils.isAbsoluteUrl?.(path)) return window.DocsifyUtils.resolveSourcePath(path)
+        const dir = (pageFile || '').split('/').slice(0, -1)
+        return new URL(path, `http://x/${dir.join('/')}${dir.length ? '/' : ''}`).pathname.slice(1)
+    }
+
+    async function fetchText(path) {
+        try {
+            const response = await fetch(path, { cache: 'no-store' })
+            if (!response.ok) throw new Error(`HTTP ${response.status}`)
+            return (await response.text()).replace(/\r\n/g, '\n').replace(/\n$/, '') + '\n'
+        } catch (err) {
+            console.warn(`web-playground: could not load "${path}"`, err)
+            return `/* Could not load ${path} */\n`
+        }
+    }
+
+    // Replace ```lang load=PATH fences inside <web-playground> blocks with the
+    // file's content; other attributes (id=, depends=) are kept for later processing.
+    async function inlineLoadedFiles(content, pageFile) {
+        const paths = new Map()
+        for (const [block] of content.matchAll(PLAYGROUND_RE)) {
+            for (const match of block.matchAll(LOAD_FENCE_RE)) paths.set(match[3], resolveLoadPath(match[3], pageFile))
+        }
+        if (paths.size === 0) return content
+
+        const texts = new Map(await Promise.all([...paths].map(async ([raw, resolved]) => [raw, await fetchText(resolved)])))
+
+        return content.replace(PLAYGROUND_RE, block =>
+            block.replace(LOAD_FENCE_RE, (_, lang, before, path, after) => {
+                const attrs = `${before} ${after}`.trim().replace(/\s+/g, ' ')
+                return `\`\`\`${lang}${attrs ? ' ' + attrs : ''}\n${texts.get(path)}\`\`\``
+            })
+        )
+    }
+
+    function docsifyWebPlayground(hook, vm) {
         // Hidden code blocks extracted from the current page.
         // Keys are "lang:name", values are the raw code strings.
         let hiddenBlocks = {}
         // Each playground's own id blocks, indexed by playground order on the page
         let ownBlocksByPlayground = []
 
-        hook.beforeEach(function (content) {
+        hook.beforeEach(function (content, next) {
+            content = content.replace(/\r\n/g, '\n')
+            inlineLoadedFiles(content, vm.route.file).then(loaded => next(transformContent(loaded)))
+        })
+
+        function transformContent(content) {
             hiddenBlocks = {}
             ownBlocksByPlayground = []
-            content = content.replace(/\r\n/g, '\n')
 
             // Process content inside <web-playground> tags
             content = content.replace(
@@ -568,7 +620,7 @@
             )
 
             return content
-        })
+        }
 
         hook.doneEach(function () {
             document.querySelectorAll('web-playground:not([data-initialized])').forEach(el => {

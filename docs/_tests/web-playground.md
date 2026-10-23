@@ -481,3 +481,23 @@ document.querySelector('.content').addEventListener('click', () => {
 </web-playground>
 
 > **Note:** The editors above only show the `depends=base` blocks, but if you inspect the preview or check the console, you'll see the hidden base code is included!
+
+## Loading code from files (load=)
+
+<web-playground data-height="20em" js-only>
+
+```js load=_assets/playground-load.js
+```
+
+</web-playground>
+
+<web-playground data-height="20em">
+
+```js id=base load=_assets/playground-load.js
+```
+
+```html
+<h1>Hidden JS loaded from file</h1>
+```
+
+</web-playground>
