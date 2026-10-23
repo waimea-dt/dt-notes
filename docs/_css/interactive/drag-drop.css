@@ -137,7 +137,7 @@
             &.drag-drop-list-area-has-reference {
                 @container (min-width: 700px) {
                     display: grid;
-                    grid-template-columns: 3fr 2fr;
+                    grid-template-columns: 1fr 1fr;
                     gap: var(--drag-drop-gap);
                     align-items: start;
 

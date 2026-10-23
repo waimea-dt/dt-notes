@@ -9,7 +9,8 @@
 
 (function () {
     const MARKER_PREFIX = 'PRISMLINEHIGHLIGHT:'
-    const FENCE_REGEX = /^```([^\s\[]+)\s+\[([^\]\n]+)\]\s*$/gm
+    // Optional blockquote prefix (e.g. "> ") so fences inside callouts match
+    const FENCE_REGEX = /^((?:[ \t]*>)*[ \t]*)```([^\s\[]+)\s+\[([^\]\n]+)\]\s*$/gm
     const MARKER_REGEX = new RegExp(
         `<p>${MARKER_PREFIX}([^<]+)</p>\\s*(<pre\\b[^>]*>[\\s\\S]*?<\\/pre>)`,
         'g'
@@ -37,11 +38,12 @@
 
     const docsifyPrismLineHighlight = function (hook) {
         hook.beforeEach(function (content) {
-            return content.replace(FENCE_REGEX, function (match, lang, rawSpec) {
+            return content.replace(FENCE_REGEX, function (match, prefix, lang, rawSpec) {
                 const lines = normalizeLineSpec(rawSpec)
                 if (!lines) return match
 
-                return `${MARKER_PREFIX}${lines}\n\n\`\`\`${lang}`
+                const blankLine = prefix.trimEnd()
+                return `${prefix}${MARKER_PREFIX}${lines}\n${blankLine}\n${prefix}\`\`\`${lang}`
             })
         })
 
