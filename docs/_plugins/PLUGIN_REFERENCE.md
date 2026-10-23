@@ -16,7 +16,7 @@ This site uses Docsify plugins to turn Markdown conventions, fenced code blocks,
 ## Content and page helpers
 
 - `<captioned>![Alt](image) Caption</captioned>`: image with a caption; `<speak>![Character](image) Text</speak>`: speech bubble with an image.
-- `<cards>...</cards>`: card grid split at `---`; `<menu>...</menu>`: linked topic-card menu.
+- `<cards>...</cards>`: card grid split at `---`; `<menu>...</menu>`: linked topic-card menu. Each section separated by `---` becomes a card; a link in the card makes the entire card clickable.
 - `<img-notes src="...">... </img-notes>`: image with positioned note markers.
 - `<response>`, `<value>`, `<check>`: answer-entry, answer-display, and checkable form fields; options such as `placeholder` and `checked` customize them.
 - `<videoembed id="YOUTUBE_ID">`, `<videoembed playlist id="PLAYLIST_ID">`, `<videoembed playlist-grid id="ID1,ID2">`: responsive YouTube video or playlist.
@@ -25,6 +25,14 @@ This site uses Docsify plugins to turn Markdown conventions, fenced code blocks,
 - `!!!` / `!!` markers in table headings or cells: highlight selected columns, rows, or cells.
 - `[!NOTE]`, `[!TIP]`, `[!WARNING]`, etc. in blockquotes: styled callouts.
 - Glossary entries in `_glossary.md` become definition tooltips; `<i data-lucide="icon-name"></i>` inserts a Lucide icon. A few supported emoji are replaced by corresponding icons.
+
+## Navigation: sidebar and home page
+
+- The Docsify sidebar is authored in `docs/_sidebar.md` and in nested folders' `_sidebar.md` files. Use Markdown lists for links; indent child list items to create nested navigation. Docsify discovers these files automatically, and the configured `sidebarDisplayLevel` and `subMaxLevel` control which levels are initially expanded and shown.
+- `sidebar-scrollspy.js` highlights the sidebar entry matching the heading currently in view. It works automatically with normal Markdown headings; it does not create sidebar links.
+- `sidebar-filter.js` removes table-of-contents entries for headings inside supported plugin widgets, so internal card/slide/quiz headings do not clutter the page sub-sidebar. No special Markdown syntax is needed.
+- `theme-toggle.js` adds the light/dark theme button to the sidebar automatically.
+- The home page (`docs/README.md`) uses `<menu>...</menu>` for the large topic-card grid. Put each card's content between horizontal rules (`---`); a Markdown link in a card makes the whole card clickable. This is the same `<menu>` plugin described above, not the Docsify navigation sidebar.
 
 ## Visualisations
 
