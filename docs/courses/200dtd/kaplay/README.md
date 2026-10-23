@@ -8,79 +8,73 @@ Welcome, game makers! Over the next five weeks you'll learn the **JavaScript** p
 
 ### Week 1: Things That Move
 
-<i data-lucide="gamepad-2"></i>
+<i data-lucide="move"></i>
 
 [Link](/courses/200dtd/kaplay/week1-intro.md)
 
-- [Lesson 1: Variables](/courses/200dtd/kaplay/week1-lesson1.md)
-- [Lesson 2: Choices & Loops](/courses/200dtd/kaplay/week1-lesson2.md)
-- [Lesson 3: Hello, Kaplay](/courses/200dtd/kaplay/week1-lesson3.md)
-- [Lesson 4: Game - **Wander**](/courses/200dtd/kaplay/week1-lesson4.md)
+Learn the basics of **JavaScript** programming and the **Kaplay** library
+
+Game: **Wander**
 
 ---
 
 ### Week 2: Clicks, Counts & State
 
-<i data-lucide="gamepad-2"></i>
+<i data-lucide="mouse-pointer-click"></i>
 
 [Link](/courses/200dtd/kaplay/week2-intro.md)
 
-- [Lesson 1: ](/courses/200dtd/kaplay/week2-lesson1.md)
-- [Lesson 2: ](/courses/200dtd/kaplay/week2-lesson2.md)
-- [Lesson 3: ](/courses/200dtd/kaplay/week2-lesson3.md)
-- [Lesson 4: Game - **Whack-a-Bug**](/courses/200dtd/kaplay/week2-lesson4.md)
+Notes here
+
+Game: **Whack-a-Bug**
 
 ---
 
 ### Week 3: Dialogue & Storylines
 
-<i data-lucide="gamepad-2"></i>
+<i data-lucide="message-circle-text"></i>
 
 [Link](/courses/200dtd/kaplay/week3-intro.md)
 
-- [Lesson 1: ](/courses/200dtd/kaplay/week3-lesson1.md)
-- [Lesson 2: ](/courses/200dtd/kaplay/week3-lesson2.md)
-- [Lesson 3: ](/courses/200dtd/kaplay/week3-lesson3.md)
-- [Lesson 4: Game - **The Wizard's Help Desk**](/courses/200dtd/kaplay/week3-lesson4.md)
+Notes here
+
+Game: **The Wizard's Help Desk**
 
 ---
 
-### Week 4: Flying, Shooting, Explosions
+### Week 4: Fly, Shoot, Explode
 
-<i data-lucide="gamepad-2"></i>
+<i data-lucide="rocket"></i>
 
 [Link](/courses/200dtd/kaplay/week4-intro.md)
 
-- [Lesson 1: ](/courses/200dtd/kaplay/week4-lesson1.md)
-- [Lesson 2: ](/courses/200dtd/kaplay/week4-lesson2.md)
-- [Lesson 3: ](/courses/200dtd/kaplay/week4-lesson3.md)
-- [Lesson 4: Game - **Space Invaders-ish**](/courses/200dtd/kaplay/week4-lesson4.md)
+Notes here
+
+Game: **Space Invaders-ish**
 
 ---
 
 ### Week 5: Gravity, Physics & Platforms
 
-<i data-lucide="gamepad-2"></i>
+<i data-lucide="sport-shoe"></i>
 
 [Link](/courses/200dtd/kaplay/week5-intro.md)
 
-- [Lesson 1: ](/courses/200dtd/kaplay/week5-lesson1.md)
-- [Lesson 2: ](/courses/200dtd/kaplay/week5-lesson2.md)
-- [Lesson 3: ](/courses/200dtd/kaplay/week5-lesson3.md)
-- [Lesson 4: Game - **Coin Dash**](/courses/200dtd/kaplay/week5-lesson4.md)
+Notes here
+
+Game: **Coin Dash**
 
 ---
 
 ### Project: Design & Create a Game
 
-<i data-lucide="gamepad-2"></i>
+<i data-lucide="lightbulb"></i>
 
 [Link](/courses/200dtd/kaplay/project-intro.md)
 
-- [Game Design](/courses/200dtd/kaplay/project-design.md)
-- [Game Development](/courses/200dtd/kaplay/project-dev.md)
-- [Game Testing](/courses/200dtd/kaplay/project-testing.md)
+Notes here
 
+Game: **Your Own!**
 
 </menu>
 
