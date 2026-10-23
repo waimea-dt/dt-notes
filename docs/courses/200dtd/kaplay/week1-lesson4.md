@@ -251,7 +251,7 @@ Tasks:
 > The `onKeyDown(...)`(js), `onKeyPress(...)`(js) and `onKeyRelease(...)`(js) functions can all respond to **multiple keys**. Put the keys into a list: `["up", "w"]`(js) and pass this as the first argument:
 >
 > ```js
-> onKeyDown(["up", "w"], () => {...})
+> onKeyDown(["up", "w"], () => { ... })
 > ```
 
 

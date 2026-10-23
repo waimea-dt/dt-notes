@@ -21,7 +21,7 @@ Try not to loop back at the previous lessons...
 
 ## Learning Goals
 
-- <check> I can run code **once** after a delay with `wait(...)`(js)
+- <check> I can run code **once after a delay** with `wait(...)`(js)
 - <check> I can run code **again and again** with `loop(...)`(js)
 - <check> I can make **random choices** with `rand(...)`(js) and `choose(...)`(js)
 - <check> I can make a **countdown timer**
@@ -32,21 +32,23 @@ Try not to loop back at the previous lessons...
 
 Kaplay has built-in **timers**. You tell it *how long to wait* and *what to do* when the time is up:
 
-| Function                    | What it does                                  |
-| --------------------------- | --------------------------------------------- |
-| `wait(2, () => { ... })`(js) | Runs the code **once**, after **2 seconds**  |
-| `loop(2, () => { ... })`(js) | Runs the code **every 2 seconds**, over and over |
+| Function                     | What it does                                  |
+| ---------------------------- | --------------------------------------------- |
+| `wait(2, () => { ... })`(js) | Runs the code **once**, after **2 seconds**   |
+| `loop(2, () => { ... })`(js) | Runs the code **repeatedly, every 2 seconds** |
 
 > [!WARNING]
 > Kaplay timers use **seconds**, not milliseconds. `wait(2, ...)`(js) waits for 2 seconds. If you write `wait(2000, ...)`(js) you'll be waiting for over half an hour!
 
+### Randomness
+
 And some ways to add a bit of **chance**:
 
-| Function                          | What it does                                   |
-| --------------------------------- | ---------------------------------------------- |
-| `rand(10, 50)`(js)                | A random number between 10 and 50              |
-| `choose(["red", "green", "blue"])`(js) | Picks **one** item from a list, at random |
-| `get("hole")`(js)                 | A list of **all** objects with the tag `"hole"` |
+| Function                               | What it does                                    |
+| -------------------------------------- | ----------------------------------------------- |
+| `rand(10, 50)`(js)                     | A **random number** between 10 and 50           |
+| `choose(["red", "green", "blue"])`(js) | Picks **one** item from a list, at random       |
+| `get("hole")`(js)                      | A list of **all** objects with the tag `"hole"` |
 
 > [!TIP]
 > `get("hole")`(js) gives us a list. Put it inside `choose(...)`(js) and we get a **random hole**: `choose(get("hole"))`(js)
@@ -70,11 +72,11 @@ wait(2, () => {
 
 ## **P**redict
 
-Look at this Kaplay program. A function (`() => { ... }`) is passed to `loop` and `wait`. Kaplay runs it later, at the right moment:
+Look at this Kaplay program. A function (`() => { ... }`(js)) is passed to `loop()`(js) and `wait()`(js). Kaplay runs each function later, at the right moment:
 
 ```js
 kaplay({
-    width: 400, height: 500,
+    width: 400, height: 600,
     background: [30, 60, 90]
 })
 
@@ -83,7 +85,8 @@ loadSprite("ghost", "assets/images/ghost.png")
 loop(1, () => {
     add([
         sprite("ghost"),
-        pos(rand(0, width() - 52), rand(0, height() - 60)),
+        pos(rand(50, width() - 50), rand(50, height() - 50)),
+        anchor("center")
     ])
 })
 
@@ -96,7 +99,7 @@ wait(5, () => {
 })
 ```
 
-Fill in what you think the screen will show at each time:
+Fill in what you think the **screen will show** at each time:
 
 | Time         | What is on the screen? |
 | ------------ | ---------------------- |
@@ -119,7 +122,7 @@ Fill in what you think the screen will show at each time:
 
 Run the code and watch it for 10 seconds. Compare it with your prediction - any differences?
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="40em" js-only>
 
 ```html depends=kaplay
 ```
@@ -138,7 +141,11 @@ loadSprite("ghost", "assets/images/ghost.png")
 loop(1, () => {
     add([
         sprite("ghost"),
-        pos(rand(0, width() - 52), rand(0, height() - 60)),
+        pos(
+            rand(50, width() - 50),
+            rand(50, height() - 50)
+        ),
+        anchor("center")
     ])
 })
 
@@ -153,6 +160,10 @@ wait(5, () => {
 
 </web-playground>
 
+Were your predications correct? Any differences?
+
+<response>
+
 
 ## **I**nvestigate
 
@@ -166,7 +177,7 @@ What's the difference between `wait(...)`(js) and `loop(...)`(js)? When would yo
 
 Match each piece of code to what it does.
 
-<drag-drop mode="code" title="What Does It Do?" sub-title="Drag the descriptions into the right order">
+<drag-drop mode="code" title="What Does It Do?" sub-title="">
 
 1.
     ```js
@@ -188,73 +199,35 @@ Match each piece of code to what it does.
     choose(["a", "b", "c"])
     ```
 
+5.
+    ```js
+    choose(get("ghost"))
+    ```
+
 ---
 
-1. Runs some code once, after two seconds
-2. Runs some code every two seconds
-3. Gives a random number between 0 and 100
-4. Picks one item from a list at random
+1. Run code once, after 2s
+2. Run code every 2s
+3. Random number, 0 to 100
+4. Pick random item from list
+5. Pick random object tagged "ghost"
 
 </drag-drop>
 
-### Countdown
+### Random Object
 
-A countdown timer is just a variable that gets smaller each second. Step through this code, pretending that each line runs one second apart.
-
-```js trace header="false"
-let timeLeft = 3
-
-timeLeft = timeLeft - 1
-timeLeft = timeLeft - 1
-timeLeft = timeLeft - 1
-
-console.log(timeLeft)
-```
-
-What would we need to **check** after each second, to know when the game is over?
+What does `choose(get("tag"))`(js) do? What sort of things could this be used for in a game?
 
 <response>
-
-### Spawn, Then Vanish
-
-A bug appears in a random hole, then disappears again after a second. Put the code in order.
-
-<drag-drop mode="code" title="Appear and Vanish" sub-title="Choose a hole, add the bug, then schedule its disappearance">
-
-1.
-    ```js
-    const hole = choose(get("hole"))
-    ```
-
-2.
-    ```js
-    const bug = add([
-        sprite("bug"),
-        pos(hole.pos.x, hole.pos.y),
-        anchor("center"),
-        "bug",
-    ])
-    ```
-
-3.
-    ```js
-    wait(1, () => {
-        if (bug.exists()) {
-            destroy(bug)
-        }
-    })
-    ```
-
-</drag-drop>
 
 
 ## **M**odify
 
 ### Bug Hunt
 
-This game should add a new balloon every second, and each balloon should vanish after two seconds. It has **two bugs**. Find and fix them.
+This game should add a new balloon every second, and each balloon should vanish after 2.5 seconds. It has **two bugs**. Find and fix them.
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="40em" js-only>
 
 ```html depends=kaplay
 ```
@@ -271,13 +244,16 @@ kaplay({
 loop(1000, () => {
     const balloon = add([
         circle(25),
-        pos(rand(40, width() - 40), rand(40, height() - 40)),
+        pos(
+            rand(40, width() - 40),
+            rand(40, height() - 40)
+        ),
         color(255, 100, 100),
         area(),
         "balloon",
     ])
 
-    wait(2, destroy(balloon))
+    wait(2.5, destroy(balloon))
 })
 
 onClick("balloon", (balloon) => {
@@ -288,13 +264,14 @@ onClick("balloon", (balloon) => {
 </web-playground>
 
 > [!TIP]
-> `wait(...)`(js) wants a **function** to run later. Is `destroy(balloon)`(js) a function, or the **result** of running one?
+> Just like with `loop(...)`(js) above, `wait(...)`(js) wants a **function** to run later. Is `destroy(balloon)`(js) a function, or is it the **result** of running one?
+
 
 ### Tinker
 
 Here's a working balloon spawner. Complete the tasks one at a time. Test after each change!
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="40em" js-only>
 
 ```html depends=kaplay
 ```
@@ -311,13 +288,16 @@ kaplay({
 loop(1, () => {
     const balloon = add([
         circle(25),
-        pos(rand(40, width() - 40), rand(40, height() - 40)),
+        pos(
+            rand(40, width() - 40),
+            rand(40, height() - 40)
+        ),
         color(255, 100, 100),
         area(),
         "balloon",
     ])
 
-    wait(2, () => {
+    wait(2.5, () => {
         if (balloon.exists()) {
             destroy(balloon)
         }
@@ -334,8 +314,8 @@ onClick("balloon", (balloon) => {
 Tasks:
 
 1. <check> Make balloons appear **twice as fast**
-2. <check> Make each balloon's colour **random** (hint: `choose(...)`(js) can pick from a list of colours, such as `[rgb(255, 100, 100), rgb(100, 255, 100)]`(js))
-3. <check> Make each balloon **last longer** or **shorter** by random (hint: `rand(...)`(js) can go inside `wait(...)`(js))
+2. <check> Make each balloon last a **random amount of time** (hint: `rand(...)`(js) can go inside `wait(...)`(js))
+3. <check> Make each balloon's colour **random** (hint: `choose(...)`(js) can pick from a list of colours, such as `[rgb(255, 100, 100), rgb(100, 255, 100)]`(js))
 4. <check> Count the balloons that **escape** (vanish without being popped) and show the total in a label. (hint: if `balloon.exists()`(js) is still `true` when the `wait(...)`(js) finishes, nobody popped it!)
 
 
@@ -343,24 +323,9 @@ Tasks:
 
 ### Timed Balloons
 
-Add a **countdown timer** to the balloon game. Your game must have:
+Using any of the **Balloons** code above, create a full game:
 
-- <check> A **15 second** countdown shown on screen
-- <check> A **score** that goes up when balloons are popped
-- <check> When the time reaches **0**, no more balloons appear, and **"Time's up!"** is shown
-- <check> The player **can't** score once time is up
-
-> [!TIP]
-> Use an `isGameOver` variable, just like last lesson. Each `loop(...)`(js) function can check it first and use `return`(js) to quit early:
->
-> ```js
-> loop(1, () => {
->     if (isGameOver) { return }
->     // ... the rest of the code
-> })
-> ```
-
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -376,7 +341,7 @@ kaplay({
 
 let score = 0
 let timeLeft = 15
-let isGameOver = false
+let gameIsOver = false
 
 const scoreLabel = add([
     text("Score: 0", { size: 28 }),
@@ -389,15 +354,35 @@ const timeLabel = add([
     anchor("topright"),
 ])
 
-// TODO: loop every second to count down, update the label, and end the game at 0
+// TODO: loop() every second to count down, update the label, and end the game at 0
 
-// TODO: loop to add balloons (but not when the game is over)
+// TODO: loop() to add balloons (but not when the game is over)
 
-// TODO: onClick to pop balloons and add to the score (but not when the game is over)
+// TODO: onClick() to pop balloons and add to the score (but not when the game is over)
 
 ```
 
 </web-playground>
+
+Your game must have:
+
+- <check> A 15 second **countdown timer**, shown on screen
+- <check> A **score** that goes up when balloons are popped
+- <check> When the time reaches **0**:
+    - No more balloons appear
+    - **"Time's up!"** is shown
+    - The player **can't** score
+
+> [!TIP]
+> Use an `gameIsOver` variable, just like last lesson. Any `loop(...)`(js) or `onClick(...)`(js) function can then check it first and `return`(js) to quit early:
+>
+> ```js [2]
+> loop(1, () => {
+>     if (gameIsOver) { return }
+>     // ... the rest of the code
+> })
+> ```
+
 
 ### Level Up
 
@@ -405,10 +390,8 @@ Finished early? Try these. Pick the ones that sound fun.
 
 | Challenge                                           | Hint                                                       |
 | --------------------------------------------------- | ---------------------------------------------------------- |
-| Balloons appear **faster and faster**               | Store the delay in a `let`(js) variable                    |
 | A **bonus balloon** that adds 5 seconds             | Another tag, and `timeLeft = timeLeft + 5`(js)             |
 | **Randomly** make a balloon golden (1 in 5 chance)  | `chance(0.2)`(js) is `true` about 1 time in 5              |
-| **Restart** the game when the player presses space  | `onKeyPress("space", ...)`(js) and `go(...)`(js)           |
 
 
 ## Exit Ticket
@@ -441,7 +424,7 @@ Without looking back, answer these three questions:
     - [x] One of the colours, picked at random
     - [ ] A random number between 0 and 3
 
-- # Why do we use `if (isGameOver) { return }` at the top of a function?
+- # Why do we use `if (gameIsOver) { return }` at the top of a function?
 
     ---
 

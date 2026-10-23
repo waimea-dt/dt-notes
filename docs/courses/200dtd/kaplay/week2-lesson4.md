@@ -59,25 +59,17 @@ Work through the steps below, **testing after every step**. Don't move on until 
 2. Name it **kaplay-whack-a-bug**
 3. **Clone** it to your computer
 4. Open the repo in your **code editor**
-5. Save these two images into the `assets/images` folder (right-click, then *Save image as...*):
-
-    ![Bug](assets/images/beetle.png) ![Ghost](assets/images/ghost.png)
-
-6. Launch the **live server** to see the game running in a browser
+5. Launch the **live server** to see the game running in a browser
 
 
-## Step 1: Load the Sprites
 
-In `main.js`, start Kaplay with a screen of **800 x 600** and load the sprites:
+## Step 1: Setup Game & Load the Sprites
 
-```js
-kaplay({
-    width: 800, height: 600,
-    background: [30, 60, 90]
-})
+Set the game size to **600 by 600**
 
-loadSprite("bug", "assets/images/beetle.png")
-```
+Load the sprites you will need for the game from the `assets/images` folder, using `loadSprite(...)`(js). You will need the **ghost** and the **beetle**:
+
+Remove any other sprites (e.g. bean)
 
 - <check> The game runs and shows a blank blue screen
 
@@ -91,7 +83,7 @@ for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 3; col++) {
         add([
             circle(55),
-            pos(200 + col * 200, 220 + row * 150),
+            pos(150 + col * 150, 175 + row * 150),
             color(20, 30, 50),
             "hole",
         ])
@@ -109,7 +101,7 @@ Add this to your game, then investigate:
 
     <response>
 
-3. Change the `200` and `150` values. What happens to the grid? Which numbers control the space between holes?
+3. Change the `150` values. What happens to the grid? Which numbers control the space between holes?
 
     <response>
 
@@ -118,14 +110,14 @@ Add this to your game, then investigate:
 
 ## Step 3: Bugs Appear!
 
-Every so often, a bug should pop out of a **random hole** and vanish a moment later. You've seen the pieces already in the **Spawn, Then Vanish** problem from last lesson.
+Every so often, a bug should pop out of a **random hole** and vanish a moment later. You've seen the pieces already in last lesson's **Balloon** game.
 
 > [!TIP]
-> - Use `loop(...)`(js) to do this every **0.8 seconds**
+> - Use `loop(...)`(js) to do this every **1.5 seconds**
 > - `choose(get("hole"))`(js) picks a random hole
 > - Add the bug at the hole's position: `pos(hole.pos.x, hole.pos.y)`(js)
 > - Give the bug `area()`(js) and the tag `"bug"`
-> - Use `wait(...)`(js) to destroy it after **0.9 seconds** (use `exists()`(js) to check the player hasn't squashed it already)
+> - Use `wait(...)`(js) to destroy it after **0.75 seconds** (use `exists()`(js) to check the player hasn't squashed it already)
 
 - <check> Bugs pop up in random holes and disappear again
 
@@ -161,7 +153,7 @@ Add a **30 second countdown** and a **Game Over** message:
 
 Swap computers with a partner and play each other's game for a few minutes. Don't explain anything: just watch and listen!
 
-Give your partner feedback:
+Get your partner to note down some feedback for you:
 
 1. Was it **fun**? What was the best bit?
 
@@ -187,14 +179,12 @@ Give your partner feedback:
 
 Finished early? Try these. Pick the ones that sound fun.
 
-| Challenge                                                  | Hint                                                         |
-| ---------------------------------------------------------- | ------------------------------------------------------------ |
-| A **friendly ghost** that loses points when squashed    | `ghost.png`, another tag, and `chance(0.2)`(js)           |
-| Bugs appear **faster over time**                           | Store the delay in a `let`(js) variable                      |
-| **Lives** instead of a timer: lose one when a bug escapes  | If `exists()`(js) is still `true` when the `wait(...)`(js) ends, it escaped |
-| Keep a **high score**                                      | A new `let highScore = 0`(js) variable                       |
-| A **combo** bonus for squashing bugs quickly in a row      | `time()`(js) gives the seconds since the game started        |
-| An **explosion** when a bug is squashed                    | `addKaboom(bug.pos)`(js)                                     |
+| Challenge                                                 | Hint                                                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------------------- |
+| A **friendly ghost** that loses points when squashed      | `const tag = chance(0.2) ? "ghost" : "bug"`(js)                             |
+| An **explosion** when a ghost is squashed                   | `addKaboom(ghost.pos)`(js)                                                    |
+| **Lives** instead of a timer: lose one when a bug escapes | If `exists()`(js) is still `true` when the `wait(...)`(js) ends, it escaped |
+| Keep a **high score**                                     | A new `let highScore = 0`(js) variable                                      |
 
 
 ## Week 2 Check
@@ -262,7 +252,10 @@ Before you finish the week, answer these questions on your own.
 
     ```js
     loop(2, () => {
-        add([ circle(20), pos(rand(0, width()), rand(0, height())) ])
+        add([
+            circle(20),
+            pos(rand(0, width()), rand(0, height()))
+        ])
     })
     ```
 
@@ -286,9 +279,9 @@ Before you finish the week, answer these questions on your own.
     ---
 
     - [ ] To make the bug appear
-    - [x] To check the bug is still in the game (it might have been squashed already)
+    - [x] To check the bug is still in the game
     - [ ] To make the game faster
-    - [ ] To stop the timer
+    - [ ] To create a new bug
 
 - # You updated `score`, but the screen still shows the old score. What did you forget?
 

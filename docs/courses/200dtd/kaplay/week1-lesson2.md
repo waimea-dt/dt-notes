@@ -37,11 +37,11 @@ Without looking at Lesson 1, answer the following:
 | And / or / not | `and`(python) / `or`(python) / `not`(python)           | `&&`(js) / `\|\|`(js) / `!`(js)                           |
 | Counting loop  | `for i in range(5):`(python)                           | `for (let i = 0; i < 5; i++) {...}`(js)                   |
 | While loop     | `while x > 0:`(python)                                 | `while (x > 0) {...}`(js)                                |
-| Blocks         | Indentation                                            | Curly braces `{...}`(js)                                  |
+| Blocks         | Indentation                                            | Curly braces `{ ... }`(js)                                  |
 | Function       | `def heal(hp):`(python)                                | `function heal(hp) {...}`(js)                             |
 
 > [!TIP]
-> In JS the indentation is just for humans. The `{...}` braces are what the computer reads. Keep your indentation tidy anyway!
+> In JS the indentation is just for humans. The `{ ... }` braces are what the computer reads. Keep your indentation tidy anyway!
 
 
 

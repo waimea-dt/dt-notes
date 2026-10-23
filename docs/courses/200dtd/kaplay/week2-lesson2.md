@@ -10,11 +10,11 @@ Try not to loop back at the previous lesson...
 
     <response>
 
-2. What is `btn` in `onClick("button", (btn) => {...})`(js)?
+2. What is `btn` in `onClick("button", (btn) => { ... })`(js)?
 
     <response>
 
-3. What is the difference between `onHover`(js) and `onHoverEnd`(js)?
+3. What is the difference between `onHover()`(js) and `onHoverEnd()`(js)?
 
     <response>
 
@@ -23,7 +23,7 @@ Try not to loop back at the previous lesson...
 
 - <check> I can explain what **game state** is
 - <check> I can store state in **variables** (`score`, `lives`, etc.)
-- <check> I can show state on screen using the `text()` component
+- <check> I can **show state** on screen using the `text()` component
 - <check> I can **update** a text label when the state changes
 - <check> I can detect **game over** and stop the game
 
@@ -32,35 +32,39 @@ Try not to loop back at the previous lesson...
 
 **Game state** is everything a game needs to remember right now. Every game has some:
 
-| Game              | Some of its state                                    |
-| ----------------- | ---------------------------------------------------- |
-| Pop Party         | How many balloons are left? What's the score?        |
-| Space shooter     | How many lives? Which enemies are alive?             |
-| Platformer        | Which level? How many coins collected?               |
-| Dialogue game     | Which line are we on? Did the player take the key?   |
+| Game          | Some of its state                                          |
+| ------------- | ---------------------------------------------------------- |
+| Pop Party     | How many **balloons are left**? What's the **score**?      |
+| Space shooter | How many **lives**? Which **enemies are alive**?           |
+| Platformer    | Which **level**? How many **coins collected**?             |
+| Dialogue game | Which **line are we on**? Did the player **take the key**? |
 
 We store state in **variables**, using the data types you met in Lesson 1:
 
-| State          | Variable                   | Type    |
-| -------------- | -------------------------- | ------- |
-| Score          | `let score = 0`(js)        | Number  |
-| Lives          | `let lives = 3`(js)        | Number  |
-| Is it all over? | `let isGameOver = false`(js) | Boolean |
-| Player name    | `const playerName = "Pat"`(js) | String  |
+| State           | Variable                         | Type    |
+| --------------- | -------------------------------- | ------- |
+| Score           | `let score = 0`(js)              | Number  |
+| Lives           | `let lives = 3`(js)              | Number  |
+| Is it all over? | `let gameIsOver = false`(js)     | Boolean |
+| Player name     | `const playerName = "Sally"`(js) | String  |
 
 > [!TIP]
-> State that **changes** needs `let`. State that never changes, like a maximum number of lives, can be `const`.
+> State that **changes** needs `let`. State that **never changes**, like a maximum number of lives, can be `const`.
 
 ### Showing State: the `text()` component
 
-To put words on the screen we use the `text()`(js) component. To **change** the words later, we set its `.text` property:
+To put words on the screen we use the `text()`(js) component:
 
 ```js
 const scoreLabel = add([
     text("Score: 0", { size: 28 }),
     pos(20, 20),
 ])
+```
 
+To **change** the words later, we set its `.text` property:
+
+```js
 scoreLabel.text = "Score: 50"
 ```
 
@@ -74,7 +78,7 @@ Look at this Kaplay program:
 
 ```js
 kaplay({
-    width: 400, height: 500,
+    width: 200, height: 500,
     background: [30, 60, 90]
 })
 
@@ -85,10 +89,10 @@ const scoreLabel = add([
     pos(20, 20),
 ])
 
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < 5; i++) {
     add([
         circle(25),
-        pos(rand(40, width() - 40), rand(100, height() - 40)),
+        pos(100, 120 + i * 80),
         color(255, 100, 100),
         area(),
         "balloon",
@@ -124,7 +128,7 @@ What would happen if we deleted the line `scoreLabel.text = ...`(js)? Would the 
 
 Run the code and compare it with your predictions. Then try deleting the `scoreLabel.text = ...`(js) line to test your second prediction.
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -134,7 +138,7 @@ Run the code and compare it with your predictions. Then try deleting the `scoreL
 
 ```js
 kaplay({
-    width: 400, height: 500,
+    width: 200, height: 500,
     background: [30, 60, 90]
 })
 
@@ -145,10 +149,10 @@ const scoreLabel = add([
     pos(20, 20),
 ])
 
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < 5; i++) {
     add([
         circle(25),
-        pos(rand(40, width() - 40), rand(100, height() - 40)),
+        pos(100, 120 + i * 80),
         color(255, 100, 100),
         area(),
         "balloon",
@@ -190,15 +194,16 @@ When a balloon is popped, **three** things happen in the handler. Match each lin
 
 ---
 
-1. Remove the balloon from the game
-2. Change the state (the number in memory)
-3. Update the screen so the player can see the change
+1. Remove balloon from game
+2. Change the state
+3. Update the screen
 
 </drag-drop>
 
+
 ### Trace the State
 
-Step through the code below. It pretends that the player has popped some balloons and lost some lives. What are `score` and `lives` at the end?
+Step through the code below. It pretends that the player has popped some balloons and lost some lives:
 
 ```js trace header="false"
 let score = 0
@@ -210,10 +215,14 @@ lives = lives - 1
 score = score + 10
 lives = lives - 1
 
-console.log(`Score: ${score}, Lives: ${lives}`)
+console.log(`Score: ${score}`)
+console.log(`Lives: ${lives}`)
 ```
 
+When does the **game state** change? When is the user **shown the changes**? What are `score` and `lives` at the **end**?
+
 <response placeholder="Observations...">
+
 
 ### State Detective
 
@@ -221,11 +230,12 @@ Imagine a **Flappy Bird** game. What **state** would it need to remember? Think 
 
 <response>
 
+
 ### Order Matters
 
-When the player loses a life, we need to: take one off `lives`, update the label, **then** check for game over. Put the lines in order.
+When the player loses a life, what would the logical order for the code below? Put the lines in order.
 
-<drag-drop mode="code" title="Lose a Life" sub-title="Take a life, update the label, then check for game over">
+<drag-drop mode="code" title="Lose a Life" sub-title="">
 
 1.
     ```js
@@ -239,9 +249,7 @@ When the player loses a life, we need to: take one off `lives`, update the label
 
 3.
     ```js
-    if (lives === 0) {
-        isGameOver = true
-    }
+    if (lives === 0) { gameIsOver = true }
     ```
 
 </drag-drop>
@@ -251,9 +259,9 @@ When the player loses a life, we need to: take one off `lives`, update the label
 
 ### Escaping Balloons
 
-In this version the balloons **float upwards**. If a balloon floats off the top of the screen, the player **loses a life**. Run it and let a few balloons escape (don't click them!). What do you notice?
+In this version the balloons should **float upwards** and if a balloon floats off the top of the screen, the player should **lose a life**. The game has some bugs at the moment...
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -263,43 +271,41 @@ In this version the balloons **float upwards**. If a balloon floats off the top 
 
 ```js
 kaplay({
-    width: 400, height: 500,
+    width: 400, height: 600,
     background: [30, 60, 90]
 })
 
 let score = 0
 let lives = 3
-let isGameOver = false
 
 const scoreLabel = add([
     text("Score: 0", { size: 28 }),
-    pos(20, 20),
+    pos(20, height() - 40),
 ])
 
 const livesLabel = add([
     text("Lives: 3", { size: 28 }),
-    pos(width() - 20, 20),
-    anchor("topright"),
+    pos(width() - 20, height() - 40),
+    anchor("topright")
 ])
 
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < 5; i++) {
     add([
         circle(25),
-        pos(rand(40, width() - 40), rand(300, height() + 300)),
+        pos(50 + i * 75, height() - 100),
         color(255, 100, 100),
         area(),
         "balloon",
     ])
 }
 
-onClick("balloon", (balloon) => {
+onClick("Balloon", (balloon) => {
     destroy(balloon)
     score = score + 10
-    scoreLabel.text = `Score: ${score}`
 })
 
 onUpdate("balloon", (balloon) => {
-    balloon.move(0, -60)
+    balloon.move(-20, 0)
 
     if (balloon.pos.y < -25) {
         destroy(balloon)
@@ -310,39 +316,55 @@ onUpdate("balloon", (balloon) => {
 
 </web-playground>
 
-Tasks:
+Run the game. Can you fix the following bugs?
 
-1. <check> The **lives label never changes**! Fix this so it shows the correct number of lives
-2. <check> When `lives` reaches `0`, set `isGameOver` to `true` and show a big **"Game Over"** message in the middle of the screen
-3. <check> After the game is over, the player can still pop balloons and score points. Use `isGameOver`(js) to **stop** this (hint: `if (isGameOver) { return }`(js) at the top of the click handler)
-4. <check> Make popping balloons worth **more points** for balloons higher up the screen
-
-> [!TIP]
-> To place text in the middle of the screen, use `pos(center())`(js) and `anchor("center")`(js).
+1. <check> The balloons aren't **floating upwards**
+2. <check> Clicking the balloons **doesn't pop them**
+3. <check> The lives and score **don't update** on the screen
 
 
 ## **M**ake
 
 ### Balloon Pop
 
-Take the **Escaping Balloons** code and turn it into a proper game. Your game must have:
+Take the **Escaping Balloons** code and turn it into a proper game.
 
-- <check> A **score** that goes up when balloons are popped
-- <check> **Lives** that go down when balloons escape
-- <check> **Both** shown on screen and always correct
-- <check> A **Game Over** message that stops the game
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+// Copy your code from the game above here
+```
+
+</web-playground>
+
+Your game must have:
+
+- <check> Balloons should appear at **random locations** in the **bottom part** of the screen
+- <check> If a balloon is popped a **new one** should be created
+- <check> When `lives` reaches `0`, show a big **"Game Over"** message in the middle of the screen
+
+> [!TIP]
+> To place text in the middle of the screen, use `pos(center())`(js) and `anchor("center")`(js).
+
+
 
 ### Level Up
 
 Finished early? Try these. Pick the ones that sound fun.
 
-| Challenge                                                 | Hint                                              |
-| --------------------------------------------------------- | ------------------------------------------------- |
-| Keep a **high score** that lasts until you refresh the page | A new `let highScore = 0`(js) variable          |
-| **Gold balloons** worth 50 points                         | Another tag, and `color(255, 215, 0)`(js)         |
-| Balloons get **faster** as your score goes up             | Store the speed in a `let`(js) variable           |
-| Lose a life if you **click and miss**                     | `onClick(() => {...})`(js) with no tag            |
-| Show **"You win!"** if the score reaches 200              | `if (score >= 200) {...}`(js)                     |
+| Challenge                                                                               | Hint                                                                                                                                        |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keep a **high score** that lasts until you refresh the page                             | A new `let highScore = 0`(js) variable                                                                                                      |
+| **Gold balloons** worth 50 points                                                       | Another tag, and `color(255, 215, 0)`(js)                                                                                                   |
+| After the game is over, **prevent the player from popping balloons** and scoring points | A new `let gameIsOver = false`(js) variable. Set it to `true`(js) when game over, add `if (gameIsOver) { return }`(js) to the click handler |
+| Balloons get **faster** as your score goes up                                           | Store the speed in a `let`(js) variable                                                                                                     |
+| Lose a life if you **click and miss**                                                   | `onClick(() => { ... })`(js) with no tag                                                                                                    |
 
 
 ## Exit Ticket

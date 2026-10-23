@@ -22,17 +22,17 @@ Try not to loop back at last week...
 ## Learning Goals
 
 - <check> I can make an object **clickable** using `area()`
-- <check> I can respond to clicks with `onClick(...)`(js)
+- <check> I can respond to **clicks** with `onClick(...)`(js)
 - <check> I can respond to the mouse **hovering** with `onHover(...)`(js) and `onHoverEnd(...)`(js)
 - <check> I can find the **mouse position** with `mousePos()`(js)
-- <check> I can **change** an object's colour while the game is running
+- <check> I can change an object's **colour** while the game is running
 
 
 ## The Big Idea: **Areas** and **Tags**
 
 How does Kaplay know if the mouse is over a game object? It needs to know the **shape** of the object. We give it that by adding the `area()`(js) component. It creates an invisible **hit zone** around the object.
 
-```js
+```js [4]
 add([
     rect(160, 60),
     pos(200, 150),
@@ -53,14 +53,14 @@ Here are the mouse functions we'll use:
 
 | Function                                  | When your code runs                              |
 | ----------------------------------------- | ------------------------------------------------ |
-| `onClick("tag", (obj) => { ... })`(js)    | When an object with the tag is **clicked**       |
+| `onClick("tag", (obj) => { ... })`(js)    | When an object with the **tag** is **clicked**       |
 | `onClick(() => { ... })`(js)              | When the mouse is clicked **anywhere**           |
 | `onHover("tag", (obj) => { ... })`(js)    | *Just once* when the mouse moves **onto** an object |
 | `onHoverEnd("tag", (obj) => { ... })`(js) | *Just once* when the mouse moves **off** an object  |
-| `mousePos()`(js)                          | *Gives* you the current position of the mouse    |
+| `mousePos()`(js)                          | Gives you the current **position of the mouse**    |
 
 > [!NOTE]
-> The `(btn) => { ... }`(js) function receives the **exact object** that was clicked. That means one handler can look after lots of objects, as long as they share a tag.
+> The `(obj) => { ... }`(js) function receives the **exact object** that was clicked. That means one handler can look after lots of objects, as long as they share a tag.
 
 
 ## **P**redict
@@ -69,7 +69,7 @@ Look at this Kaplay program:
 
 ```js
 kaplay({
-    width: 400, height: 300,
+    width: 400, height: 400,
     background: [30, 60, 90]
 })
 
@@ -113,7 +113,7 @@ What will happen if you click the rectangle a **second time**?
 
 Here is the Kaplay code running in a web view. Compare it with your prediction - any differences?
 
-<web-playground data-height="26em" js-only>
+<web-playground data-height="30em" js-only>
 
 ```html depends=kaplay
 ```
@@ -123,7 +123,7 @@ Here is the Kaplay code running in a web view. Compare it with your prediction -
 
 ```js
 kaplay({
-    width: 400, height: 300,
+    width: 400, height: 400,
     background: [30, 60, 90]
 })
 
@@ -160,7 +160,7 @@ The button is made green with the `color(0, 200, 120)`(js) **component**. We the
 
 ### Which Object?
 
-In `onClick("button", (btn) => {...})`(js), what does `btn` hold? If there were **three** buttons, all tagged `"button"`, what would `btn` be when you click the second one?
+In `onClick("button", (btn) => { ... })`(js), what does `btn` hold? If there were **three** buttons, all tagged `"button"`, what would `btn` be when you click the second one?
 
 <response>
 
@@ -178,18 +178,20 @@ The mouse position is a point with an `x` and a `y`, just like `pos(...)`. Try t
 
 ```js
 kaplay({
-    width: 400, height: 300,
+    width: 400, height: 400,
     background: [30, 60, 90]
 })
 
-const spy = add([
+const info = add([
     text("x: 0   y: 0", { size: 24 }),
     pos(20, 20),
 ])
 
 onUpdate(() => {
     const mouse = mousePos()
-    spy.text = `x: ${Math.round(mouse.x)}   y: ${Math.round(mouse.y)}`
+    const x = Math.round(mouse.x)
+    const y = Math.round(mouse.y)
+    info.text = `x: ${x}   y: ${y}`
 })
 ```
 
@@ -203,37 +205,6 @@ onUpdate(() => {
 
     <response>
 
-### Putting it in order
-
-Put these chunks of code in the right order to make a button that turns yellow when the mouse hovers over it.
-
-<drag-drop mode="code" title="Hover Button" sub-title="Set up, create the button, then react to the mouse">
-
-1.
-    ```js
-    kaplay({ width: 400, height: 300 })
-    ```
-
-2.
-    ```js
-    const button = add([
-        rect(160, 60),
-        pos(120, 120),
-        color(0, 200, 120),
-        area(),
-        "button",
-    ])
-    ```
-
-3.
-    ```js
-    onHover("button", (btn) => {
-        btn.color = rgb(255, 220, 0)
-    })
-    ```
-
-</drag-drop>
-
 
 ## **M**odify
 
@@ -241,7 +212,7 @@ Put these chunks of code in the right order to make a button that turns yellow w
 
 This panel of buttons should turn **red** when you click them. It has **two bugs**. Find and fix them.
 
-<web-playground data-height="26em" js-only>
+<web-playground data-height="32em" js-only>
 
 ```html depends=kaplay
 ```
@@ -251,13 +222,13 @@ This panel of buttons should turn **red** when you click them. It has **two bugs
 
 ```js
 kaplay({
-    width: 400, height: 300,
+    width: 400, height: 400,
     background: [30, 60, 90]
 })
 
 add([
     rect(100, 100),
-    pos(50, 100),
+    pos(25, 150),
     color(0, 200, 120),
     area(),
     "button",
@@ -265,14 +236,14 @@ add([
 
 add([
     rect(100, 100),
-    pos(150, 100),
+    pos(150, 150),
     color(0, 200, 120),
     "button",
 ])
 
 add([
     rect(100, 100),
-    pos(250, 100),
+    pos(275, 150),
     color(0, 200, 120),
     area(),
     "button",
@@ -292,7 +263,7 @@ onClick("btn", (button) => {
 
 Start with this code and complete the tasks one at a time. Test after each change!
 
-<web-playground data-height="26em" js-only>
+<web-playground data-height="30em" js-only>
 
 ```html depends=kaplay
 ```
@@ -302,7 +273,7 @@ Start with this code and complete the tasks one at a time. Test after each chang
 
 ```js
 kaplay({
-    width: 400, height: 300,
+    width: 400, height: 400,
     background: [30, 60, 90]
 })
 
@@ -325,9 +296,11 @@ onHover("button", (btn) => {
 Tasks:
 
 1. <check> The button **stays yellow** after the mouse leaves. Use `onHoverEnd(...)`(js) to turn it **green** again
-2. <check> Make the mouse pointer change shape over the button: `setCursor("pointer")`(js) when hovering, and `setCursor("default")`(js) when not
-3. <check> Make the button **disappear** when clicked (hint: `destroy(...)`(js))
-4. <check> Use a `for` **loop** to make **three** buttons in a row, instead of one
+2. <check> Make the mouse pointer change shape over the button:
+    - `setCursor("pointer")`(js) when hovering
+    - `setCursor("default")`(js) when not
+3. <check> Make the button **disappear** when **clicked** (hint: `destroy(...)`(js))
+4. <check> Use a `for` **loop** to make a stack of **three** buttons, instead of one
 
 
 ## **M**ake
@@ -345,7 +318,7 @@ Your game must have:
 > [!TIP]
 > A random colour needs three random numbers: `color(rand(100, 255), rand(100, 255), rand(100, 255))`(js)
 
-<web-playground data-height="30em" js-only>
+<web-playground data-height="32em" js-only>
 
 ```html depends=kaplay
 ```
@@ -404,7 +377,7 @@ Without looking back, answer these three questions:
     - [ ] `onHoverEnd`
     - [ ] `mousePos`
 
-- # In `onClick("balloon", (balloon) => {...})`, what is `balloon`?
+- # In `onClick("balloon", (balloon) => { ... })`, what is `balloon`?
 
     ---
 
