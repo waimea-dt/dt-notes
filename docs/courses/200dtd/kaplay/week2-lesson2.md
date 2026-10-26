@@ -364,7 +364,7 @@ Finished early? Try these. Pick the ones that sound fun.
 | **Gold balloons** worth 50 points                                                       | Another tag, and `color(255, 215, 0)`(js)                                                                                                   |
 | After the game is over, **prevent the player from popping balloons** and scoring points | A new `let gameIsOver = false`(js) variable. Set it to `true`(js) when game over, add `if (gameIsOver) { return }`(js) to the click handler |
 | Balloons get **faster** as your score goes up                                           | Store the speed in a `let`(js) variable                                                                                                     |
-| Lose a life if you **click and miss**                                                   | `onClick(() => { ... })`(js) with no tag                                                                                                    |
+| Lose a life if you **click and miss**                                                   | `onMousePress(() => { ... })`(js) runs on **every** click, so first check the click didn't hit a balloon                                    |
 
 
 ## Exit Ticket

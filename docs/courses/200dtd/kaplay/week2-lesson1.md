@@ -54,7 +54,7 @@ Here are the mouse functions we'll use:
 | Function                                  | When your code runs                              |
 | ----------------------------------------- | ------------------------------------------------ |
 | `onClick("tag", (obj) => { ... })`(js)    | When an object with the **tag** is **clicked**       |
-| `onClick(() => { ... })`(js)              | When the mouse is clicked **anywhere**           |
+| `onMousePress(() => { ... })`(js)         | When the mouse is pressed **anywhere**           |
 | `onHover("tag", (obj) => { ... })`(js)    | *Just once* when the mouse moves **onto** an object |
 | `onHoverEnd("tag", (obj) => { ... })`(js) | *Just once* when the mouse moves **off** an object  |
 | `mousePos()`(js)                          | Gives you the current **position of the mouse**    |
@@ -350,7 +350,7 @@ Finished early? Try these. Pick the ones that sound fun.
 | Balloons **grow** a little each time they're hovered | `balloon.radius = balloon.radius + 5`(js)                  |
 | A balloon is **replaced** by a new one when popped | Add a new balloon in your `onClick`(js) function             |
 | Show **"Balloons left: 10"** on screen             | `text()` component, `get("balloon").length`(js) and `onUpdate(...)`(js) |
-| Click **anywhere** to add a new balloon            | `onClick(() => {...})`(js) and `mousePos()`(js)              |
+| Click **anywhere** to add a new balloon            | `onMousePress(() => {...})`(js) and `mousePos()`(js)         |
 
 
 ## Exit Ticket
