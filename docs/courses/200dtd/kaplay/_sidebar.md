@@ -18,7 +18,7 @@
     - [Lesson 1: Variables](/courses/200dtd/kaplay/week1-lesson1.md)
     - [Lesson 2: Choices & Loops](/courses/200dtd/kaplay/week1-lesson2.md)
     - [Lesson 3: Hello, Kaplay](/courses/200dtd/kaplay/week1-lesson3.md)
-    - [Lesson 4: Moving Things](/courses/200dtd/kaplay/week1-lesson4.md)
+    - [Lesson 4: Wander](/courses/200dtd/kaplay/week1-lesson4.md)
 
 - [<i data-lucide="mouse-pointer-click"></i> Week 2: Clicks, Counts & State](/courses/200dtd/kaplay/week2-intro.md)
     - [Lesson 1: Mouse Events](/courses/200dtd/kaplay/week2-lesson1.md)
@@ -27,10 +27,10 @@
     - [Lesson 4: Whack-a-Bug](/courses/200dtd/kaplay/week2-lesson4.md)
 
 - [<i data-lucide="message-circle-text"></i> Week 3: Dialogue & Storylines](/courses/200dtd/kaplay/week3-intro.md)
-    - [Lesson 1: ](/courses/200dtd/kaplay/week3-lesson1.md)
-    - [Lesson 2: ](/courses/200dtd/kaplay/week3-lesson2.md)
-    - [Lesson 3: ](/courses/200dtd/kaplay/week3-lesson3.md)
-    - [Lesson 4: ](/courses/200dtd/kaplay/week3-lesson4.md)
+    - [Lesson 1: Lists & Objects](/courses/200dtd/kaplay/week3-lesson1.md)
+    - [Lesson 2: Scenes](/courses/200dtd/kaplay/week3-lesson2.md)
+    - [Lesson 3: Branching Stories](/courses/200dtd/kaplay/week3-lesson3.md)
+    - [Lesson 4: The Wizard's Help Desk](/courses/200dtd/kaplay/week3-lesson4.md)
 
 - [<i data-lucide="rocket"></i> Week 4: Flying, Shooting, Explosions](/courses/200dtd/kaplay/week4-intro.md)
     - [Lesson 1: ](/courses/200dtd/kaplay/week4-lesson1.md)

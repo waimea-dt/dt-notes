@@ -36,7 +36,7 @@ Game: **Whack-a-Bug**
 
 [Link](/courses/200dtd/kaplay/week3-intro.md)
 
-Notes here
+Store a story as **data**, split a game into **scenes**, let the player’s **choices** change the ending
 
 Game: **The Wizard's Help Desk**
 
