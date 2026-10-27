@@ -21,7 +21,7 @@ By the end of the week you will have designed and built your own card battle gam
 ```css load=_assets/kaplay.css
 ```
 
-```js load=_assets/clash.js
+```js load=_assets/clash-lean.js
 ```
 
 </web-playground>
