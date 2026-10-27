@@ -1,138 +1,38 @@
-# Lesson 4: The Wizard's Help Desk
+# Lesson 4: Creature Clash
 
-Time to put it all together! This week you've learned how to store a story as **data**, split a game into **scenes**, and make **choices** that matter. Today you'll turn your story into a polished game: **The Wizard's Help Desk**.
+This week you've learned how to store lots of information as **data**, and how to split a game into **scenes**. Today there's no recipe to follow: you're going to **design and build your own card battle game**, with your own deck, your own stats, and your own rules.
 
 ## Warm-Up
 
 Try not to loop back at the previous lessons...
 
-1. A story is an object called `story`, and the id of a node is stored in `nodeId`. How do you get the node?
+1. What's the difference between an **array** and an **object**?
 
     <response>
 
-2. Why is `let trust = 0`(js) written **inside** the talk scene, not outside?
+2. How does a scene receive data passed with `go("results", { wins: 3 })`(js)?
 
     <response>
 
-3. What does `go("ending", { trust: 2 })`(js) do?
+3. In `playerCard[statName]`(js), why do we use square brackets instead of a dot?
 
     <response>
 
 
 ## Learning Goals
 
-- <check> I can split a game into **files**, and use `import` and `export`
-- <check> I can keep my story **data** separate from my **code**
-- <check> I can make text appear **one letter at a time**
-- <check> I can show a **portrait** for each speaker
-- <check> I can build a complete game from **several scenes**
+- <check> I can design a game around **data**: a deck of cards and their stats
+- <check> I can build a game from **several scenes**, passing data between them
+- <check> I can **change the rules** of a game by changing a little code
+- <check> I can **balance** a game by testing it and adjusting the **numbers**
+- <check> I can explain which parts of my game are **data** and which are **code**
 
 
-## The Big Idea: **Files and Modules**
+## The Brief
 
-Our programs are getting long! Real programs are split into several **files**. In JavaScript, a file that shares code with other files is called a **module**.
+Design and build a **card battle game** of your own. It could be creatures, fruit, dungeon treasure, teachers, programming languages... anything that has stats you can compare.
 
-For this game, each job gets its own file:
-
-<filetree>
-
-- kaplay-help-desk
-    - assets
-        - images
-    - data
-        - story.js
-    - scenes
-        - title.js
-        - talk.js
-        - ending.js
-    - index.html
-    - main.js
-
-</filetree>
-
-A file **shares** something with `export`, and another file **uses** it with `import`:
-
-```js
-// data/story.js
-export const story = {
-    start: { speaker: "Wizard", text: "Welcome!" },
-}
-```
-
-```js
-// scenes/talk.js
-import { story } from "../data/story.js"
-
-export function talkScene() {
-    // we can use story in here!
-}
-```
-
-```js
-// main.js
-import { talkScene } from "./scenes/talk.js"
-
-scene("talk", talkScene)
-```
-
-| Part                | What it means                                            |
-| ------------------- | -------------------------------------------------------- |
-| `export`(js)        | Make this available to other files                       |
-| `import { x } from "..."`(js) | Bring in `x` from another file                 |
-| `./`                | Start in **this** folder                                 |
-| `../`               | Go **up** one folder first                               |
-| `.js`               | File names must include the **extension**                |
-
-> [!IMPORTANT]
-> Look closely at `scene("talk", talkScene)`(js). There are **no brackets** after `talkScene`. We're handing over the function itself, for Kaplay to run later. If we wrote `talkScene()`(js), we'd run it **now**. Remember `wait(2, destroy(balloon))`(js)?
-
-Modules need two small changes to how the game runs:
-
-1. In `index.html`, the script tag must say `type="module"`:
-
-    ```html
-    <script type="module" src="main.js"></script>
-    ```
-
-2. The game must be run with a **local web server** (like the live server) and not by double-clicking `index.html`.
-
-### Matching
-
-<drag-drop mode="code" title="What Does It Do?" sub-title="">
-
-1.
-    ```js
-    export function talkScene() { ... }
-    ```
-
-2.
-    ```js
-    import { talkScene } from "./scenes/talk.js"
-    ```
-
-3.
-    ```js
-    scene("talk", talkScene)
-    ```
-
-4.
-    ```js
-    import { story } from "../data/story.js"
-    ```
-
----
-
-1. Share the talk scene with other files
-2. Bring the talk scene into main.js, from the scenes folder
-3. Register the scene, handing over the function itself
-4. Bring the story into a scene file, from the data folder (one folder up)
-
-</drag-drop>
-
-
-## The Plan
-
-In The Wizard's Help Desk, you visit a wizard who runs a very unusual IT support desk. The text appears one letter at a time, each speaker has a portrait, and your choices decide how the story ends. Play it a few times and find all **four endings**:
+Here's one made with the creatures from the starter project. Yours should look and play differently!
 
 <web-playground data-height="38em" hide-all>
 
@@ -142,15 +42,49 @@ In The Wizard's Help Desk, you visit a wizard who runs a very unusual IT support
 ```css load=_assets/kaplay.css
 ```
 
-```js load=_assets/helpdesk.js
+```js load=_assets/clash-mini.js
 ```
 
 </web-playground>
 
-> [!NOTE]
-> You'll write **your own story**, using your Help Desk story from last lesson. The demo is just an example of what's possible!
+### Your Game Must Have
 
-Work through the steps below, **testing after every step**. Don't move on until the previous step works.
+- <check> A **theme** of your own, with a name for your game
+- <check> A deck of **at least 8 cards**, with pictures from the starter project
+- <check> **At least 3 stats** of your own, with names that fit your theme
+- <check> **Three scenes**: a title, the battle, and the results
+- <check> **At least 3 rounds**, with a score passed to the results scene
+- <check> **One rule twist** of your own, explained on screen
+
+> [!IMPORTANT]
+> Make something **you** would want to play! Your cards, your stats and your rules are your own choices. The numbers on your cards are what make the game fair... or deliciously unfair!
+
+
+## Plan First
+
+Before you write any code, plan your game. Write your answers below, then **show your teacher** before you start building.
+
+1. What's your **theme** and what's your game called?
+
+    <response>
+
+2. What are your **stats** (3 to 5)? Why do they suit your theme?
+
+    <response>
+
+3. What are your **8 or more cards**? List each name, its picture and its stats.
+
+    <response>
+
+4. What's your **rule twist**? How will it change a round?
+
+    <response>
+
+5. What will each of your **scenes** show?
+
+    <response>
+
+- <check> My plan has been looked at by my teacher
 
 
 ## Repo Setup
@@ -158,169 +92,131 @@ Work through the steps below, **testing after every step**. Don't move on until 
 <github repo="waimea-dt/kaplay-starter" title="Kaplay Starter" subtitle="A repo to kick-off your Kaplay games">
 
 1. Create a **new repo** from the **template** repo above
-2. Name it **kaplay-help-desk**
+2. Name it after your game
 3. **Clone** it to your computer
 4. Open the repo in your **code editor**
-5. Download [help-desk-skeleton.zip](_assets/help-desk-skeleton.zip ':ignore'), unzip it, and copy its files into your repo (replace `main.js`)
-6. Edit `index.html` so that the script loads `main.js` as a **module**
-7. Launch the **live server** to see the game running in a browser
+5. Launch the **live server** to see the game running in a browser
+6. Look in the `assets/images` folder to see the pictures you can use for your cards
 
-
-## Step 1: Explore the Skeleton
-
-The skeleton is a small working game. Play it, then **read each file**:
-
-1. Which file registers the scenes? Which function starts the game?
-
-    <response>
-
-2. Where is the story kept? What else is in that file?
-
-    <response>
-
-3. Which scene shows the choice buttons?
-
-    <response>
-
-- <check> The game shows a title screen, then a short conversation, then an ending
-
-
-## Step 2: Write Your Story
-
-Replace the sample story in `data/story.js` with the story you wrote last lesson.
-
-> [!TIP]
-> - Keep the `export`(js) in front of `const story`(js)
-> - Every `speaker` needs a picture! Add each one to the `portraits` object, and make sure that picture is loaded in `main.js`
-> - The pictures are in the `assets/images` folder, loaded with `loadSprite(...)`(js)
-
-- <check> Your story plays all the way through, using your characters
-
-
-## Step 3: Trust and Endings
-
-Make the story remember what the player did, just like last lesson:
-
-> [!TIP]
-> - Add `let trust = 0`(js) and `let hasCookie = false`(js) (or your own flags) **inside** `talkScene`(js)
-> - In `showNode`(js), use `if`(js) to add each node's `trust`, and to set your flags
-> - Write a `pickEnding()`(js) function, and call it when a choice leads to a `"verdict"` node
-> - Remember to check the **most specific** rule first
-
-- <check> Different choices lead to **at least three different endings**
-
-
-## Step 4: The Typewriter
-
-Let's make the text appear **one letter at a time**. First, a string method:
-
-```js run
-const line = "Wooo! That would be me."
-
-console.log(line.slice(0, 1))
-console.log(line.slice(0, 5))
-console.log(line.slice(0, line.length))
-```
-
-1. What does `line.slice(0, 5)`(js) give us? What do the two numbers mean?
-
-    <response>
-
-2. How could we show the text one letter at a time using `slice`(js) and a counter?
-
-    <response>
-
-Here's the idea. Keep the **whole line** and a **count of letters shown** as state. A timer adds one to the count, and the label shows that many letters:
+You'll need to draw your cards on screen. That code is provided for you: copy it into your `main.js`, below your deck. It needs `statNames` and `deck` to exist above it.
 
 ```js
-let fullText = ""
-let charCount = 0
+// Card drawing helpers for your card battle game
+//
+// These need two things to be defined ABOVE them in your code:
+//   statNames: the list of stat names, such as ["speed", "power"]
+//   deck: your array of cards (each card needs a name, an image and a value for every stat)
+//
+// The card is drawn 260 wide by 350 tall, so it suits a game that is 800 by 600.
+// A stat is clickable on a card if you pass true for isPlayer.
 
-loop(0.03, () => {
-    if (charCount < fullText.length) {
-        charCount = charCount + 1
-        lineLabel.text = fullText.slice(0, charCount)
+// Draws a face-up card at x. If isPlayer is true, the stat rows can be clicked
+function drawCard(card, x, isPlayer, chosenStat) {
+    add([
+        rect(260, 350, { radius: 14 }),
+        pos(x, 70),
+        color(240, 235, 220),
+        outline(4, rgb(31, 16, 42)),
+        "card",
+    ])
+
+    add([
+        text(card.name, { size: 28 }),
+        pos(x + 130, 98),
+        anchor("center"),
+        color(31, 16, 42),
+        "card",
+    ])
+
+    add([
+        sprite(card.image),
+        pos(x + 130, 175),
+        anchor("center"),
+        scale(2),
+        "card",
+    ])
+
+    for (let i = 0; i < statNames.length; i++) {
+        const statName = statNames[i]
+
+        let rowColour = rgb(205, 198, 180)
+        if (statName === chosenStat) {
+            rowColour = rgb(255, 220, 0)
+        }
+
+        const row = add([
+            rect(220, 32, { radius: 6 }),
+            pos(x + 20, 240 + i * 42),
+            color(rowColour),
+            area(),
+            "statRow",
+            "card",
+            { statName: statName, isPlayer: isPlayer },
+        ])
+
+        row.add([
+            text(statName, { size: 20 }),
+            pos(12, 16),
+            anchor("left"),
+            color(31, 16, 42),
+        ])
+
+        row.add([
+            text(`${card[statName]}`, { size: 20 }),
+            pos(208, 16),
+            anchor("right"),
+            color(31, 16, 42),
+        ])
     }
-})
-```
-
-Add this to your talk scene. Then, in `showNode`(js), instead of setting the label straight away, **start a new line**:
-
-```js
-fullText = currentNode.text
-charCount = 0
-lineLabel.text = ""
-```
-
-> [!IMPORTANT]
-> The `loop(...)`(js) goes **once**, near the top of the scene, not inside `showNode`(js). Why? What would happen to the speed of the text if every node started **another** loop?
-
-<response>
-
-- <check> Text appears one letter at a time for every node
-- <check> Pressing SPACE while text is appearing **finishes the line** straight away (hint: check `charCount < fullText.length`(js) at the top of your SPACE handler, and `return`(js))
-
-
-## Step 5: Portraits
-
-Show a **picture** of whoever is speaking. The `portraits` object is a **look-up**: give it a speaker's name, and it gives back the name of their picture:
-
-```js
-const portraits = {
-    Wizard: "skull",
-    Ghost: "ghost",
-    You: "bean",
 }
 
-console.log(portraits["Ghost"])     // "ghost"
+// Draws a face-down card at x
+function drawCardBack(x) {
+    add([
+        rect(260, 350, { radius: 14 }),
+        pos(x, 70),
+        color(100, 70, 140),
+        outline(4, rgb(31, 16, 42)),
+        "card",
+    ])
+
+    add([
+        text("?", { size: 120 }),
+        pos(x + 130, 245),
+        anchor("center"),
+        "card",
+    ])
+}
 ```
 
-Add this to `showNode`(js), where the old portrait is removed and a new one is added:
-
-```js
-destroyAll("portrait")
-
-add([
-    sprite(portraits[currentNode.speaker]),
-    pos(width() / 2, 120),
-    anchor("center"),
-    scale(3),
-    "portrait",
-])
-```
-
-> [!TIP]
-> Don't forget `import { story, portraits } from "../data/story.js"`(js) at the top of `talk.js`!
-
-- <check> Each speaker has the right portrait
+> [!NOTE]
+> Everything else is up to you. You've already written all of the pieces in the last three lessons: the deck (Lesson 1), the scenes (Lesson 2), and the battle (Lesson 3). Use your notes and the earlier lessons for reference.
 
 
-## Step 6: Title and Ending
+## Build
 
-Finish off the game:
+Work through these checkpoints, **testing as you go**. Show your teacher when you reach each one.
+
+1. <check> **Checkpoint 1: Your deck.** Your cards and stats are in your code, and one of your cards is drawn on screen
+2. <check> **Checkpoint 2: The battle.** Two cards are dealt, you pick a stat, and the winner is decided
+3. <check> **Checkpoint 3: The whole game.** The title, battle and results scenes all work, and you can **play again**
+4. <check> **Checkpoint 4: Your twist.** Your rule twist works and is explained to the player
 
 > [!TIP]
-> - Change the title scene to show **your** game's name and a picture
-> - Pass something to the ending scene, like `go("ending", { trust: trust })`(js)
-> - In `ending.js`, change `endingScene()`(js) to `endingScene(data)`(js) and show what it was told
-> - Make sure playing again **starts a fresh game**
-
-- <check> The title screen has the name of your game
-- <check> The ending screen shows something from the story
-- <check> You can **play again** and the story starts fresh
+> Stuck? Think about **where** the problem is. Is it a problem with your **data** (a typo in a card, a missing stat)? Or with your **code**? Check the **Console** for errors. Property names have to match **exactly**, and every card needs a value for **every** stat.
 
 
-## Playtest
+## Playtest and Balance
 
-Swap computers with a partner and play each other's game for a few minutes. Don't explain anything: just watch and listen!
+Swap computers with a partner and play each other's game a few times. Don't explain anything: just watch and listen!
 
 Get your partner to note down some feedback for you:
 
-1. Was the story **fun**? What was the best bit?
+1. Was the game **fun**? What was the best bit?
 
     <response>
 
-2. Did the **choices** feel like they mattered?
+2. Is any card **too good** (it wins almost every time) or **too weak**?
 
     <response>
 
@@ -333,20 +229,25 @@ Get your partner to note down some feedback for you:
     <response>
 
 > [!IMPORTANT]
-> Good feedback is **specific**. "It's boring" isn't helpful. "I couldn't tell which choice was the kind one" is!
+> **Balancing** a game means changing its **numbers** until it plays fairly. If one card wins too often, you don't need new code: change the **data** and test again!
+
+Now make your improvements. Which changes were **data** changes, and which were **code** changes?
+
+<response>
 
 
 ## Level Up
 
-Finished early? Try these. Pick the ones that sound fun.
+Finished early? Pick **at least one** that sounds fun. Or invent your own!
 
-| Challenge                                                          | Hint                                                                      |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| Choices only appear **after** the text has finished typing         | Create the buttons when `charCount` reaches `fullText.length`(js)         |
-| Make buttons **change colour** when the mouse is over them         | `onHover("choiceButton", ...)`(js) and `onHoverEnd(...)`(js)              |
-| A choice that only appears if the player **has the cookie**        | A `needsCookie: true`(js) property on the choice, and an `if` in the loop |
-| Show the **trust score** on screen                                 | A new label, updated in `showNode`(js)                                    |
-| A different **background colour** for each scene                   | `setBackground(rgb(...))`(js)                                             |
+| Challenge                                                          | Hint                                                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Keep a **high score** that lasts until you refresh the page        | A `let highScore = 0`(js) **outside** the scenes                                |
+| Add **sounds** for wins and losses                                 | `loadSound(...)`(js) and `play(...)`(js), using `beep` and `boop`               |
+| Make stat rows **change colour** when the mouse is over them       | `onHover("statRow", ...)`(js) and `onHoverEnd(...)`(js)                         |
+| A **card gallery** scene, like Lesson 2, to browse the deck        | A `gallery` scene, thumbnails made with a loop, and `go(...)`(js) with data     |
+| Let the **computer pick the stat** on alternate rounds             | A boolean flag for whose turn it is, and `choose(statNames)`(js)                |
+| A **different ending** for different scores                        | `if`(js) / `else if`(js) in the results scene, using `data.wins`(js)            |
 
 
 ## Week 3 Check
@@ -358,71 +259,71 @@ Before you finish the week, answer these questions on your own.
 - # What does this code show?
 
     ```js
-    const dialogue = [
-        { speaker: "Wizard", text: "Hi" },
-        { speaker: "Ghost", text: "Boo" },
-        { speaker: "You", text: "Eek" },
+    const deck = [
+        { name: "Cat", speed: 8 },
+        { name: "Fish", speed: 7 },
+        { name: "Ghost", speed: 5 },
     ]
-    console.log(dialogue[2].speaker)
+    console.log(deck[2].name)
     ```
 
     ---
 
-    - [ ] `Ghost`
-    - [ ] `Eek`
-    - [x] `You`
+    - [ ] `Fish`
+    - [x] `Ghost`
+    - [ ] `5`
     - [ ] `undefined`
 
 - # What does this code show?
 
     ```js
-    const story = { start: { text: "Hello" }, end: { text: "Bye" } }
-    const nodeId = "end"
-    console.log(story[nodeId].text)
+    const card = { name: "Cat", speed: 8, power: 4 }
+    const stat = "power"
+    console.log(card[stat])
     ```
 
     ---
 
-    - [ ] `Hello`
-    - [x] `Bye`
-    - [ ] `end`
+    - [ ] `power`
+    - [ ] `8`
+    - [x] `4`
     - [ ] `undefined`
 
-- # The talk scene calls `go("ending", { trust: 2 })`. How does the ending scene show the trust?
+- # The battle scene calls `go("results", { wins: 3, rounds: 5 })`. How does the results scene show the wins?
 
     ---
 
+    - [ ] With `wins`
     - [ ] It can't
-    - [ ] With `trust`
-    - [x] The scene function takes `data`, and uses `data.trust`
-    - [ ] With `go("trust")`
+    - [x] The scene function takes `data`, and uses `data.wins`
+    - [ ] With `go("wins")`
 
-- # Why is `let trust = 0` written inside the talk scene's function?
-
-    ---
-
-    - [ ] Because it has to be a constant
-    - [x] So it starts again from 0 every time the scene starts
-    - [ ] So other scenes can see it
-    - [ ] It makes the game faster
-
-- # What does `export function talkScene() { ... }` do?
+- # A variable is declared **inside** the battle scene. Which scenes can use it?
 
     ---
 
-    - [ ] Runs the talk scene
-    - [x] Makes `talkScene` available to be imported by other files
-    - [ ] Deletes the function
-    - [ ] Copies the function to a new file
+    - [ ] All of them
+    - [x] Only the battle scene
+    - [ ] Only the title scene
+    - [ ] Only the results scene
 
-- # `fullText` is `"Boo!"` and `charCount` is `2`. What is `fullText.slice(0, charCount)`?
+- # Why does this game use a `canPick` flag?
 
     ---
 
-    - [ ] `"Boo!"`
-    - [ ] `"B"`
-    - [x] `"Bo"`
-    - [ ] `"oo"`
+    - [ ] To make the cards pretty
+    - [x] To stop the player picking a stat twice in one round
+    - [ ] To count the rounds
+    - [ ] To choose random cards
+
+- # Which of these is **data**, rather than code?
+
+    ---
+
+    - [ ] `while (computerCard === playerCard) { ... }`
+    - [ ] `go("results", { wins: wins })`
+    - [x] `{ name: "Cat", image: "cat", speed: 8, power: 4 }`
+    - [ ] `onClick("statRow", (row) => { ... })`
 
 </quiz>
 
@@ -432,7 +333,7 @@ Before you finish the week, answer these questions on your own.
 Before you finish the week, make sure you can say "yes" to all of these:
 
 - <check> I can store a list in an **array** and a bundle of values in an **object**
+- <check> I can look up a property using a **variable**, with square brackets
 - <check> I can build a game from several **scenes**, passing data between them
-- <check> I can store a **story as data** and show choices from it
-- <check> I can use **flags** like `trust` to change the ending
-- <check> I can split a game into **files** with `import` and `export`
+- <check> I know where a variable can be **seen**: inside a scene or outside
+- <check> I can change how a game plays by changing its **data**

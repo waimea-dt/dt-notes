@@ -26,11 +26,11 @@
     - [Lesson 3: Timers & Randomness](/courses/200dtd/kaplay/week2-lesson3.md)
     - [Lesson 4: Whack-a-Bug](/courses/200dtd/kaplay/week2-lesson4.md)
 
-- [<i data-lucide="message-circle-text"></i> Week 3: Dialogue & Storylines](/courses/200dtd/kaplay/week3-intro.md)
+- [<i data-lucide="message-circle-text"></i> Week 3: Game Data & Progress](/courses/200dtd/kaplay/week3-intro.md)
     - [Lesson 1: Lists & Objects](/courses/200dtd/kaplay/week3-lesson1.md)
     - [Lesson 2: Scenes](/courses/200dtd/kaplay/week3-lesson2.md)
-    - [Lesson 3: Branching Stories](/courses/200dtd/kaplay/week3-lesson3.md)
-    - [Lesson 4: The Wizard's Help Desk](/courses/200dtd/kaplay/week3-lesson4.md)
+    - [Lesson 3: Card Battle](/courses/200dtd/kaplay/week3-lesson3.md)
+    - [Lesson 4: Creature Clash](/courses/200dtd/kaplay/week3-lesson4.md)
 
 - [<i data-lucide="rocket"></i> Week 4: Flying, Shooting, Explosions](/courses/200dtd/kaplay/week4-intro.md)
     - [Lesson 1: ](/courses/200dtd/kaplay/week4-lesson1.md)

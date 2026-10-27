@@ -1,203 +1,148 @@
-# Lesson 3: Branching Stories
+# Lesson 3: Card Battle
 
-A good story lets the player **choose**. In this lesson you'll store a whole branching story as **data**, show **choices** as buttons, and make the story remember what the player did.
+You have a deck of cards, and you can move between scenes. Now let's make the cards **fight**! In this lesson you'll build the battle: deal two cards, compare a stat, and keep score over several rounds.
 
 ## Warm-Up
 
 Try not to loop back at the previous lessons...
 
-1. What is the difference between a variable declared **inside** a scene and one declared **outside**?
+1. How do you pass a card to the next scene?
 
     <response>
 
-2. How do you pass some data to the next scene?
+2. A variable is declared inside one scene. Can another scene use it?
 
     <response>
 
-3. How many times does this loop run?
-
-    ```js
-    for (let i = 0; i < 4; i++) {
-        console.log(i)
-    }
-    ```
+3. If `statName`(js) is `"power"`, what does `card[statName]`(js) give us?
 
     <response>
 
 
 ## Learning Goals
 
-- <check> I can store a story as an **object of nodes**, and look a node up by its **name**
-- <check> I can make **choice buttons** from data, using a loop
-- <check> I can store a value on a game object, and use it when it's clicked
-- <check> I can track **flags** like `trust` and `hasCookie`
-- <check> I can use `if` statements to choose between different **endings**
+- <check> I can pick **random cards** from a deck
+- <check> I can **compare** two cards using a stat chosen by the player
+- <check> I can use a **flag** to stop the player acting twice in a round
+- <check> I can track **rounds** and a **score**
+- <check> I can pass the result to a **results scene**
 
 
-## The Big Idea: **A Story is Data**
+## The Big Idea: **Data Does the Work**
 
-We can think of a story as a set of **nodes**. Each node is one moment in the story: someone says something, and then either the story moves **on** to another node, or the player gets some **choices**.
+Look at how little code a battle needs, once the data is in the right shape. Each round:
 
-```mermaid
-flowchart LR
-    start --> friend
-    start --> dragon
-    friend --> theEnd
-    dragon --> theEnd
-```
+1. **Deal** two different random cards
+2. The player **picks a stat**
+3. We **compare** that stat on the two cards, with `if`
+4. The winner scores, and we move to the **next round**
 
-Each node is an **object**. And the whole story is one big object, where each node has a **name** (its key):
+The comparison is just a lookup with a variable, like in Lesson 1:
 
 ```js
-const story = {
-    start: {
-        speaker: "Guard",
-        text: "Halt! Who goes there?",
-        choices: [
-            { label: "A friend!", next: "friend" },
-            { label: "A dragon!", next: "dragon" },
-        ],
-    },
-    friend: {
-        speaker: "Guard",
-        text: "Welcome, friend. Mind the ghosts.",
-        next: "theEnd",
-    },
+const playerValue = playerCard[statName]
+const computerValue = computerCard[statName]
+
+if (playerValue > computerValue) {
+    // the player wins!
 }
 ```
 
-| Property    | What it means                                              |
-| ----------- | ---------------------------------------------------------- |
-| `speaker`   | Who is talking                                             |
-| `text`      | What they say                                              |
-| `next`      | The name of the node to go to **next**                     |
-| `choices`   | A list of answers: each has a `label` and a `next`         |
-| `isEnding`  | Is this the **end** of the story?                          |
-
-### Looking Up a Node
-
-To find a node we use its name. There are two ways to write it:
+And we already know about picking at random from Week 2:
 
 ```js
-story.start             // when we know the name when we write the code
-story[nodeId]           // when the name is stored in a variable
+const playerCard = choose(deck)
 ```
 
-> [!TIP]
-> Square brackets let us look up a property using a **variable**. If `nodeId` is `"friend"`, then `story[nodeId]`(js) is the same as `story.friend`(js).
+> [!NOTE]
+> The deck, and the functions that draw the cards on screen (`drawCard(...)`(js) and `drawCardBack(...)`(js)), are already done for you in the code below. The game is **800 by 600**, and the deck has 8 creature cards, with four stats each: `speed`, `power`, `cuteness` and `spookiness`.
 
 
 ## **P**redict
 
-Look at this Kaplay program. It's the longest one yet, so take your time!
+Here's the **battle** scene. Read it carefully. It's the longest piece of code so far, but you've seen all of the parts before!
 
 ```js
-kaplay({
-    width: 600, height: 400,
-    background: [30, 60, 90]
-})
+scene("battle", () => {
+    let round = 1
+    let wins = 0
+    let canPick = true
+    let playerCard = choose(deck)
+    let computerCard = choose(deck)
 
-const story = {
-    start: {
-        speaker: "Guard",
-        text: "Halt! Who goes there?",
-        choices: [
-            { label: "A friend!", next: "friend" },
-            { label: "A dragon!", next: "dragon" },
-        ],
-    },
-    friend: {
-        speaker: "Guard",
-        text: "Welcome, friend. Mind the ghosts.",
-        next: "theEnd",
-    },
-    dragon: {
-        speaker: "Guard",
-        text: "A dragon? You look like a bean.",
-        next: "theEnd",
-    },
-    theEnd: {
-        speaker: "Narrator",
-        text: "The End. Press SPACE to play again.",
-        isEnding: true,
-    },
-}
+    const infoLabel = add([
+        text("", { size: 24 }),
+        pos(30, 20),
+    ])
 
-scene("game", () => {
-    let currentNode = story.start
-
-    const speakerLabel = add([
+    const messageLabel = add([
         text("", { size: 28 }),
-        pos(40, 60),
-        color(255, 220, 0),
+        pos(width() / 2, 480),
+        anchor("center"),
     ])
 
-    const lineLabel = add([
-        text("", { size: 24, width: 520 }),
-        pos(40, 110),
-    ])
+    function dealCards() {
+        playerCard = choose(deck)
+        computerCard = choose(deck)
 
-    function showNode(nodeId) {
-        currentNode = story[nodeId]
-
-        destroyAll("choiceButton")
-
-        speakerLabel.text = currentNode.speaker
-        lineLabel.text = currentNode.text
-
-        if (currentNode.choices) {
-            for (let i = 0; i < currentNode.choices.length; i++) {
-                const choice = currentNode.choices[i]
-
-                const button = add([
-                    rect(300, 40, { radius: 8 }),
-                    pos(40, 230 + i * 50),
-                    color(60, 90, 140),
-                    area(),
-                    "choiceButton",
-                    { goTo: choice.next },
-                ])
-
-                button.add([
-                    text(choice.label, { size: 20 }),
-                    pos(14, 9),
-                ])
-            }
+        while (computerCard === playerCard) {
+            computerCard = choose(deck)
         }
+
+        destroyAll("card")
+        drawCard(playerCard, 70, true)
+        drawCardBack(470)
+
+        infoLabel.text = `Round ${round} of ${totalRounds}     Wins: ${wins}`
+        messageLabel.text = "Pick a stat!"
+        canPick = true
     }
 
-    onClick("choiceButton", (button) => {
-        showNode(button.goTo)
-    })
-
-    onKeyPress("space", () => {
-        if (currentNode.choices) {
+    onClick("statRow", (row) => {
+        if (!canPick || !row.isPlayer) {
             return
         }
+        canPick = false
 
-        if (currentNode.isEnding) {
-            go("game")
-            return
+        const playerValue = playerCard[row.statName]
+        const computerValue = computerCard[row.statName]
+
+        destroyAll("card")
+        drawCard(playerCard, 70, true, row.statName)
+        drawCard(computerCard, 470, false, row.statName)
+
+        if (playerValue > computerValue) {
+            wins = wins + 1
+            messageLabel.text = `You win! ${playerValue} beats ${computerValue}`
+        } else if (playerValue < computerValue) {
+            messageLabel.text = `You lose! ${computerValue} beats ${playerValue}`
+        } else {
+            messageLabel.text = `A draw! Both are ${playerValue}`
         }
 
-        showNode(currentNode.next)
+        wait(2.5, () => {
+            if (round === totalRounds) {
+                go("results", { wins: wins, rounds: totalRounds })
+            } else {
+                round = round + 1
+                dealCards()
+            }
+        })
     })
 
-    showNode("start")
+    dealCards()
 })
-
-go("game")
 ```
 
-What does the screen show when the game **starts**?
+When a round starts, what does the screen show? Which card is face-up, and which is face-down?
 
 <response>
 
-What happens when you click **"A dragon!"**, and then press SPACE?
+You click `power`. Your card's power is **4** and the computer's is **6**. What does the message say, and what happens to `wins`?
 
 <response>
 
-What happens if you press SPACE while the choices are showing? Which line of code decides this?
+What happens after the **fifth** round? Where does the information about the score go?
 
 <response>
 
@@ -211,11 +156,117 @@ What happens if you press SPACE while the choices are showing? Which line of cod
 
 ```css id=kaplay load=_assets/kaplay.css
 ```
+
+```js id=kaplay
+kaplay({
+    width: 800, height: 600,
+    background: [30, 60, 90]
+})
+
+// The stats that every card has
+const statNames = ["speed", "power", "cuteness", "spookiness"]
+
+// The deck: one object for each card
+const deck = [
+    { name: "Cat", image: "cat", speed: 8, power: 4, cuteness: 9, spookiness: 2 },
+    { name: "Elephant", image: "elephant", speed: 3, power: 10, cuteness: 7, spookiness: 1 },
+    { name: "Fish", image: "fish", speed: 7, power: 2, cuteness: 5, spookiness: 2 },
+    { name: "Beetle", image: "beetle", speed: 4, power: 5, cuteness: 3, spookiness: 6 },
+    { name: "Butterfly", image: "butterfly", speed: 6, power: 1, cuteness: 8, spookiness: 1 },
+    { name: "Ghost", image: "ghost", speed: 5, power: 3, cuteness: 4, spookiness: 10 },
+    { name: "Mushroom", image: "mushroom", speed: 1, power: 2, cuteness: 6, spookiness: 5 },
+    { name: "Skull", image: "skull", speed: 2, power: 6, cuteness: 1, spookiness: 9 },
+]
+
+// Load every picture named in the deck
+for (let i = 0; i < deck.length; i++) {
+    loadSprite(deck[i].image, `assets/images/${deck[i].image}.png`)
+}
+
+// Draws a face-up card at x. If isPlayer is true, the stat rows can be clicked
+function drawCard(card, x, isPlayer, chosenStat) {
+    add([
+        rect(260, 350, { radius: 14 }),
+        pos(x, 70),
+        color(240, 235, 220),
+        outline(4, rgb(31, 16, 42)),
+        "card",
+    ])
+
+    add([
+        text(card.name, { size: 28 }),
+        pos(x + 130, 98),
+        anchor("center"),
+        color(31, 16, 42),
+        "card",
+    ])
+
+    add([
+        sprite(card.image),
+        pos(x + 130, 175),
+        anchor("center"),
+        scale(2),
+        "card",
+    ])
+
+    for (let i = 0; i < statNames.length; i++) {
+        const statName = statNames[i]
+
+        let rowColour = rgb(205, 198, 180)
+        if (statName === chosenStat) {
+            rowColour = rgb(255, 220, 0)
+        }
+
+        const row = add([
+            rect(220, 32, { radius: 6 }),
+            pos(x + 20, 240 + i * 42),
+            color(rowColour),
+            area(),
+            "statRow",
+            "card",
+            { statName: statName, isPlayer: isPlayer },
+        ])
+
+        row.add([
+            text(statName, { size: 20 }),
+            pos(12, 16),
+            anchor("left"),
+            color(31, 16, 42),
+        ])
+
+        row.add([
+            text(`${card[statName]}`, { size: 20 }),
+            pos(208, 16),
+            anchor("right"),
+            color(31, 16, 42),
+        ])
+    }
+}
+
+// Draws a face-down card at x
+function drawCardBack(x) {
+    add([
+        rect(260, 350, { radius: 14 }),
+        pos(x, 70),
+        color(100, 70, 140),
+        outline(4, rgb(31, 16, 42)),
+        "card",
+    ])
+
+    add([
+        text("?", { size: 120 }),
+        pos(x + 130, 245),
+        anchor("center"),
+        "card",
+    ])
+}
+```
+
 </web-playground>
 
-Run the game and try both paths. Compare it with your predictions - any differences?
+Run the game and play it through a couple of times. Compare it with your predictions - any differences?
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -223,102 +274,123 @@ Run the game and try both paths. Compare it with your predictions - any differen
 ```css depends=kaplay
 ```
 
-```js
-kaplay({
-    width: 600, height: 400,
-    background: [30, 60, 90]
-})
+```js depends=kaplay
+const totalRounds = 5
 
-const story = {
-    start: {
-        speaker: "Guard",
-        text: "Halt! Who goes there?",
-        choices: [
-            { label: "A friend!", next: "friend" },
-            { label: "A dragon!", next: "dragon" },
-        ],
-    },
-    friend: {
-        speaker: "Guard",
-        text: "Welcome, friend. Mind the ghosts.",
-        next: "theEnd",
-    },
-    dragon: {
-        speaker: "Guard",
-        text: "A dragon? You look like a bean.",
-        next: "theEnd",
-    },
-    theEnd: {
-        speaker: "Narrator",
-        text: "The End. Press SPACE to play again.",
-        isEnding: true,
-    },
-}
+scene("title", () => {
+    add([
+        text("Creature Clash", { size: 64 }),
+        pos(width() / 2, 220),
+        anchor("center"),
+    ])
 
-scene("game", () => {
-    let currentNode = story.start
-
-    const speakerLabel = add([
-        text("", { size: 28 }),
-        pos(40, 60),
+    add([
+        text("Press SPACE to play", { size: 26 }),
+        pos(width() / 2, 330),
+        anchor("center"),
         color(255, 220, 0),
     ])
 
-    const lineLabel = add([
-        text("", { size: 24, width: 520 }),
-        pos(40, 110),
-    ])
-
-    function showNode(nodeId) {
-        currentNode = story[nodeId]
-
-        destroyAll("choiceButton")
-
-        speakerLabel.text = currentNode.speaker
-        lineLabel.text = currentNode.text
-
-        if (currentNode.choices) {
-            for (let i = 0; i < currentNode.choices.length; i++) {
-                const choice = currentNode.choices[i]
-
-                const button = add([
-                    rect(300, 40, { radius: 8 }),
-                    pos(40, 230 + i * 50),
-                    color(60, 90, 140),
-                    area(),
-                    "choiceButton",
-                    { goTo: choice.next },
-                ])
-
-                button.add([
-                    text(choice.label, { size: 20 }),
-                    pos(14, 9),
-                ])
-            }
-        }
-    }
-
-    onClick("choiceButton", (button) => {
-        showNode(button.goTo)
-    })
-
     onKeyPress("space", () => {
-        if (currentNode.choices) {
-            return
-        }
-
-        if (currentNode.isEnding) {
-            go("game")
-            return
-        }
-
-        showNode(currentNode.next)
+        go("battle")
     })
-
-    showNode("start")
 })
 
-go("game")
+scene("battle", () => {
+    let round = 1
+    let wins = 0
+    let canPick = true
+    let playerCard = choose(deck)
+    let computerCard = choose(deck)
+
+    const infoLabel = add([
+        text("", { size: 24 }),
+        pos(30, 20),
+    ])
+
+    const messageLabel = add([
+        text("", { size: 28 }),
+        pos(width() / 2, 480),
+        anchor("center"),
+    ])
+
+    function dealCards() {
+        playerCard = choose(deck)
+        computerCard = choose(deck)
+
+        while (computerCard === playerCard) {
+            computerCard = choose(deck)
+        }
+
+        destroyAll("card")
+        drawCard(playerCard, 70, true)
+        drawCardBack(470)
+
+        infoLabel.text = `Round ${round} of ${totalRounds}     Wins: ${wins}`
+        messageLabel.text = "Pick a stat!"
+        canPick = true
+    }
+
+    onClick("statRow", (row) => {
+        if (!canPick || !row.isPlayer) {
+            return
+        }
+        canPick = false
+
+        const playerValue = playerCard[row.statName]
+        const computerValue = computerCard[row.statName]
+
+        destroyAll("card")
+        drawCard(playerCard, 70, true, row.statName)
+        drawCard(computerCard, 470, false, row.statName)
+
+        if (playerValue > computerValue) {
+            wins = wins + 1
+            messageLabel.text = `You win! ${playerValue} beats ${computerValue}`
+        } else if (playerValue < computerValue) {
+            messageLabel.text = `You lose! ${computerValue} beats ${playerValue}`
+        } else {
+            messageLabel.text = `A draw! Both are ${playerValue}`
+        }
+
+        wait(2.5, () => {
+            if (round === totalRounds) {
+                go("results", { wins: wins, rounds: totalRounds })
+            } else {
+                round = round + 1
+                dealCards()
+            }
+        })
+    })
+
+    dealCards()
+})
+
+scene("results", (data) => {
+    add([
+        text("Game Over", { size: 64 }),
+        pos(width() / 2, 200),
+        anchor("center"),
+    ])
+
+    add([
+        text(`You won ${data.wins} of ${data.rounds} rounds`, { size: 32 }),
+        pos(width() / 2, 300),
+        anchor("center"),
+    ])
+
+    add([
+        text("Press SPACE to play again", { size: 24 }),
+        pos(width() / 2, 400),
+        anchor("center"),
+    ])
+
+    onKeyPress("space", () => {
+        go("title")
+    })
+})
+
+go("title")
 ```
 
 </web-playground>
@@ -326,141 +398,101 @@ go("game")
 
 ## **I**nvestigate
 
-### The Nodes
+### Comparing Cards
 
-Look at the four nodes in the story. Tick the properties that **each node has**:
+Here's the comparison from the battle, with two cards in the console. Predict what it will show, then run it:
 
-| Node       | `speaker` | `text`  | `next`  | `choices` | `isEnding` |
-| ---------- | --------- | ------- | ------- | --------- | ---------- |
-| `start`    | <check>   | <check> | <check> | <check>   | <check>    |
-| `friend`   | <check>   | <check> | <check> | <check>   | <check>    |
-| `dragon`   | <check>   | <check> | <check> | <check>   | <check>    |
-| `theEnd`   | <check>   | <check> | <check> | <check>   | <check>    |
+```js run
+const cat = { name: "Cat", speed: 8, power: 4 }
+const elephant = { name: "Elephant", speed: 3, power: 10 }
+const statName = "power"
 
-### Looking Up
+console.log(cat[statName])
+console.log(elephant[statName])
+console.log(cat[statName] > elephant[statName])
+```
 
-1. What's the difference between `story.start`(js) and `story[nodeId]`(js)? When do we need each one?
+Change `statName` to `"speed"` and run it again. Who wins now?
 
-    <response>
+<response>
 
-2. If `nodeId` is `"dragon"`, what does `story[nodeId].text`(js) give us?
+### How It Works
 
-    <response>
-
-### Buttons from Data
-
-1. How many buttons are made for the `start` node? What is `i` on each lap of the loop?
+1. What is the `while`(js) loop in `dealCards()`(js) for? What would happen without it?
 
     <response>
 
-2. What does `230 + i * 50`(js) do? Why is it needed?
+2. `canPick`(js) is a **boolean** flag. What is it for? What do you think would happen if we **removed** the `if (!canPick ...)`(js) check, and clicked on stats several times during the 2.5 second pause?
 
     <response>
 
-3. Each button is given `{ goTo: choice.next }`(js). What is that for? How does the `onClick`(js) function use it?
+3. Why does the game use `wait(2.5, ...)`(js) after a stat is picked?
 
     <response>
 
-4. What does `destroyAll("choiceButton")`(js) do, and why is it at the top of `showNode`?
+4. In `onClick("statRow", (row) => { ... })`(js), where does `row.statName`(js) come from? (Hint: look at the `drawCard`(js) function: it's in the hidden code, but you've seen something like it before in Lesson 2!)
 
     <response>
 
-### Remembering Choices
+### Counting Rounds
 
-A good story **remembers** what the player did. We'll use two pieces of state, like the ones in our final game:
-
-- `trust`: a **number**. Kind choices add to it, rude ones take away
-- `hasCookie`: a **boolean**. Did the player get the browser cookie?
-
-Step through this code, which pretends the player has visited four nodes:
+Step through this code, which pretends the player has played three rounds. What are `round` and `wins` at the end?
 
 ```js trace header="false"
-let trust = 0
-let hasCookie = false
+let round = 1
+let wins = 0
 
-trust = trust + 1
-hasCookie = true
-trust = trust - 1
-trust = trust + 1
+// Round 1: the player wins
+wins = wins + 1
+round = round + 1
 
-console.log(`trust: ${trust}, hasCookie: ${hasCookie}`)
-console.log(hasCookie && trust >= 1)
+// Round 2: the player loses
+round = round + 1
+
+// Round 3: the player wins
+wins = wins + 1
+round = round + 1
+
+console.log(`Round ${round}, wins: ${wins}`)
 ```
 
 <response placeholder="Observations...">
 
-### Choosing an Ending
+### Next Round or Results?
 
-The ending depends on the state. The **most specific** rule has to be checked **first**. Put the lines in order:
+At the end of each round, the game either moves to the **next round**, or goes to the **results** scene. Put the lines in order.
 
-- **Good ending** if the player has the cookie **and** `trust` is at least 1
-- **Okay ending** if `trust` is at least 1
-- **Bad ending** otherwise
-
-<drag-drop mode="code" title="Pick an Ending" sub-title="Check the most specific rule first">
+<drag-drop mode="code" title="What Next?" sub-title="Add one to the round before dealing the next cards">
 
 1.
     ```js
-    if (hasCookie && trust >= 1) {
-        return "homeGood"
-    }
+    if (round === totalRounds) {
     ```
 
 2.
     ```js
-    if (trust >= 1) {
-        return "homeOkay"
-    }
+        go("results", { wins: wins, rounds: totalRounds })
     ```
 
 3.
     ```js
-    return "homeBad"
-    ```
-
-</drag-drop>
-
-> [!NOTE]
-> A `return`(js) inside a function stops the function straight away and hands a value back. That's why we don't need `else` here.
-
-### Matching
-
-Match each property to what it does in the final game.
-
-<drag-drop mode="code" title="What Does It Do?" sub-title="">
-
-1.
-    ```js
-    choices: [ ... ]
-    ```
-
-2.
-    ```js
-    next: "problem"
-    ```
-
-3.
-    ```js
-    trust: 1
+    } else {
     ```
 
 4.
     ```js
-    cookie: true
+        round = round + 1
     ```
 
 5.
     ```js
-    isEnding: true
+        dealCards()
     ```
 
----
-
-1. Show some buttons for the player to pick from
-2. Carry on to another node when SPACE is pressed
-3. Add one to the trust score when the node is shown
-4. Give the player the browser cookie when the node is shown
-5. Go to the ending scene when SPACE is pressed
+6.
+    ```js
+    }
+    ```
 
 </drag-drop>
 
@@ -469,9 +501,9 @@ Match each property to what it does in the final game.
 
 ### Bug Hunt
 
-This version of the story has some bugs. Play it, and check the **Console** if something goes wrong. Can you fix the following?
+This version of the battle has some bugs. Play a few rounds, and look carefully at what happens. Can you fix the following?
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -479,147 +511,157 @@ This version of the story has some bugs. Play it, and check the **Console** if s
 ```css depends=kaplay
 ```
 
-```js
-kaplay({
-    width: 600, height: 400,
-    background: [30, 60, 90]
-})
+```js depends=kaplay
+const totalRounds = 5
 
-const story = {
-    start: {
-        speaker: "Guard",
-        text: "Halt! Who goes there?",
-        choices: [
-            { label: "A friend!", next: "friend" },
-            { label: "A dragon!", next: "dragon" },
-        ],
-    },
-    friend: {
-        speaker: "Guard",
-        text: "Welcome, friend. Mind the ghosts.",
-        next: "theEnd",
-    },
-    dragon: {
-        speaker: "Guard",
-        text: "A dragon? You look like a bean.",
-        next: "theEnd",
-    },
-    theEnd: {
-        speaker: "Narrator",
-        text: "The End. Press SPACE to play again.",
-        isEnding: true,
-    },
-}
+scene("title", () => {
+    add([
+        text("Creature Clash", { size: 64 }),
+        pos(width() / 2, 220),
+        anchor("center"),
+    ])
 
-scene("game", () => {
-    let currentNode = story.start
-
-    const speakerLabel = add([
-        text("", { size: 28 }),
-        pos(40, 60),
+    add([
+        text("Press SPACE to play", { size: 26 }),
+        pos(width() / 2, 330),
+        anchor("center"),
         color(255, 220, 0),
     ])
 
-    const lineLabel = add([
-        text("", { size: 24, width: 520 }),
-        pos(40, 110),
-    ])
-
-    function showNode(nodeId) {
-        currentNode = story[nodeId]
-
-        speakerLabel.text = currentNode.speaker
-        lineLabel.text = currentNode.text
-
-        if (currentNode.choices) {
-            for (let i = 0; i < currentNode.choices.length; i++) {
-                const choice = currentNode.choices[i]
-
-                const button = add([
-                    rect(300, 40, { radius: 8 }),
-                    pos(40, 230 + i * 50),
-                    color(60, 90, 140),
-                    "choiceButton",
-                    { goTo: choice.next },
-                ])
-
-                button.add([
-                    text(choice.label, { size: 20 }),
-                    pos(14, 9),
-                ])
-            }
-        }
-    }
-
-    onClick("choiceButton", (button) => {
-        showNode(button.next)
-    })
-
     onKeyPress("space", () => {
-        if (currentNode.choices) {
-            return
-        }
-
-        if (currentNode.isEnding) {
-            go("game")
-            return
-        }
-
-        showNode(currentNode.next)
+        go("battle")
     })
-
-    showNode("start")
 })
 
-go("game")
+scene("battle", () => {
+    let round = 1
+    let wins = 0
+    let canPick = true
+    let playerCard = choose(deck)
+    let computerCard = choose(deck)
+
+    const infoLabel = add([
+        text("", { size: 24 }),
+        pos(30, 20),
+    ])
+
+    const messageLabel = add([
+        text("", { size: 28 }),
+        pos(width() / 2, 480),
+        anchor("center"),
+    ])
+
+    function dealCards() {
+        playerCard = choose(deck)
+        computerCard = choose(deck)
+
+        destroyAll("card")
+        drawCard(playerCard, 70, true)
+        drawCardBack(470)
+
+        infoLabel.text = `Round ${round} of ${totalRounds}     Wins: ${wins}`
+        messageLabel.text = "Pick a stat!"
+        canPick = true
+    }
+
+    onClick("statRow", (row) => {
+        if (!canPick || !row.isPlayer) {
+            return
+        }
+        canPick = false
+
+        const playerValue = playerCard[row.statName]
+        const computerValue = computerCard[row.statName]
+
+        destroyAll("card")
+        drawCard(playerCard, 70, true, row.statName)
+        drawCard(computerCard, 470, false, row.statName)
+
+        if (playerValue < computerValue) {
+            wins = wins + 1
+            messageLabel.text = `You win! ${playerValue} beats ${computerValue}`
+        } else if (playerValue > computerValue) {
+            messageLabel.text = `You lose! ${computerValue} beats ${playerValue}`
+        } else {
+            messageLabel.text = `A draw! Both are ${playerValue}`
+        }
+
+        wait(2.5, () => {
+            if (round === totalRounds) {
+                go("results", wins)
+            } else {
+                round = round + 1
+                dealCards()
+            }
+        })
+    })
+
+    dealCards()
+})
+
+scene("results", (data) => {
+    add([
+        text("Game Over", { size: 64 }),
+        pos(width() / 2, 200),
+        anchor("center"),
+    ])
+
+    add([
+        text(`You won ${data.wins} of ${data.rounds} rounds`, { size: 32 }),
+        pos(width() / 2, 300),
+        anchor("center"),
+    ])
+
+    add([
+        text("Press SPACE to play again", { size: 24 }),
+        pos(width() / 2, 400),
+        anchor("center"),
+    ])
+
+    onKeyPress("space", () => {
+        go("title")
+    })
+})
+
+go("title")
 ```
 
 </web-playground>
 
-1. <check> Clicking a choice button **does nothing**
-2. <check> Once clicking works, the game **crashes** with an error about `undefined`
-3. <check> After picking a choice, the **old buttons are still there**
-
-> [!TIP]
-> Fix them one at a time, in order. Each fix will reveal the next bug!
+1. <check> The game says **"You win!"** when the player's number is **smaller**
+2. <check> Sometimes the computer's card turns out to be the **same card** as the player's (play a few rounds to spot it)
+3. <check> The results scene says **`undefined of undefined rounds`**
 
 ### Tinker
 
-Using the working story from the **Run** step above, complete the tasks one at a time:
+Using the working game from the **Run** step above, complete the tasks one at a time:
 
-1. <check> Add a **third choice** to the `start` node, `"A pizza delivery!"`, and a new node for it to go to
-2. <check> Add a `let trust = 0`(js) variable (**inside** the scene!). Give some nodes a `trust` property, and add it to `trust` whenever `showNode`(js) shows that node
-3. <check> On the **ending** node, show the player's `trust` as well as the text (hint: a template literal, in `showNode`(js))
-
-> [!TIP]
-> To add a node's `trust` to the total, put this in `showNode`:
->
-> ```js
-> if (currentNode.trust) {
->     trust = trust + currentNode.trust
-> }
-> ```
->
-> A node with no `trust` property gives `undefined`, which counts as **false**, so the `if` is skipped.
+1. <check> Change the game to **3 rounds**, then **7** rounds
+2. <check> Count the player's **losses** as well as wins, and show them in the info label
+3. <check> Make the result message **green** for a win and **red** for a loss (hint: `messageLabel.color = rgb(...)`(js))
 
 
 ## **M**ake
 
-### Help Desk Story
+### Rules Twist
 
-Write your own branching story, set at the **Wizard's Help Desk**. A customer arrives with a magical computer problem: a haunted printer, a cursed WiFi router, a spellchecker that casts spells... you decide!
+The basic game is fun, but **you** get to decide the rules! Add **one new rule** of your own invention to the battle.
 
-> [!IMPORTANT]
-> **Plan first!** Draw a **story map** on paper: a box for each node, and arrows showing where each choice leads. Mark where `trust` goes up or down.
+> [!TIP]
+> Some ideas, or invent your own:
+> - **Double points** for winning on one particular stat
+> - **Lowest wins** for one stat (like a race, where the smaller time is better)
+> - A **streak bonus** for winning two rounds in a row
+> - A draw gives a point to **both** sides
+> - The computer sometimes **cheats** (hint: `chance(0.2)`(js))
 
-Your story must have:
+Your game must have:
 
-- <check> At least **8 nodes**
-- <check> At least **two** places where the player makes a **choice**
-- <check> A `trust` score (or a flag like `hasCookie`) that **changes** as the story goes
-- <check> At least **three different endings**, chosen using `if` statements
+- <check> **One new rule** that changes how a round is scored
+- <check> The rule **explained on screen**, so the player knows about it
+- <check> The title, battle and results scenes still **working**
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -627,8 +669,8 @@ Your story must have:
 ```css depends=kaplay
 ```
 
-```js
-// Copy the working story code from above here, then write your own story!
+```js depends=kaplay
+// Copy your code from the working game above here, then add your rule
 ```
 
 </web-playground>
@@ -637,11 +679,11 @@ Your story must have:
 
 Finished early? Try these. Pick the ones that sound fun.
 
-| Challenge                                                   | Hint                                                                   |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Show the **trust score** on screen as the story goes        | A new label, updated in `showNode`(js)                                 |
-| Add a **secret ending** for a very specific set of choices  | Check several flags with `&&`(js)                                      |
-| Count the **number of choices** the player has made         | A new `let`(js) variable, and add 1 when a button is clicked           |
+| Challenge                                                    | Hint                                                                             |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Keep a **high score** that lasts until you refresh the page | A `let highScore = 0`(js) **outside** the scenes, updated in the results scene   |
+| Play a **sound** for a win and a loss                        | `loadSound(...)`(js) and `play(...)`(js), using `beep` and `boop` from the sounds folder |
+| Make the cards **change colour** when you hover over a stat  | `onHover("statRow", ...)`(js) and `onHoverEnd(...)`(js)                          |
 
 
 ## Exit Ticket
@@ -650,31 +692,37 @@ Without looking back, answer these three questions:
 
 <quiz>
 
-- # If `nodeId` is `"friend"`, which of these is the same as `story[nodeId]`?
+- # `row.statName` is `"power"`. What does `playerCard[row.statName]` give?
 
     ---
 
-    - [ ] `story.nodeId`
-    - [x] `story.friend`
-    - [ ] `friend.story`
-    - [ ] `story["nodeId"]`
-
-- # What does `destroyAll("choiceButton")` do?
-
-    ---
-
-    - [ ] Destroys the story
-    - [ ] Destroys the game
-    - [x] Removes every object tagged `"choiceButton"` from the screen
-    - [ ] Stops the buttons being clicked
-
-- # `hasCookie` is `true` and `trust` is `0`. What does `hasCookie && trust >= 1` give?
-
-    ---
-
-    - [ ] `true`
-    - [x] `false`
-    - [ ] `0`
+    - [ ] The text `"power"`
+    - [x] The player card's power number
+    - [ ] The computer card's power number
     - [ ] `undefined`
+
+- # Why does `dealCards()` have this loop?
+
+    ```js
+    while (computerCard === playerCard) {
+        computerCard = choose(deck)
+    }
+    ```
+
+    ---
+
+    - [ ] To deal more cards
+    - [x] To make sure the computer doesn't get the same card as the player
+    - [ ] To count the rounds
+    - [ ] To shuffle the deck
+
+- # The battle scene calls `go("results", { wins: wins, rounds: totalRounds })`. How does the results scene show the number of wins?
+
+    ---
+
+    - [ ] With `wins`
+    - [ ] With `results.wins`
+    - [x] With `data.wins`
+    - [ ] It can't
 
 </quiz>

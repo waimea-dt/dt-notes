@@ -1,4 +1,4 @@
-# Week 3: Dialogue & Storylines
+# Week 3: Data, Scenes & Cards
 
 
 ## Lesson 1: Lists & Objects
@@ -8,7 +8,7 @@
 # Lesson 1: Lists & Objects
 
 Note:
-Week 3 is about stories. A story is lots of text, so we need ways to store lots of data. Arrays and objects are the tools
+Week 3 is about data. A card game is a great fit: every card is a bundle of values, and a deck is a list of cards
 
 ---
 
@@ -17,94 +17,91 @@ Week 3 is about stories. A story is lots of text, so we need ways to store lots 
 - Storing lists in **arrays**
 - Getting items by **index**
 - Grouping values into **objects**
-- Storing a conversation as an **array of objects**
-- Stepping through it with an **index variable**
+- Looking up properties with a **variable**
+- A deck as an **array of objects**
 
 ---
 
 ## Arrays
 
 ```js
-const colours = ["red", "green", "blue"]
+const statNames = ["speed", "power", "cuteness"]
 
-console.log(colours[0])       // "red"
-console.log(colours.length)   // 3
+console.log(statNames[0])       // "speed"
+console.log(statNames.length)   // 3
 ```
 
-| Index | 0     | 1       | 2      |
-| ----- | ----- | ------- | ------ |
-| Item  | `"red"` | `"green"` | `"blue"` |
+| Index | 0       | 1       | 2          |
+| ----- | ------- | ------- | ---------- |
+| Item  | `"speed"` | `"power"` | `"cuteness"` |
 
 Indexes start at **0**!
 
 Note:
 - Last index is always length - 1
-- Ask: what does colours[3] give? (undefined)
+- Ask: what does statNames[3] give? (undefined)
 
 ---
 
 ## Objects
 
 ```js
-const wizard = {
-    name: "Shroomwick",
-    level: 12,
-    isWise: true,
+const card = {
+    name: "Cat",
+    speed: 8,
+    power: 4,
 }
 
-console.log(wizard.name)
+console.log(card.name)
 ```
 
 A bundle of **named** values
 
 Note:
-- Not the same as a Kaplay game object. It's just a card with labelled fields
-- Link back to `text("Hi", { size: 28 })`: they've already been using objects
+Not the same as a Kaplay game object. It's just a card with labelled fields. They've already been writing objects: `{ size: 28 }`
 
 ---
 
-## Both Together
+## Looking Up with a Variable
 
 ```js
-const dialogue = [
-    { speaker: "Wizard", text: "Welcome!" },
-    { speaker: "You", text: "Hello!" },
-]
+const statName = "power"
 
-console.log(dialogue[1].speaker)
+console.log(card.power)        // 4
+console.log(card[statName])    // 4
 ```
 
-A list of lines, each line an object
-
----
-
-## Dialogue State
-
-```js
-let lineIndex = 0
-
-onKeyPress("space", () => {
-    if (lineIndex < dialogue.length - 1) {
-        lineIndex = lineIndex + 1
-        showLine()
-    }
-})
-```
-
-`lineIndex` is **game state**
+Square brackets look up a property using a **variable**
 
 Note:
-- Why length - 1? Go past the end and you get undefined, then a crash
-- Why a showLine() function? Used in two places
+This is the key idea for the whole week. The battle compares playerCard[statName] with computerCard[statName]
 
 ---
 
-## Make: Talk to the Wizard
+## A Deck
 
-- At least **6 lines** of dialogue
-- At least **two speakers**
-- SPACE advances, and **stops** at the end
-- Each speaker in a **different colour**
+```js
+const deck = [
+    { name: "Cat", speed: 8, power: 4 },
+    { name: "Elephant", speed: 3, power: 10 },
+]
+
+console.log(deck[1].name)
+```
+
+A list of cards, each an object
+
+---
+
+## Make: Design Your Deck
+
+- At least **6 cards**
+- **Your own stats**, at least 3
+- **Arrow keys** to browse, stopping at each end
+- A **card counter**
+
+Note:
+Students choose a theme. They keep this deck for the rest of the week
 
 </slides>
 
@@ -117,7 +114,7 @@ Note:
 # Lesson 2: Scenes
 
 Note:
-Real games have a title screen, the game itself, an ending. Scenes let us build each as a separate screen
+Real games have a title screen, the game itself, a results screen. Scenes let us build each as a separate screen
 
 ---
 
@@ -151,7 +148,7 @@ A scene doesn't start until you go() to it. Always finish with a go() to the fir
 
 ```js
 onKeyPress("space", () => {
-    go("talk")
+    go("gallery")
 })
 ```
 
@@ -165,10 +162,10 @@ Objects, event handlers and timers all disappear. The new scene runs from the to
 ## Passing Data
 
 ```js
-go("ending", { lines: 5 })
+go("detail", { card: thumbnail.card })
 
-scene("ending", (data) => {
-    // data.lines is 5
+scene("detail", (data) => {
+    // data.card is the card
 })
 ```
 
@@ -179,247 +176,192 @@ Data goes in an **object**
 ## Where Variables Live
 
 ```js
-scene("talk", () => {
-    let lineIndex = 0   // fresh each visit
+let viewedCount = 0    // outside: seen by every scene
+
+scene("detail", () => {
+    let temp = 1       // inside: only this scene
 })
 ```
 
-**Inside** a scene: created **again** every time
+Inside: **this scene only**, created fresh each visit
 
-**Outside** all scenes: created **once**, kept for good
+Outside: **every** scene, and it **keeps** its value
 
 Note:
-This is the big idea of the lesson. Predict step: where does the conversation start when you play again?
+Big idea of the lesson. The bug hunt hides viewedCount inside one scene so another scene can't find it
 
 ---
 
-## Make: Three-Scene Story
+## Make: Gallery of Your Own
 
-- **Title** scene
-- **Talk** scene (6+ lines)
-- **Ending** scene that shows something the talk scene told it
-- Playing again starts at the **first line**
+- **Title**, **gallery** and **detail** scenes
+- Gallery made with a **loop**
+- Detail scene is **passed** the card
+- A count of cards viewed that **keeps going**
 
 </slides>
 
 
 
-## Lesson 3: Branching Stories
+## Lesson 3: Card Battle
 
 <slides>
 
-# Lesson 3: Branching Stories
+# Lesson 3: Card Battle
 
 Note:
-A good story lets the player choose, and remembers what they did
+Now the cards fight. The point to make: very little code is needed once the data is in the right shape
 
 ---
 
 ## Learning
 
-- A story as an **object of nodes**
-- **Choice buttons** made from data
-- **Flags** like `trust` and `hasCookie`
-- Choosing between **endings** with `if`
+- Picking **random cards**
+- **Comparing** a stat chosen by the player
+- Using a **flag** to guard a round
+- Tracking **rounds** and **score**
+- Passing the result to a **results scene**
 
 ---
 
-## Story Nodes
+## A Round
 
-```mermaid
-flowchart LR
-    start --> friend
-    start --> dragon
-    friend --> theEnd
-    dragon --> theEnd
-```
-
-Each node is an **object**. The whole story is an object of nodes
+1. **Deal** two different random cards
+2. The player **picks a stat**
+3. **Compare** that stat on the two cards
+4. The winner scores, then the **next round**
 
 ---
 
-## A Node
+## Comparing
 
 ```js
-start: {
-    speaker: "Guard",
-    text: "Halt! Who goes there?",
-    choices: [
-        { label: "A friend!", next: "friend" },
-        { label: "A dragon!", next: "dragon" },
-    ],
-},
-```
+const playerValue = playerCard[statName]
+const computerValue = computerCard[statName]
 
-`next`, `choices` or `isEnding`
-
-Note:
-Walk through each property. A node either carries on (next), asks a question (choices) or ends the story
-
----
-
-## Looking Up Nodes
-
-```js
-story.start         // name known when writing the code
-story[nodeId]       // name stored in a variable
-```
-
-Square brackets look up a property using a **variable**
-
----
-
-## Buttons from Data
-
-```js
-for (let i = 0; i < node.choices.length; i++) {
-    const choice = node.choices[i]
-
-    add([
-        rect(300, 40),
-        pos(40, 230 + i * 50),
-        area(),
-        "choiceButton",
-        { goTo: choice.next },
-    ])
+if (playerValue > computerValue) {
+    wins = wins + 1
 }
 ```
 
-One button per choice, each remembering where it leads
-
-Note:
-- A plain object in the component list adds a custom property to the game object
-- destroyAll("choiceButton") clears the old buttons first
+Lookups with a **variable**: it's the same code for every stat!
 
 ---
 
-## Flags and Endings
+## Different Cards
 
 ```js
-function pickEnding() {
-    if (hasCookie && trust >= 1) {
-        return "homeGood"
-    }
-    if (trust >= 1) {
-        return "homeOkay"
-    }
-    return "homeBad"
+playerCard = choose(deck)
+computerCard = choose(deck)
+
+while (computerCard === playerCard) {
+    computerCard = choose(deck)
 }
 ```
 
-Most **specific** rule first!
+Keep picking until the cards are **different**
+
+Note:
+Revisits while loops from Week 1, and choose() from Week 2
 
 ---
 
-## Make: Help Desk Story
+## Guard the Round
 
-- **8+ nodes**
-- **Two** places with a choice
-- A `trust` score or flag that **changes**
-- **Three** different endings
+```js
+onClick("statRow", (row) => {
+    if (!canPick || !row.isPlayer) {
+        return
+    }
+    canPick = false
+    // ... work out who won
+})
+```
 
-*Plan a story map on paper first!*
+A **flag** stops the player picking twice
+
+Note:
+Same idea as gameIsOver in Week 2
+
+---
+
+## Make: Rules Twist
+
+Add **one new rule** of your own...
+
+- Double points on a stat
+- Lowest wins on a stat
+- A streak bonus
+- The computer cheats!
+
+*Explain it on screen*
 
 </slides>
 
 
 
-## Lesson 4: The Wizard's Help Desk
+## Lesson 4: Creature Clash
 
 <slides>
 
-# Lesson 4: The Wizard's Help Desk
+# Lesson 4: Creature Clash
 
 Note:
-Build day. Students port their story into the modular skeleton and add typewriter text and portraits
+Build day. This is student-led: no steps. They plan first, then build to checkpoints
 
 ---
 
 ## Learning
 
-- Splitting a game into **files**
-- `import` and `export`
-- The **typewriter** effect
-- **Portraits** for each speaker
+- Designing a game around **data**
+- Building from **several scenes**
+- Changing rules with a little code
+- **Balancing** with numbers
 
 ---
 
-## The Files
+## The Brief
 
-- `main.js`: starts Kaplay, registers scenes
-- `data/story.js`: the story
-- `scenes/title.js`
-- `scenes/talk.js`
-- `scenes/ending.js`
+Your own **card battle game**
+
+- A **theme** and a game name
+- **8+ cards**, **3+ stats** of your own
+- **Three scenes**, **3+ rounds**
+- A **rule twist**, explained on screen
+
+---
+
+## Plan First
+
+- Theme and name
+- Stats and why
+- Cards and numbers
+- Rule twist
+- What each scene shows
+
+*Show your teacher before building!*
 
 Note:
-Separate the data from the code. Each scene gets its own file
+Check each plan before they start. The stats on their cards make or break the game
 
 ---
 
-## Import and Export
+## Checkpoints
 
-```js
-// data/story.js
-export const story = { ... }
+1. Your **deck**, one card on screen
+2. The **battle** works
+3. All **three scenes**, play again
+4. Your **twist**
 
-// scenes/talk.js
-import { story } from "../data/story.js"
-```
+---
 
-`./` this folder, `../` up one folder
+## Balancing
+
+Is one card too good? Too weak?
+
+Change the **data**, not the code, and test again
 
 Note:
-- Needs type="module" in index.html and a local server
-- scene("talk", talkScene): no brackets! We hand over the function
-
----
-
-## The Typewriter
-
-```js
-loop(0.03, () => {
-    if (charCount < fullText.length) {
-        charCount = charCount + 1
-        lineLabel.text = fullText.slice(0, charCount)
-    }
-})
-```
-
-One loop per scene, state in `fullText` and `charCount`
-
-Note:
-Why only one loop? Every extra loop would make the text type faster
-
----
-
-## Portraits
-
-```js
-const portraits = {
-    Wizard: "mushroom",
-    Ghost: "ghost",
-}
-
-sprite(portraits[currentNode.speaker])
-```
-
-An object as a **look-up**
-
----
-
-## Build Steps
-
-1. Explore the skeleton
-2. Write your story
-3. Trust and endings
-4. Typewriter
-5. Portraits
-6. Title and ending
-
-*Test after every step!*
-
-Note:
-Finish with playtesting and the Week 3 Check quiz
+Ask afterwards: which of your changes were data, and which were code?
 
 </slides>
