@@ -1,202 +1,81 @@
-# Lesson 2: Scenes
+# Lesson 2: Displaying Data
 
-Last lesson you showed a deck of cards on screen. But a real game needs more than one screen: a **title** screen, the **game** itself, a **results** screen... In this lesson you'll learn how Kaplay lets you build a game out of separate **scenes**, and you'll use them to build a card gallery.
+Last lesson we stored lots of data in arrays and objects. But data on its own is just numbers and words in our code. To be useful in a game, the player needs to **see** it!
+
+In this lesson you'll learn how to build a good **UI** (user interface) for a piece of data. First we'll show **one item**, then we'll make a UI that can show **any item** you give it.
 
 ## Warm-Up
 
-Try not to loop back at the previous lesson...
+Try not to look back at the previous lesson...
 
-1. An array has 6 items. What is the index of the **last** one?
-
-    <response>
-
-2. How would you get the `power` of the card stored in `card`(js)?
+1. What's the difference between an **array** and an **object**?
 
     <response>
 
-3. If `statName`(js) is `"speed"`, how do you get that stat from `card`(js)?
+2. If `statName`(js) is `"speed"`, what does `card[statName]`(js) give us?
+
+    <response>
+
+3. When would you use `for (let i = 0; i < items.length; i++)`(js) instead of `for...of`(js)?
 
     <response>
 
 
 ## Learning Goals
 
-- <check> I can define a **scene** with `scene(...)`(js)
-- <check> I can switch scenes with `go(...)`(js)
-- <check> I can **pass data** from one scene to the next
-- <check> I can explain what happens to **objects** and **variables** when the scene changes
-- <check> I can build a game with a **title**, a **gallery** and a **detail** scene
+- <check> I can build a UI out of several Kaplay objects
+- <check> I can group objects together with a **parent** and its **children**
+- <check> I can write a function that creates a UI once, and **shows any item** in it
+- <check> I can explain why we **update** a UI, rather than making a new one each time
+- <check> I can make a UI **data-driven**, using a loop
 
 
-## The Big Idea: **Scenes**
+## The Big Idea: **Data** and **UI**
 
-A **scene** is one screen of your game, with its own objects and its own code. You **define** scenes, then **go** to them:
+The **data** is what the game knows. The **UI** is how the player sees it. We'll keep them **separate**: the data lives in an object, and the UI code knows how to show *any* object of that shape.
 
-| Function                                    | What it does                                               |
-| ------------------------------------------- | ---------------------------------------------------------- |
-| `scene("name", () => { ... })`(js)          | **Defines** a scene. The code inside runs when we go there |
-| `go("name")`(js)                            | **Switches** to a scene                                    |
-| `go("name", { score: 10 })`(js)             | Switches to a scene and **passes it some data**            |
-| `scene("name", (data) => { ... })`(js)      | A scene that **receives** the data                         |
-
-<sequence animated="true">
-
-1. ### <i data-lucide="play"></i> Title
-    - Name of the game
-    - **Press SPACE** to start
-
-2. ### <i data-lucide="layout-grid"></i> Gallery
-    - Shows **every card**
-    - **Click** a card to see it
-
-3. ### <i data-lucide="credit-card"></i> Detail
-    - Shows **one card**, large
-    - **Press SPACE** to go back
-
-</sequence>
-
-When Kaplay switches scene, it **throws away everything** from the old scene: all of its objects, its event handlers (like `onKeyPress`) and its timers. Then it runs the code of the new scene from the top.
-
-> [!IMPORTANT]
-> A scene doesn't start until you `go(...)`(js) to it. Always finish your program with a `go(...)`(js) to your first scene.
+That means we can change the data, or add new data, **without touching the UI code**.
 
 
-## **P**redict
+## **I**nvestigate
 
-Look at this Kaplay program with three scenes:
+### A Card Viewer
+
+We are going to look at a simple game that **shows cards from a deck**. We will take things one step at a time...
+
+Let's create a **card object**:
 
 ```js
-kaplay({
-    width: 600, height: 400,
-    background: [30, 60, 90]
-})
-
-const statNames = ["speed", "power", "cuteness", "spookiness"]
-
-const deck = [
-    { name: "Cat", image: "cat", speed: 8, power: 4, cuteness: 9, spookiness: 2 },
-    { name: "Elephant", image: "elephant", speed: 3, power: 10, cuteness: 7, spookiness: 1 },
-    { name: "Fish", image: "fish", speed: 7, power: 2, cuteness: 5, spookiness: 2 },
-    { name: "Ghost", image: "ghost", speed: 5, power: 3, cuteness: 4, spookiness: 10 },
-    { name: "Mushroom", image: "mushroom", speed: 1, power: 2, cuteness: 6, spookiness: 5 },
-]
-
-for (let i = 0; i < deck.length; i++) {
-    loadSprite(deck[i].image, `assets/images/${deck[i].image}.png`)
+const card = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
 }
-
-// Outside every scene, so it is kept when the scene changes
-let viewedCount = 0
-
-function makeStatsText(card) {
-    let statsText = ""
-    for (let i = 0; i < statNames.length; i++) {
-        const statName = statNames[i]
-        statsText = statsText + `${statName}: ${card[statName]}\n`
-    }
-    return statsText
-}
-
-scene("title", () => {
-    add([
-        text("Card Gallery", { size: 56 }),
-        pos(width() / 2, 150),
-        anchor("center"),
-    ])
-
-    add([
-        text("Press SPACE to start", { size: 24 }),
-        pos(width() / 2, 240),
-        anchor("center"),
-        color(255, 220, 0),
-    ])
-
-    onKeyPress("space", () => {
-        go("gallery")
-    })
-})
-
-scene("gallery", () => {
-    add([
-        text("Click a card", { size: 32 }),
-        pos(width() / 2, 50),
-        anchor("center"),
-    ])
-
-    add([
-        text(`Cards viewed: ${viewedCount}`, { size: 20 }),
-        pos(width() / 2, 90),
-        anchor("center"),
-        color(150, 170, 200),
-    ])
-
-    for (let i = 0; i < deck.length; i++) {
-        add([
-            sprite(deck[i].image),
-            pos(70 + i * 115, 220),
-            anchor("center"),
-            scale(1.5),
-            area(),
-            "thumbnail",
-            { card: deck[i] },
-        ])
-    }
-
-    onClick("thumbnail", (thumbnail) => {
-        go("detail", { card: thumbnail.card })
-    })
-})
-
-scene("detail", (data) => {
-    viewedCount = viewedCount + 1
-
-    add([
-        text(data.card.name, { size: 44 }),
-        pos(width() / 2, 50),
-        anchor("center"),
-    ])
-
-    add([
-        sprite(data.card.image),
-        pos(150, 200),
-        anchor("center"),
-        scale(3),
-    ])
-
-    add([
-        text(makeStatsText(data.card), { size: 26 }),
-        pos(290, 130),
-    ])
-
-    add([
-        text("Press SPACE to go back", { size: 20 }),
-        pos(width() / 2, 360),
-        anchor("center"),
-        color(150, 170, 200),
-    ])
-
-    onKeyPress("space", () => {
-        go("gallery")
-    })
-})
-
-go("title")
 ```
 
-What does the game show when it **starts**?
+Some of those items of data look easy to display: the **name** can go in a `text(...)` object, the **image** in a `sprite(...)`. But what about all those **stats**?
+
+It might be easiest if we **combine all the stats into a single block of text** which we can then place into a single `text(...)` object:
+
+```js
+let statsText = ""
+statsText += `power:  ${card.power}\n`
+statsText += `speed:  ${card.speed}\n`
+statsText += `brains: ${card.brains}`
+```
+
+What do you think the `+=`(js) is doing in those lines of code?
 
 <response>
 
-You click on a card, then press SPACE to go back to the gallery. What will the **Cards viewed** label say now?
-
-<response>
-
-After you view **three** cards, what will it say?
+What do you think the `\n`(js) at the end of the lines of text do?
 
 <response>
 
 
-## **R**un
+### Card Viewer Design
 
 <web-playground hidden>
 
@@ -207,9 +86,9 @@ After you view **three** cards, what will it say?
 ```
 </web-playground>
 
-Run the game and look at a few cards. Compare it with your predictions - any differences?
+Look at this Kaplay program, which will show a single card:
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -219,205 +98,466 @@ Run the game and look at a few cards. Compare it with your predictions - any dif
 
 ```js
 kaplay({
-    width: 600, height: 400,
+    width: 400, height: 500,
     background: [30, 60, 90]
 })
 
-const statNames = ["speed", "power", "cuteness", "spookiness"]
+loadBean()
 
-const deck = [
-    { name: "Cat", image: "cat", speed: 8, power: 4, cuteness: 9, spookiness: 2 },
-    { name: "Elephant", image: "elephant", speed: 3, power: 10, cuteness: 7, spookiness: 1 },
-    { name: "Fish", image: "fish", speed: 7, power: 2, cuteness: 5, spookiness: 2 },
-    { name: "Ghost", image: "ghost", speed: 5, power: 3, cuteness: 4, spookiness: 10 },
-    { name: "Mushroom", image: "mushroom", speed: 1, power: 2, cuteness: 6, spookiness: 5 },
-]
+const cardFrame = add([
+    rect(300, 400, { radius: 10 }),
+    pos(50, 50),
+    color(255, 255, 255),
+    outline(5, rgb(0, 0, 0)),
+])
 
-for (let i = 0; i < deck.length; i++) {
-    loadSprite(deck[i].image, `assets/images/${deck[i].image}.png`)
+const cardName = cardFrame.add([
+    text("NAME HERE", { size: 50 }),
+    pos(150, 50),
+    anchor("center"),
+    color(0, 0, 0),
+])
+
+const cardImage = cardFrame.add([
+    sprite("bean"),
+    pos(150, 180),
+    anchor("center"),
+    scale(2.5),
+])
+
+const cardStats = cardFrame.add([
+    text("STATS\nSTATS\nSTATS", { size: 28 }),
+    pos(150, 290),
+    anchor("top"),
+    color(0, 0, 0),
+])
+```
+
+</web-playground>
+
+We have one `text(...)`(js) for the name, another for the stats, and a `sprite(...)`(js) for the image.
+
+Look closely at the code - The `text` and `sprite` objects are being added to the `cardFrame` object: `const cardImage = cardFrame.add([...])`(js). Why do you think we have done this?
+
+<response>
+
+> [!TIP]
+> In Kaplay, if objects are part of another **parent object**, it is best to add them to it instead of adding them to the scene. That way, if the parent is moved, all the **child objects move too**.
+
+
+### Displaying a Card
+
+Great! Now we're ready to display the card in the card view:
+
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+kaplay({
+    width: 400, height: 500,
+    background: [30, 60, 90]
+})
+
+const card = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
 }
 
-// Outside every scene, so it is kept when the scene changes
-let viewedCount = 0
+loadSprite(card.image, `assets/images/${card.image}.png`)
 
-function makeStatsText(card) {
-    let statsText = ""
-    for (let i = 0; i < statNames.length; i++) {
-        const statName = statNames[i]
-        statsText = statsText + `${statName}: ${card[statName]}\n`
-    }
-    return statsText
-}
+const cardFrame = add([
+    rect(300, 400, { radius: 10 }),
+    pos(50, 50),
+    color(255, 255, 255),
+    outline(5, rgb(0, 0, 0)),
+])
 
-scene("title", () => {
-    add([
-        text("Card Gallery", { size: 56 }),
-        pos(width() / 2, 150),
-        anchor("center"),
-    ])
+const cardName = cardFrame.add([
+    text(card.name, { size: 50 }),
+    pos(150, 50),
+    anchor("center"),
+    color(0, 0, 0),
+])
 
-    add([
-        text("Press SPACE to start", { size: 24 }),
-        pos(width() / 2, 240),
-        anchor("center"),
-        color(255, 220, 0),
-    ])
+const cardImage = cardFrame.add([
+    sprite(card.image),
+    pos(150, 180),
+    anchor("center"),
+    scale(2.5),
+])
 
-    onKeyPress("space", () => {
-        go("gallery")
-    })
-})
+let statsText = ""
+statsText += `power:  ${card.power}\n`
+statsText += `speed:  ${card.speed}\n`
+statsText += `brains: ${card.brains}`
 
-scene("gallery", () => {
-    add([
-        text("Click a card", { size: 32 }),
-        pos(width() / 2, 50),
-        anchor("center"),
-    ])
-
-    add([
-        text(`Cards viewed: ${viewedCount}`, { size: 20 }),
-        pos(width() / 2, 90),
-        anchor("center"),
-        color(150, 170, 200),
-    ])
-
-    for (let i = 0; i < deck.length; i++) {
-        add([
-            sprite(deck[i].image),
-            pos(70 + i * 115, 220),
-            anchor("center"),
-            scale(1.5),
-            area(),
-            "thumbnail",
-            { card: deck[i] },
-        ])
-    }
-
-    onClick("thumbnail", (thumbnail) => {
-        go("detail", { card: thumbnail.card })
-    })
-})
-
-scene("detail", (data) => {
-    viewedCount = viewedCount + 1
-
-    add([
-        text(data.card.name, { size: 44 }),
-        pos(width() / 2, 50),
-        anchor("center"),
-    ])
-
-    add([
-        sprite(data.card.image),
-        pos(150, 200),
-        anchor("center"),
-        scale(3),
-    ])
-
-    add([
-        text(makeStatsText(data.card), { size: 26 }),
-        pos(290, 130),
-    ])
-
-    add([
-        text("Press SPACE to go back", { size: 20 }),
-        pos(width() / 2, 360),
-        anchor("center"),
-        color(150, 170, 200),
-    ])
-
-    onKeyPress("space", () => {
-        go("gallery")
-    })
-})
-
-go("title")
+const cardStats = cardFrame.add([
+    text(statsText, { size: 28 }),
+    pos(150, 290),
+    anchor("top"),
+    color(0, 0, 0),
+])
 ```
 
 </web-playground>
 
 
-## **I**nvestigate
+### A Better Card Viewer
 
-### Passing a Card
+The code above shows a single card when it is first run, but it is locked to that one card... there is **no way to update the UI to show a different card**.
 
-1. Each thumbnail is made with `{ card: deck[i] }`(js) in its component list. What does that do?
+Let's create a `showCard(...)`(js) **function** that we can call whenever we want, to show **any card**. And let's try using it to show two different cards:
 
-    <response>
-
-2. In the gallery we call `go("detail", { card: thumbnail.card })`(js). How does the detail scene get hold of the card?
-
-    <response>
-
-3. What would the detail scene show if we changed the call to `go("detail", { card: deck[0] })`(js)?
-
-    <response>
-
-### Where Variables Live
-
-`viewedCount` is declared **outside** all of the scenes. Try moving the line `let viewedCount = 0`(js) **inside** the gallery scene, then play the game.
-
-1. What happens? 
-
-    <response>
-
-2. Why does it happen? (Hint: which scenes can see a variable made inside the gallery scene?)
-
-    <response>
-
-> [!TIP]
-> A variable made **inside** a scene exists only in that scene, and is created fresh every time the scene starts. A variable made **outside** all scenes can be seen by every scene, and **keeps its value** when scenes change. To send a value to just the next scene, pass it with `go(...)`(js).
-
-### Starting the Game
-
-What do you think would happen if you **deleted** the last line of the program, `go("title")`(js)? Try it!
+What do you think the screen will show when we call `showCard(...)`(js) **twice**, once for the elephant and once for the cat?
 
 <response>
 
-### Matching
+<web-playground data-height="44em" js-only>
 
-Match each piece of code to what it does.
+```html depends=kaplay
+```
 
-<drag-drop mode="code" title="What Does It Do?" sub-title="">
+```css depends=kaplay
+```
 
-1.
-    ```js
-    scene("gallery", () => { ... })
-    ```
+```js
+kaplay({
+    width: 400, height: 500,
+    background: [30, 60, 90]
+})
 
-2.
-    ```js
-    go("detail")
-    ```
+const elephantCard = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
+}
 
-3.
-    ```js
-    go("detail", { card: deck[2] })
-    ```
+const catCard = {
+    name:   "Cat",
+    image:  "cat",
+    power:  4,
+    speed:  8,
+    brains: 5,
+}
 
-4.
-    ```js
-    scene("detail", (data) => { ... })
-    ```
+loadSprite("elephant", "assets/images/elephant.png")
+loadSprite("cat",      "assets/images/cat.png")
 
----
+function showCard(card) {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(50, 50),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
+        opacity(1),
+    ])
 
-1. Define a scene called gallery
-2. Switch to the detail scene
-3. Switch to the detail scene, passing it a card
-4. A scene that receives some data
+    const cardName = cardFrame.add([
+        text(card.name, { size: 50 }),
+        pos(150, 50),
+        anchor("center"),
+        color(0, 0, 0),
+    ])
 
-</drag-drop>
+    const cardImage = cardFrame.add([
+        sprite(card.image),
+        pos(150, 180),
+        anchor("center"),
+        scale(2.5),
+    ])
+
+    let statsText = ""
+    statsText += `power:  ${card.power}\n`
+    statsText += `speed:  ${card.speed}\n`
+    statsText += `brains: ${card.brains}`
+
+    const cardStats = cardFrame.add([
+        text(statsText, { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
+}
+
+showCard(elephantCard)
+showCard(catCard)
+```
+
+</web-playground>
+
+Amazing! Look at that - the last card we asked to show was the **cat** one, and there it is!
+
+#### But... We Have a Problem!
+
+Try changing the opacity of the `cardFrame`... Change `opacity(1)`(js) to `opacity(0.25)`(js). What happens?
+
+<response>
+
+Why can we still see the **elephant card underneath the cat card**?!
+
+<response>
+
+
+### A Card That Can Be Updated
+
+We need to **create a card view once** and then be able to **update what it shows** whenever we want. Let's tweak the card creation function:
+
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+kaplay({
+    width: 400, height: 500,
+    background: [30, 60, 90]
+})
+
+const elephantCard = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
+}
+
+const catCard = {
+    name:   "Cat",
+    image:  "cat",
+    power:  4,
+    speed:  8,
+    brains: 5,
+}
+
+loadBean()
+loadSprite("elephant", "assets/images/elephant.png")
+loadSprite("cat",      "assets/images/cat.png")
+
+function createCardView() {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(50, 50),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
+        opacity(1),
+    ])
+
+    const cardName = cardFrame.add([
+        text("NAME HERE", { size: 50 }),
+        pos(150, 50),
+        anchor("center"),
+        color(0, 0, 0),
+    ])
+
+    const cardImage = cardFrame.add([
+        sprite("bean"),
+        pos(150, 180),
+        anchor("center"),
+        scale(2.5),
+    ])
+
+    const cardStats = cardFrame.add([
+        text("STATS\nSTATS", { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
+
+    cardFrame.show = function(card) {
+        cardName.text = card.name
+
+        cardImage.use(sprite(card.image))
+
+        let statsText = ""
+        statsText += `power:  ${card.power}\n`
+        statsText += `speed:  ${card.speed}\n`
+        statsText += `brains: ${card.brains}`
+
+        cardStats.text = statsText
+    }
+
+    return cardFrame
+}
+
+const cardView = createCardView()
+cardView.show(elephantCard)
+cardView.show(catCard)
+```
+
+</web-playground>
+
+What is the purpose of `loadBean()`(js) and why do we add `sprite("bean")`(js) during the card view creation?
+
+<response>
+
+What do you think the `cardFrame.show = function(card) { ... }`(js) code is doing?
+
+<response>
+
+Why do we return the cardFrame object, `return cardFrame`(js)?
+
+<response>
+
+Looking at the final lines of code:
+
+```js
+const cardView = createCardView()
+cardView.show(elephantCard)
+cardView.show(catCard)
+```
+
+Can you explain how this has fixed the problem of the two, overlapping cards we had before?
+
+<response>
+
+
+### Less Repetition
+
+Our `show` function has a weakness. Look at these lines:
+
+```js
+statsText += `power:  ${card.power}\n`
+statsText += `speed:  ${card.speed}\n`
+statsText += `brains: ${card.brains}`
+```
+
+1. The three lines are almost identical. What changes from line to line?
+
+    <response>
+
+2. Imagine we add a fourth stat, `luck`, to every card. How many places in the code would we need to change?
+
+    <response>
+
+We already know a better way! Put the **names of the stats** in an **array**, and **loop** through it with `for...of`, using the **lookup with a variable** from last lesson:
+
+```js
+const statNames = ["power", "speed", "brains"]
+
+// ...inside the show function:
+let statsText = ""
+for (const statName of statNames) {
+    statsText += `${statName}: ${card[statName]}\n`
+}
+```
+
+Try it out. The `statNames` array and the loop are both in the code below.
+
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+kaplay({
+    width: 400, height: 500,
+    background: [30, 60, 90]
+})
+
+const statNames = ["power", "speed", "brains"]
+
+const elephantCard = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
+}
+
+const catCard = {
+    name:   "Cat",
+    image:  "cat",
+    power:  4,
+    speed:  8,
+    brains: 5,
+}
+
+loadBean()
+loadSprite("elephant", "assets/images/elephant.png")
+loadSprite("cat",      "assets/images/cat.png")
+
+function createCardView() {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(50, 50),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
+    ])
+
+    const cardName = cardFrame.add([
+        text("NAME HERE", { size: 50 }),
+        pos(150, 50),
+        anchor("center"),
+        color(0, 0, 0),
+    ])
+
+    const cardImage = cardFrame.add([
+        sprite("bean"),
+        pos(150, 180),
+        anchor("center"),
+        scale(2.5),
+    ])
+
+    const cardStats = cardFrame.add([
+        text("STATS", { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
+
+    cardFrame.show = function(card) {
+        cardName.text = card.name
+
+        cardImage.use(sprite(card.image))
+
+        let statsText = ""
+        for (const statName of statNames) {
+            statsText += `${statName}: ${card[statName]}\n`
+        }
+
+        cardStats.text = statsText
+    }
+
+    return cardFrame
+}
+
+const cardView = createCardView()
+cardView.show(elephantCard)
+```
+
+</web-playground>
+
+Now add a `luck` stat to the **elephant card** and to `statNames`. Does the card show it? Do you need to change the UI code?
+
+<response>
+
+> [!IMPORTANT]
+> This is the big payoff of keeping **data** and **UI** separate. The UI code knows how to show *a* card, whatever stats it has. To add a stat, we change the **data**.
 
 
 ## **M**odify
 
 ### Bug Hunt
 
-This three-scene gallery has some bugs. Try to view a card, and check the **Console** if something goes wrong. Can you fix the following?
+This card view has some bugs. Run it, read the error messages, and fix them one at a time. Can you fix the following?
 
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -427,127 +567,82 @@ This three-scene gallery has some bugs. Try to view a card, and check the **Cons
 
 ```js
 kaplay({
-    width: 600, height: 400,
+    width: 400, height: 500,
     background: [30, 60, 90]
 })
 
-const statNames = ["speed", "power", "cuteness", "spookiness"]
+const statNames = ["power", "speed", "brains"]
 
-const deck = [
-    { name: "Cat", image: "cat", speed: 8, power: 4, cuteness: 9, spookiness: 2 },
-    { name: "Elephant", image: "elephant", speed: 3, power: 10, cuteness: 7, spookiness: 1 },
-    { name: "Fish", image: "fish", speed: 7, power: 2, cuteness: 5, spookiness: 2 },
-    { name: "Ghost", image: "ghost", speed: 5, power: 3, cuteness: 4, spookiness: 10 },
-    { name: "Mushroom", image: "mushroom", speed: 1, power: 2, cuteness: 6, spookiness: 5 },
-]
-
-for (let i = 0; i < deck.length; i++) {
-    loadSprite(deck[i].image, `assets/images/${deck[i].image}.png`)
+const elephantCard = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
 }
 
-function makeStatsText(card) {
-    let statsText = ""
-    for (let i = 0; i < statNames.length; i++) {
-        const statName = statNames[i]
-        statsText = statsText + `${statName}: ${card[statName]}\n`
+loadBean()
+loadSprite("elephant", "assets/images/elephant.png")
+
+function createCardView() {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(50, 50),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
+    ])
+
+    const cardName = cardFrame.add([
+        text("NAME HERE", { size: 50 }),
+        pos(150, 50),
+        anchor("center"),
+        color(0, 0, 0),
+    ])
+
+    const cardImage = cardFrame.add([
+        sprite("bean"),
+        pos(150, 180),
+        anchor("center"),
+        scale(2.5),
+    ])
+
+    const cardStats = cardFrame.add([
+        text("STATS", { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
+
+    cardFrame.show = function(card) {
+        cardName.text = card.name
+
+        let statsText = ""
+        for (const statName of statNames) {
+            statsText += `${statName}: ${card.statName}\n`
+        }
+
+        cardStats.text = statsText
     }
-    return statsText
 }
 
-scene("gallery", () => {
-    let viewedCount = 0
-
-    add([
-        text("Click a card", { size: 32 }),
-        pos(width() / 2, 50),
-        anchor("center"),
-    ])
-
-    add([
-        text(`Cards viewed: ${viewedCount}`, { size: 20 }),
-        pos(width() / 2, 90),
-        anchor("center"),
-        color(150, 170, 200),
-    ])
-
-    for (let i = 0; i < deck.length; i++) {
-        add([
-            sprite(deck[i].image),
-            pos(70 + i * 115, 220),
-            anchor("center"),
-            scale(1.5),
-            area(),
-            "thumbnail",
-            { card: deck[i] },
-        ])
-    }
-
-    onClick("thumbnail", (thumbnail) => {
-        go("Detail", thumbnail.card)
-    })
-})
-
-scene("detail", (data) => {
-    viewedCount = viewedCount + 1
-
-    add([
-        text(data.card.name, { size: 44 }),
-        pos(width() / 2, 50),
-        anchor("center"),
-    ])
-
-    add([
-        sprite(data.card.image),
-        pos(150, 200),
-        anchor("center"),
-        scale(3),
-    ])
-
-    add([
-        text(makeStatsText(data.card), { size: 26 }),
-        pos(290, 130),
-    ])
-
-    add([
-        text("Press SPACE to go back", { size: 20 }),
-        pos(width() / 2, 360),
-        anchor("center"),
-        color(150, 170, 200),
-    ])
-
-    onKeyPress("space", () => {
-        go("gallery")
-    })
-})
-
-go("gallery")
+const cardView = createCardView()
+cardView.show(elephantCard)
 ```
 
 </web-playground>
 
-1. <check> Clicking a card gives an error saying the **scene can't be found**
-2. <check> Once that's fixed, there's an error saying `viewedCount` is **not defined**
-3. <check> Once that's fixed, the detail scene **crashes** with an error about `undefined`
+1. <check> The program **crashes** straight away, with an error about `show`
+2. <check> Once that's fixed, every stat shows as `undefined`
+3. <check> Once that's fixed, the card shows the **bean** picture, not the elephant
 
 > [!TIP]
-> Scene names have to match **exactly**. Think about where `viewedCount` needs to live so that **both** scenes can see it. And data passed to a scene needs to be an **object**, with a **name** for each value.
+> What does a function give back if it never `return`s anything? And remember how we look up a property using a **variable**...
 
 ### Tinker
 
-Using the working gallery from the **Run** step above, complete the tasks one at a time:
+Here's a working card view. Complete the tasks one at a time. Test after each change!
 
-1. <check> Give each scene a different **background colour** (hint: `setBackground(rgb(...))`(js) at the top of each scene)
-2. <check> Make a thumbnail **grow** when the mouse is over it (hint: `onHover("thumbnail", ...)`(js), `onHoverEnd(...)`(js) and `scale`)
-3. <check> Show the **card number**, like `Card 3 of 5`, in the detail scene. You'll need to pass **more data** (hint: put the number in the object you pass with `go(...)`(js))
-
-
-## **M**ake
-
-### Gallery of Your Own
-
-Build a three-scene gallery for **the deck you designed last lesson**.
-
-<web-playground data-height="32em" js-only>
+<web-playground data-height="44em" js-only>
 
 ```html depends=kaplay
 ```
@@ -556,28 +651,130 @@ Build a three-scene gallery for **the deck you designed last lesson**.
 ```
 
 ```js
-// Copy your deck code from last lesson here, then build your scenes
+kaplay({
+    width: 700, height: 500,
+    background: [30, 60, 90]
+})
+
+const statNames = ["power", "speed", "brains"]
+
+const elephantCard = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
+}
+
+const catCard = {
+    name:   "Cat",
+    image:  "cat",
+    power:  4,
+    speed:  8,
+    brains: 5,
+}
+
+loadBean()
+loadSprite("elephant", "assets/images/elephant.png")
+loadSprite("cat",      "assets/images/cat.png")
+
+function createCardView() {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(50, 50),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
+    ])
+
+    const cardName = cardFrame.add([
+        text("NAME HERE", { size: 50 }),
+        pos(150, 50),
+        anchor("center"),
+        color(0, 0, 0),
+    ])
+
+    const cardImage = cardFrame.add([
+        sprite("bean"),
+        pos(150, 180),
+        anchor("center"),
+        scale(2.5),
+    ])
+
+    const cardStats = cardFrame.add([
+        text("STATS", { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
+
+    cardFrame.show = function(card) {
+        cardName.text = card.name
+
+        cardImage.use(sprite(card.image))
+
+        let statsText = ""
+        for (const statName of statNames) {
+            statsText += `${statName}: ${card[statName]}\n`
+        }
+
+        cardStats.text = statsText
+    }
+
+    return cardFrame
+}
+
+const cardView = createCardView()
+cardView.show(elephantCard)
 ```
 
 </web-playground>
 
-Your game must have:
+Tasks:
 
-- <check> A **title** scene with the name of your game and a "press SPACE" message
-- <check> A **gallery** scene with **every card** in your deck, made with a **loop**
-- <check> A **detail** scene showing one card's name, picture and **stats**, passed from the gallery
-- <check> A **count** of cards viewed, shown in the gallery, that **keeps going** as you view more cards
-- <check> Pressing SPACE on a detail takes you **back to the gallery**
+1. <check> Change how the card **looks**: the colours, the size of the text, the outline
+2. <check> Add a `luck` stat to the cards and to `statNames`, and check that it shows
+3. <check> Give `createCardView` two **parameters**, `x` and `y`, so that we choose where the card goes. Then create a **second** view, and show the cat card in it **next to** the elephant
+
+
+## **M**ake
+
+### Your Own Item
+
+Now build a UI for **something of your own**. It doesn't have to be a card! It could be a character profile, a pet, a food item, a planet fact file, a team member... anything with a name, a picture and some numbers.
+
+Your UI must have:
+
+- <check> A **create** function that builds the UI **once**, and returns it
+- <check> A `show` function on it that **updates** the UI to show any item
+- <check> A **name**, a **picture** (from the pictures in the starter project) and **at least 3 stats**, with the stat names stored in an **array** and shown using a **loop**
+- <check> **Two different items** shown **side by side**, using two views
+
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+// Copy your code from the card view above here, then make it your own
+```
+
+</web-playground>
+
+> [!TIP]
+> These are the pictures you can use: `apple`, `beetle`, `butterfly`, `cat`, `door`, `egg`, `elephant`, `fish`, `flower`, `ghost`, `grass`, `heart`, `jam`, `key`, `meat`, `mushroom`, `pineapple`, `portal`, `skull`, `smile`, `star`, `steel`, `sword`, `watermelon`
 
 ### Level Up
 
 Finished early? Try these. Pick the ones that sound fun.
 
-| Challenge                                                  | Hint                                                                       |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Press **LEFT** and **RIGHT** in the detail scene to change card | Pass the card's **index** to the detail scene                        |
-| Show a **tick** on cards you have already viewed           | A `viewed`(js) array, `viewed.push(...)`(js) and `viewed.includes(...)`(js) |
-| Play a **sound** when you click a card                     | `loadSound(...)`(js) and `play(...)`(js)                                   |
+| Challenge                                                        | Hint                                                                                  |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Make the **frame colour** depend on the item                     | A `color`(js) property in the data, and `cardFrame.color = ...`(js) in `show`         |
+| Highlight each item's **best stat** in gold                      | Find the highest stat in a loop, then build the text with a special marker            |
+| Make a **nicer frame**, with a header bar and a shadow           | More objects added to `cardFrame`(js), with different `pos`(js) and `color`(js)       |
 
 
 ## Exit Ticket
@@ -586,31 +783,31 @@ Without looking back, answer these three questions:
 
 <quiz>
 
-- # What does `go("detail", { card: myCard })` do?
+- # Why do we add the name, picture and stats to the `cardFrame` as **children**?
 
     ---
 
-    - [ ] Defines a scene called detail
-    - [x] Switches to the detail scene, passing it the card
-    - [ ] Makes a new card
-    - [ ] Starts the game
+    - [ ] To make them run faster
+    - [x] So they move together with the frame, and are removed together
+    - [ ] Because Kaplay requires it
+    - [ ] So they can't be seen
 
-- # The detail scene is written as `scene("detail", (data) => { ... })`. How does it get the card?
-
-    ---
-
-    - [ ] It can't
-    - [ ] With `card`
-    - [x] With `data.card`
-    - [ ] With `go("card")`
-
-- # A variable is declared **inside** the gallery scene. Can the detail scene use it?
+- # Why do we create the card view **once** and then call `show` to change it?
 
     ---
 
-    - [ ] Yes, all variables can be used everywhere
-    - [x] No, it only exists inside the gallery scene
-    - [ ] Yes, but only if it's a `const`
-    - [ ] Yes, after pressing SPACE
+    - [ ] Because creating objects is not allowed
+    - [x] Otherwise each new card would be drawn on top of the old ones
+    - [ ] To make the card bigger
+    - [ ] It makes the code shorter
+
+- # What does `cardFrame.show = function(card) { ... }` do?
+
+    ---
+
+    - [ ] Shows the card straight away
+    - [ ] Deletes the card
+    - [x] Gives the frame a function that updates it to show a card
+    - [ ] Makes a new frame
 
 </quiz>

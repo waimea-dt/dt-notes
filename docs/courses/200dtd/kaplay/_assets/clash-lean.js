@@ -1,27 +1,25 @@
 kaplay({
-    width: 800, height: 600,
+    width: 800, height: 640,
     background: [30, 60, 90]
 })
 
-const statNames = ["speed", "power", "cuteness", "spookiness"]
-
 const deck = [
-    { name: "Cat",       image: "cat",       speed: 8, power:  4, cuteness: 9, spookiness:  2 },
-    { name: "Elephant",  image: "elephant",  speed: 3, power: 10, cuteness: 7, spookiness:  1 },
-    { name: "Fish",      image: "fish",      speed: 7, power:  2, cuteness: 5, spookiness:  2 },
-    { name: "Beetle",    image: "beetle",    speed: 4, power:  5, cuteness: 3, spookiness:  6 },
-    { name: "Butterfly", image: "butterfly", speed: 6, power:  1, cuteness: 8, spookiness:  1 },
-    { name: "Ghost",     image: "ghost",     speed: 5, power:  3, cuteness: 4, spookiness: 10 },
-    { name: "Mushroom",  image: "mushroom",  speed: 1, power:  2, cuteness: 6, spookiness:  5 },
-    { name: "Skull",     image: "skull",     speed: 2, power:  6, cuteness: 1, spookiness:  9 },
+    { name: "Cat",       image: "cat",       speed: 8, power:  4, brains:  6 },
+    { name: "Elephant",  image: "elephant",  speed: 1, power: 10, brains:  8 },
+    { name: "Fish",      image: "fish",      speed: 7, power:  3, brains:  1 },
+    { name: "Beetle",    image: "beetle",    speed: 6, power:  6, brains:  6 },
+    { name: "Butterfly", image: "butterfly", speed: 8, power:  1, brains:  3 },
+    { name: "Ghost",     image: "ghost",     speed: 2, power:  2, brains:  4 },
+    { name: "Mushroom",  image: "mushroom",  speed: 0, power:  3, brains:  1 },
+    { name: "Skull",     image: "skull",     speed: 2, power:  9, brains:  0 }
 ]
 
 for (let i = 0; i < deck.length; i++) {
     loadSprite(deck[i].image, `assets/images/${deck[i].image}.png`)
 }
+loadBean()
 
 const totalRounds = 5
-
 
 scene("title", () => {
     add([
@@ -50,60 +48,70 @@ scene("battle", () => {
     let playerCard   = choose(deck)
     let computerCard = choose(deck)
 
-    function showCard(card, x) {
-        const cardArea = add([
-            rect(250, 350, { radius: 10 }),
-            pos(x, 90),
+    function createCardView(x) {
+        const cardFrame = add([
+            rect(300, 400, { radius: 10 }),
+            pos(x, 70),
             color(255, 255, 255),
-            outline(6, rgb(0, 0, 0)),
-            "card",
+            outline(5, rgb(0, 0, 0)),
+            opacity(1),
         ])
 
-        cardArea.add([
-            text(card.name, { size: 32 }),
-            pos(125, 40),
+        const cardName = cardFrame.add([
+            text("NAME HERE", { size: 50 }),
+            pos(150, 50),
             anchor("center"),
             color(0, 0, 0),
         ])
 
-        cardArea.add([
-            sprite(card.image),
-            pos(125, 140),
+        const cardImage = cardFrame.add([
+            sprite("bean"),
+            pos(150, 180),
             anchor("center"),
             scale(2.5),
         ])
 
-        let cardText = ""
-        for (let i = 0; i < statNames.length; i++) {
-            const statName = statNames[i]
-            const statValue = card[statName]
-            const paddedName = statName.padEnd(10)
-            cardText = cardText + `${paddedName}  ${statValue}\n`
-        }
-
-        cardArea.add([
-            text(cardText, { size: 24 }),
-            pos(125, 230),
+        const cardStats = cardFrame.add([
+            text("STATS\nSTATS\nSTATS\nSTATS", { size: 28 }),
+            pos(150, 290),
             anchor("top"),
             color(0, 0, 0),
         ])
-    }
 
-    function showCardBack(x) {
-        const cardArea = add([
-            rect(250, 350, { radius: 10 }),
-            pos(x, 90),
-            color(150, 50, 100),
-            outline(6, rgb(0, 0, 0)),
-            "cardBack",
-        ])
-
-        cardArea.add([
+        const cardMystery = cardFrame.add([
             text("?", { size: 100 }),
-            pos(125, 175),
+            pos(150, 200),
             anchor("center"),
             color(255, 255, 255),
         ])
+
+        cardFrame.show = function(card) {
+            cardFrame.color = rgb(255, 255, 255)
+            cardName.opacity = 1
+            cardImage.opacity = 1
+            cardStats.opacity = 1
+            cardMystery.opacity = 0
+
+            cardName.text = card.name
+
+            cardImage.use(sprite(card.image))
+
+            let statsText = ""
+            statsText += `power:   ${card.power}\n`
+            statsText += `speed:   ${card.speed}\n`
+            statsText += `brains:  ${card.brains}`
+            cardStats.text = statsText
+        }
+
+        cardFrame.showBack = function(card) {
+            cardFrame.color = rgb(150, 50, 100)
+            cardName.opacity = 0
+            cardImage.opacity = 0
+            cardStats.opacity = 0
+            cardMystery.opacity = 1
+        }
+
+        return cardFrame
     }
 
     function dealCards() {
@@ -113,15 +121,17 @@ scene("battle", () => {
             computerCard = choose(deck)
         }
 
-        destroyAll("card")
-        showCard(playerCard, 100)
-        showCardBack(450)
+        playerCardView.show(playerCard)
+        compCardView.showBack()
 
         infoLabel.text = `Round ${round} of ${totalRounds}          Wins: ${wins}`
         messageLabel.text = "Pick a stat..."
         messageLabel.color = rgb(200, 200, 200)
         isPicking = true
     }
+
+    const playerCardView = createCardView(75)
+    const compCardView = createCardView(425)
 
     const infoLabel = add([
         text("", { size: 24 }),
@@ -131,15 +141,17 @@ scene("battle", () => {
 
     const messageLabel = add([
         text("", { size: 24 }),
-        pos(width() / 2, 480),
+        pos(width() / 2, 520),
         anchor("center"),
     ])
 
+    const statNames = ["power", "speed", "brains"]
     for (let i = 0; i < statNames.length; i++) {
         const button = add([
             rect(170, 50, { radius: 8 }),
-            pos(30 + i * 190, 520),
+            pos(200 + i * 200, 585),
             color(60, 90, 140),
+            anchor("center"),
             area(),
             "statButton",
             { statName: statNames[i] },
@@ -147,7 +159,7 @@ scene("battle", () => {
 
         button.add([
             text(statNames[i], { size: 22 }),
-            pos(85, 25),
+            pos(0, 0),
             anchor("center"),
         ])
     }
@@ -158,7 +170,7 @@ scene("battle", () => {
         isPicking = false
 
         button.color = rgb(180, 130, 0)
-        showCard(computerCard, 450)
+        compCardView.show(computerCard)
 
         const playerValue   = playerCard[button.statName]
         const computerValue = computerCard[button.statName]
@@ -198,7 +210,6 @@ scene("battle", () => {
         if (!isPicking) return
         button.color = rgb(60, 90, 140)
     })
-
 
     dealCards()
 })

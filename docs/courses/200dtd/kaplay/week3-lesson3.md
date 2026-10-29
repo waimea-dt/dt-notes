@@ -1,148 +1,102 @@
-# Lesson 3: Card Battle
+# Lesson 3: Dealing Cards
 
-You have a deck of cards, and you can move between scenes. Now let's make the cards **fight**! In this lesson you'll build the battle: deal two cards, compare a stat, and keep score over several rounds.
+You can build a UI that shows **one** card, and show any card in it. Now let's work with a whole **deck**! In this lesson you'll use an **array** of cards: to browse through it, and to **deal** random cards into two card views. This is the heart of a card battle game.
 
 ## Warm-Up
 
-Try not to loop back at the previous lessons...
+Try not to look back at the previous lessons...
 
-1. How do you pass a card to the next scene?
-
-    <response>
-
-2. A variable is declared inside one scene. Can another scene use it?
+1. What does the `show` function on a card view do?
 
     <response>
 
-3. If `statName`(js) is `"power"`, what does `card[statName]`(js) give us?
+2. Why do we create a card view **once**, and update it, instead of creating a new one every time?
+
+    <response>
+
+3. What is the **last** index of an array with 8 items?
 
     <response>
 
 
 ## Learning Goals
 
-- <check> I can pick **random cards** from a deck
-- <check> I can **compare** two cards using a stat chosen by the player
-- <check> I can use a **flag** to stop the player acting twice in a round
-- <check> I can track **rounds** and a **score**
-- <check> I can pass the result to a **results scene**
+- <check> I can use an **index variable** to step through an array of items
+- <check> I can show **any item** of an array in a card view
+- <check> I can pick a **random** item from an array
+- <check> I can use a `while` loop to make sure two picks are **different**
+- <check> I can use a **loop** to add up the stats on a card
 
 
-## The Big Idea: **Data Does the Work**
+## The Big Idea: **One UI, Many Items**
 
-Look at how little code a battle needs, once the data is in the right shape. Each round:
+We now have three things that work together:
 
-1. **Deal** two different random cards
-2. The player **picks a stat**
-3. We **compare** that stat on the two cards, with `if`
-4. The winner scores, and we move to the **next round**
+| Part                  | What it is                                   | Example                              |
+| --------------------- | -------------------------------------------- | ------------------------------------ |
+| The **data**          | An array of objects: the deck                | `deck`(js)                           |
+| The **UI**            | A view that can show any card                | `cardView.show(...)`(js)             |
+| The **state**         | Which card we're looking at right now        | `cardIndex`(js)                      |
 
-The comparison is just a lookup with a variable, like in Lesson 1:
-
-```js
-const playerValue = playerCard[statName]
-const computerValue = computerCard[statName]
-
-if (playerValue > computerValue) {
-    // the player wins!
-}
-```
-
-And we already know about picking at random from Week 2:
-
-```js
-const playerCard = choose(deck)
-```
+To change what's on screen, we just change the **state** (which card?), and call `show`.
 
 > [!NOTE]
-> The deck, and the functions that draw the cards on screen (`drawCard(...)`(js) and `drawCardBack(...)`(js)), are already done for you in the code below. The game is **800 by 600**, and the deck has 8 creature cards, with four stats each: `speed`, `power`, `cuteness` and `spookiness`.
+> To keep the code short, the deck of 8 cards, the images, and the `createCardView(x, y)`(js) function from last lesson are all done for you in the hidden code behind the playgrounds below. The only difference is that `createCardView`(js) now has two parameters, `x` and `y`, to say where the card goes. The game is **800 by 600**.
 
 
 ## **P**redict
 
-Here's the **battle** scene. Read it carefully. It's the longest piece of code so far, but you've seen all of the parts before!
+Here's a **deck viewer**. It uses an array index, just like the dialogue state in Week 2!
 
 ```js
-scene("battle", () => {
-    let round = 1
-    let wins = 0
-    let canPick = true
-    let playerCard = choose(deck)
-    let computerCard = choose(deck)
+let cardIndex = 0
 
-    const infoLabel = add([
-        text("", { size: 24 }),
-        pos(30, 20),
-    ])
+const cardView = createCardView(250, 40)
 
-    const messageLabel = add([
-        text("", { size: 28 }),
-        pos(width() / 2, 480),
-        anchor("center"),
-    ])
+const counterLabel = add([
+    text("", { size: 24 }),
+    pos(width() / 2, 480),
+    anchor("center"),
+])
 
-    function dealCards() {
-        playerCard = choose(deck)
-        computerCard = choose(deck)
+add([
+    text("Press the LEFT and RIGHT arrows", { size: 20 }),
+    pos(width() / 2, 540),
+    anchor("center"),
+    color(150, 170, 200),
+])
 
-        while (computerCard === playerCard) {
-            computerCard = choose(deck)
-        }
+function showCurrentCard() {
+    cardView.show(deck[cardIndex])
+    counterLabel.text = `Card ${cardIndex + 1} of ${deck.length}`
+}
 
-        destroyAll("card")
-        drawCard(playerCard, 70, true)
-        drawCardBack(470)
+showCurrentCard()
 
-        infoLabel.text = `Round ${round} of ${totalRounds}     Wins: ${wins}`
-        messageLabel.text = "Pick a stat!"
-        canPick = true
+onKeyPress("right", () => {
+    if (cardIndex < deck.length - 1) {
+        cardIndex = cardIndex + 1
+        showCurrentCard()
     }
+})
 
-    onClick("statRow", (row) => {
-        if (!canPick || !row.isPlayer) {
-            return
-        }
-        canPick = false
-
-        const playerValue = playerCard[row.statName]
-        const computerValue = computerCard[row.statName]
-
-        destroyAll("card")
-        drawCard(playerCard, 70, true, row.statName)
-        drawCard(computerCard, 470, false, row.statName)
-
-        if (playerValue > computerValue) {
-            wins = wins + 1
-            messageLabel.text = `You win! ${playerValue} beats ${computerValue}`
-        } else if (playerValue < computerValue) {
-            messageLabel.text = `You lose! ${computerValue} beats ${playerValue}`
-        } else {
-            messageLabel.text = `A draw! Both are ${playerValue}`
-        }
-
-        wait(2.5, () => {
-            if (round === totalRounds) {
-                go("results", { wins: wins, rounds: totalRounds })
-            } else {
-                round = round + 1
-                dealCards()
-            }
-        })
-    })
-
-    dealCards()
+onKeyPress("left", () => {
+    if (cardIndex > 0) {
+        cardIndex = cardIndex - 1
+        showCurrentCard()
+    }
 })
 ```
 
-When a round starts, what does the screen show? Which card is face-up, and which is face-down?
+What will the screen show **when the game starts**?
 
 <response>
 
-You click `power`. Your card's power is **4** and the computer's is **6**. What does the message say, and what happens to `wins`?
+What will it show after you press the **RIGHT arrow** twice?
 
 <response>
 
-What happens after the **fifth** round? Where does the information about the score go?
+What will happen if you keep pressing the **RIGHT arrow**, again and again?
 
 <response>
 
@@ -163,108 +117,72 @@ kaplay({
     background: [30, 60, 90]
 })
 
-// The stats that every card has
-const statNames = ["speed", "power", "cuteness", "spookiness"]
+loadBean()
 
-// The deck: one object for each card
+const statNames = ["power", "speed", "brains"]
+
 const deck = [
-    { name: "Cat", image: "cat", speed: 8, power: 4, cuteness: 9, spookiness: 2 },
-    { name: "Elephant", image: "elephant", speed: 3, power: 10, cuteness: 7, spookiness: 1 },
-    { name: "Fish", image: "fish", speed: 7, power: 2, cuteness: 5, spookiness: 2 },
-    { name: "Beetle", image: "beetle", speed: 4, power: 5, cuteness: 3, spookiness: 6 },
-    { name: "Butterfly", image: "butterfly", speed: 6, power: 1, cuteness: 8, spookiness: 1 },
-    { name: "Ghost", image: "ghost", speed: 5, power: 3, cuteness: 4, spookiness: 10 },
-    { name: "Mushroom", image: "mushroom", speed: 1, power: 2, cuteness: 6, spookiness: 5 },
-    { name: "Skull", image: "skull", speed: 2, power: 6, cuteness: 1, spookiness: 9 },
+    { name: "Cat",       image: "cat",       power: 4,  speed: 8, brains: 5 },
+    { name: "Elephant",  image: "elephant",  power: 10, speed: 1, brains: 8 },
+    { name: "Fish",      image: "fish",      power: 2,  speed: 7, brains: 3 },
+    { name: "Beetle",    image: "beetle",    power: 5,  speed: 3, brains: 2 },
+    { name: "Butterfly", image: "butterfly", power: 1,  speed: 6, brains: 4 },
+    { name: "Ghost",     image: "ghost",     power: 3,  speed: 5, brains: 7 },
+    { name: "Mushroom",  image: "mushroom",  power: 2,  speed: 1, brains: 6 },
+    { name: "Skull",     image: "skull",     power: 6,  speed: 2, brains: 1 },
 ]
 
-// Load every picture named in the deck
-for (let i = 0; i < deck.length; i++) {
-    loadSprite(deck[i].image, `assets/images/${deck[i].image}.png`)
+for (const card of deck) {
+    loadSprite(card.image, `assets/images/${card.image}.png`)
 }
 
-// Draws a face-up card at x. If isPlayer is true, the stat rows can be clicked
-function drawCard(card, x, isPlayer, chosenStat) {
-    add([
-        rect(260, 350, { radius: 14 }),
-        pos(x, 70),
-        color(240, 235, 220),
-        outline(4, rgb(31, 16, 42)),
-        "card",
+function createCardView(x, y) {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(x, y),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
     ])
 
-    add([
-        text(card.name, { size: 28 }),
-        pos(x + 130, 98),
+    const cardName = cardFrame.add([
+        text("NAME HERE", { size: 50 }),
+        pos(150, 50),
         anchor("center"),
-        color(31, 16, 42),
-        "card",
+        color(0, 0, 0),
     ])
 
-    add([
-        sprite(card.image),
-        pos(x + 130, 175),
+    const cardImage = cardFrame.add([
+        sprite("bean"),
+        pos(150, 180),
         anchor("center"),
-        scale(2),
-        "card",
+        scale(2.5),
     ])
 
-    for (let i = 0; i < statNames.length; i++) {
-        const statName = statNames[i]
+    const cardStats = cardFrame.add([
+        text("STATS", { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
 
-        let rowColour = rgb(205, 198, 180)
-        if (statName === chosenStat) {
-            rowColour = rgb(255, 220, 0)
+    cardFrame.show = function(card) {
+        cardName.text = card.name
+        cardImage.use(sprite(card.image))
+
+        let statsText = ""
+        for (const statName of statNames) {
+            statsText += `${statName}: ${card[statName]}\n`
         }
-
-        const row = add([
-            rect(220, 32, { radius: 6 }),
-            pos(x + 20, 240 + i * 42),
-            color(rowColour),
-            area(),
-            "statRow",
-            "card",
-            { statName: statName, isPlayer: isPlayer },
-        ])
-
-        row.add([
-            text(statName, { size: 20 }),
-            pos(12, 16),
-            anchor("left"),
-            color(31, 16, 42),
-        ])
-
-        row.add([
-            text(`${card[statName]}`, { size: 20 }),
-            pos(208, 16),
-            anchor("right"),
-            color(31, 16, 42),
-        ])
+        cardStats.text = statsText
     }
-}
 
-// Draws a face-down card at x
-function drawCardBack(x) {
-    add([
-        rect(260, 350, { radius: 14 }),
-        pos(x, 70),
-        color(100, 70, 140),
-        outline(4, rgb(31, 16, 42)),
-        "card",
-    ])
-
-    add([
-        text("?", { size: 120 }),
-        pos(x + 130, 245),
-        anchor("center"),
-        "card",
-    ])
+    return cardFrame
 }
 ```
 
 </web-playground>
 
-Run the game and play it through a couple of times. Compare it with your predictions - any differences?
+Run the viewer and use the arrow keys. Click inside the game first! Compare it with your predictions - any differences?
 
 <web-playground data-height="44em" js-only>
 
@@ -275,122 +193,43 @@ Run the game and play it through a couple of times. Compare it with your predict
 ```
 
 ```js depends=kaplay
-const totalRounds = 5
+let cardIndex = 0
 
-scene("title", () => {
-    add([
-        text("Creature Clash", { size: 64 }),
-        pos(width() / 2, 220),
-        anchor("center"),
-    ])
+const cardView = createCardView(250, 40)
 
-    add([
-        text("Press SPACE to play", { size: 26 }),
-        pos(width() / 2, 330),
-        anchor("center"),
-        color(255, 220, 0),
-    ])
+const counterLabel = add([
+    text("", { size: 24 }),
+    pos(width() / 2, 480),
+    anchor("center"),
+])
 
-    onKeyPress("space", () => {
-        go("battle")
-    })
-})
+add([
+    text("Press the LEFT and RIGHT arrows", { size: 20 }),
+    pos(width() / 2, 540),
+    anchor("center"),
+    color(150, 170, 200),
+])
 
-scene("battle", () => {
-    let round = 1
-    let wins = 0
-    let canPick = true
-    let playerCard = choose(deck)
-    let computerCard = choose(deck)
+function showCurrentCard() {
+    cardView.show(deck[cardIndex])
+    counterLabel.text = `Card ${cardIndex + 1} of ${deck.length}`
+}
 
-    const infoLabel = add([
-        text("", { size: 24 }),
-        pos(30, 20),
-    ])
+showCurrentCard()
 
-    const messageLabel = add([
-        text("", { size: 28 }),
-        pos(width() / 2, 480),
-        anchor("center"),
-    ])
-
-    function dealCards() {
-        playerCard = choose(deck)
-        computerCard = choose(deck)
-
-        while (computerCard === playerCard) {
-            computerCard = choose(deck)
-        }
-
-        destroyAll("card")
-        drawCard(playerCard, 70, true)
-        drawCardBack(470)
-
-        infoLabel.text = `Round ${round} of ${totalRounds}     Wins: ${wins}`
-        messageLabel.text = "Pick a stat!"
-        canPick = true
+onKeyPress("right", () => {
+    if (cardIndex < deck.length - 1) {
+        cardIndex = cardIndex + 1
+        showCurrentCard()
     }
-
-    onClick("statRow", (row) => {
-        if (!canPick || !row.isPlayer) {
-            return
-        }
-        canPick = false
-
-        const playerValue = playerCard[row.statName]
-        const computerValue = computerCard[row.statName]
-
-        destroyAll("card")
-        drawCard(playerCard, 70, true, row.statName)
-        drawCard(computerCard, 470, false, row.statName)
-
-        if (playerValue > computerValue) {
-            wins = wins + 1
-            messageLabel.text = `You win! ${playerValue} beats ${computerValue}`
-        } else if (playerValue < computerValue) {
-            messageLabel.text = `You lose! ${computerValue} beats ${playerValue}`
-        } else {
-            messageLabel.text = `A draw! Both are ${playerValue}`
-        }
-
-        wait(2.5, () => {
-            if (round === totalRounds) {
-                go("results", { wins: wins, rounds: totalRounds })
-            } else {
-                round = round + 1
-                dealCards()
-            }
-        })
-    })
-
-    dealCards()
 })
 
-scene("results", (data) => {
-    add([
-        text("Game Over", { size: 64 }),
-        pos(width() / 2, 200),
-        anchor("center"),
-    ])
-
-    add([
-        text(`You won ${data.wins} of ${data.rounds} rounds`, { size: 32 }),
-        pos(width() / 2, 300),
-        anchor("center"),
-    ])
-
-    add([
-        text("Press SPACE to play again", { size: 24 }),
-        pos(width() / 2, 400),
-        anchor("center"),
-    ])
-
-    onKeyPress("space", () => {
-        go("title")
-    })
+onKeyPress("left", () => {
+    if (cardIndex > 0) {
+        cardIndex = cardIndex - 1
+        showCurrentCard()
+    }
 })
-
-go("title")
 ```
 
 </web-playground>
@@ -398,110 +237,122 @@ go("title")
 
 ## **I**nvestigate
 
-### Comparing Cards
+### The Viewer
 
-Here's the comparison from the battle, with two cards in the console. Predict what it will show, then run it:
+1. What is `cardIndex`(js)? Is it **data**, **UI** or **state**?
 
-```js run
-const cat = { name: "Cat", speed: 8, power: 4 }
-const elephant = { name: "Elephant", speed: 3, power: 10 }
-const statName = "power"
+    <response>
 
-console.log(cat[statName])
-console.log(elephant[statName])
-console.log(cat[statName] > elephant[statName])
+2. Why is the check `cardIndex < deck.length - 1`(js) rather than `cardIndex < deck.length`(js)?
+
+    <response>
+
+3. `showCurrentCard()`(js) does two things. What are they? Why is it a function?
+
+    <response>
+
+4. Why do we write `cardIndex + 1`(js) in the counter label?
+
+    <response>
+
+### Dealing Two Cards
+
+In a card battle, two **different** random cards are dealt: one for you, and one for the computer. Look at this code:
+
+```js
+const playerView = createCardView(60, 40)
+const computerView = createCardView(440, 40)
+
+add([
+    text("Press SPACE to deal", { size: 24 }),
+    pos(width() / 2, 540),
+    anchor("center"),
+    color(150, 170, 200),
+])
+
+function dealCards() {
+    const playerCard = choose(deck)
+    let computerCard = choose(deck)
+
+    while (computerCard === playerCard) {
+        computerCard = choose(deck)
+    }
+
+    playerView.show(playerCard)
+    computerView.show(computerCard)
+}
+
+dealCards()
+
+onKeyPress("space", () => {
+    dealCards()
+})
 ```
 
-Change `statName` to `"speed"` and run it again. Who wins now?
+What will happen each time you press **SPACE**? Is it possible for both cards to be the **same**?
 
 <response>
 
-### How It Works
+Run it, and try it a lot of times:
 
-1. What is the `while`(js) loop in `dealCards()`(js) for? What would happen without it?
+<web-playground data-height="44em" js-only>
 
-    <response>
-
-2. `canPick`(js) is a **boolean** flag. What is it for? What do you think would happen if we **removed** the `if (!canPick ...)`(js) check, and clicked on stats several times during the 2.5 second pause?
-
-    <response>
-
-3. Why does the game use `wait(2.5, ...)`(js) after a stat is picked?
-
-    <response>
-
-4. In `onClick("statRow", (row) => { ... })`(js), where does `row.statName`(js) come from? (Hint: look at the `drawCard`(js) function: it's in the hidden code, but you've seen something like it before in Lesson 2!)
-
-    <response>
-
-### Counting Rounds
-
-Step through this code, which pretends the player has played three rounds. What are `round` and `wins` at the end?
-
-```js trace header="false"
-let round = 1
-let wins = 0
-
-// Round 1: the player wins
-wins = wins + 1
-round = round + 1
-
-// Round 2: the player loses
-round = round + 1
-
-// Round 3: the player wins
-wins = wins + 1
-round = round + 1
-
-console.log(`Round ${round}, wins: ${wins}`)
+```html depends=kaplay
 ```
 
-<response placeholder="Observations...">
+```css depends=kaplay
+```
 
-### Next Round or Results?
+```js depends=kaplay
+const playerView = createCardView(60, 40)
+const computerView = createCardView(440, 40)
 
-At the end of each round, the game either moves to the **next round**, or goes to the **results** scene. Put the lines in order.
+add([
+    text("Press SPACE to deal", { size: 24 }),
+    pos(width() / 2, 540),
+    anchor("center"),
+    color(150, 170, 200),
+])
 
-<drag-drop mode="code" title="What Next?" sub-title="Add one to the round before dealing the next cards">
+function dealCards() {
+    const playerCard = choose(deck)
+    let computerCard = choose(deck)
 
-1.
-    ```js
-    if (round === totalRounds) {
-    ```
-
-2.
-    ```js
-        go("results", { wins: wins, rounds: totalRounds })
-    ```
-
-3.
-    ```js
-    } else {
-    ```
-
-4.
-    ```js
-        round = round + 1
-    ```
-
-5.
-    ```js
-        dealCards()
-    ```
-
-6.
-    ```js
+    while (computerCard === playerCard) {
+        computerCard = choose(deck)
     }
-    ```
 
-</drag-drop>
+    playerView.show(playerCard)
+    computerView.show(computerCard)
+}
+
+dealCards()
+
+onKeyPress("space", () => {
+    dealCards()
+})
+```
+
+</web-playground>
+
+1. What does `choose(deck)`(js) do?
+
+    <response>
+
+2. What is the `while`(js) loop for? Try **deleting** it. What happens, if you press SPACE enough times?
+
+    <response>
+
+3. Why is `computerCard`(js) declared with `let`(js), but `playerCard`(js) with `const`(js)?
+
+    <response>
 
 
 ## **M**odify
 
 ### Bug Hunt
 
-This version of the battle has some bugs. Play a few rounds, and look carefully at what happens. Can you fix the following?
+This version of the deck viewer has some bugs. Run it, press the arrow keys, and look at the **Console** if something goes wrong. Can you fix the following?
 
 <web-playground data-height="44em" js-only>
 
@@ -512,154 +363,124 @@ This version of the battle has some bugs. Play a few rounds, and look carefully 
 ```
 
 ```js depends=kaplay
-const totalRounds = 5
+let cardIndex = 0
 
-scene("title", () => {
-    add([
-        text("Creature Clash", { size: 64 }),
-        pos(width() / 2, 220),
-        anchor("center"),
-    ])
+const cardView = createCardView(250, 40)
 
-    add([
-        text("Press SPACE to play", { size: 26 }),
-        pos(width() / 2, 330),
-        anchor("center"),
-        color(255, 220, 0),
-    ])
+const counterLabel = add([
+    text("", { size: 24 }),
+    pos(width() / 2, 480),
+    anchor("center"),
+])
 
-    onKeyPress("space", () => {
-        go("battle")
-    })
-})
+add([
+    text("Press the LEFT and RIGHT arrows", { size: 20 }),
+    pos(width() / 2, 540),
+    anchor("center"),
+    color(150, 170, 200),
+])
 
-scene("battle", () => {
-    let round = 1
-    let wins = 0
-    let canPick = true
-    let playerCard = choose(deck)
-    let computerCard = choose(deck)
+function showCurrentCard() {
+    counterLabel.text = `Card ${cardIndex} of ${deck.length}`
+}
 
-    const infoLabel = add([
-        text("", { size: 24 }),
-        pos(30, 20),
-    ])
+showCurrentCard()
 
-    const messageLabel = add([
-        text("", { size: 28 }),
-        pos(width() / 2, 480),
-        anchor("center"),
-    ])
-
-    function dealCards() {
-        playerCard = choose(deck)
-        computerCard = choose(deck)
-
-        destroyAll("card")
-        drawCard(playerCard, 70, true)
-        drawCardBack(470)
-
-        infoLabel.text = `Round ${round} of ${totalRounds}     Wins: ${wins}`
-        messageLabel.text = "Pick a stat!"
-        canPick = true
+onKeyPress("right", () => {
+    if (cardIndex < deck.length) {
+        cardIndex = cardIndex + 1
+        showCurrentCard()
     }
-
-    onClick("statRow", (row) => {
-        if (!canPick || !row.isPlayer) {
-            return
-        }
-        canPick = false
-
-        const playerValue = playerCard[row.statName]
-        const computerValue = computerCard[row.statName]
-
-        destroyAll("card")
-        drawCard(playerCard, 70, true, row.statName)
-        drawCard(computerCard, 470, false, row.statName)
-
-        if (playerValue < computerValue) {
-            wins = wins + 1
-            messageLabel.text = `You win! ${playerValue} beats ${computerValue}`
-        } else if (playerValue > computerValue) {
-            messageLabel.text = `You lose! ${computerValue} beats ${playerValue}`
-        } else {
-            messageLabel.text = `A draw! Both are ${playerValue}`
-        }
-
-        wait(2.5, () => {
-            if (round === totalRounds) {
-                go("results", wins)
-            } else {
-                round = round + 1
-                dealCards()
-            }
-        })
-    })
-
-    dealCards()
 })
 
-scene("results", (data) => {
-    add([
-        text("Game Over", { size: 64 }),
-        pos(width() / 2, 200),
-        anchor("center"),
-    ])
-
-    add([
-        text(`You won ${data.wins} of ${data.rounds} rounds`, { size: 32 }),
-        pos(width() / 2, 300),
-        anchor("center"),
-    ])
-
-    add([
-        text("Press SPACE to play again", { size: 24 }),
-        pos(width() / 2, 400),
-        anchor("center"),
-    ])
-
-    onKeyPress("space", () => {
-        go("title")
-    })
+onKeyPress("left", () => {
+    if (cardIndex > 0) {
+        cardIndex = cardIndex - 1
+        showCurrentCard()
+    }
 })
-
-go("title")
 ```
 
 </web-playground>
 
-1. <check> The game says **"You win!"** when the player's number is **smaller**
-2. <check> Sometimes the computer's card turns out to be the **same card** as the player's (play a few rounds to spot it)
-3. <check> The results scene says **`undefined of undefined rounds`**
+1. <check> The card **never changes**: it always says `NAME HERE`
+2. <check> The counter starts at `Card 0 of 8`
+3. <check> The game **crashes** when you press the RIGHT arrow on the last card
+
+> [!TIP]
+> Fix them one at a time. Compare the code with the working viewer above.
 
 ### Tinker
 
-Using the working game from the **Run** step above, complete the tasks one at a time:
+Here's the card dealer again. Complete the tasks one at a time. Test after each change!
 
-1. <check> Change the game to **3 rounds**, then **7** rounds
-2. <check> Count the player's **losses** as well as wins, and show them in the info label
-3. <check> Make the result message **green** for a win and **red** for a loss (hint: `messageLabel.color = rgb(...)`(js))
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js depends=kaplay
+const playerView = createCardView(60, 40)
+const computerView = createCardView(440, 40)
+
+add([
+    text("Press SPACE to deal", { size: 24 }),
+    pos(width() / 2, 540),
+    anchor("center"),
+    color(150, 170, 200),
+])
+
+let playerCard = choose(deck)
+let computerCard = choose(deck)
+
+function dealCards() {
+    playerCard = choose(deck)
+    computerCard = choose(deck)
+
+    while (computerCard === playerCard) {
+        computerCard = choose(deck)
+    }
+
+    playerView.show(playerCard)
+    computerView.show(computerCard)
+}
+
+dealCards()
+
+onKeyPress("space", () => {
+    dealCards()
+})
+```
+
+</web-playground>
+
+Tasks:
+
+1. <check> After dealing, show a label that says who has more **power**: `You win!`, `You lose!` or `A draw!`
+2. <check> Make it work for **any stat**: press **1**, **2** or **3** to compare `power`, `speed` or `brains`
+3. <check> Show the two numbers being compared, like `power: 4 vs 10`
+
+> [!TIP]
+> Use the **lookup with a variable** from Lesson 1: `playerCard[statName]`(js). And `onKeyPress("1", ...)`(js) can listen for the number keys.
 
 
 ## **M**ake
 
-### Rules Twist
+### Your Deck
 
-The basic game is fun, but **you** get to decide the rules! Add **one new rule** of your own invention to the battle.
+This is where you create **your own deck**. You'll use it in the next lesson to build your own card battle game, so make it a good one!
 
-> [!TIP]
-> Some ideas, or invent your own:
-> - **Double points** for winning on one particular stat
-> - **Lowest wins** for one stat (like a race, where the smaller time is better)
-> - A **streak bonus** for winning two rounds in a row
-> - A draw gives a point to **both** sides
-> - The computer sometimes **cheats** (hint: `chance(0.2)`(js))
+Choose a theme: creatures, fruit, dungeon treasure, teachers, programming languages... anything you can find pictures for. The starter code below deals two cards from the creature deck. Make it **yours**.
 
-Your game must have:
+Your dealer must have:
 
-- <check> **One new rule** that changes how a round is scored
-- <check> The rule **explained on screen**, so the player knows about it
-- <check> The title, battle and results scenes still **working**
+- <check> **Your own deck** of **at least 8 cards**, with pictures from the starter project
+- <check> **Your own stats**: at least 3, with names that suit your theme, stored in `statNames`(js)
+- <check> Two **different** random cards dealt when you press SPACE
+- <check> A **total** for each card (all of its stats added up, using a **loop**), and a label showing who has the **higher total**
 
 <web-playground data-height="44em" js-only>
 
@@ -669,21 +490,26 @@ Your game must have:
 ```css depends=kaplay
 ```
 
-```js depends=kaplay
-// Copy your code from the working game above here, then add your rule
+```js load=_assets/deck-start.js
 ```
 
 </web-playground>
+
+> [!IMPORTANT]
+> Keep your deck! We'll use it in the next lesson.
+
+> [!TIP]
+> To add up a card's stats, make a `let total = 0`(js), then loop through `statNames`(js) and add `card[statName]`(js) each time.
 
 ### Level Up
 
 Finished early? Try these. Pick the ones that sound fun.
 
-| Challenge                                                    | Hint                                                                             |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| Keep a **high score** that lasts until you refresh the page | A `let highScore = 0`(js) **outside** the scenes, updated in the results scene   |
-| Play a **sound** for a win and a loss                        | `loadSound(...)`(js) and `play(...)`(js), using `beep` and `boop` from the sounds folder |
-| Make the cards **change colour** when you hover over a stat  | `onHover("statRow", ...)`(js) and `onHoverEnd(...)`(js)                          |
+| Challenge                                                          | Hint                                                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Add **arrow key browsing** to your dealer, to flick through the deck | A `cardIndex`(js) variable, and the viewer code from this lesson              |
+| Show the **name of the best stat** on each card                    | The **Find the Highest** pattern from Lesson 1, looping through `statNames`(js) |
+| Play a **sound** when cards are dealt                              | `loadSound("beep", "assets/sounds/beep.wav")`(js) and `play("beep")`(js)        |
 
 
 ## Exit Ticket
@@ -692,16 +518,16 @@ Without looking back, answer these three questions:
 
 <quiz>
 
-- # `row.statName` is `"power"`. What does `playerCard[row.statName]` give?
+- # What does `cardView.show(deck[cardIndex])` do?
 
     ---
 
-    - [ ] The text `"power"`
-    - [x] The player card's power number
-    - [ ] The computer card's power number
-    - [ ] `undefined`
+    - [ ] Adds a new card to the deck
+    - [x] Updates the card view to show the card at `cardIndex`
+    - [ ] Deletes the card at `cardIndex`
+    - [ ] Makes the deck bigger
 
-- # Why does `dealCards()` have this loop?
+- # Why does the dealer have this loop?
 
     ```js
     while (computerCard === playerCard) {
@@ -713,16 +539,16 @@ Without looking back, answer these three questions:
 
     - [ ] To deal more cards
     - [x] To make sure the computer doesn't get the same card as the player
-    - [ ] To count the rounds
+    - [ ] To count the cards
     - [ ] To shuffle the deck
 
-- # The battle scene calls `go("results", { wins: wins, rounds: totalRounds })`. How does the results scene show the number of wins?
+- # The deck has 8 cards. Which of these is **not** a valid `cardIndex`?
 
     ---
 
-    - [ ] With `wins`
-    - [ ] With `results.wins`
-    - [x] With `data.wins`
-    - [ ] It can't
+    - [ ] `0`
+    - [ ] `7`
+    - [x] `8`
+    - [ ] `3`
 
 </quiz>

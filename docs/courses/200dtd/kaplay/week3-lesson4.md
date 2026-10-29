@@ -1,93 +1,388 @@
 # Lesson 4: Creature Clash
 
-This week you've learned how to store lots of information as **data**, and how to split a game into **scenes**. Today there's no recipe to follow: you're going to **design and build your own card battle game**, with your own deck, your own stats, and your own rules.
+This week you've learned to store lots of data, show it in a UI, and deal cards from a deck. Now it's time to turn all of that into a **game**: a card battle called **Creature Clash**!
+
+First we'll learn how to split a game into **scenes** (a title screen, the game, a results screen). Then you'll take the card battle code, plug in **your own deck**, add the scenes, and put your own **twist** on the rules.
 
 ## Warm-Up
 
-Try not to loop back at the previous lessons...
+Try not to look back at the previous lessons...
 
-1. What's the difference between an **array** and an **object**?
-
-    <response>
-
-2. How does a scene receive data passed with `go("results", { wins: 3 })`(js)?
+1. How do you show a card from the `deck` array at index `i`, in a card view called `cardView`?
 
     <response>
 
-3. In `playerCard[statName]`(js), why do we use square brackets instead of a dot?
+2. What does `choose(deck)`(js) do?
+
+    <response>
+
+3. What does this code give us, if `card` is `{ power: 4, speed: 8 }`?
+
+    ```js
+    let total = 0
+    for (const statName of ["power", "speed"]) {
+        total += card[statName]
+    }
+    ```
 
     <response>
 
 
 ## Learning Goals
 
-- <check> I can design a game around **data**: a deck of cards and their stats
-- <check> I can build a game from **several scenes**, passing data between them
-- <check> I can **change the rules** of a game by changing a little code
-- <check> I can **balance** a game by testing it and adjusting the **numbers**
-- <check> I can explain which parts of my game are **data** and which are **code**
+- <check> I can define **scenes** with `scene(...)`(js) and switch between them with `go(...)`(js)
+- <check> I can **pass data** from one scene to the next
+- <check> I can explain where a variable can be **seen**, inside or outside a scene
+- <check> I can read and understand a **longer program** made of parts I know
+- <check> I can adapt a game to use **my own data**, and add my own rule
 
 
-## The Brief
+## The Big Idea: **Scenes**
 
-Design and build a **card battle game** of your own. It could be creatures, fruit, dungeon treasure, teachers, programming languages... anything that has stats you can compare.
+A game needs more than one screen: a **title** screen, the **game** itself, a **results** screen... A **scene** is one screen of your game, with its own objects and its own code. You **define** scenes, then **go** to them:
 
-Here's one made with the creatures from the starter project. Yours should look and play differently!
+| Function                                    | What it does                                               |
+| ------------------------------------------- | ---------------------------------------------------------- |
+| `scene("name", () => { ... })`(js)          | **Defines** a scene. The code inside runs when we go there |
+| `go("name")`(js)                            | **Switches** to a scene                                    |
+| `go("name", { score: 10 })`(js)             | Switches to a scene and **passes it some data**            |
+| `scene("name", (data) => { ... })`(js)      | A scene that **receives** the data                         |
 
-<web-playground data-height="38em" hide-all>
+<sequence animated="true">
 
-```html load=_assets/kaplay.html
+1. ### <i data-lucide="play"></i> Title
+    - Name of the game
+    - **Press SPACE** to start
+
+2. ### <i data-lucide="swords"></i> Battle
+    - The game itself
+    - Runs for a number of rounds
+
+3. ### <i data-lucide="flag"></i> Results
+    - Shows **how it went**
+    - **Press SPACE** to play again
+
+</sequence>
+
+When Kaplay switches scene, it **throws away everything** from the old scene: all of its objects, its event handlers (like `onKeyPress`) and its timers. Then it runs the code of the new scene from the top.
+
+> [!IMPORTANT]
+> A scene doesn't start until you `go(...)`(js) to it. Always finish your program with a `go(...)`(js) to your first scene.
+
+
+## **P**redict
+
+Here's a small three-scene game, to test your understanding of scenes. Read it carefully:
+
+```js
+kaplay({
+    width: 600, height: 400,
+    background: [30, 60, 90]
+})
+
+scene("title", () => {
+    add([
+        text("Click Counter", { size: 56 }),
+        pos(width() / 2, 150),
+        anchor("center"),
+    ])
+
+    add([
+        text("Press SPACE to start", { size: 24 }),
+        pos(width() / 2, 240),
+        anchor("center"),
+        color(255, 220, 0),
+    ])
+
+    onKeyPress("space", () => {
+        go("game")
+    })
+})
+
+scene("game", () => {
+    let clicks = 0
+
+    add([
+        text("Click as fast as you can!", { size: 24 }),
+        pos(width() / 2, 80),
+        anchor("center"),
+    ])
+
+    const clickLabel = add([
+        text("Clicks: 0", { size: 48 }),
+        pos(width() / 2, 200),
+        anchor("center"),
+    ])
+
+    onMousePress(() => {
+        clicks = clicks + 1
+        clickLabel.text = `Clicks: ${clicks}`
+    })
+
+    wait(5, () => {
+        go("results", { clicks: clicks })
+    })
+})
+
+scene("results", (data) => {
+    add([
+        text("Time's up!", { size: 56 }),
+        pos(width() / 2, 130),
+        anchor("center"),
+    ])
+
+    add([
+        text(`You clicked ${data.clicks} times`, { size: 32 }),
+        pos(width() / 2, 220),
+        anchor("center"),
+    ])
+
+    add([
+        text("Press SPACE to play again", { size: 24 }),
+        pos(width() / 2, 300),
+        anchor("center"),
+        color(255, 220, 0),
+    ])
+
+    onKeyPress("space", () => {
+        go("title")
+    })
+})
+
+go("title")
 ```
 
-```css load=_assets/kaplay.css
+What does the game show when it **starts**?
+
+<response>
+
+What happens when you press SPACE, and what happens after **5 seconds**?
+
+<response>
+
+Say you click 8 times, and then press SPACE to **play again**. After you click **once** in the new game, what will the label say: `Clicks: 1` or `Clicks: 9`? Why?
+
+<response>
+
+
+## **R**un
+
+<web-playground hidden>
+
+```html id=kaplay load=_assets/kaplay.html
 ```
 
-```js load=_assets/clash-mini.js
+```css id=kaplay load=_assets/kaplay.css
+```
+</web-playground>
+
+Run it, and play it twice. Compare it with your predictions - any differences?
+
+<web-playground data-height="32em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js
+kaplay({
+    width: 600, height: 400,
+    background: [30, 60, 90]
+})
+
+scene("title", () => {
+    add([
+        text("Click Counter", { size: 56 }),
+        pos(width() / 2, 150),
+        anchor("center"),
+    ])
+
+    add([
+        text("Press SPACE to start", { size: 24 }),
+        pos(width() / 2, 240),
+        anchor("center"),
+        color(255, 220, 0),
+    ])
+
+    onKeyPress("space", () => {
+        go("game")
+    })
+})
+
+scene("game", () => {
+    let clicks = 0
+
+    add([
+        text("Click as fast as you can!", { size: 24 }),
+        pos(width() / 2, 80),
+        anchor("center"),
+    ])
+
+    const clickLabel = add([
+        text("Clicks: 0", { size: 48 }),
+        pos(width() / 2, 200),
+        anchor("center"),
+    ])
+
+    onMousePress(() => {
+        clicks = clicks + 1
+        clickLabel.text = `Clicks: ${clicks}`
+    })
+
+    wait(5, () => {
+        go("results", { clicks: clicks })
+    })
+})
+
+scene("results", (data) => {
+    add([
+        text("Time's up!", { size: 56 }),
+        pos(width() / 2, 130),
+        anchor("center"),
+    ])
+
+    add([
+        text(`You clicked ${data.clicks} times`, { size: 32 }),
+        pos(width() / 2, 220),
+        anchor("center"),
+    ])
+
+    add([
+        text("Press SPACE to play again", { size: 24 }),
+        pos(width() / 2, 300),
+        anchor("center"),
+        color(255, 220, 0),
+    ])
+
+    onKeyPress("space", () => {
+        go("title")
+    })
+})
+
+go("title")
 ```
 
 </web-playground>
 
-### Your Game Must Have
 
-- <check> A **theme** of your own, with a name for your game
-- <check> A deck of **at least 8 cards**, with pictures from the starter project
-- <check> **At least 3 stats** of your own, with names that fit your theme
-- <check> **Three scenes**: a title, the battle, and the results
-- <check> **At least 3 rounds**, with a score passed to the results scene
-- <check> **One rule twist** of your own, explained on screen
+## **I**nvestigate
 
-> [!IMPORTANT]
-> Make something **you** would want to play! Your cards, your stats and your rules are your own choices. The numbers on your cards are what make the game fair... or deliciously unfair!
+### Where Variables Live
 
+`clicks` is declared **inside** the game scene. Try moving the line `let clicks = 0`(js) to the **top** of the program, **outside** all of the scenes, then play the game twice.
 
-## Plan First
-
-Before you write any code, plan your game. Write your answers below, then **show your teacher** before you start building.
-
-1. What's your **theme** and what's your game called?
+1. What changes?
 
     <response>
 
-2. What are your **stats** (3 to 5)? Why do they suit your theme?
+2. Why does it change? (Hint: when does the code inside a scene run?)
 
     <response>
 
-3. What are your **8 or more cards**? List each name, its picture and its stats.
+> [!TIP]
+> A variable made **inside** a scene is created fresh every time the scene starts, and can't be seen by other scenes. A variable made **outside** all scenes can be seen by every scene, and **keeps its value** when scenes change. To send a value to just the next scene, pass it with `go(...)`(js).
+
+### Passing Data
+
+1. What is `{ clicks: clicks }`(js) in the call `go("results", { clicks: clicks })`(js)?
 
     <response>
 
-4. What's your **rule twist**? How will it change a round?
+2. How does the results scene get hold of the number of clicks?
 
     <response>
 
-5. What will each of your **scenes** show?
+3. What do you think would happen if we changed the call to just `go("results")`(js)? Try it!
 
     <response>
 
-- <check> My plan has been looked at by my teacher
+### Matching
+
+Match each piece of code to what it does.
+
+<drag-drop mode="code" title="What Does It Do?" sub-title="">
+
+1.
+    ```js
+    scene("title", () => { ... })
+    ```
+
+2.
+    ```js
+    go("game")
+    ```
+
+3.
+    ```js
+    go("results", { clicks: 8 })
+    ```
+
+4.
+    ```js
+    scene("results", (data) => { ... })
+    ```
+
+---
+
+1. Define a scene called title
+2. Switch to the game scene
+3. Switch to the results scene, passing it some data
+4. A scene that receives some data
+
+</drag-drop>
 
 
-## Repo Setup
+## The Card Battle
+
+Now for the game. Below is the **card battle**, on a **single screen**. It doesn't have any scenes yet, and it ends with a message instead of a results screen. That's **your job**!
+
+But first, read it. You've seen almost all of it before: the deck and `createCardView(x, y)`(js) from last lesson are at the top, and the dealing code comes from the dealer.
+
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js load=_assets/battle-start.js
+```
+
+</web-playground>
+
+Play a few games, reading the code as you go. Then answer these questions:
+
+1. Which parts of this code did you write in Lessons 1 to 3?
+
+    <response>
+
+2. What do `computerView.hidden = true`(js) and `computerView.hidden = false`(js) do? Why is the computer's card hidden at first?
+
+    <response>
+
+3. `canPick`(js) is a **boolean** flag. What does it stop the player doing? (Remember `gameIsOver` from Week 2.)
+
+    <response>
+
+4. The stat buttons are made with a loop, and each gets `{ statName: statNames[i] }`(js). Where does `button.statName`(js) get used? Why does this loop use the counting kind of loop, not `for...of`?
+
+    <response>
+
+5. How does `playerCard[button.statName]`(js) work? What is it, if `button.statName`(js) is `"speed"`?
+
+    <response>
+
+6. What happens after the last round? What's **missing** from a proper ending?
+
+    <response>
+
+
+## **M**odify
+
+### Repo Setup
 
 <github repo="waimea-dt/kaplay-starter" title="Kaplay Starter" subtitle="A repo to kick-off your Kaplay games">
 
@@ -96,115 +391,165 @@ Before you write any code, plan your game. Write your answers below, then **show
 3. **Clone** it to your computer
 4. Open the repo in your **code editor**
 5. Launch the **live server** to see the game running in a browser
-6. Look in the `assets/images` folder to see the pictures you can use for your cards
 
-You'll need to draw your cards on screen. That code is provided for you: copy it into your `main.js`, below your deck. It needs `statNames` and `deck` to exist above it.
+Your `main.js` needs three things, **in this order**:
+
+1. Your code from Lesson 3: the `kaplay(...)`(js) setup, `statNames`(js), your **deck**, the sprite loading, and `createCardView(x, y)`(js)
+2. A line `const totalRounds = 5`(js)
+3. The battle code below
 
 ```js
-// Card drawing helpers for your card battle game
-//
-// These need two things to be defined ABOVE them in your code:
-//   statNames: the list of stat names, such as ["speed", "power"]
-//   deck: your array of cards (each card needs a name, an image and a value for every stat)
-//
-// The card is drawn 260 wide by 350 tall, so it suits a game that is 800 by 600.
-// A stat is clickable on a card if you pass true for isPlayer.
+let round = 1
+let wins = 0
+let canPick = true
+let playerCard = choose(deck)
+let computerCard = choose(deck)
 
-// Draws a face-up card at x. If isPlayer is true, the stat rows can be clicked
-function drawCard(card, x, isPlayer, chosenStat) {
-    add([
-        rect(260, 350, { radius: 14 }),
-        pos(x, 70),
-        color(240, 235, 220),
-        outline(4, rgb(31, 16, 42)),
-        "card",
-    ])
+const playerView = createCardView(60, 50)
+const computerView = createCardView(440, 50)
 
-    add([
-        text(card.name, { size: 28 }),
-        pos(x + 130, 98),
-        anchor("center"),
-        color(31, 16, 42),
-        "card",
-    ])
+const infoLabel = add([
+    text("", { size: 24 }),
+    pos(30, 10),
+])
 
-    add([
-        sprite(card.image),
-        pos(x + 130, 175),
-        anchor("center"),
-        scale(2),
-        "card",
-    ])
+const messageLabel = add([
+    text("", { size: 28 }),
+    pos(width() / 2, 570),
+    anchor("center"),
+])
 
-    for (let i = 0; i < statNames.length; i++) {
-        const statName = statNames[i]
-
-        let rowColour = rgb(205, 198, 180)
-        if (statName === chosenStat) {
-            rowColour = rgb(255, 220, 0)
-        }
-
-        const row = add([
-            rect(220, 32, { radius: 6 }),
-            pos(x + 20, 240 + i * 42),
-            color(rowColour),
-            area(),
-            "statRow",
-            "card",
-            { statName: statName, isPlayer: isPlayer },
-        ])
-
-        row.add([
-            text(statName, { size: 20 }),
-            pos(12, 16),
-            anchor("left"),
-            color(31, 16, 42),
-        ])
-
-        row.add([
-            text(`${card[statName]}`, { size: 20 }),
-            pos(208, 16),
-            anchor("right"),
-            color(31, 16, 42),
-        ])
+function dealCards() {
+    playerCard = choose(deck)
+    computerCard = choose(deck)
+    while (computerCard === playerCard) {
+        computerCard = choose(deck)
     }
+
+    playerView.show(playerCard)
+    computerView.hidden = true
+
+    infoLabel.text = `Round ${round} of ${totalRounds}     Wins: ${wins}`
+    messageLabel.text = "Pick a stat!"
+    canPick = true
 }
 
-// Draws a face-down card at x
-function drawCardBack(x) {
-    add([
-        rect(260, 350, { radius: 14 }),
-        pos(x, 70),
-        color(100, 70, 140),
-        outline(4, rgb(31, 16, 42)),
-        "card",
+for (let i = 0; i < statNames.length; i++) {
+    const button = add([
+        rect(200, 50, { radius: 8 }),
+        pos(70 + i * 230, 495),
+        color(60, 90, 140),
+        area(),
+        "statButton",
+        { statName: statNames[i] },
     ])
 
-    add([
-        text("?", { size: 120 }),
-        pos(x + 130, 245),
+    button.add([
+        text(statNames[i], { size: 24 }),
+        pos(100, 25),
         anchor("center"),
-        "card",
     ])
 }
+
+onClick("statButton", (button) => {
+    if (!canPick) {
+        return
+    }
+    canPick = false
+
+    computerView.show(computerCard)
+    computerView.hidden = false
+
+    const playerValue = playerCard[button.statName]
+    const computerValue = computerCard[button.statName]
+
+    if (playerValue > computerValue) {
+        wins = wins + 1
+        messageLabel.text = `You win! ${playerValue} beats ${computerValue}`
+    } else if (playerValue < computerValue) {
+        messageLabel.text = `You lose! ${computerValue} beats ${playerValue}`
+    } else {
+        messageLabel.text = `A draw! Both are ${playerValue}`
+    }
+
+    wait(2.5, () => {
+        if (round === totalRounds) {
+            messageLabel.text = `Game over! You won ${wins} of ${totalRounds} rounds`
+        } else {
+            round = round + 1
+            dealCards()
+        }
+    })
+})
+
+dealCards()
 ```
 
-> [!NOTE]
-> Everything else is up to you. You've already written all of the pieces in the last three lessons: the deck (Lesson 1), the scenes (Lesson 2), and the battle (Lesson 3). Use your notes and the earlier lessons for reference.
+### Step 1: Get It Running
 
-
-## Build
-
-Work through these checkpoints, **testing as you go**. Show your teacher when you reach each one.
-
-1. <check> **Checkpoint 1: Your deck.** Your cards and stats are in your code, and one of your cards is drawn on screen
-2. <check> **Checkpoint 2: The battle.** Two cards are dealt, you pick a stat, and the winner is decided
-3. <check> **Checkpoint 3: The whole game.** The title, battle and results scenes all work, and you can **play again**
-4. <check> **Checkpoint 4: Your twist.** Your rule twist works and is explained to the player
+Paste the code in and **play it**, with your own deck.
 
 > [!TIP]
-> Stuck? Think about **where** the problem is. Is it a problem with your **data** (a typo in a card, a missing stat)? Or with your **code**? Check the **Console** for errors. Property names have to match **exactly**, and every card needs a value for **every** stat.
+> The battle code makes one button for each stat. If you have more than 3 stats, the buttons might not fit. Change the **width** of the buttons and the **gap** between them (the `200` and `230` values).
 
+- <check> The game runs with **your own deck**, and plays all the way through
+
+
+### Step 2: A Battle Scene
+
+Wrap the game in a **battle scene**:
+
+> [!TIP]
+> - Wrap the battle code (everything **after** `createCardView`(js) and `totalRounds`(js)) in `scene("battle", () => { ... })`(js)
+> - End your program with `go("battle")`(js)
+> - The deck and `createCardView`(js) stay **outside** the scene. Why? (Hint: what is created fresh every time a scene starts?)
+
+- <check> The game still plays all the way through, now inside a scene
+
+
+### Step 3: A Title Scene
+
+Add a `title` scene, that comes **before** the battle:
+
+> [!TIP]
+> - Show the **name** of your game, and a message to press SPACE
+> - Add a picture or two (use `sprite(...)`(js) with an image from your deck)
+> - Pressing SPACE goes to the battle scene
+> - The program should now **start** at the title scene
+
+- <check> The game starts with your title, and SPACE starts the battle
+
+
+### Step 4: A Results Scene
+
+Add a `results` scene, that comes **after** the battle:
+
+> [!TIP]
+> - At the end of the last round, **go** to the results scene instead of showing the message. Pass it the number of wins: `go("results", { wins: wins })`(js)
+> - Show the wins, and the number of rounds, using the data passed in
+> - SPACE goes back to the title scene
+> - Check that playing again **starts fresh**: where are `round`(js) and `wins`(js) declared?
+
+- <check> The results scene shows the wins, and you can **play again**
+
+
+## **M**ake
+
+### Your Twist
+
+The game works... but is it **yours** yet? Make these changes:
+
+- <check> **One rule twist** of your own invention, **explained on screen** (see ideas below)
+- <check> A **title** and **results** screen that suit your **theme**: your own words, pictures and a different message for different scores
+- <check> A **balanced** deck: play it a lot, and change the **numbers** until no card is too good or too weak
+
+> [!TIP]
+> Some rule twist ideas, or invent your own:
+> - **Double points** for winning on one particular stat
+> - **Lowest wins** for one stat (like a race, where the smaller time is better)
+> - A **streak bonus** for winning two rounds in a row
+> - A draw gives a point to **both** sides
+> - The computer sometimes **cheats** (hint: `chance(0.2)`(js))
 
 ## Playtest and Balance
 
@@ -242,12 +587,11 @@ Finished early? Pick **at least one** that sounds fun. Or invent your own!
 
 | Challenge                                                          | Hint                                                                            |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| Keep a **high score** that lasts until you refresh the page        | A `let highScore = 0`(js) **outside** the scenes                                |
+| Keep a **high score** that lasts until you refresh the page        | A `let highScore = 0`(js) **outside** the scenes, updated in the results scene  |
 | Add **sounds** for wins and losses                                 | `loadSound(...)`(js) and `play(...)`(js), using `beep` and `boop`               |
-| Make stat rows **change colour** when the mouse is over them       | `onHover("statRow", ...)`(js) and `onHoverEnd(...)`(js)                         |
-| A **card gallery** scene, like Lesson 2, to browse the deck        | A `gallery` scene, thumbnails made with a loop, and `go(...)`(js) with data     |
-| Let the **computer pick the stat** on alternate rounds             | A boolean flag for whose turn it is, and `choose(statNames)`(js)                |
-| A **different ending** for different scores                        | `if`(js) / `else if`(js) in the results scene, using `data.wins`(js)            |
+| Colour the message **green** for a win and **red** for a loss      | `messageLabel.color = rgb(...)`(js)                                             |
+| Make the stat buttons **change colour** when the mouse is over them | `onHover("statButton", ...)`(js) and `onHoverEnd(...)`(js)                     |
+| Let the computer **pick the stat** on alternate rounds             | A boolean flag for whose turn it is, and `choose(statNames)`(js)                |
 
 
 ## Week 3 Check
@@ -277,19 +621,24 @@ Before you finish the week, answer these questions on your own.
 - # What does this code show?
 
     ```js
-    const card = { name: "Cat", speed: 8, power: 4 }
-    const stat = "power"
-    console.log(card[stat])
+    const card = { power: 4, speed: 8, brains: 5 }
+    let total = 0
+
+    for (const statName of ["power", "speed", "brains"]) {
+        total += card[statName]
+    }
+
+    console.log(total)
     ```
 
     ---
 
-    - [ ] `power`
+    - [ ] `4`
     - [ ] `8`
-    - [x] `4`
+    - [x] `17`
     - [ ] `undefined`
 
-- # The battle scene calls `go("results", { wins: 3, rounds: 5 })`. How does the results scene show the wins?
+- # The battle scene calls `go("results", { wins: 3 })`. How does the results scene show the wins?
 
     ---
 
@@ -307,14 +656,14 @@ Before you finish the week, answer these questions on your own.
     - [ ] Only the title scene
     - [ ] Only the results scene
 
-- # Why does this game use a `canPick` flag?
+- # What does `cardView.show(card)` do?
 
     ---
 
-    - [ ] To make the cards pretty
-    - [x] To stop the player picking a stat twice in one round
-    - [ ] To count the rounds
-    - [ ] To choose random cards
+    - [ ] Creates a new card view
+    - [x] Updates the existing card view to show `card`
+    - [ ] Deletes the card
+    - [ ] Moves the card
 
 - # Which of these is **data**, rather than code?
 
@@ -322,8 +671,8 @@ Before you finish the week, answer these questions on your own.
 
     - [ ] `while (computerCard === playerCard) { ... }`
     - [ ] `go("results", { wins: wins })`
-    - [x] `{ name: "Cat", image: "cat", speed: 8, power: 4 }`
-    - [ ] `onClick("statRow", (row) => { ... })`
+    - [x] `{ name: "Cat", image: "cat", power: 4, speed: 8, brains: 5 }`
+    - [ ] `onClick("statButton", (button) => { ... })`
 
 </quiz>
 
@@ -333,7 +682,7 @@ Before you finish the week, answer these questions on your own.
 Before you finish the week, make sure you can say "yes" to all of these:
 
 - <check> I can store a list in an **array** and a bundle of values in an **object**
-- <check> I can look up a property using a **variable**, with square brackets
+- <check> I can loop through an array with `for...of`
+- <check> I can build a **UI** that can show any item of data
 - <check> I can build a game from several **scenes**, passing data between them
-- <check> I know where a variable can be **seen**: inside a scene or outside
 - <check> I can change how a game plays by changing its **data**

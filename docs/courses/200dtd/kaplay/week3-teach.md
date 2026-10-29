@@ -1,4 +1,4 @@
-# Week 3: Data, Scenes & Cards
+# Week 3: Data, UI & Scenes
 
 
 ## Lesson 1: Lists & Objects
@@ -8,7 +8,7 @@
 # Lesson 1: Lists & Objects
 
 Note:
-Week 3 is about data. A card game is a great fit: every card is a bundle of values, and a deck is a list of cards
+Pure data today: no game, no UI. The aim is for arrays and objects to be second nature before we build anything with them
 
 ---
 
@@ -18,22 +18,20 @@ Week 3 is about data. A card game is a great fit: every card is a bundle of valu
 - Getting items by **index**
 - Grouping values into **objects**
 - Looking up properties with a **variable**
-- A deck as an **array of objects**
+- Looping with `for...of`
 
 ---
 
 ## Arrays
 
 ```js
-const statNames = ["speed", "power", "cuteness"]
+const statNames = ["power", "speed", "brains"]
 
-console.log(statNames[0])       // "speed"
+console.log(statNames[0])       // "power"
 console.log(statNames.length)   // 3
-```
 
-| Index | 0       | 1       | 2          |
-| ----- | ------- | ------- | ---------- |
-| Item  | `"speed"` | `"power"` | `"cuteness"` |
+statNames.push("luck")
+```
 
 Indexes start at **0**!
 
@@ -74,56 +72,220 @@ console.log(card[statName])    // 4
 Square brackets look up a property using a **variable**
 
 Note:
-This is the key idea for the whole week. The battle compares playerCard[statName] with computerCard[statName]
+The key idea for the whole week. Bug hunt: `item.property` gives undefined
 
 ---
 
-## A Deck
+## Two Loops
 
 ```js
-const deck = [
-    { name: "Cat", speed: 8, power: 4 },
-    { name: "Elephant", speed: 3, power: 10 },
-]
+for (const statName of statNames) {
+    console.log(statName)
+}
 
-console.log(deck[1].name)
+for (let i = 0; i < statNames.length; i++) {
+    console.log(`${i + 1}. ${statNames[i]}`)
+}
 ```
 
-A list of cards, each an object
+`for...of` for **each item**. Counting loop when you need the **index**
 
 ---
 
-## Make: Design Your Deck
+## Make: Your Own Data
 
-- At least **6 cards**
-- **Your own stats**, at least 3
-- **Arrow keys** to browse, stopping at each end
-- A **card counter**
-
-Note:
-Students choose a theme. They keep this deck for the rest of the week
+- An array of **5+ objects**
+- **3+ properties**, 2+ numbers
+- Print every item with `for...of`
+- **Find the best** item
+- `push` a new item
 
 </slides>
 
 
 
-## Lesson 2: Scenes
+## Lesson 2: Displaying Data
 
 <slides>
 
-# Lesson 2: Scenes
+# Lesson 2: Displaying Data
 
 Note:
-Real games have a title screen, the game itself, a results screen. Scenes let us build each as a separate screen
+Data on its own isn't much use. This lesson is about turning it into a UI, and keeping the two separate
 
 ---
 
 ## Learning
 
-- Defining scenes with `scene(...)`
-- Switching with `go(...)`
+- Building a **UI** from several objects
+- **Parents** and **children**
+- A view you **create once** and **update**
+- A **data-driven** UI
+
+---
+
+## Data vs UI
+
+- The **data** is what the game knows
+- The **UI** is how the player sees it
+
+Keep them **separate**: the UI code knows how to show *any* item
+
+---
+
+## Parents and Children
+
+```js
+const cardName = cardFrame.add([
+    text("NAME HERE", { size: 50 }),
+    pos(150, 50),
+    anchor("center"),
+])
+```
+
+Move the frame, and the children **move too**
+
+Note:
+Children's positions are relative to the parent. They are also removed with the parent
+
+---
+
+## Create Once, Update Many
+
+```js
+const cardView = createCardView()
+
+cardView.show(elephantCard)
+cardView.show(catCard)
+```
+
+Otherwise each new card is drawn **on top of the old one**
+
+Note:
+Students discover the overlap problem themselves in the Investigate step
+
+---
+
+## Data-Driven
+
+```js
+let statsText = ""
+for (const statName of statNames) {
+    statsText += `${statName}: ${card[statName]}\n`
+}
+```
+
+Add a stat by changing the **data**, not the UI
+
+---
+
+## Make: Your Own Item
+
+- A **create** function and a `show` function
+- Name, picture, **3+ stats** in an array
+- **Two items** side by side
+
+*It doesn't have to be a card!*
+
+</slides>
+
+
+
+## Lesson 3: Dealing Cards
+
+<slides>
+
+# Lesson 3: Dealing Cards
+
+Note:
+One UI, many items. This lesson sets up the battle: browsing a deck by index, and dealing two different random cards
+
+---
+
+## Learning
+
+- Stepping through an array with an **index**
+- Showing **any item** in a card view
+- **Random** picks
+- Making two picks **different**
+
+---
+
+## Data, UI, State
+
+| Part  | Example                 |
+| ----- | ----------------------- |
+| Data  | `deck`                  |
+| UI    | `cardView.show(...)`    |
+| State | `cardIndex`             |
+
+Change the **state**, then call `show`
+
+---
+
+## Browsing
+
+```js
+onKeyPress("right", () => {
+    if (cardIndex < deck.length - 1) {
+        cardIndex = cardIndex + 1
+        showCurrentCard()
+    }
+})
+```
+
+Why `length - 1`?
+
+---
+
+## Dealing
+
+```js
+const playerCard = choose(deck)
+let computerCard = choose(deck)
+
+while (computerCard === playerCard) {
+    computerCard = choose(deck)
+}
+```
+
+Keep picking until the cards are **different**
+
+Note:
+Revisits while loops from Week 1 and choose() from Week 2
+
+---
+
+## Make: Your Deck
+
+- **8+ cards**, your theme
+- **Your own stats**, 3+
+- Two **different** cards dealt
+- A **total** for each card, using a loop
+
+*You'll use this deck in Lesson 4!*
+
+</slides>
+
+
+
+## Lesson 4: Creature Clash
+
+<slides>
+
+# Lesson 4: Creature Clash
+
+Note:
+Scenes first, then the card battle. The last part is mostly modify: they get most of the battle code and make it their own
+
+---
+
+## Learning
+
+- **Scenes** and `go(...)`
 - **Passing data** between scenes
-- Where **variables live**
+- Where variables live
+- Adapting a game to **your own data**
 
 ---
 
@@ -140,32 +302,17 @@ go("title")
 A scene is **one screen** of your game
 
 Note:
-A scene doesn't start until you go() to it. Always finish with a go() to the first scene
-
----
-
-## Switching
-
-```js
-onKeyPress("space", () => {
-    go("gallery")
-})
-```
-
-Kaplay **throws away** everything from the old scene
-
-Note:
-Objects, event handlers and timers all disappear. The new scene runs from the top
+A scene doesn't start until you go() to it. Kaplay throws away everything from the old scene
 
 ---
 
 ## Passing Data
 
 ```js
-go("detail", { card: thumbnail.card })
+go("results", { wins: wins })
 
-scene("detail", (data) => {
-    // data.card is the card
+scene("results", (data) => {
+    // data.wins
 })
 ```
 
@@ -176,192 +323,42 @@ Data goes in an **object**
 ## Where Variables Live
 
 ```js
-let viewedCount = 0    // outside: seen by every scene
-
-scene("detail", () => {
-    let temp = 1       // inside: only this scene
+scene("game", () => {
+    let clicks = 0     // fresh every visit
 })
 ```
 
-Inside: **this scene only**, created fresh each visit
+**Inside** a scene: this scene only, created fresh each time
 
-Outside: **every** scene, and it **keeps** its value
-
-Note:
-Big idea of the lesson. The bug hunt hides viewedCount inside one scene so another scene can't find it
-
----
-
-## Make: Gallery of Your Own
-
-- **Title**, **gallery** and **detail** scenes
-- Gallery made with a **loop**
-- Detail scene is **passed** the card
-- A count of cards viewed that **keeps going**
-
-</slides>
-
-
-
-## Lesson 3: Card Battle
-
-<slides>
-
-# Lesson 3: Card Battle
+**Outside** every scene: seen by all, and **keeps** its value
 
 Note:
-Now the cards fight. The point to make: very little code is needed once the data is in the right shape
+Predict step: play again, then click once. Does the label say 1 or 9?
 
 ---
 
-## Learning
+## The Card Battle
 
-- Picking **random cards**
-- **Comparing** a stat chosen by the player
-- Using a **flag** to guard a round
-- Tracking **rounds** and **score**
-- Passing the result to a **results scene**
+You get **most of the code**:
 
----
+- Your deck and `createCardView`
+- Dealing, buttons, comparing, rounds
 
-## A Round
-
-1. **Deal** two different random cards
-2. The player **picks a stat**
-3. **Compare** that stat on the two cards
-4. The winner scores, then the **next round**
+You **add**: scenes, your deck, a twist
 
 ---
 
-## Comparing
+## Build Steps
 
-```js
-const playerValue = playerCard[statName]
-const computerValue = computerCard[statName]
+1. Get it **running** with your deck
+2. A **battle** scene
+3. A **title** scene
+4. A **results** scene
+5. Your **twist**, then **balance** the numbers
 
-if (playerValue > computerValue) {
-    wins = wins + 1
-}
-```
-
-Lookups with a **variable**: it's the same code for every stat!
-
----
-
-## Different Cards
-
-```js
-playerCard = choose(deck)
-computerCard = choose(deck)
-
-while (computerCard === playerCard) {
-    computerCard = choose(deck)
-}
-```
-
-Keep picking until the cards are **different**
+*Test after every step!*
 
 Note:
-Revisits while loops from Week 1, and choose() from Week 2
-
----
-
-## Guard the Round
-
-```js
-onClick("statRow", (row) => {
-    if (!canPick || !row.isPlayer) {
-        return
-    }
-    canPick = false
-    // ... work out who won
-})
-```
-
-A **flag** stops the player picking twice
-
-Note:
-Same idea as gameIsOver in Week 2
-
----
-
-## Make: Rules Twist
-
-Add **one new rule** of your own...
-
-- Double points on a stat
-- Lowest wins on a stat
-- A streak bonus
-- The computer cheats!
-
-*Explain it on screen*
-
-</slides>
-
-
-
-## Lesson 4: Creature Clash
-
-<slides>
-
-# Lesson 4: Creature Clash
-
-Note:
-Build day. This is student-led: no steps. They plan first, then build to checkpoints
-
----
-
-## Learning
-
-- Designing a game around **data**
-- Building from **several scenes**
-- Changing rules with a little code
-- **Balancing** with numbers
-
----
-
-## The Brief
-
-Your own **card battle game**
-
-- A **theme** and a game name
-- **8+ cards**, **3+ stats** of your own
-- **Three scenes**, **3+ rounds**
-- A **rule twist**, explained on screen
-
----
-
-## Plan First
-
-- Theme and name
-- Stats and why
-- Cards and numbers
-- Rule twist
-- What each scene shows
-
-*Show your teacher before building!*
-
-Note:
-Check each plan before they start. The stats on their cards make or break the game
-
----
-
-## Checkpoints
-
-1. Your **deck**, one card on screen
-2. The **battle** works
-3. All **three scenes**, play again
-4. Your **twist**
-
----
-
-## Balancing
-
-Is one card too good? Too weak?
-
-Change the **data**, not the code, and test again
-
-Note:
-Ask afterwards: which of your changes were data, and which were code?
+Finish with playtesting and the Week 3 Check quiz. Ask afterwards: which changes were data, and which were code?
 
 </slides>

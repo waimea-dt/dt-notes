@@ -3,131 +3,79 @@ kaplay({
     background: [30, 60, 90]
 })
 
-// The stats that every card has
-const statNames = ["speed", "power", "cuteness", "spookiness"]
+loadBean()
 
-// The deck: one object for each card
+const statNames = ["power", "speed", "brains"]
+
 const deck = [
-    { name: "Cat", image: "cat", speed: 8, power: 4, cuteness: 9, spookiness: 2 },
-    { name: "Elephant", image: "elephant", speed: 3, power: 10, cuteness: 7, spookiness: 1 },
-    { name: "Fish", image: "fish", speed: 7, power: 2, cuteness: 5, spookiness: 2 },
-    { name: "Beetle", image: "beetle", speed: 4, power: 5, cuteness: 3, spookiness: 6 },
-    { name: "Butterfly", image: "butterfly", speed: 6, power: 1, cuteness: 8, spookiness: 1 },
-    { name: "Ghost", image: "ghost", speed: 5, power: 3, cuteness: 4, spookiness: 10 },
-    { name: "Mushroom", image: "mushroom", speed: 1, power: 2, cuteness: 6, spookiness: 5 },
-    { name: "Skull", image: "skull", speed: 2, power: 6, cuteness: 1, spookiness: 9 },
+    { name: "Cat",       image: "cat",       power: 4,  speed: 8, brains: 5 },
+    { name: "Elephant",  image: "elephant",  power: 10, speed: 1, brains: 8 },
+    { name: "Fish",      image: "fish",      power: 2,  speed: 7, brains: 3 },
+    { name: "Beetle",    image: "beetle",    power: 5,  speed: 3, brains: 2 },
+    { name: "Butterfly", image: "butterfly", power: 1,  speed: 6, brains: 4 },
+    { name: "Ghost",     image: "ghost",     power: 3,  speed: 5, brains: 7 },
+    { name: "Mushroom",  image: "mushroom",  power: 2,  speed: 1, brains: 6 },
+    { name: "Skull",     image: "skull",     power: 6,  speed: 2, brains: 1 },
 ]
 
-const totalRounds = 5
-
-// Load every picture named in the deck
-for (let i = 0; i < deck.length; i++) {
-    loadSprite(deck[i].image, `assets/images/${deck[i].image}.png`)
+for (const card of deck) {
+    loadSprite(card.image, `assets/images/${card.image}.png`)
 }
 
-// Draws a face-up card at x. If isPlayer is true, the stat rows can be clicked
-function drawCard(card, x, isPlayer, chosenStat) {
-    add([
-        rect(260, 350, { radius: 14 }),
-        pos(x, 70),
-        color(240, 235, 220),
-        outline(4, rgb(31, 16, 42)),
-        "card",
+function createCardView(x, y) {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(x, y),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
     ])
 
-    add([
-        text(card.name, { size: 28 }),
-        pos(x + 130, 98),
+    const cardName = cardFrame.add([
+        text("NAME HERE", { size: 50 }),
+        pos(150, 50),
         anchor("center"),
-        color(31, 16, 42),
-        "card",
+        color(0, 0, 0),
     ])
 
-    add([
-        sprite(card.image),
-        pos(x + 130, 175),
+    const cardImage = cardFrame.add([
+        sprite("bean"),
+        pos(150, 180),
         anchor("center"),
-        scale(1.75),
-        "card",
+        scale(2.5),
     ])
 
-    for (let i = 0; i < statNames.length; i++) {
-        const statName = statNames[i]
+    const cardStats = cardFrame.add([
+        text("STATS", { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
 
-        let rowColour = rgb(205, 198, 180)
-        if (statName === chosenStat) {
-            rowColour = rgb(255, 220, 0)
+    cardFrame.show = function(card) {
+        cardName.text = card.name
+        cardImage.use(sprite(card.image))
+
+        let statsText = ""
+        for (const statName of statNames) {
+            statsText += `${statName}: ${card[statName]}\n`
         }
-
-        const row = add([
-            rect(220, 32, { radius: 6 }),
-            pos(x + 20, 240 + i * 42),
-            color(rowColour),
-            area(),
-            "statRow",
-            "card",
-            { statName: statName, isPlayer: isPlayer },
-        ])
-
-        row.add([
-            text(statName, { size: 20 }),
-            pos(12, 16),
-            anchor("left"),
-            color(31, 16, 42),
-        ])
-
-        row.add([
-            text(`${card[statName]}`, { size: 20 }),
-            pos(208, 16),
-            anchor("right"),
-            color(31, 16, 42),
-        ])
+        cardStats.text = statsText
     }
+
+    return cardFrame
 }
 
-// Draws a face-down card at x
-function drawCardBack(x) {
-    add([
-        rect(260, 350, { radius: 14 }),
-        pos(x, 70),
-        color(100, 70, 140),
-        outline(4, rgb(31, 16, 42)),
-        "card",
-    ])
-
-    add([
-        text("?", { size: 120 }),
-        pos(x + 130, 245),
-        anchor("center"),
-        "card",
-    ])
-}
-
+const totalRounds = 5
 scene("title", () => {
     add([
         text("Creature Clash", { size: 64 }),
-        pos(width() / 2, 170),
+        pos(width() / 2, 230),
         anchor("center"),
     ])
 
     add([
-        text("Pick a stat. The biggest number wins!", { size: 24 }),
-        pos(width() / 2, 250),
-        anchor("center"),
-    ])
-
-    for (let i = 0; i < 5; i++) {
-        add([
-            sprite(deck[i].image),
-            pos(150 + i * 125, 360),
-            anchor("center"),
-            scale(2),
-        ])
-    }
-
-    add([
-        text("Press SPACE to play", { size: 26 }),
-        pos(width() / 2, 480),
+        text("Press SPACE to play", { size: 28 }),
+        pos(width() / 2, 340),
         anchor("center"),
         color(255, 220, 0),
     ])
@@ -144,75 +92,76 @@ scene("battle", () => {
     let playerCard = choose(deck)
     let computerCard = choose(deck)
 
+    const playerView = createCardView(60, 50)
+    const computerView = createCardView(440, 50)
+
     const infoLabel = add([
         text("", { size: 24 }),
-        pos(30, 20),
+        pos(30, 10),
     ])
 
     const messageLabel = add([
         text("", { size: 28 }),
-        pos(width() / 2, 480),
+        pos(width() / 2, 570),
         anchor("center"),
     ])
 
     function dealCards() {
         playerCard = choose(deck)
         computerCard = choose(deck)
-
-        // The computer must not get the same card as the player
         while (computerCard === playerCard) {
             computerCard = choose(deck)
         }
 
-        destroyAll("card")
-        drawCard(playerCard, 70, true)
-        drawCardBack(470)
+        playerView.show(playerCard)
+        computerView.hidden = true
 
         infoLabel.text = `Round ${round} of ${totalRounds}     Wins: ${wins}`
         messageLabel.text = "Pick a stat!"
-        messageLabel.color = rgb(255, 255, 255)
         canPick = true
     }
 
-    onHover("statRow", (row) => {
-        if (canPick && row.isPlayer) {
-            row.color = rgb(255, 240, 150)
-        }
-    })
+    for (let i = 0; i < statNames.length; i++) {
+        const button = add([
+            rect(200, 50, { radius: 8 }),
+            pos(70 + i * 230, 495),
+            color(60, 90, 140),
+            area(),
+            "statButton",
+            { statName: statNames[i] },
+        ])
 
-    onHoverEnd("statRow", (row) => {
-        if (canPick && row.isPlayer) {
-            row.color = rgb(205, 198, 180)
-        }
-    })
+        button.add([
+            text(statNames[i], { size: 24 }),
+            pos(100, 25),
+            anchor("center"),
+        ])
+    }
 
-    onClick("statRow", (row) => {
-        if (!canPick || !row.isPlayer) {
+    onClick("statButton", (button) => {
+        if (!canPick) {
             return
         }
         canPick = false
 
-        const playerValue = playerCard[row.statName]
-        const computerValue = computerCard[row.statName]
+        computerView.show(computerCard)
+        computerView.hidden = false
 
-        destroyAll("card")
-        drawCard(playerCard, 70, true, row.statName)
-        drawCard(computerCard, 470, false, row.statName)
+        const playerValue = playerCard[button.statName]
+        const computerValue = computerCard[button.statName]
 
         if (playerValue > computerValue) {
             wins = wins + 1
             messageLabel.text = `You win! ${playerValue} beats ${computerValue}`
-            messageLabel.color = rgb(120, 255, 120)
         } else if (playerValue < computerValue) {
             messageLabel.text = `You lose! ${computerValue} beats ${playerValue}`
-            messageLabel.color = rgb(255, 120, 120)
         } else {
             messageLabel.text = `A draw! Both are ${playerValue}`
         }
 
         wait(2.5, () => {
             if (round === totalRounds) {
-                go("results", { wins: wins, rounds: totalRounds })
+                go("results", { wins: wins })
             } else {
                 round = round + 1
                 dealCards()
@@ -226,34 +175,21 @@ scene("battle", () => {
 scene("results", (data) => {
     add([
         text("Game Over", { size: 64 }),
-        pos(width() / 2, 170),
+        pos(width() / 2, 200),
         anchor("center"),
     ])
 
     add([
-        text(`You won ${data.wins} of ${data.rounds} rounds`, { size: 32 }),
-        pos(width() / 2, 270),
+        text(`You won ${data.wins} of ${totalRounds} rounds`, { size: 36 }),
+        pos(width() / 2, 300),
         anchor("center"),
     ])
 
-    let verdict = "Better luck next time!"
-    if (data.wins === data.rounds) {
-        verdict = "A perfect score!"
-    } else if (data.wins > data.rounds / 2) {
-        verdict = "Well played!"
-    }
-
     add([
-        text(verdict, { size: 28 }),
-        pos(width() / 2, 340),
+        text("Press SPACE to play again", { size: 28 }),
+        pos(width() / 2, 400),
         anchor("center"),
         color(255, 220, 0),
-    ])
-
-    add([
-        text("Press SPACE to play again", { size: 24 }),
-        pos(width() / 2, 450),
-        anchor("center"),
     ])
 
     onKeyPress("space", () => {
