@@ -42,11 +42,23 @@ Game: **Creature Clash**
 
 ---
 
-### Week 4: Fly, Shoot, Explode
+### Week 4: Locations, HP & Inventory
+
+<i data-lucide="ghost"></i>
+
+[Link](/courses/200dtd/kaplay/week4-intro.md)
+
+Notes here
+
+Game: **Haunted House**
+
+---
+
+### Week 5: Fly, Shoot, Explode
 
 <i data-lucide="rocket"></i>
 
-[Link](/courses/200dtd/kaplay/week4-intro.md)
+[Link](/courses/200dtd/kaplay/week5-intro.md)
 
 Notes here
 
@@ -54,11 +66,11 @@ Game: **Space Invaders-ish**
 
 ---
 
-### Week 5: Gravity, Physics & Platforms
+### Week 6: Gravity, Physics & Platforms
 
 <i data-lucide="sport-shoe"></i>
 
-[Link](/courses/200dtd/kaplay/week5-intro.md)
+[Link](/courses/200dtd/kaplay/week6-intro.md)
 
 Notes here
 

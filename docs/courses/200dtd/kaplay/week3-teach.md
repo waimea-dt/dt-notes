@@ -1,14 +1,14 @@
-# Week 3: Data, UI & Scenes
+# Week 3: Data & Displaying Data
 
 
-## Lesson 1: Lists & Objects
+## Lesson 1: Arrays
 
 <slides>
 
-# Lesson 1: Lists & Objects
+# Lesson 1: Arrays
 
 Note:
-Pure data today: no game, no UI. The aim is for arrays and objects to be second nature before we build anything with them
+Pure data today: no game, no UI. The aim is for arrays to be second nature before we build anything with them
 
 ---
 
@@ -16,8 +16,7 @@ Pure data today: no game, no UI. The aim is for arrays and objects to be second 
 
 - Storing lists in **arrays**
 - Getting items by **index**
-- Grouping values into **objects**
-- Looking up properties with a **variable**
+- `length` and `push`
 - Looping with `for...of`
 
 ---
@@ -38,6 +37,57 @@ Indexes start at **0**!
 Note:
 - Last index is always length - 1
 - Ask: what does statNames[3] give? (undefined)
+- A const array can still be added to: const stops replacing, not changing
+
+---
+
+## Two Loops
+
+```js
+for (const statName of statNames) {
+    console.log(statName)
+}
+
+for (let i = 0; i < statNames.length; i++) {
+    console.log(`${i + 1}. ${statNames[i]}`)
+}
+```
+
+`for...of` for **each item**. The counting loop when you need the **index**
+
+Note:
+Start with for...of. Switch only when the position matters, like numbering a list
+
+---
+
+## Make: My List
+
+- At least **6 items**
+- Printed as a **numbered list**
+- **Two more** added with `push`
+- The **count** and the **last item**
+
+</slides>
+
+
+
+## Lesson 2: Objects
+
+<slides>
+
+# Lesson 2: Objects
+
+Note:
+Last lesson was lists. Now lots of details about one thing, then lists of those things
+
+---
+
+## Learning
+
+- Grouping values into **objects**
+- Reading, changing and adding **properties**
+- Looking up with a **variable**
+- **Arrays of objects**
 
 ---
 
@@ -51,6 +101,7 @@ const card = {
 }
 
 console.log(card.name)
+card.luck = 3
 ```
 
 A bundle of **named** values
@@ -67,28 +118,28 @@ const statName = "power"
 
 console.log(card.power)        // 4
 console.log(card[statName])    // 4
+console.log(card.statName)     // undefined!
 ```
 
 Square brackets look up a property using a **variable**
 
 Note:
-The key idea for the whole week. Bug hunt: `item.property` gives undefined
+The key idea for the rest of the week. The bug hunt uses item.property
 
 ---
 
-## Two Loops
+## Array of Objects
 
 ```js
-for (const statName of statNames) {
-    console.log(statName)
-}
+const deck = [
+    { name: "Cat",      speed: 8 },
+    { name: "Elephant", speed: 3 },
+]
 
-for (let i = 0; i < statNames.length; i++) {
-    console.log(`${i + 1}. ${statNames[i]}`)
+for (const card of deck) {
+    console.log(card.name)
 }
 ```
-
-`for...of` for **each item**. Counting loop when you need the **index**
 
 ---
 
@@ -96,19 +147,19 @@ for (let i = 0; i < statNames.length; i++) {
 
 - An array of **5+ objects**
 - **3+ properties**, 2+ numbers
-- Print every item with `for...of`
+- Print every item
 - **Find the best** item
-- `push` a new item
+- `push` a new object
 
 </slides>
 
 
 
-## Lesson 2: Displaying Data
+## Lesson 3: Displaying One Item
 
 <slides>
 
-# Lesson 2: Displaying Data
+# Lesson 3: Displaying One Item
 
 Note:
 Data on its own isn't much use. This lesson is about turning it into a UI, and keeping the two separate
@@ -120,7 +171,6 @@ Data on its own isn't much use. This lesson is about turning it into a UI, and k
 - Building a **UI** from several objects
 - **Parents** and **children**
 - A view you **create once** and **update**
-- A **data-driven** UI
 
 ---
 
@@ -166,23 +216,10 @@ Students discover the overlap problem themselves in the Investigate step
 
 ---
 
-## Data-Driven
-
-```js
-let statsText = ""
-for (const statName of statNames) {
-    statsText += `${statName}: ${card[statName]}\n`
-}
-```
-
-Add a stat by changing the **data**, not the UI
-
----
-
 ## Make: Your Own Item
 
 - A **create** function and a `show` function
-- Name, picture, **3+ stats** in an array
+- Name, picture, **3+ stats**
 - **Two items** side by side
 
 *It doesn't have to be a card!*
@@ -191,23 +228,23 @@ Add a stat by changing the **data**, not the UI
 
 
 
-## Lesson 3: Dealing Cards
+## Lesson 4: Displaying the Deck
 
 <slides>
 
-# Lesson 3: Dealing Cards
+# Lesson 4: Displaying the Deck
 
 Note:
-One UI, many items. This lesson sets up the battle: browsing a deck by index, and dealing two different random cards
+One UI, many items. Index state, buttons, random. Then their own deck
 
 ---
 
 ## Learning
 
-- Stepping through an array with an **index**
-- Showing **any item** in a card view
-- **Random** picks
-- Making two picks **different**
+- Tracking which item with an **index**
+- Showing **any item** in the card view
+- **Buttons** that change the index
+- A **random** pick
 
 ---
 
@@ -223,142 +260,43 @@ Change the **state**, then call `show`
 
 ---
 
-## Browsing
+## Buttons from Data
 
 ```js
-onKeyPress("right", () => {
+for (const info of buttons) {
+    const button = add([
+        rect(120, 50),
+        pos(info.x, 450),
+        area(),
+        "button",
+        { action: info.action },
+    ])
+}
+```
+
+An **array of objects** becomes a row of buttons
+
+---
+
+## Next, Prev, Random
+
+```js
+if (button.action === "next") {
     if (cardIndex < deck.length - 1) {
         cardIndex = cardIndex + 1
-        showCurrentCard()
     }
-})
+}
 ```
 
 Why `length - 1`?
 
 ---
 
-## Dealing
-
-```js
-const playerCard = choose(deck)
-let computerCard = choose(deck)
-
-while (computerCard === playerCard) {
-    computerCard = choose(deck)
-}
-```
-
-Keep picking until the cards are **different**
-
-Note:
-Revisits while loops from Week 1 and choose() from Week 2
-
----
-
-## Make: Your Deck
+## Make: Your Deck Viewer
 
 - **8+ cards**, your theme
 - **Your own stats**, 3+
-- Two **different** cards dealt
-- A **total** for each card, using a loop
-
-*You'll use this deck in Lesson 4!*
-
-</slides>
-
-
-
-## Lesson 4: Creature Clash
-
-<slides>
-
-# Lesson 4: Creature Clash
-
-Note:
-Scenes first, then the card battle. The last part is mostly modify: they get most of the battle code and make it their own
-
----
-
-## Learning
-
-- **Scenes** and `go(...)`
-- **Passing data** between scenes
-- Where variables live
-- Adapting a game to **your own data**
-
----
-
-## Scenes
-
-```js
-scene("title", () => {
-    // objects and events for the title screen
-})
-
-go("title")
-```
-
-A scene is **one screen** of your game
-
-Note:
-A scene doesn't start until you go() to it. Kaplay throws away everything from the old scene
-
----
-
-## Passing Data
-
-```js
-go("results", { wins: wins })
-
-scene("results", (data) => {
-    // data.wins
-})
-```
-
-Data goes in an **object**
-
----
-
-## Where Variables Live
-
-```js
-scene("game", () => {
-    let clicks = 0     // fresh every visit
-})
-```
-
-**Inside** a scene: this scene only, created fresh each time
-
-**Outside** every scene: seen by all, and **keeps** its value
-
-Note:
-Predict step: play again, then click once. Does the label say 1 or 9?
-
----
-
-## The Card Battle
-
-You get **most of the code**:
-
-- Your deck and `createCardView`
-- Dealing, buttons, comparing, rounds
-
-You **add**: scenes, your deck, a twist
-
----
-
-## Build Steps
-
-1. Get it **running** with your deck
-2. A **battle** scene
-3. A **title** scene
-4. A **results** scene
-5. Your **twist**, then **balance** the numbers
-
-*Test after every step!*
-
-Note:
-Finish with playtesting and the Week 3 Check quiz. Ask afterwards: which changes were data, and which were code?
+- **Prev**, **Next** and **Random**
+- A **counter**, and a look that suits your theme
 
 </slides>

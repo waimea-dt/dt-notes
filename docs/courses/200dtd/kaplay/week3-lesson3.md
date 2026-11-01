@@ -1,107 +1,74 @@
-# Lesson 3: Dealing Cards
+# Lesson 3: Displaying One Item
 
-You can build a UI that shows **one** card, and show any card in it. Now let's work with a whole **deck**! In this lesson you'll use an **array** of cards: to browse through it, and to **deal** random cards into two card views. This is the heart of a card battle game.
+Last lesson we stored data in objects. But data on its own is just words and numbers in our code. To be useful in a game, the player needs to **see** it!
+
+In this lesson you'll build a **UI** (a user interface) that shows **one card**, and then make it so that same UI can show **any** card you give it.
 
 ## Warm-Up
 
 Try not to look back at the previous lessons...
 
-1. What does the `show` function on a card view do?
+1. What's the difference between an **array** and an **object**?
 
     <response>
 
-2. Why do we create a card view **once**, and update it, instead of creating a new one every time?
+2. If `statName`(js) is `"speed"`, what does `card[statName]`(js) give us?
 
     <response>
 
-3. What is the **last** index of an array with 8 items?
+3. What does `card.luck = 3`(js) do?
 
     <response>
 
 
 ## Learning Goals
 
-- <check> I can use an **index variable** to step through an array of items
-- <check> I can show **any item** of an array in a card view
-- <check> I can pick a **random** item from an array
-- <check> I can use a `while` loop to make sure two picks are **different**
-- <check> I can use a **loop** to add up the stats on a card
+- <check> I can build a UI out of several Kaplay objects
+- <check> I can group objects together with a **parent** and its **children**
+- <check> I can build a UI from the data in an **object**
+- <check> I can write a function that creates a UI **once**, and **shows any item** in it
 
 
-## The Big Idea: **One UI, Many Items**
+## The Big Idea: **Data** and **UI**
 
-We now have three things that work together:
-
-| Part                  | What it is                                   | Example                              |
-| --------------------- | -------------------------------------------- | ------------------------------------ |
-| The **data**          | An array of objects: the deck                | `deck`(js)                           |
-| The **UI**            | A view that can show any card                | `cardView.show(...)`(js)             |
-| The **state**         | Which card we're looking at right now        | `cardIndex`(js)                      |
-
-To change what's on screen, we just change the **state** (which card?), and call `show`.
-
-> [!NOTE]
-> To keep the code short, the deck of 8 cards, the images, and the `createCardView(x, y)`(js) function from last lesson are all done for you in the hidden code behind the playgrounds below. The only difference is that `createCardView`(js) now has two parameters, `x` and `y`, to say where the card goes. The game is **800 by 600**.
+The **data** is what the game knows. The **UI** is how the player sees it. We'll keep them **separate**: the data lives in an object, and the UI code knows how to show *any* object of that shape.
 
 
-## **P**redict
+## **I**nvestigate
 
-Here's a **deck viewer**. It uses an array index, just like the dialogue state in Week 2!
+### A Card Viewer
+
+We are going to look at a simple program that **shows a card**. We will take things one step at a time...
+
+Let's create a **card object**:
 
 ```js
-let cardIndex = 0
-
-const cardView = createCardView(250, 40)
-
-const counterLabel = add([
-    text("", { size: 24 }),
-    pos(width() / 2, 480),
-    anchor("center"),
-])
-
-add([
-    text("Press the LEFT and RIGHT arrows", { size: 20 }),
-    pos(width() / 2, 540),
-    anchor("center"),
-    color(150, 170, 200),
-])
-
-function showCurrentCard() {
-    cardView.show(deck[cardIndex])
-    counterLabel.text = `Card ${cardIndex + 1} of ${deck.length}`
+const elephantCard = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
 }
-
-showCurrentCard()
-
-onKeyPress("right", () => {
-    if (cardIndex < deck.length - 1) {
-        cardIndex = cardIndex + 1
-        showCurrentCard()
-    }
-})
-
-onKeyPress("left", () => {
-    if (cardIndex > 0) {
-        cardIndex = cardIndex - 1
-        showCurrentCard()
-    }
-})
 ```
 
-What will the screen show **when the game starts**?
+Some of those items of data look easy to display: the **name** can go in a `text(...)` object, the **image** in a `sprite(...)`. But what about all those **stats**?
+
+It might be easiest if we **combine all the stats into a single block of text** which we can then place into a single `text(...)` object:
+
+```js
+let statsText = ""
+statsText += `power:  ${elephantCard.power}\n`
+statsText += `speed:  ${elephantCard.speed}\n`
+statsText += `brains: ${elephantCard.brains}`
+```
+
+What do you think the `+=`(js) and the `\n`(js) are doing in those lines of code?
 
 <response>
 
-What will it show after you press the **RIGHT arrow** twice?
 
-<response>
-
-What will happen if you keep pressing the **RIGHT arrow**, again and again?
-
-<response>
-
-
-## **R**un
+### Displaying a Card
 
 <web-playground hidden>
 
@@ -113,33 +80,178 @@ What will happen if you keep pressing the **RIGHT arrow**, again and again?
 
 ```js id=kaplay
 kaplay({
-    width: 800, height: 600,
+    width: 700, height: 500,
     background: [30, 60, 90]
 })
 
-loadBean()
+loadSprite("elephant", "assets/images/elephant.png")
+loadSprite("cat",      "assets/images/cat.png")
 
-const statNames = ["power", "speed", "brains"]
-
-const deck = [
-    { name: "Cat",       image: "cat",       power: 4,  speed: 8, brains: 5 },
-    { name: "Elephant",  image: "elephant",  power: 10, speed: 1, brains: 8 },
-    { name: "Fish",      image: "fish",      power: 2,  speed: 7, brains: 3 },
-    { name: "Beetle",    image: "beetle",    power: 5,  speed: 3, brains: 2 },
-    { name: "Butterfly", image: "butterfly", power: 1,  speed: 6, brains: 4 },
-    { name: "Ghost",     image: "ghost",     power: 3,  speed: 5, brains: 7 },
-    { name: "Mushroom",  image: "mushroom",  power: 2,  speed: 1, brains: 6 },
-    { name: "Skull",     image: "skull",     power: 6,  speed: 2, brains: 1 },
-]
-
-for (const card of deck) {
-    loadSprite(card.image, `assets/images/${card.image}.png`)
+const elephantCard = {
+    name:   "Elephant",
+    image:  "elephant",
+    power:  10,
+    speed:  1,
+    brains: 8,
 }
 
-function createCardView(x, y) {
+const catCard = {
+    name:   "Cat",
+    image:  "cat",
+    power:  4,
+    speed:  8,
+    brains: 5,
+}
+```
+
+</web-playground>
+
+The card object is already made for you in the code below. Run it, and compare the code with what you see:
+
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js depends=kaplay
+const cardFrame = add([
+    rect(300, 400, { radius: 10 }),
+    pos(50, 50),
+    color(255, 255, 255),
+    outline(5, rgb(0, 0, 0)),
+])
+
+const cardName = cardFrame.add([
+    text(elephantCard.name, { size: 50 }),
+    pos(150, 50),
+    anchor("center"),
+    color(0, 0, 0),
+])
+
+const cardImage = cardFrame.add([
+    sprite(elephantCard.image),
+    pos(150, 180),
+    anchor("center"),
+    scale(2.5),
+])
+
+let statsText = ""
+statsText += `power:  ${elephantCard.power}\n`
+statsText += `speed:  ${elephantCard.speed}\n`
+statsText += `brains: ${elephantCard.brains}`
+
+const cardStats = cardFrame.add([
+    text(statsText, { size: 28 }),
+    pos(150, 290),
+    anchor("top"),
+    color(0, 0, 0),
+])
+```
+
+</web-playground>
+
+We have one `text(...)`(js) for the name, another for the stats, and a `sprite(...)`(js) for the image.
+
+Look closely at the code - The `text` and `sprite` objects are being added to the `cardFrame` object: `const cardImage = cardFrame.add([...])`(js). Why do you think we have done this?
+
+<response>
+
+> [!TIP]
+> In Kaplay, if objects are part of another **parent object**, it is best to add them to it instead of adding them to the scene. That way, if the parent is moved, all the **child objects move too**.
+
+
+### A Better Card Viewer
+
+The code above is locked to one card... there is **no way to update the UI to show a different card**.
+
+Let's create a `showCard(...)`(js) **function** that we can call whenever we want, to show **any card**. And let's try using it to show two different cards, the elephant and then the cat.
+
+What do you think the screen will show?
+
+<response>
+
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js depends=kaplay
+function showCard(card) {
     const cardFrame = add([
         rect(300, 400, { radius: 10 }),
-        pos(x, y),
+        pos(50, 50),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
+        opacity(1),
+    ])
+
+    const cardName = cardFrame.add([
+        text(card.name, { size: 50 }),
+        pos(150, 50),
+        anchor("center"),
+        color(0, 0, 0),
+    ])
+
+    const cardImage = cardFrame.add([
+        sprite(card.image),
+        pos(150, 180),
+        anchor("center"),
+        scale(2.5),
+    ])
+
+    let statsText = ""
+    statsText += `power:  ${card.power}\n`
+    statsText += `speed:  ${card.speed}\n`
+    statsText += `brains: ${card.brains}`
+
+    const cardStats = cardFrame.add([
+        text(statsText, { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
+}
+
+showCard(elephantCard)
+showCard(catCard)
+```
+
+</web-playground>
+
+Amazing! Look at that - the last card we asked to show was the **cat** one, and there it is!
+
+#### But... We Have a Problem!
+
+Try changing the opacity of the `cardFrame`... Change `opacity(1)`(js) to `opacity(0.25)`(js). What happens? Why can we still see the **elephant card underneath the cat card**?!
+
+<response>
+
+
+### A Card That Can Be Updated
+
+We need to **create a card view once** and then be able to **update what it shows** whenever we want. Let's tweak the card creation function:
+
+<web-playground data-height="44em" js-only>
+
+```html depends=kaplay
+```
+
+```css depends=kaplay
+```
+
+```js depends=kaplay
+loadBean()
+
+function createCardView() {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(50, 50),
         color(255, 255, 255),
         outline(5, rgb(0, 0, 0)),
     ])
@@ -159,7 +271,7 @@ function createCardView(x, y) {
     ])
 
     const cardStats = cardFrame.add([
-        text("STATS", { size: 28 }),
+        text("STATS\nSTATS", { size: 28 }),
         pos(150, 290),
         anchor("top"),
         color(0, 0, 0),
@@ -167,183 +279,36 @@ function createCardView(x, y) {
 
     cardFrame.show = function(card) {
         cardName.text = card.name
+
         cardImage.use(sprite(card.image))
 
         let statsText = ""
-        for (const statName of statNames) {
-            statsText += `${statName}: ${card[statName]}\n`
-        }
+        statsText += `power:  ${card.power}\n`
+        statsText += `speed:  ${card.speed}\n`
+        statsText += `brains: ${card.brains}`
+
         cardStats.text = statsText
     }
 
     return cardFrame
 }
+
+const cardView = createCardView()
+cardView.show(elephantCard)
+cardView.show(catCard)
 ```
 
 </web-playground>
 
-Run the viewer and use the arrow keys. Click inside the game first! Compare it with your predictions - any differences?
-
-<web-playground data-height="44em" js-only>
-
-```html depends=kaplay
-```
-
-```css depends=kaplay
-```
-
-```js depends=kaplay
-let cardIndex = 0
-
-const cardView = createCardView(250, 40)
-
-const counterLabel = add([
-    text("", { size: 24 }),
-    pos(width() / 2, 480),
-    anchor("center"),
-])
-
-add([
-    text("Press the LEFT and RIGHT arrows", { size: 20 }),
-    pos(width() / 2, 540),
-    anchor("center"),
-    color(150, 170, 200),
-])
-
-function showCurrentCard() {
-    cardView.show(deck[cardIndex])
-    counterLabel.text = `Card ${cardIndex + 1} of ${deck.length}`
-}
-
-showCurrentCard()
-
-onKeyPress("right", () => {
-    if (cardIndex < deck.length - 1) {
-        cardIndex = cardIndex + 1
-        showCurrentCard()
-    }
-})
-
-onKeyPress("left", () => {
-    if (cardIndex > 0) {
-        cardIndex = cardIndex - 1
-        showCurrentCard()
-    }
-})
-```
-
-</web-playground>
-
-
-## **I**nvestigate
-
-### The Viewer
-
-1. What is `cardIndex`(js)? Is it **data**, **UI** or **state**?
+1. What is the purpose of `loadBean()`(js), and why do we add `sprite("bean")`(js) when the card view is created?
 
     <response>
 
-2. Why is the check `cardIndex < deck.length - 1`(js) rather than `cardIndex < deck.length`(js)?
+2. What do you think the `cardFrame.show = function(card) { ... }`(js) code is doing? Why do we `return cardFrame`(js)?
 
     <response>
 
-3. `showCurrentCard()`(js) does two things. What are they? Why is it a function?
-
-    <response>
-
-4. Why do we write `cardIndex + 1`(js) in the counter label?
-
-    <response>
-
-### Dealing Two Cards
-
-In a card battle, two **different** random cards are dealt: one for you, and one for the computer. Look at this code:
-
-```js
-const playerView = createCardView(60, 40)
-const computerView = createCardView(440, 40)
-
-add([
-    text("Press SPACE to deal", { size: 24 }),
-    pos(width() / 2, 540),
-    anchor("center"),
-    color(150, 170, 200),
-])
-
-function dealCards() {
-    const playerCard = choose(deck)
-    let computerCard = choose(deck)
-
-    while (computerCard === playerCard) {
-        computerCard = choose(deck)
-    }
-
-    playerView.show(playerCard)
-    computerView.show(computerCard)
-}
-
-dealCards()
-
-onKeyPress("space", () => {
-    dealCards()
-})
-```
-
-What will happen each time you press **SPACE**? Is it possible for both cards to be the **same**?
-
-<response>
-
-Run it, and try it a lot of times:
-
-<web-playground data-height="44em" js-only>
-
-```html depends=kaplay
-```
-
-```css depends=kaplay
-```
-
-```js depends=kaplay
-const playerView = createCardView(60, 40)
-const computerView = createCardView(440, 40)
-
-add([
-    text("Press SPACE to deal", { size: 24 }),
-    pos(width() / 2, 540),
-    anchor("center"),
-    color(150, 170, 200),
-])
-
-function dealCards() {
-    const playerCard = choose(deck)
-    let computerCard = choose(deck)
-
-    while (computerCard === playerCard) {
-        computerCard = choose(deck)
-    }
-
-    playerView.show(playerCard)
-    computerView.show(computerCard)
-}
-
-dealCards()
-
-onKeyPress("space", () => {
-    dealCards()
-})
-```
-
-</web-playground>
-
-1. What does `choose(deck)`(js) do?
-
-    <response>
-
-2. What is the `while`(js) loop for? Try **deleting** it. What happens, if you press SPACE enough times?
-
-    <response>
-
-3. Why is `computerCard`(js) declared with `let`(js), but `playerCard`(js) with `const`(js)?
+3. Can you explain how this has fixed the problem of the two, overlapping cards we had before?
 
     <response>
 
@@ -352,7 +317,7 @@ onKeyPress("space", () => {
 
 ### Bug Hunt
 
-This version of the deck viewer has some bugs. Run it, press the arrow keys, and look at the **Console** if something goes wrong. Can you fix the following?
+This card view has some bugs. Run it, read the error messages, and fix them one at a time. Can you fix the following?
 
 <web-playground data-height="44em" js-only>
 
@@ -363,124 +328,85 @@ This version of the deck viewer has some bugs. Run it, press the arrow keys, and
 ```
 
 ```js depends=kaplay
-let cardIndex = 0
+loadBean()
 
-const cardView = createCardView(250, 40)
+function createCardView() {
+    const cardFrame = add([
+        rect(300, 400, { radius: 10 }),
+        pos(50, 50),
+        color(255, 255, 255),
+        outline(5, rgb(0, 0, 0)),
+    ])
 
-const counterLabel = add([
-    text("", { size: 24 }),
-    pos(width() / 2, 480),
-    anchor("center"),
-])
+    const cardName = cardFrame.add([
+        text("NAME HERE", { size: 50 }),
+        pos(150, 50),
+        anchor("center"),
+        color(0, 0, 0),
+    ])
 
-add([
-    text("Press the LEFT and RIGHT arrows", { size: 20 }),
-    pos(width() / 2, 540),
-    anchor("center"),
-    color(150, 170, 200),
-])
+    const cardImage = cardFrame.add([
+        sprite("bean"),
+        pos(150, 180),
+        anchor("center"),
+        scale(2.5),
+    ])
 
-function showCurrentCard() {
-    counterLabel.text = `Card ${cardIndex} of ${deck.length}`
+    const cardStats = cardFrame.add([
+        text("STATS\nSTATS", { size: 28 }),
+        pos(150, 290),
+        anchor("top"),
+        color(0, 0, 0),
+    ])
+
+    cardFrame.show = function(card) {
+        cardName.text = card.name
+
+        let statsText = ""
+        statsText += `power:  ${card.powr}\n`
+        statsText += `speed:  ${card.speed}\n`
+        statsText += `brains: ${card.brains}`
+
+        cardStats.text = statsText
+    }
+
 }
 
-showCurrentCard()
-
-onKeyPress("right", () => {
-    if (cardIndex < deck.length) {
-        cardIndex = cardIndex + 1
-        showCurrentCard()
-    }
-})
-
-onKeyPress("left", () => {
-    if (cardIndex > 0) {
-        cardIndex = cardIndex - 1
-        showCurrentCard()
-    }
-})
+const cardView = createCardView()
+cardView.show(elephantCard)
+cardView.show(catCard)
 ```
 
 </web-playground>
 
-1. <check> The card **never changes**: it always says `NAME HERE`
-2. <check> The counter starts at `Card 0 of 8`
-3. <check> The game **crashes** when you press the RIGHT arrow on the last card
+1. <check> The program **crashes** straight away, with an error about `show`
+2. <check> Once that's fixed, the **power** stat says `undefined`
+3. <check> Once that's fixed, the card shows the **bean** picture, not the elephant
 
 > [!TIP]
-> Fix them one at a time. Compare the code with the working viewer above.
+> What does a function give back if it never `return`s anything? And is the property really called `powr`?
 
 ### Tinker
 
-Here's the card dealer again. Complete the tasks one at a time. Test after each change!
+Go back to the **working** card view in the previous step, and complete the tasks one at a time. Test after each change!
 
-<web-playground data-height="44em" js-only>
-
-```html depends=kaplay
-```
-
-```css depends=kaplay
-```
-
-```js depends=kaplay
-const playerView = createCardView(60, 40)
-const computerView = createCardView(440, 40)
-
-add([
-    text("Press SPACE to deal", { size: 24 }),
-    pos(width() / 2, 540),
-    anchor("center"),
-    color(150, 170, 200),
-])
-
-let playerCard = choose(deck)
-let computerCard = choose(deck)
-
-function dealCards() {
-    playerCard = choose(deck)
-    computerCard = choose(deck)
-
-    while (computerCard === playerCard) {
-        computerCard = choose(deck)
-    }
-
-    playerView.show(playerCard)
-    computerView.show(computerCard)
-}
-
-dealCards()
-
-onKeyPress("space", () => {
-    dealCards()
-})
-```
-
-</web-playground>
-
-Tasks:
-
-1. <check> After dealing, show a label that says who has more **power**: `You win!`, `You lose!` or `A draw!`
-2. <check> Make it work for **any stat**: press **1**, **2** or **3** to compare `power`, `speed` or `brains`
-3. <check> Show the two numbers being compared, like `power: 4 vs 10`
-
-> [!TIP]
-> Use the **lookup with a variable** from Lesson 1: `playerCard[statName]`(js). And `onKeyPress("1", ...)`(js) can listen for the number keys.
+1. <check> Change how the card **looks**: the colours, the size of the text, the outline
+2. <check> Add a `luck` stat: give the cards a `luck` property (like you did in Lesson 2), and show it
+3. <check> Give `createCardView` two **parameters**, `x` and `y`, so that we choose where the card goes. Then create a **second** view, and show the cat card in it **next to** the elephant
 
 
 ## **M**ake
 
-### Your Deck
+### Your Own Item
 
-This is where you create **your own deck**. You'll use it in the next lesson to build your own card battle game, so make it a good one!
+Now build a UI for **something of your own**. It doesn't have to be a card! It could be a character profile, a pet, a food item, a planet fact file, a team member... anything with a name, a picture and some numbers.
 
-Choose a theme: creatures, fruit, dungeon treasure, teachers, programming languages... anything you can find pictures for. The starter code below deals two cards from the creature deck. Make it **yours**.
+Your UI must have:
 
-Your dealer must have:
-
-- <check> **Your own deck** of **at least 8 cards**, with pictures from the starter project
-- <check> **Your own stats**: at least 3, with names that suit your theme, stored in `statNames`(js)
-- <check> Two **different** random cards dealt when you press SPACE
-- <check> A **total** for each card (all of its stats added up, using a **loop**), and a label showing who has the **higher total**
+- <check> A **create** function that builds the UI **once**, and returns it
+- <check> A `show` function on it that **updates** the UI to show an item
+- <check> A **name**, a **picture** (from the pictures in the starter project) and **at least 3 stats**
+- <check> **Two different items** shown **side by side**, using two views
 
 <web-playground data-height="44em" js-only>
 
@@ -490,26 +416,24 @@ Your dealer must have:
 ```css depends=kaplay
 ```
 
-```js load=_assets/deck-start.js
+```js depends=kaplay
+// Copy your code from the working card view above here, then make it your own
+// (the elephant and cat cards from above are already available)
 ```
 
 </web-playground>
 
-> [!IMPORTANT]
-> Keep your deck! We'll use it in the next lesson.
-
 > [!TIP]
-> To add up a card's stats, make a `let total = 0`(js), then loop through `statNames`(js) and add `card[statName]`(js) each time.
+> These are the pictures you can use: `apple`, `beetle`, `butterfly`, `cat`, `door`, `egg`, `elephant`, `fish`, `flower`, `ghost`, `grass`, `heart`, `jam`, `key`, `meat`, `mushroom`, `pineapple`, `portal`, `skull`, `smile`, `star`, `steel`, `sword`, `watermelon`
 
 ### Level Up
 
 Finished early? Try these. Pick the ones that sound fun.
 
-| Challenge                                                          | Hint                                                                            |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| Add **arrow key browsing** to your dealer, to flick through the deck | A `cardIndex`(js) variable, and the viewer code from this lesson              |
-| Show the **name of the best stat** on each card                    | The **Find the Highest** pattern from Lesson 1, looping through `statNames`(js) |
-| Play a **sound** when cards are dealt                              | `loadSound("beep", "assets/sounds/beep.wav")`(js) and `play("beep")`(js)        |
+| Challenge                                                        | Hint                                                                                  |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Make the **frame colour** depend on the item                     | A `color`(js) property in the data, and `cardFrame.color = ...`(js) in `show`         |
+| Make a **nicer frame**, with a header bar and a shadow           | More objects added to `cardFrame`(js), with different `pos`(js) and `color`(js)       |
 
 
 ## Exit Ticket
@@ -518,37 +442,31 @@ Without looking back, answer these three questions:
 
 <quiz>
 
-- # What does `cardView.show(deck[cardIndex])` do?
+- # Why do we add the name, picture and stats to the `cardFrame` as **children**?
 
     ---
 
-    - [ ] Adds a new card to the deck
-    - [x] Updates the card view to show the card at `cardIndex`
-    - [ ] Deletes the card at `cardIndex`
-    - [ ] Makes the deck bigger
+    - [ ] To make them run faster
+    - [x] So they move together with the frame, and are removed together
+    - [ ] Because Kaplay requires it
+    - [ ] So they can't be seen
 
-- # Why does the dealer have this loop?
-
-    ```js
-    while (computerCard === playerCard) {
-        computerCard = choose(deck)
-    }
-    ```
+- # Why do we create the card view **once** and then call `show` to change it?
 
     ---
 
-    - [ ] To deal more cards
-    - [x] To make sure the computer doesn't get the same card as the player
-    - [ ] To count the cards
-    - [ ] To shuffle the deck
+    - [ ] Because creating objects is not allowed
+    - [x] Otherwise each new card would be drawn on top of the old ones
+    - [ ] To make the card bigger
+    - [ ] It makes the code shorter
 
-- # The deck has 8 cards. Which of these is **not** a valid `cardIndex`?
+- # What does `cardFrame.show = function(card) { ... }` do?
 
     ---
 
-    - [ ] `0`
-    - [ ] `7`
-    - [x] `8`
-    - [ ] `3`
+    - [ ] Shows the card straight away
+    - [ ] Deletes the card
+    - [x] Gives the frame a function that updates it to show a card
+    - [ ] Makes a new frame
 
 </quiz>
