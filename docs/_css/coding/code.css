@@ -3,12 +3,6 @@
  */
 
 :root {
-    /* Typography */
-    --code-font-family:          var(--font-family-mono);
-    /* --code-font-size:            var(--font-base); */
-    --code-line-height:          1.4;
-    --code-output-line-height:   1.2;
-
     /* Base colors */
     --code-color-back:          #0e0f11;
 
@@ -28,18 +22,48 @@
     --code-color-blue:          #75a5e0;
     --code-color-purple:        #b28adf;
     --code-color-pink:          #e79cce;
+}
+
+:root[data-theme="light"] {
+    /* Base colors */
+    --code-color-back:          #f4f8ff;
+
+    --code-color-normal:        #232325;
+    --code-color-bright:        #3f4146;
+    --code-color-muted:         #7F848E;
+    --code-color-dark:          #ABB2BF;
+    --code-color-darker:        #cdd3df;
+
+    /* Palette */
+    --code-color-red:           #a80000;
+    --code-color-orange:        #a24e00;
+    --code-color-yellow:        #a49c00;
+    --code-color-green:         #47a900;
+    --code-color-sage:          #00a566;
+    --code-color-cyan:          #009ca1;
+    --code-color-blue:          #004aa3;
+    --code-color-purple:        #4b00a1;
+    --code-color-pink:          #a4006d;
+}
+
+:root {
+    /* Typography */
+    --code-font-family:          var(--font-family-mono);
+    /* --code-font-size:            var(--font-base); */
+    --code-line-height:          1.4;
+    --code-output-line-height:   1.2;
 
     /* Editor UI */
-    --code-active-line-back:    color-mix(in srgb, var(--code-color-normal) 10%, transparent);
-    --code-selection-back:      color-mix(in srgb, var(--theme-color) 40%, transparent);
-    --code-matching-color:      var(--color-important);
-    --code-matching-back:       color-mix(in srgb, var(--code-matching-color) 10%, transparent);
+    --code-active-line-back:     color-mix(in srgb, var(--code-color-normal) 10%, transparent);
+    --code-selection-back:       color-mix(in srgb, var(--theme-color) 40%, transparent);
+    --code-matching-color:       var(--color-important);
+    --code-matching-back:        color-mix(in srgb, var(--code-matching-color) 10%, transparent);
 
-    --code-warning-color:       var(--color-important);
-    --code-error-color:         var(--color-attention);
+    --code-warning-color:        var(--color-important);
+    --code-error-color:          var(--color-attention);
 
-    --code-high-mark:           var(--highlight-color);
-    --code-high-back:           color-mix(in srgb, var(--code-high-mark) 20%, transparent);
+    --code-high-mark:            var(--highlight-color);
+    --code-high-back:            color-mix(in srgb, var(--code-high-mark) 20%, transparent);
 
     --code-popup-color:          var(--code-color-normal);
     --code-popup-back-color:     var(--code-color-darker);
@@ -53,6 +77,7 @@
 
     --code-fg-color:             var(--code-color-normal);
     --code-bg-color:             var(--code-color-back);
+    --code-border-color:         var(--border-color);
 
     /* Syntax highlighting colors */
     --code-hl-number-color:      var(--code-color-orange);
@@ -116,6 +141,7 @@
 .markdown-section pre[class*="language-"] {
     margin: var(--margin-block) 0;
     overflow: auto;
+    border: 1px solid var(--code-border-color);
     border-radius: var(--border-radius);
     font-size: var(--code-font-size);
     line-height: var(--code-line-height) !important;
