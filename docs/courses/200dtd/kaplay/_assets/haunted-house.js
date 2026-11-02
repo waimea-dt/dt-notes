@@ -20,20 +20,25 @@ function resetGame() {
     heartTaken = false
 }
 
-function drawHud() {
-    destroyAll("hud")
-
-    add([
-        text(`HP: ${hp}`, { size: 28 }),
+function createHud() {
+    const hpLabel = add([
+        text("", { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
 
-    add([
-        text(`Inventory: ${inventory.join(", ")}`, { size: 22 }),
-        pos(20, 60),
-        "hud",
+    const inventoryLabel = add([
+        text("", { size: 28 }),
+        pos(600, 20),
     ])
+
+    // The labels watch the state, so they update themselves
+    hpLabel.onUpdate(() => {
+        hpLabel.text = `HP: ${hp}`
+    })
+
+    inventoryLabel.onUpdate(() => {
+        inventoryLabel.text = `Inventory:\n ${inventory.join("\n ")}`
+    })
 }
 
 function showMessage(message) {
@@ -44,6 +49,8 @@ function showMessage(message) {
         pos(width() / 2, 540),
         anchor("center"),
         color(255, 220, 0),
+        opacity(1),
+        lifespan(2, { fade: 0.5 }),
         "message",
     ])
 }
@@ -51,7 +58,7 @@ function showMessage(message) {
 // Every room starts the same way
 function setupRoom(name, colour) {
     setBackground(colour)
-    drawHud()
+    createHud()
 
     add([
         text(name, { size: 44 }),
@@ -74,15 +81,15 @@ function addDoor(x, y, destination, needs) {
         sprite("door"),
         pos(x, y),
         anchor("center"),
-        scale(1.5),
+        scale(2),
         area(),
         "door",
         { destination: destination, needs: needs },
     ])
 
     add([
-        text(destination, { size: 20 }),
-        pos(x, y + 70),
+        text(destination, { size: 24 }),
+        pos(x, y + 90),
         anchor("center"),
     ])
 }
@@ -90,15 +97,15 @@ function addDoor(x, y, destination, needs) {
 scene("hall", () => {
     setupRoom("The Hall", rgb(60, 40, 80))
 
-    addDoor(680, 330, "kitchen")
-    addDoor(120, 330, "cellar")
+    addDoor(630, 380, "kitchen")
+    addDoor(170, 380, "cellar")
     addDoor(400, 230, "attic", "key")
 })
 
 scene("kitchen", () => {
     setupRoom("The Kitchen", rgb(40, 80, 60))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     if (!heartTaken) {
         add([
@@ -115,7 +122,6 @@ scene("kitchen", () => {
         heartTaken = true
         hp = hp + 1
         destroy(heart)
-        drawHud()
         showMessage("Yum! You feel better. +1 HP")
     })
 })
@@ -124,7 +130,7 @@ scene("cellar", () => {
     hp = hp - 1
     setupRoom("The Cellar", rgb(30, 30, 50))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("ghost"),
@@ -149,7 +155,6 @@ scene("cellar", () => {
     onClick("key", (key) => {
         inventory.push("key")
         destroy(key)
-        drawHud()
         showMessage("You found a key!")
     })
 
@@ -161,7 +166,7 @@ scene("cellar", () => {
 scene("attic", () => {
     setupRoom("The Attic", rgb(90, 70, 30))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("star"),

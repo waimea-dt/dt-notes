@@ -10,7 +10,7 @@ Try not to look back at the previous lessons...
 
     <response>
 
-2. Why does `drawHud()`(js) start by destroying the old HUD?
+2. The HUD label uses `onUpdate(...)`(js). What does that let it do?
 
     <response>
 
@@ -62,20 +62,25 @@ function resetGame() {
     heartTaken = false
 }
 
-function drawHud() {
-    destroyAll("hud")
-
-    add([
-        text(`HP: ${hp}`, { size: 28 }),
+function createHud() {
+    const hpLabel = add([
+        text("", { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
 
-    add([
-        text(`Inventory: ${inventory.join(", ")}`, { size: 22 }),
-        pos(20, 60),
-        "hud",
+    const inventoryLabel = add([
+        text("", { size: 28 }),
+        pos(600, 20),
     ])
+
+    // The labels watch the state, so they update themselves
+    hpLabel.onUpdate(() => {
+        hpLabel.text = `HP: ${hp}`
+    })
+
+    inventoryLabel.onUpdate(() => {
+        inventoryLabel.text = `Inventory:\n ${inventory.join("\n ")}`
+    })
 }
 
 function addDoor(x, y, destination, needs) {
@@ -98,7 +103,7 @@ function addDoor(x, y, destination, needs) {
 
 function setupRoom(name, colour) {
     setBackground(colour)
-    drawHud()
+    createHud()
 
     add([
         text(name, { size: 44 }),
@@ -119,8 +124,8 @@ function setupRoom(name, colour) {
 scene("hall", () => {
     setupRoom("The Hall", rgb(60, 40, 80))
 
-    addDoor(680, 330, "kitchen")
-    addDoor(120, 330, "cellar")
+    addDoor(630, 380, "kitchen")
+    addDoor(170, 380, "cellar")
     addDoor(400, 230, "attic", "key")
 })
 
@@ -128,7 +133,7 @@ scene("cellar", () => {
     hp = hp - 1
     setupRoom("The Cellar", rgb(30, 30, 50))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("ghost"),
@@ -153,7 +158,6 @@ scene("cellar", () => {
     onClick("key", (key) => {
         inventory.push("key")
         destroy(key)
-        drawHud()
         showMessage("You found a key!")
     })
 
@@ -212,6 +216,8 @@ function showMessage(message) {
         pos(width() / 2, 540),
         anchor("center"),
         color(255, 220, 0),
+        opacity(1),
+        lifespan(2, { fade: 0.5 }),
         "message",
     ])
 }
@@ -219,7 +225,7 @@ function showMessage(message) {
 scene("kitchen", () => {
     setupRoom("The Kitchen", rgb(40, 80, 60))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     if (!heartTaken) {
         add([
@@ -236,7 +242,6 @@ scene("kitchen", () => {
         heartTaken = true
         hp = hp + 1
         destroy(heart)
-        drawHud()
         showMessage("Yum! You feel better. +1 HP")
     })
 })
@@ -244,7 +249,7 @@ scene("kitchen", () => {
 scene("attic", () => {
     setupRoom("The Attic", rgb(90, 70, 30))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("star"),
@@ -317,20 +322,25 @@ function resetGame() {
     heartTaken = false
 }
 
-function drawHud() {
-    destroyAll("hud")
-
-    add([
-        text(`HP: ${hp}`, { size: 28 }),
+function createHud() {
+    const hpLabel = add([
+        text("", { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
 
-    add([
-        text(`Inventory: ${inventory.join(", ")}`, { size: 22 }),
-        pos(20, 60),
-        "hud",
+    const inventoryLabel = add([
+        text("", { size: 28 }),
+        pos(600, 20),
     ])
+
+    // The labels watch the state, so they update themselves
+    hpLabel.onUpdate(() => {
+        hpLabel.text = `HP: ${hp}`
+    })
+
+    inventoryLabel.onUpdate(() => {
+        inventoryLabel.text = `Inventory:\n ${inventory.join("\n ")}`
+    })
 }
 
 function addDoor(x, y, destination, needs) {
@@ -353,7 +363,7 @@ function addDoor(x, y, destination, needs) {
 
 function setupRoom(name, colour) {
     setBackground(colour)
-    drawHud()
+    createHud()
 
     add([
         text(name, { size: 44 }),
@@ -374,8 +384,8 @@ function setupRoom(name, colour) {
 scene("hall", () => {
     setupRoom("The Hall", rgb(60, 40, 80))
 
-    addDoor(680, 330, "kitchen")
-    addDoor(120, 330, "cellar")
+    addDoor(630, 380, "kitchen")
+    addDoor(170, 380, "cellar")
     addDoor(400, 230, "attic", "key")
 })
 
@@ -383,7 +393,7 @@ scene("cellar", () => {
     hp = hp - 1
     setupRoom("The Cellar", rgb(30, 30, 50))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("ghost"),
@@ -408,7 +418,6 @@ scene("cellar", () => {
     onClick("key", (key) => {
         inventory.push("key")
         destroy(key)
-        drawHud()
         showMessage("You found a key!")
     })
 
@@ -465,20 +474,25 @@ function resetGame() {
     heartTaken = false
 }
 
-function drawHud() {
-    destroyAll("hud")
-
-    add([
-        text(`HP: ${hp}`, { size: 28 }),
+function createHud() {
+    const hpLabel = add([
+        text("", { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
 
-    add([
-        text(`Inventory: ${inventory.join(", ")}`, { size: 22 }),
-        pos(20, 60),
-        "hud",
+    const inventoryLabel = add([
+        text("", { size: 28 }),
+        pos(600, 20),
     ])
+
+    // The labels watch the state, so they update themselves
+    hpLabel.onUpdate(() => {
+        hpLabel.text = `HP: ${hp}`
+    })
+
+    inventoryLabel.onUpdate(() => {
+        inventoryLabel.text = `Inventory:\n ${inventory.join("\n ")}`
+    })
 }
 
 function addDoor(x, y, destination, needs) {
@@ -501,7 +515,7 @@ function addDoor(x, y, destination, needs) {
 
 function setupRoom(name, colour) {
     setBackground(colour)
-    drawHud()
+    createHud()
 
     add([
         text(name, { size: 44 }),
@@ -522,8 +536,8 @@ function setupRoom(name, colour) {
 scene("hall", () => {
     setupRoom("The Hall", rgb(60, 40, 80))
 
-    addDoor(680, 330, "kitchen")
-    addDoor(120, 330, "cellar")
+    addDoor(630, 380, "kitchen")
+    addDoor(170, 380, "cellar")
     addDoor(400, 230, "attic", "key")
 })
 
@@ -531,7 +545,7 @@ scene("cellar", () => {
     hp = hp - 1
     setupRoom("The Cellar", rgb(30, 30, 50))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("ghost"),
@@ -554,7 +568,6 @@ scene("cellar", () => {
     onClick("key", (key) => {
         inventory.push("key")
         destroy(key)
-        drawHud()
         showMessage("You found a key!")
     })
 
@@ -579,7 +592,7 @@ go("hall")
 
 Go back to the **working** house in the Run step, and complete the tasks one at a time. Test after each change!
 
-1. <check> Show **`Inventory: (nothing)`** in the HUD when the inventory is **empty** (hint: `inventory.length === 0`(js))
+1. <check> Show **`(nothing)`** under `Inventory:` in the HUD when the inventory is **empty** (hint: `inventory.length === 0`(js))
 2. <check> Add a **sword** to the hall that can be picked up (and doesn't come back after it's picked up)
 3. <check> Make the **cellar door** need the sword, so the player must collect it first
 

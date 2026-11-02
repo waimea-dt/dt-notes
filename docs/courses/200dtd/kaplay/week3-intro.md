@@ -1,6 +1,6 @@
-# Week 3: Data & Displaying Data
+# Week 3: Game Data & Displaying this in a User Interface (UI)
 
-This week you'll learn how to store lots of information as **data**, using arrays and objects, and how to build a **UI** that can show any of it. You'll finish by building a viewer for a deck of cards of your own design.
+This week you'll learn how to store lots of information as **data**, using arrays and objects, and how to build a **user interface (UI)** that can show any of it. You'll finish by building a viewer for a deck of cards of your own design.
 
 
 | Lesson | Title                                                              | You will learn                                                                           |

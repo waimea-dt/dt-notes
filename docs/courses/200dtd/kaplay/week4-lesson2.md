@@ -24,7 +24,7 @@ Try not to look back at the previous lessons...
 ## Learning Goals
 
 - <check> I can keep the game's **state** in variables outside the scenes
-- <check> I can show the state in a **HUD**, and redraw it when it changes
+- <check> I can show the state in a **HUD** that **updates itself**
 - <check> I can change the state **when the player enters a room** or **clicks something**
 - <check> I can end the game when HP reaches `0`
 - <check> I can **reset** the game for another go
@@ -40,7 +40,10 @@ The **state of the game** is everything the game needs to remember: the player's
 | Health       | `let hp = 3`(js)               | Number  |
 | Heart eaten? | `let heartTaken = false`(js)   | Boolean |
 
-But scenes are rebuilt from scratch each time we enter them. So the **HUD** (the display of HP) has to be **redrawn** from the state, every time.
+But scenes are rebuilt from scratch each time we enter them. So the **HUD** (the display of HP) is built again in every room. Its label **watches** the `hp` variable every frame, using `onUpdate(...)`(js), so it always shows the current value.
+
+> [!NOTE]
+> Last week the card only changed when we called `.show()`(js). A HUD is different: HP can change from lots of places, so it is easier to let the label **watch** the state than to remember to update it each time.
 
 > [!NOTE]
 > Behind the code below are two functions you've seen before, done for you: `addDoor(x, y, destination)`(js) from last lesson, and `showMessage(message)`(js), which puts a message at the bottom of the screen.
@@ -60,20 +63,22 @@ function resetGame() {
     heartTaken = false
 }
 
-function drawHud() {
-    destroyAll("hud")
-
-    add([
-        text(`HP: ${hp}`, { size: 28 }),
+function createHud() {
+    const hpLabel = add([
+        text("", { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
+
+    // The label watches the state, so it updates itself
+    hpLabel.onUpdate(() => {
+        hpLabel.text = `HP: ${hp}`
+    })
 }
 
 // Every room starts the same way
 function setupRoom(name, colour) {
     setBackground(colour)
-    drawHud()
+    createHud()
 
     add([
         text(name, { size: 44 }),
@@ -89,14 +94,14 @@ function setupRoom(name, colour) {
 scene("hall", () => {
     setupRoom("The Hall", rgb(60, 40, 80))
 
-    addDoor(680, 330, "kitchen")
-    addDoor(120, 330, "cellar")
+    addDoor(630, 380, "kitchen")
+    addDoor(170, 380, "cellar")
 })
 
 scene("kitchen", () => {
     setupRoom("The Kitchen", rgb(40, 80, 60))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     if (!heartTaken) {
         add([
@@ -113,7 +118,6 @@ scene("kitchen", () => {
         heartTaken = true
         hp = hp + 1
         destroy(heart)
-        drawHud()
         showMessage("Yum! You feel better. +1 HP")
     })
 })
@@ -122,7 +126,7 @@ scene("cellar", () => {
     hp = hp - 1
     setupRoom("The Cellar", rgb(30, 30, 50))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("ghost"),
@@ -206,6 +210,8 @@ function showMessage(message) {
         pos(width() / 2, 540),
         anchor("center"),
         color(255, 220, 0),
+        opacity(1),
+        lifespan(2, { fade: 0.5 }),
         "message",
     ])
 }
@@ -251,20 +257,22 @@ function resetGame() {
     heartTaken = false
 }
 
-function drawHud() {
-    destroyAll("hud")
-
-    add([
-        text(`HP: ${hp}`, { size: 28 }),
+function createHud() {
+    const hpLabel = add([
+        text("", { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
+
+    // The label watches the state, so it updates itself
+    hpLabel.onUpdate(() => {
+        hpLabel.text = `HP: ${hp}`
+    })
 }
 
 // Every room starts the same way
 function setupRoom(name, colour) {
     setBackground(colour)
-    drawHud()
+    createHud()
 
     add([
         text(name, { size: 44 }),
@@ -280,14 +288,14 @@ function setupRoom(name, colour) {
 scene("hall", () => {
     setupRoom("The Hall", rgb(60, 40, 80))
 
-    addDoor(680, 330, "kitchen")
-    addDoor(120, 330, "cellar")
+    addDoor(630, 380, "kitchen")
+    addDoor(170, 380, "cellar")
 })
 
 scene("kitchen", () => {
     setupRoom("The Kitchen", rgb(40, 80, 60))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     if (!heartTaken) {
         add([
@@ -304,7 +312,6 @@ scene("kitchen", () => {
         heartTaken = true
         hp = hp + 1
         destroy(heart)
-        drawHud()
         showMessage("Yum! You feel better. +1 HP")
     })
 })
@@ -313,7 +320,7 @@ scene("cellar", () => {
     hp = hp - 1
     setupRoom("The Cellar", rgb(30, 30, 50))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("ghost"),
@@ -363,7 +370,7 @@ go("hall")
 
     <response>
 
-2. In the cellar, `hp = hp - 1`(js) comes **before** `setupRoom(...)`(js). Try swapping them. What happens to the HUD, and why?
+2. In the cellar, `hp = hp - 1`(js) comes **before** `setupRoom(...)`(js). Try swapping them. Does the HUD change? Why not? (Hint: what does the label do every frame?)
 
     <response>
 
@@ -400,20 +407,17 @@ function resetGame() {
     heartTaken = false
 }
 
-function drawHud() {
-    destroyAll("hud")
-
+function createHud() {
     add([
         text(`HP: ${hp}`, { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
 }
 
 // Every room starts the same way
 function setupRoom(name, colour) {
     setBackground(colour)
-    drawHud()
+    createHud()
 
     add([
         text(name, { size: 44 }),
@@ -429,14 +433,14 @@ function setupRoom(name, colour) {
 scene("hall", () => {
     setupRoom("The Hall", rgb(60, 40, 80))
 
-    addDoor(680, 330, "kitchen")
-    addDoor(120, 330, "cellar")
+    addDoor(630, 380, "kitchen")
+    addDoor(170, 380, "cellar")
 })
 
 scene("kitchen", () => {
     setupRoom("The Kitchen", rgb(40, 80, 60))
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     if (!heartTaken) {
         add([
@@ -452,7 +456,6 @@ scene("kitchen", () => {
     onClick("heart", (heart) => {
         hp = hp + 1
         destroy(heart)
-        drawHud()
         showMessage("Yum! You feel better. +1 HP")
     })
 })
@@ -461,7 +464,7 @@ scene("cellar", () => {
     setupRoom("The Cellar", rgb(30, 30, 50))
     hp = hp - 1
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     add([
         sprite("ghost"),
@@ -501,12 +504,12 @@ go("hall")
 
 </web-playground>
 
-1. <check> In the cellar, the HUD shows the **old** HP, until you move rooms
+1. <check> The HUD shows the **old** HP after the cellar bite or the heart, until you move rooms
 2. <check> The **heart** can be eaten **again and again**, every time you visit the kitchen
 3. <check> **Nothing happens** when HP reaches `0`: you can keep going into the negatives
 
 > [!TIP]
-> Think about **when** things happen. What order should they be in? And what **remembers** that the heart has been eaten?
+> Does the HUD label **watch** the state, or is its text only written once? And what **remembers** that the heart has been eaten?
 
 ### Tinker
 
@@ -545,7 +548,7 @@ Your house must have:
 </web-playground>
 
 > [!TIP]
-> The helper functions you need are in the code above: `resetGame()`(js), `drawHud()`(js) and `setupRoom(...)`(js). `addDoor(...)`(js) is in Lesson 1. And here is `showMessage(...)`(js), which was done for you:
+> The helper functions you need are in the code above: `resetGame()`(js), `createHud()`(js) and `setupRoom(...)`(js). `addDoor(...)`(js) is in Lesson 1. And here is `showMessage(...)`(js), which was done for you:
 >
 > ```js
 > function showMessage(message) {
@@ -556,6 +559,8 @@ Your house must have:
 >         pos(width() / 2, 540),
 >         anchor("center"),
 >         color(255, 220, 0),
+>         opacity(1),
+>         lifespan(2, { fade: 0.5 }),
 >         "message",
 >     ])
 > }
@@ -569,7 +574,7 @@ Finished early? Try these. Pick the ones that sound fun.
 | ---------------------------------------------------------- | ------------------------------------------------------------------------- |
 | A **random** amount of damage in the cellar                | `hp = hp - randi(1, 3)`(js)                                               |
 | A **maximum** HP, so hearts can't heal beyond it           | An `if`(js) after healing: `if (hp > 5) { hp = 5 }`(js)                   |
-| Show the player's **HP as hearts**, one picture per HP     | A `for`(js) loop in `drawHud`(js), adding a `heart` sprite each lap       |
+| Turn the HP label **red** when HP is down to 1             | Inside the `onUpdate`(js) function: `hpLabel.color = rgb(255, 0, 0)`(js)  |
 
 
 ## Exit Ticket
@@ -587,12 +592,12 @@ Without looking back, answer these three questions:
     - [ ] Because scenes can't have variables
     - [ ] So it runs faster
 
-- # `drawHud()` starts with `destroyAll("hud")`. Why?
+- # The HUD label uses `onUpdate(...)`. Why?
 
     ---
 
     - [ ] To end the game
-    - [x] To remove the old HUD, so the new one isn't drawn on top of it
+    - [x] So it checks the state every frame and always shows the current value
     - [ ] To delete the HP
     - [ ] To hide the heart
 

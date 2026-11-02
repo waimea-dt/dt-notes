@@ -96,7 +96,7 @@ Global state in action: health that follows the player from room to room
 ## Learning
 
 - **State** in global variables
-- A **HUD** drawn from the state
+- A **HUD** that watches the state
 - Hazards, pickups, **game over**
 - **Resetting** the game
 
@@ -116,36 +116,44 @@ Types again: a number and a boolean
 
 ---
 
-## Redraw from State
+## A HUD That Watches
 
 ```js
-function drawHud() {
-    destroyAll("hud")
-
-    add([
-        text(`HP: ${hp}`, { size: 28 }),
+function createHud() {
+    const hpLabel = add([
+        text("", { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
+
+    // The label watches the state, so it updates itself
+    hpLabel.onUpdate(() => {
+        hpLabel.text = `HP: ${hp}`
+    })
 }
 ```
 
 Each scene starts **empty**, so the HUD is built again
 
+`onUpdate` checks the state **every frame**, so there is no redrawing
+
 ---
 
-## Order Matters
+## Push or Pull?
+
+Week 3: we **told** the card to update
 
 ```js
-scene("cellar", () => {
-    hp = hp - 1                  // change the state first
-    setupRoom("The Cellar", ...) // then draw it
+cardView.show(card)
 ```
 
-Swap them and the HUD shows the **old** HP
+Week 4: the HUD **watches** the state
+
+```js
+hpLabel.onUpdate(() => { ... })
+```
 
 Note:
-It's one of the bug hunt bugs. Ask what the HUD shows if setupRoom comes first
+Ask which one suits HP: it changes from many places, so let the label watch. Ask which suits the card: it only changes on a click, so telling it is fine.
 
 ---
 

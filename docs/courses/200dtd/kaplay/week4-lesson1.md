@@ -92,7 +92,7 @@ scene("hall", () => {
         pos(20, 20),
     ])
 
-    addDoor(680, 330, "kitchen")
+    addDoor(630, 380, "kitchen")
 
     onClick("door", (door) => {
         go(door.destination)
@@ -108,7 +108,7 @@ scene("kitchen", () => {
         anchor("center"),
     ])
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     onClick("door", (door) => {
         go(door.destination)
@@ -191,7 +191,7 @@ scene("hall", () => {
         pos(20, 20),
     ])
 
-    addDoor(680, 330, "kitchen")
+    addDoor(630, 380, "kitchen")
 
     onClick("door", (door) => {
         go(door.destination)
@@ -207,7 +207,7 @@ scene("kitchen", () => {
         anchor("center"),
     ])
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 
     onClick("door", (door) => {
         go(door.destination)
@@ -301,7 +301,7 @@ scene("hall", () => {
         pos(20, 20),
     ])
 
-    addDoor(680, 330, "Kitchen")
+    addDoor(630, 380, "Kitchen")
 
     onClick("door", (door) => {
         go(door.destination)
@@ -317,7 +317,7 @@ scene("kitchen", () => {
         anchor("center"),
     ])
 
-    addDoor(120, 330, "hall")
+    addDoor(170, 250, "hall")
 })
 ```
 

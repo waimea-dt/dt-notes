@@ -74,20 +74,25 @@ function resetGame() {
     heartTaken = false
 }
 
-function drawHud() {
-    destroyAll("hud")
-
-    add([
-        text(`HP: ${hp}`, { size: 28 }),
+function createHud() {
+    const hpLabel = add([
+        text("", { size: 28 }),
         pos(20, 20),
-        "hud",
     ])
 
-    add([
-        text(`Inventory: ${inventory.join(", ")}`, { size: 22 }),
-        pos(20, 60),
-        "hud",
+    const inventoryLabel = add([
+        text("", { size: 28 }),
+        pos(600, 20),
     ])
+
+    // The labels watch the state, so they update themselves
+    hpLabel.onUpdate(() => {
+        hpLabel.text = `HP: ${hp}`
+    })
+
+    inventoryLabel.onUpdate(() => {
+        inventoryLabel.text = `Inventory:\n ${inventory.join("\n ")}`
+    })
 }
 
 function showMessage(message) {
@@ -98,6 +103,8 @@ function showMessage(message) {
         pos(width() / 2, 540),
         anchor("center"),
         color(255, 220, 0),
+        opacity(1),
+        lifespan(2, { fade: 0.5 }),
         "message",
     ])
 }
@@ -105,7 +112,7 @@ function showMessage(message) {
 // Every room starts the same way
 function setupRoom(name, colour) {
     setBackground(colour)
-    drawHud()
+    createHud()
 
     add([
         text(name, { size: 44 }),
@@ -288,12 +295,12 @@ Before you finish the week, answer these questions on your own.
     - [ ] The name of the game
     - [ ] The scene that's showing
 
-- # Why does `drawHud()` redraw the HUD, instead of updating one that was already made?
+- # Why does each room call `createHud()`(js)?
 
     ---
 
     - [ ] To make the game slower
-    - [x] Because each scene starts empty, so the HUD must be built again from the state
+    - [x] Because each scene starts empty, so the HUD must be built again. Its labels then keep themselves up to date
     - [ ] Because HUDs can't be changed
     - [ ] To change the HP
 

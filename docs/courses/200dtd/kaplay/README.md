@@ -2,7 +2,7 @@
 
 ![Kaplay logo](_assets/kaplay.png)
 
-Welcome, game makers! Over the next five weeks you'll learn the **JavaScript** programming language, a game development library called **Kaplay**, and the game-making tools you need to build your own games. Then you'll spend four more weeks designing and building a game of your own.
+Welcome, game makers! Over the next six weeks you'll learn the **JavaScript** programming language, a game development library called **Kaplay**, and the game-making tools you need to build your own games. Then you'll spend four more weeks designing and building a game of your own.
 
 <menu>
 
@@ -30,25 +30,25 @@ Game: **Whack-a-Bug**
 
 ---
 
-### Week 3: Dialogue & Storylines
+### Week 3: Game Data & User Interface
 
-<i data-lucide="message-circle-text"></i>
+<i data-lucide="clipboard-list"></i>
 
 [Link](/courses/200dtd/kaplay/week3-intro.md)
 
-Store game **data**, split a game into **scenes**, let the player’s **choices** change the ending
+Store game **data**, display in a **user interface (UI)** and update this as the game plays
 
-Game: **Creature Clash**
+Game: **Creature Deck**
 
 ---
 
-### Week 4: Locations, HP & Inventory
+### Week 4: Scenes & Game State
 
 <i data-lucide="ghost"></i>
 
 [Link](/courses/200dtd/kaplay/week4-intro.md)
 
-Notes here
+Track **game state** (e.g. HP, inventory, etc.) and move from **scene to scene**
 
 Game: **Haunted House**
 
@@ -60,9 +60,9 @@ Game: **Haunted House**
 
 [Link](/courses/200dtd/kaplay/week5-intro.md)
 
-Notes here
+Fire **bullets**, spawn **enemies**, detect **collisions**, add **lives** and make the game get **harder**
 
-Game: **Space Invaders-ish**
+Game: **Bug Blaster**
 
 ---
 
@@ -72,7 +72,7 @@ Game: **Space Invaders-ish**
 
 [Link](/courses/200dtd/kaplay/week6-intro.md)
 
-Notes here
+Switch on **gravity**, **jump** between **platforms**, and draw **levels** full of coins and spikes
 
 Game: **Coin Dash**
 
@@ -84,7 +84,7 @@ Game: **Coin Dash**
 
 [Link](/courses/200dtd/kaplay/project-intro.md)
 
-Notes here
+**Plan**, **build** and **test** a game of your own design, then share it with others
 
 Game: **Your Own!**
 
@@ -112,4 +112,3 @@ The course uses an approach called **PRIMM**:
 | **M**ake        | Build something new using what you've learned.              |
 
 Getting a prediction wrong is not a failure. It's the best moment for learning, because your brain just found out something it didn't know.
-
