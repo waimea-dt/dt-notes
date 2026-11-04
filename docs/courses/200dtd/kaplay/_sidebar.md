@@ -44,7 +44,7 @@
     - [Lesson 3: Lives & Difficulty](/courses/200dtd/kaplay/week5-lesson3.md)
     - [Lesson 4: Build a Shooter](/courses/200dtd/kaplay/week5-lesson4.md)
 
-- [<i data-lucide="sport-shoe"></i> Week 6: **Gravity, Physics & Platforms**](/courses/200dtd/kaplay/week6-intro.md)
+- [<i data-lucide="sport-shoe"></i> Week 6: **Gravity & Platforms**](/courses/200dtd/kaplay/week6-intro.md)
     - [Lesson 1: Gravity & Jumping](/courses/200dtd/kaplay/week6-lesson1.md)
     - [Lesson 2: Level Maps](/courses/200dtd/kaplay/week6-lesson2.md)
     - [Lesson 3: Pickups & Levels](/courses/200dtd/kaplay/week6-lesson3.md)

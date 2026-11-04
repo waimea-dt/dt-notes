@@ -1,6 +1,6 @@
 kaplay({
     width: 768, height: 576,
-    background: [110, 180, 240]
+    background: [30, 60, 90]
 })
 
 loadBean()
@@ -94,7 +94,16 @@ const tiles = {
     ],
     "@": () => [
         sprite("bean"),
-        area(),
+        // area(),
+        area({ shape: new Circle(vec2(30, 27), 26) }),
+        // area({
+        //     shape: new Polygon([
+        //         vec2(-15, -25), vec2(15, -25),   // top
+        //         vec2(25, -15),  vec2(25, 15),    // right
+        //         vec2(15, 25),   vec2(-15, 25),   // bottom (flat)
+        //         vec2(-25, 15),  vec2(-25, -15),  // left
+        //     ]),
+        // }),
         body({ jumpForce: 700 }),
         "player",
     ],
@@ -133,18 +142,24 @@ function createHud() {
 }
 
 function addControls(player) {
-    onKeyDown("left", () => {
+    player.onUpdate(() => {
+        if (player.isGrounded()) {
+            player.vel.x = 0
+        }
+    })
+
+    onKeyDown(["a", "left"], () => {
         player.move(-playerSpeed, 0)
         player.flipX = true
     })
 
-    onKeyDown("right", () => {
+    onKeyDown(["d", "right"], () => {
         player.move(playerSpeed, 0)
         player.flipX = false
     })
 
     // Only jump from the ground, or the bean could fly
-    onKeyPress("space", () => {
+    onKeyPress(["w", "up", "space"], () => {
         if (player.isGrounded()) {
             player.jump()
         }
