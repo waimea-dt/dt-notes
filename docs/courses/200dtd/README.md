@@ -18,7 +18,7 @@ Game development in the JavaScript language, using the Kaplay framework
 
 <i data-lucide="database"></i>
 
-[Link](/courses/200dtd/db/)
+[Link](/courses/200dtd/sqlite/)
 
 Creating and working with databases using SQLite
 
