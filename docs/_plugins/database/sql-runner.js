@@ -264,6 +264,8 @@
                 // Hide the original <pre> block
                 pre.style.display = 'none'
 
+                window.DocsifyPersist?.bindEditor(cm, { el: snippet, type: 'sql', original: visibleCode })
+
                 // Mark as initialized
                 snippet.dataset.initialized = 'true'
             })

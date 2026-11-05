@@ -534,6 +534,18 @@
                     this.updateDiagram()
                 }, DEBOUNCE_DELAY)
             })
+
+            // Restored code sets this.sql straight away, so the first diagram drawn is the student's
+            window.DocsifyPersist?.bindEditor(this.editor, {
+                el: this.element,
+                type: 'erd',
+                original: this.sql,
+                write: value => {
+                    this.editor.setValue(value)
+                    this.editor.clearHistory()
+                    this.sql = value
+                },
+            })
         }
 
         updateDiagram() {

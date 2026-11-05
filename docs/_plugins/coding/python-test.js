@@ -152,6 +152,8 @@
                     gutters: ['CodeMirror-linenumbers'],
                 })
 
+                window.DocsifyPersist?.bindEditor(testEditor, { el: container, type: 'python-test', original: testCode })
+
                 // Get control elements
                 const runBtn = container.querySelector('.python-test-run-btn')
                 const clearBtn = container.querySelector('.python-test-clear-btn')
