@@ -242,23 +242,12 @@
                 }
 
                 // Create CodeMirror editor
-                const cm = CodeMirror(function (editorEl) {
+                const cm = window.DocsifyUtils.createEditor(function (editorEl) {
                     wrapper.insertBefore(editorEl, pre)
-                }, {
-                    value:             visibleCode,
-                    mode:              'text/x-sqlite',
-                    theme:             'material-darker',
-                    lineNumbers:       false,
-                    autoCloseBrackets: true,
-                    matchBrackets:     true,
-                    indentUnit:        4,
-                    tabSize:           4,
-                    indentWithTabs:    false,
-                    lineWrapping:      false,
-                    viewportMargin:    Infinity,
-                    styleActiveLine:   true,
-                    lint:              true,
-                    gutters:           ['CodeMirror-lint-markers'],
+                }, 'text/x-sqlite', {
+                    value:   visibleCode,
+                    lint:    true,
+                    gutters: ['CodeMirror-lint-markers'],
                 })
 
                 // Sync CodeMirror changes to the <code> element (for Codapi to pick up)

@@ -104,19 +104,8 @@
 
                 // Create editable CodeMirror for tests
                 const testsContainer = container.querySelector('.python-test-tests')
-                const testEditor = CodeMirror(testsContainer, {
-                    value: testCode,
-                    mode: 'text/x-python',
-                    theme: 'material-darker',
-                    lineNumbers: false,
-                    autoCloseBrackets: true,
-                    matchBrackets: true,
-                    indentUnit:        4,
-                    tabSize:           4,
-                    indentWithTabs: false,
-                    lineWrapping: false,
-                    viewportMargin: Infinity,
-                    styleActiveLine: true,
+                const testEditor = window.DocsifyUtils.createEditor(testsContainer, 'text/x-python', {
+                    value:   testCode,
                     gutters: ['CodeMirror-linenumbers'],
                 })
 

@@ -90,18 +90,8 @@
         if (!window.CodeMirror) return () => code.textContent
 
         const original = code.textContent.replace(/\n$/, '')
-        const editor = CodeMirror(editorEl => pre.parentNode.insertBefore(editorEl, pre), {
+        const editor = window.DocsifyUtils.createEditor(editorEl => pre.parentNode.insertBefore(editorEl, pre), 'javascript', {
             value: original,
-            mode: 'javascript',
-            theme: 'material-darker',
-            lineNumbers: false,
-            autoCloseBrackets: true,
-            matchBrackets: true,
-            indentUnit:        4,
-            tabSize:           4,
-            indentWithTabs: false,
-            viewportMargin: Infinity,
-            styleActiveLine: true,
         })
         pre.style.display = 'none'
 

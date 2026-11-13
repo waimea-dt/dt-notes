@@ -504,18 +504,7 @@
         initializeEditor() {
             const textarea = this.element.querySelector('.erd-editor')
 
-            this.editor = CodeMirror.fromTextArea(textarea, {
-                mode: 'text/x-sqlite',
-                theme: 'material-darker',
-                lineNumbers: false,
-                lineWrapping: false,
-                tabSize: 4,
-                indentUnit: 4,
-                indentWithTabs: false,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                styleActiveLine: true
-            })
+            this.editor = window.DocsifyUtils.createEditor(textarea, 'text/x-sqlite')
 
             this.editor.setValue(this.sql)
 

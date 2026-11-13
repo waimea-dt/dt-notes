@@ -50,23 +50,12 @@
             // Prepend hidden code to what the runner sees, but not what the editor shows
             if (hiddenCode) code.textContent = hiddenCode + '\n' + visibleCode
 
-            const cm = CodeMirror(function (editorEl) {
+            const cm = window.DocsifyUtils.createEditor(function (editorEl) {
                 pre.parentNode.insertBefore(editorEl, pre)
-            }, {
-                value:             visibleCode,
-                mode:              'text/x-python',
-                theme:             'material-darker',
-                lineNumbers:       false,
-                autoCloseBrackets: true,
-                matchBrackets:     true,
-                indentUnit:        4,
-                tabSize:           4,
-                indentWithTabs:    false,
-                lineWrapping:      false,
-                viewportMargin:    Infinity,
-                styleActiveLine:   true,
-                lint:              true,
-                gutters:           ['CodeMirror-lint-markers'],
+            }, 'text/x-python', {
+                value:   visibleCode,
+                lint:    true,
+                gutters: ['CodeMirror-lint-markers'],
             })
 
             pre.style.display = 'none'

@@ -42,6 +42,8 @@
  *   registerPlugin(fn, prepend)         - Register a Docsify plugin function
  *   loadScript(src)                     - Load a script once on demand (cached promise)
  *   loadScripts(srcs)                   - Load several scripts in order, on demand
+ *   createEditor(place, mode, options)  - Create a CodeMirror editor with the site's shared settings
+ *   resolveScope(root)                  - Use root if it is a queryable node, else document
  *   parseHeaderConfig(el, defaults)     - Parse header/title/sub-title attributes from a plugin element
  */
 ;(function () {
@@ -564,6 +566,64 @@
     }
 
     // -------------------------------------------------------------------------
+    // Code editors (CodeMirror 5)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Tab indents a selection, otherwise inserts spaces up to the next tab stop.
+     * CodeMirror's default Tab inserts a real tab character, which mixes with the
+     * space indentation from Enter and makes Python fail with a TabError.
+     */
+    function indentOrSoftTab(cm) {
+        if (cm.somethingSelected()) cm.indentSelection('add')
+        else cm.execCommand('insertSoftTab')
+    }
+
+    const EDITOR_DEFAULTS = {
+        theme:             'material-darker',
+        lineNumbers:       false,
+        lineWrapping:      false,
+        indentUnit:        4,
+        tabSize:           4,
+        indentWithTabs:    false,
+        autoCloseBrackets: true,
+        matchBrackets:     true,
+        styleActiveLine:   true,
+        viewportMargin:    Infinity,
+        extraKeys:         { 'Tab': indentOrSoftTab, 'Shift-Tab': 'indentLess' },
+    }
+
+    /**
+     * Create a CodeMirror editor with the shared settings.
+     * @param {Element|Function} place - Parent element, a CodeMirror placement function,
+     *                                   or a <textarea> to replace.
+     * @param {string} mode            - CodeMirror mode, e.g. 'text/x-python'.
+     * @param {Object} options         - Per-editor overrides (value, lint, gutters...).
+     */
+    function createEditor(place, mode, options = {}) {
+        const settings = {
+            ...EDITOR_DEFAULTS,
+            ...options,
+            mode,
+            extraKeys: { ...EDITOR_DEFAULTS.extraKeys, ...options.extraKeys },
+        }
+        return place instanceof HTMLTextAreaElement
+            ? CodeMirror.fromTextArea(place, settings)
+            : CodeMirror(place, settings)
+    }
+
+    // -------------------------------------------------------------------------
+    // DOM scope
+    // -------------------------------------------------------------------------
+
+    /**
+     * Plugins can process a given root (e.g. a slide or PRIMM section) or the whole page.
+     */
+    function resolveScope(root) {
+        return root && typeof root.querySelectorAll === 'function' ? root : document
+    }
+
+    // -------------------------------------------------------------------------
     // Export
     // -------------------------------------------------------------------------
 
@@ -604,6 +664,8 @@
         registerPlugin,
         loadScript,
         loadScripts,
+        createEditor,
+        resolveScope,
         parseHeaderConfig,
     })
 

@@ -270,18 +270,11 @@
     const CM_MODE = { html: 'htmlmixed', css: 'css', js: 'javascript' }
 
     function createEditor(el, content, type, container) {
-        const editor = CodeMirror(el, {
-            value:             content,
-            mode:              CM_MODE[type],
-            theme:             'material-darker',
-            lineNumbers:       false,
-            lineWrapping:      true,
-            tabSize:           4,
-            indentUnit:        4,
-            indentWithTabs:    false,
-            extraKeys:         { Tab: 'insertSoftTab' },
-            autoCloseBrackets: true,
-            autoCloseTags:     true,
+        const editor = window.DocsifyUtils.createEditor(el, CM_MODE[type], {
+            value:           content,
+            lineWrapping:    true,
+            autoCloseTags:   true,
+            styleActiveLine: false,
         })
 
         window.DocsifyPersist?.bindEditor(editor, { el: container, type: 'playground', sub: type, original: content })
