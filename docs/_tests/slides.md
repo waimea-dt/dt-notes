@@ -143,7 +143,7 @@ Hello, Human!
 
 ---
 
-<excalidraw src="_assets/test.excalidraw" alt="Excalidraw test scene">
+<excalidraw src="_tests/_assets/test.excalidraw" alt="Excalidraw test scene">
 
 ---
 
