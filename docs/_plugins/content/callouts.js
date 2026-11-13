@@ -2,8 +2,9 @@
  * docsify-callouts.js - Enhances Docsify callout blocks with icon + title rows.
  *
  * Docsify route caching can occasionally return plain blockquotes instead of
- * .callout nodes. This plugin restores missing callout classes from markdown
- * source and then injects a consistent title row.
+ * .callout nodes. This plugin restores missing callout classes from the page's
+ * markdown (captured in beforeEach, so no extra download) and then injects a
+ * consistent title row.
  */
 (function () {
     const CALLOUT_TITLE_CLASS = 'callout-title'
@@ -32,7 +33,8 @@
 
     const TYPES = Object.keys(ICONS)
     const MARKER_LINE_RE = new RegExp(`^\\s*>\\s*\\[!(${TYPES.join('|')})\\]\\s*$`, 'i')
-    const SOURCE_CACHE = new Map()
+    // Callout markers from the current page's markdown, captured in beforeEach
+    let pageCallouts = []
 
     const { resolveScope } = window.DocsifyUtils
 
@@ -50,14 +52,6 @@
             .replace(/__([^_]+)__/g, '$1')
             .replace(/\*([^*]+)\*/g, '$1')
             .replace(/_([^_]+)_/g, '$1'))
-    }
-
-    function currentDocPath() {
-        const hash = String(window.location.hash || '').replace(/^#\/?/, '')
-        const route = hash.split('?')[0].trim() || String(window.$docsify?.homepage || 'README.md')
-        if (!route) return ''
-        if (route.endsWith('.md')) return route
-        return route.endsWith('/') ? `${route}README.md` : `${route}.md`
     }
 
     function extractSourceCallouts(markdown) {
@@ -83,29 +77,6 @@
         }
 
         return callouts
-    }
-
-    async function getSourceCallouts() {
-        const path = currentDocPath()
-        if (!path) return []
-
-        if (SOURCE_CACHE.has(path)) return SOURCE_CACHE.get(path)
-
-        try {
-            const response = await fetch(path, { cache: 'no-store' })
-            if (!response.ok) {
-                SOURCE_CACHE.set(path, [])
-                return []
-            }
-
-            const markdown = await response.text()
-            const parsed = extractSourceCallouts(markdown)
-            SOURCE_CACHE.set(path, parsed)
-            return parsed
-        } catch (_error) {
-            SOURCE_CACHE.set(path, [])
-            return []
-        }
     }
 
     function recoverPlainBlockquotes(root, sourceCallouts) {
@@ -166,23 +137,18 @@
     }
 
     function runCalloutPass(root) {
+        recoverPlainBlockquotes(root || document, pageCallouts)
         addTitles(root)
-
-        getSourceCallouts().then(function (sourceCallouts) {
-            recoverPlainBlockquotes(root || document, sourceCallouts)
-            addTitles(root)
-        })
     }
 
     const docsifyCallouts = function (hook) {
-        hook.doneEach(function () {
-            runCalloutPass(document)
+        hook.beforeEach(function (content) {
+            pageCallouts = extractSourceCallouts(content)
+            return content
         })
 
-        hook.ready(function () {
-            window.addEventListener('hashchange', function () {
-                runCalloutPass(document)
-            })
+        hook.doneEach(function () {
+            runCalloutPass(document)
         })
     }
 
