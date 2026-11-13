@@ -28,7 +28,7 @@ Creating and working with databases using SQLite
 
 <i data-lucide="flask-conical"></i>
 
-[Link](/courses/200dtd/flask/)
+[Link](/web/flask/)
 
 Web development with the Python Flask back-end library
 
@@ -38,7 +38,7 @@ Web development with the Python Flask back-end library
 
 <i data-lucide="file-lock"></i>
 
-[Link](/courses/cs/encryption/)
+[Link](/cs/encryption/)
 
 How encryption works and where it is used
 
