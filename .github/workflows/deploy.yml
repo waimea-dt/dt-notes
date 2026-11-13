@@ -31,6 +31,12 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Draft work lives in temp/ folders - keep it in the repo but off the live site
+      - name: Remove drafts and editor backups
+        run: |
+          find docs -type d -name temp -prune -exec rm -rf {} +
+          find docs -type f -name '*~' -delete
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
