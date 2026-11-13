@@ -224,6 +224,7 @@
   // deck's own Reveal message listener would act on. Decks disable that listener (`postMessage: false`)
   // and this one forwards the messages to the connected deck only.
   function onSpeakerViewMessage(event) {
+    if (event.origin !== window.location.origin) return
     if (!notesDeck || typeof event.data !== 'string' || !event.data.startsWith('{"method":"setState"')) return
     try {
       const { args } = JSON.parse(event.data)
