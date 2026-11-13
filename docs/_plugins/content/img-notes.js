@@ -16,9 +16,7 @@
 ;(function () {
     const { escapeHtml } = window.DocsifyUtils
 
-    function resolveScope(root) {
-        return root && typeof root.querySelectorAll === 'function' ? root : document
-    }
+    const { resolveScope } = window.DocsifyUtils
 
     const DEFAULT_ALT = 'Annotated image'
     const HOTSPOT_EVENTS_ACTIVATE = ['mouseenter', 'focus', 'click']

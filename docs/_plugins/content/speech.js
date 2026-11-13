@@ -19,9 +19,7 @@
 ;(function () {
   let fontIsReady = false
 
-  function resolveScope(root) {
-    return root && typeof root.querySelectorAll === 'function' ? root : document
-  }
+  const { resolveScope } = window.DocsifyUtils
 
   function whenFontReady(callback) {
     if (fontIsReady) {

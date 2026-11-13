@@ -42,9 +42,7 @@
  */
 
 ;(function () {
-  function resolveScope(root) {
-    return root && typeof root.querySelectorAll === 'function' ? root : document
-  }
+  const { resolveScope } = window.DocsifyUtils
 
   const LEFT_MARKER = 'Left: '
   const RIGHT_MARKER = 'Right: '

@@ -15,9 +15,7 @@
  */
 
 ; (function () {
-    function resolveScope(root) {
-        return root && typeof root.querySelectorAll === 'function' ? root : document
-    }
+    const { resolveScope } = window.DocsifyUtils
 
     // If the item contains a link, wrap all its content in it so the whole item is clickable
     function wrapItemContentInLink(item) {

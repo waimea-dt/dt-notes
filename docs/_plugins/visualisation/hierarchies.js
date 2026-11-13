@@ -21,9 +21,7 @@
   const FOCUS_MARKER = '!! '
   const { extractMarker } = window.DocsifyUtils
 
-  function resolveScope(root) {
-    return root && typeof root.querySelectorAll === 'function' ? root : document
-  }
+  const { resolveScope } = window.DocsifyUtils
 
   function processHierarchies(root) {
     const scope = resolveScope(root)

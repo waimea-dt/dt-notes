@@ -16,9 +16,7 @@
  */
 
 ;(function () {
-  function resolveScope(root) {
-    return root && typeof root.querySelectorAll === 'function' ? root : document
-  }
+  const { resolveScope } = window.DocsifyUtils
 
   function processCards(root) {
     const scope = resolveScope(root)

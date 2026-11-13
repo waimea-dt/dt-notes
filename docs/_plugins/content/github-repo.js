@@ -25,9 +25,7 @@
 
     const GITHUB_URL = 'https://github.com/'
 
-    function resolveScope(root) {
-        return root && typeof root.querySelectorAll === 'function' ? root : document
-    }
+    const { resolveScope } = window.DocsifyUtils
 
     function buildPanel(tag) {
         const repo = (tag.getAttribute('repo') || '').trim()

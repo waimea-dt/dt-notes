@@ -34,9 +34,7 @@
     const MARKER_LINE_RE = new RegExp(`^\\s*>\\s*\\[!(${TYPES.join('|')})\\]\\s*$`, 'i')
     const SOURCE_CACHE = new Map()
 
-    function resolveScope(root) {
-        return root && typeof root.querySelectorAll === 'function' ? root : document
-    }
+    const { resolveScope } = window.DocsifyUtils
 
     function normalizeText(value) {
         return String(value || '').replace(/\s+/g, ' ').trim()

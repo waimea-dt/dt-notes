@@ -62,9 +62,7 @@
         'computing':   { icon: 'computer',               title: 'Computing' },
     }
 
-    function resolveScope(root) {
-        return root && typeof root.querySelectorAll === 'function' ? root : document
-    }
+    const { resolveScope } = window.DocsifyUtils
 
     function addMetadataFilter(container, metadataValues) {
         container.querySelectorAll('.recommendations-filter').forEach(filter => filter.remove())

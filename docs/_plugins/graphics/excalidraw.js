@@ -15,9 +15,7 @@
 
 ;(function () {
 
-    function resolveScope(root) {
-        return root && typeof root.querySelectorAll === 'function' ? root : document
-    }
+    const { resolveScope } = window.DocsifyUtils
 
     const { resolveSourcePath, renderErrorBox } = window.DocsifyUtils
 
