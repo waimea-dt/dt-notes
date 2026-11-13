@@ -31,6 +31,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Full page list for search (runs before dev files are removed; it skips them anyway)
+      - name: Build search page list
+        run: python3 .github/scripts/build-search-paths.py
+
       # Dev / reference material stays in the repo but off the live site:
       # drafts (temp/), editor backups, AI assistant notes, Freeform design
       # sources, and curriculum/unit planning documents (courses/_assets).
