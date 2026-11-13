@@ -1342,7 +1342,7 @@
             '<<':  { symbol: '<<', name: 'Logical Left Shift' },
             '>>':  { symbol: '>>', name: 'Logical Right Shift' },
             '>>>': { symbol: '>>>', name: 'Arithmetic Right Shift' },
-            'neg': { symbol: '−', name: 'Two\'s Compliment' }
+            'neg': { symbol: '−', name: 'Two\'s Complement' }
         }
         return operations[op] || { symbol: '?', name: 'Unknown' }
     }
@@ -2139,7 +2139,10 @@
                 state.carryValues = new Array(state.bits).fill(null)
                 state.currentCarry = 0
             } else if (state.op === 'neg') {
+                // Negate = invert + add 1, so it needs carry state too (as in resetAnimationState)
                 state.negateInvertedBits = new Array(state.bits).fill(null)
+                state.carryValues = new Array(state.bits).fill(null)
+                state.currentCarry = 0
             }
 
             const ui = createCalcUI(state)
