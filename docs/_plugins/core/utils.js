@@ -399,7 +399,7 @@
      * Persist the selected theme.
      */
     function persistTheme(theme, storageKey = 'theme') {
-        localStorage.setItem(storageKey, theme)
+        try { localStorage.setItem(storageKey, theme) } catch { /* storage blocked - theme just won't persist */ }
     }
 
     /**

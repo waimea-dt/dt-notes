@@ -12,7 +12,8 @@
     <!-- Apply the stored theme before first paint to avoid a flash of the wrong theme. -->
     <script>
         (function () {
-            var stored = localStorage.getItem('theme')
+            var stored = null
+            try { stored = localStorage.getItem('theme') } catch (e) {}
             document.documentElement.setAttribute('data-theme', stored && stored.trim() ? stored.trim() : 'dark')
         })()
     </script>
@@ -33,17 +34,17 @@
 
     <link rel="stylesheet" href="https://unpkg.com/simple-icons-font@latest/font/simple-icons.min.css">
 
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/core.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@5/dist/themes/core.min.css">
 
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/codemirror@5/lib/codemirror.css">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/codemirror@5/theme/material-darker.css">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/codemirror@5/addon/lint/lint.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5/lib/codemirror.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5/theme/material-darker.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5/addon/lint/lint.css">
 
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/reveal.js/dist/theme/dracula.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/dist/theme/dracula.css">
 
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/prismjs@1/plugins/line-highlight/prism-line-highlight.min.css">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/prismjs@1/plugins/inline-color/prism-inline-color.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-highlight/prism-line-highlight.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/inline-color/prism-inline-color.min.css">
 
     <!-- Core -->
     <link rel="stylesheet" href="_css/core/theme.css">
@@ -63,7 +64,6 @@
     <link rel="stylesheet" href="_css/easter/matrix.css">
     <!-- Content -->
     <link rel="stylesheet" href="_css/content/tables.css">
-    <link rel="stylesheet" href="_css/content/forms.css">
     <link rel="stylesheet" href="_css/content/forms.css">
     <link rel="stylesheet" href="_css/content/form-fields.css">
     <link rel="stylesheet" href="_css/content/asides.css">
@@ -215,59 +215,59 @@
     </script>
 
 
-    <script src="//unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/docsify.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/plugins/search.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/docsify@5/dist/plugins/zoom-image.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@5/dist/docsify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@5/dist/plugins/search.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@5/dist/plugins/zoom-image.min.js"></script>
 
-    <script src="//unpkg.com/docsify-mermaid/dist/docsify-mermaid.js"></script>
+    <script src="https://unpkg.com/docsify-mermaid/dist/docsify-mermaid.js"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-markup.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-markdown.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-css.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-css-extras.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-kotlin.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-clike.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-c.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-cpp.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-csharp.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-django.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-markup.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-markdown.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-css-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-kotlin.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-clike.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-c.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-cpp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-csharp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-django.min.js"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/plugins/line-highlight/prism-line-highlight.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/prismjs@1/plugins/inline-color/prism-inline-color.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/line-highlight/prism-line-highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/inline-color/prism-inline-color.min.js"></script>
 
     <script src="https://unpkg.com/@antonz/runno@0.6.1/dist/runno.js"></script>
     <script src="https://unpkg.com/@antonz/codapi@0.20.0/dist/engine/wasi.js"></script>
     <script src="https://unpkg.com/@antonz/codapi@0.20.0/dist/snippet.js"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/split.js/dist/split.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/split.js/dist/split.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/lib/codemirror.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/mode/python/python.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/mode/sql/sql.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/mode/xml/xml.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/mode/css/css.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/mode/javascript/javascript.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/mode/htmlmixed/htmlmixed.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/addon/edit/matchbrackets.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/addon/edit/closetag.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/addon/edit/closebrackets.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/addon/selection/active-line.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/codemirror@5/addon/lint/lint.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/lib/codemirror.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/mode/python/python.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/mode/sql/sql.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/mode/xml/xml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/mode/css/css.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/mode/javascript/javascript.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/mode/htmlmixed/htmlmixed.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/addon/edit/matchbrackets.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/addon/edit/closetag.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/addon/edit/closebrackets.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/addon/selection/active-line.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5/addon/lint/lint.js"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/kotlin-playground"></script>
-    <script src="//cdn.jsdelivr.net/npm/scratchblocks/build/scratchblocks.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kotlin-playground"></script>
+    <script src="https://cdn.jsdelivr.net/npm/scratchblocks/build/scratchblocks.min.js"></script>
 
-    <script src="//cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js"></script>
 
     <!-- Shared utilities - must load before all other plugin scripts -->
     <script defer src="_plugins/core/utils.js"></script>
