@@ -178,7 +178,7 @@
 
     A mysterious artifact is uncovered on the Moon, leading to a mission to Jupiter being launched to discover its origins, carrying two scientists and an AI computer. This film was groundbreaking for its time, and really defined a new era of sci-fi movies. The cinematography is impressive and the visuals still hold up today.
 
-- ![](_assets/movies/alien.avif)
+- ![](_assets/movies/alien.webp)
     Alien Series
 
     - **Sci-Fi**
@@ -657,7 +657,7 @@
 
     A fast, stylish video-game movie with killer music, sharp jokes, and a lot of heart. Every nerd can empathise with the central character.
 
-- ![](_assets/movies/shaun-dead.avif)
+- ![](_assets/movies/shaun-dead.webp)
     [Shaun of the Dead](https://www.imdb.com/title/tt0365748/)
 
     - **Comedy**

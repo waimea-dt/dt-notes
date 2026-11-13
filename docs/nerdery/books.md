@@ -158,7 +158,7 @@
 
     ... and many more
 
-- ![](_assets/books/hhgttg.avif)
+- ![](_assets/books/hhgttg.webp)
     [The Hitchhikers Guide to the Galaxy Series](https://www.goodreads.com/series/40957-the-hitchhiker-s-guide-to-the-galaxy)
 
     - **Sci-Fi**
