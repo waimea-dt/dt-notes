@@ -1,4 +1,4 @@
-# Plugin Migration Guide
+# Plugin Guide
 
 This guide is for writing new Docsify plugins in this project.
 
@@ -52,6 +52,8 @@ Not good candidates:
 
 - Plugin script loaded in docs/index.html
 - Matching CSS loaded in docs/index.html
-- Test page added under docs/tests
-- Entry added to docs/tests/_sidebar.md
+- Test page added under docs/_tests
+- Entry added to docs/_tests/_sidebar.md
 - No duplicate utility copied from another plugin
+- CDN libraries pinned to an exact version (never @latest or unversioned)
+- Any window/document listeners or timers stop once the widget leaves the page
