@@ -1,6 +1,6 @@
 # SQL Injection Attacks
 
-[![XKCD SQL injection comic](_assets/xkcd-sql.png)](https://xkcd.com/327/)
+[![XKCD SQL injection comic](_assets/xkcd-sql.webp)](https://xkcd.com/327/)
 
 ## What is SQL Injection?
 

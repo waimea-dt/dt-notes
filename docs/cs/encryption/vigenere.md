@@ -4,7 +4,7 @@
 
 #### Named for the Wrong Person!
 
-![Vigenère](_assets/vigenere.png ':size=250')
+![Vigenère](_assets/vigenere.webp ':size=250')
 
 The invention of the Vigenère Cipher is often (incorrectly) attributed to 16th Century French diplomat, cryptographer, and inventor, Blaise de Vigenère. In reality, Italian cryptologist Giovan Battista Bellaso beat him to it.
 

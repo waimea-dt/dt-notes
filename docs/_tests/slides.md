@@ -112,7 +112,7 @@ Testing
 
 ---
 
-![](_assets/ui-demo.png)
+![](_assets/ui-demo.webp)
 
 ---
 
@@ -353,7 +353,7 @@ Hello, human!
 
 <img-notes>
 
-<img src="_tests/_assets/ui-demo.png" alt="UI shop demo screen">
+<img src="_tests/_assets/ui-demo.webp" alt="UI shop demo screen">
 
 1. Brand area [1.5, 2, 10, 5]
 

@@ -117,7 +117,7 @@ cookieButton.isContentAreaFilled  = false
 
 ## Putting It Together
 
-![Image Demo](_assets/image-demo.png)
+![Image Demo](_assets/image-demo.webp)
 
 
 ```kotlin

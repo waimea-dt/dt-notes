@@ -14,7 +14,7 @@
     - Built-in Git support
 
 - [Zed Editor](https://zed.dev/)
-    ![](_assets/zed.png)
+    ![](_assets/zed.webp)
     - **Desktop**
     - **Free**
     - Clean, fast and modern
@@ -25,7 +25,7 @@
 ## Python IDEs
 
 - [Thonny](https://thonny.org/)
-    ![](_assets/thonny.png)
+    ![](_assets/thonny.webp)
     - **Desktop**
     - **Free**
     - Simple interface
@@ -33,7 +33,7 @@
     - Perfect for learning Python
 
 - [Spyder](https://www.spyder-ide.org/)
-    ![](_assets/spyder.png)
+    ![](_assets/spyder.webp)
     - **Desktop**
     - **Free**
     - Scientific Python IDE

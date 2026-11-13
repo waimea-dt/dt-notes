@@ -210,7 +210,7 @@ Use this plugin to compare visual similarity with accessibility quality.
         </ul>
     </section>
 
-    <img src="web/accessibility/_assets/spectrum.png" alt="Spectrum">
+    <img src="web/accessibility/_assets/spectrum.webp" alt="Spectrum">
 </main>
 ```
 
@@ -244,7 +244,7 @@ Use this plugin to compare visual similarity with accessibility quality.
         </ul>
     </section>
 
-    <img src="web/accessibility/_assets/spectrum.png" alt="Spectrum">
+    <img src="web/accessibility/_assets/spectrum.webp" alt="Spectrum">
 </main>
 ```
 
@@ -277,7 +277,7 @@ Use this plugin to compare visual similarity with accessibility quality.
         </ul>
     </section>
 
-    <img src="web/accessibility/_assets/spectrum.png" alt="Spectrum">
+    <img src="web/accessibility/_assets/spectrum.webp" alt="Spectrum">
 </main>
 ```
 

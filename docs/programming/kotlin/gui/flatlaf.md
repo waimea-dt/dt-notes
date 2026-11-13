@@ -12,7 +12,7 @@ Swing works well, but its default look is stuck in the early 2000s - grey panels
 | Dated system appearance | Clean, professional look |
 | Looks different on every OS | Consistent across platforms |
 
-![FlatLAF example](_assets/flatlaf-light.png)
+![FlatLAF example](_assets/flatlaf-light.webp)
 
 > [!NOTE]
 > FlatLAF is used in production software - including JetBrains' own IDEs (IntelliJ IDEA, the tool you write Kotlin in). So what you're building with can look as polished as the tools professionals use.
@@ -63,7 +63,7 @@ FlatLAF comes with built-in themes:
 FlatLightLaf.setup()
 ```
 
-![FlatLAF Light Demo](_assets/demo-light.png)
+![FlatLAF Light Demo](_assets/demo-light.webp)
 
 
 ### Modern Dark Theme: `FlatDarkLaf`(kotlin)
@@ -72,7 +72,7 @@ FlatLightLaf.setup()
 FlatDarkLaf.setup()
 ```
 
-![FlatLAF Dark Demo](_assets/demo-dark.png)
+![FlatLAF Dark Demo](_assets/demo-dark.webp)
 
 > [!IMPORTANT]
 > You only call one of these - whichever theme you want. Call it once, right at the start of `main()`(kotlin), before creating any windows.
@@ -82,4 +82,4 @@ FlatDarkLaf.setup()
 
 There are also many variations on these themes. You can [see some of them here](https://www.formdev.com/flatlaf/screenshots/).
 
-![FlatLAF Themes](_assets/flatlaf-themes.png)
+![FlatLAF Themes](_assets/flatlaf-themes.webp)

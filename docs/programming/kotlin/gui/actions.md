@@ -84,7 +84,7 @@ titleLabel.addMouseListener(object : MouseAdapter() {
 Here's the full example from the [elements page](/programming/kotlin/gui/elements.md), now with actions wired up:
 
 
-![Actions Demo](_assets/actions-demo.png)
+![Actions Demo](_assets/actions-demo.webp)
 
 
 ```kotlin

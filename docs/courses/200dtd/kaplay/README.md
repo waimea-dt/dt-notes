@@ -1,6 +1,6 @@
 # Make Games with JavaScript and Kaplay
 
-![Kaplay logo](_assets/kaplay.png)
+![Kaplay logo](_assets/kaplay.webp)
 
 Welcome, game makers! Over the next six weeks you'll learn the **JavaScript** programming language, a game development library called **Kaplay**, and the game-making tools you need to build your own games. Then you'll spend four more weeks designing and building a game of your own.
 

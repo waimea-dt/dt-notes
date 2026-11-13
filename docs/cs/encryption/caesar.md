@@ -4,7 +4,7 @@
 
 <captioned>
 
-![Julius Caesar](_assets/caesar.png ':size=150')
+![Julius Caesar](_assets/caesar.webp ':size=150')
 
 Julius Caesar
 

@@ -135,7 +135,7 @@ Smoke
 
 <img-notes>
 
-<img src="_tests/_assets/smoke.png" alt="UI shop demo screen">
+<img src="_tests/_assets/smoke.webp" alt="UI shop demo screen">
 
 - Smoke [20, 20, 60, 60]
 

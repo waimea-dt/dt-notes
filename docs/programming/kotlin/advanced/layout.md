@@ -213,4 +213,4 @@ fun main() {
 
 Box-drawing characters have been used for decades to create terminal UIs (TUIs). Before the rise of GUIs in the 80s, many computer applications looked like this:
 
-![Terminal UI for 80s](_assets/tui.png)
+![Terminal UI for 80s](_assets/tui.webp)

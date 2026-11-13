@@ -2,7 +2,7 @@
 
 Sometimes you need a small pop-up - to show a message, ask a yes/no question, or prompt for some input. Swing gives you two options: `JOptionPane`(kotlin) for quick built-in dialogs, and `JDialog`(kotlin) when you need something custom.
 
-![Dialog error demo](_assets/dialog-error.png)
+![Dialog error demo](_assets/dialog-error.webp)
 
 
 ## JOptionPane - Easy Dialogs
@@ -31,7 +31,7 @@ JOptionPane.showMessageDialog(
 )
 ```
 
-![Dialog info demo](_assets/dialog-info.png)
+![Dialog info demo](_assets/dialog-info.webp)
 
 ```kotlin
 JOptionPane.showMessageDialog(
@@ -42,7 +42,7 @@ JOptionPane.showMessageDialog(
 )
 ```
 
-![Dialog error demo](_assets/dialog-error.png)
+![Dialog error demo](_assets/dialog-error.webp)
 
 ```kotlin
 JOptionPane.showMessageDialog(
@@ -52,7 +52,7 @@ JOptionPane.showMessageDialog(
     JOptionPane.WARNING_MESSAGE
 )
 ```
-![Dialog warning demo](_assets/dialog-warn.png)
+![Dialog warning demo](_assets/dialog-warn.webp)
 
 
 
@@ -72,7 +72,7 @@ if (result == JOptionPane.YES_OPTION) {
 }
 ```
 
-![Dialog yes/no demo](_assets/dialog-yesno.png)
+![Dialog yes/no demo](_assets/dialog-yesno.webp)
 
 
 ### Asking for Text Input
@@ -91,7 +91,7 @@ if (!name.isNullOrBlank()) {
 }
 ```
 
-![Dialog text demo](_assets/dialog-text.png)
+![Dialog text demo](_assets/dialog-text.webp)
 
 
 ## JDialog - Custom Dialogs

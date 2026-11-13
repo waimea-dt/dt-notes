@@ -10,11 +10,11 @@ Create a new project in IntelliJ IDEA:
 > [!IMPORTANT]
 > You must select **Gradle** as the build system - This is the recommended way to manage Kotlin projects. Gradle is a build automation tool which handles compiling code, managing dependencies, running tests, and packaging applications.
 
-![New IntelliJ project](_assets/new-project.png)
+![New IntelliJ project](_assets/new-project.webp)
 
 The project structure of a Gradle project is a little different to a simple IntelliJ build project, with Main.kt within the **src → main → kotlin** folder, and a `build.gradle.kts` file controlling the project:
 
-![Gradle folder structure](_assets/gradle-folders.png)
+![Gradle folder structure](_assets/gradle-folders.webp)
 
 ## Gradle Setup File: build.gradle.kts
 
@@ -45,7 +45,7 @@ dependencies {
 
 Then update Gradle by clicking the sync button that appears at the top-right:
 
-![Gradle sync button](_assets/gradle-sync.png)
+![Gradle sync button](_assets/gradle-sync.webp)
 
 > [!TIP]
 > You can safely delete the `test` folder and its contents from your project (this is for unit-testing, which we won't cover)
@@ -95,22 +95,22 @@ After updating your Gradle configuration, you should be able to open the Gradle 
 
 Under application you should see a run command which you can use to run your app...
 
-![Gradle Run](_assets/gradle-run.png)
+![Gradle Run](_assets/gradle-run.webp)
 
 And under build you will see a packageApp command which will create a standalone executable...
 
-![Gradle Package](_assets/gradle-package.png)
+![Gradle Package](_assets/gradle-package.webp)
 
 When you run this, look in your project build folder and you will see a file you can run without needing your source code, or IntelliJ IDEA (note that it needs to be run within the app folder)...
 
-![Packaged App files](_assets/app-package.png)
+![Packaged App files](_assets/app-package.webp)
 
 
 ## Advanced: GitHub Actions
 
 We can use **GitHub Actions** to create **downloadable executables** for our project, updated every time we push a code change.
 
-![GitHub Action file](_assets/github-actions.png)
+![GitHub Action file](_assets/github-actions.webp)
 
 Setup the GitHub workflow instructions:
 - In your **project root**, create a **folder** called `.github` (note the leading dot)
@@ -197,9 +197,9 @@ jobs:
 
 Now, when you push code to GitHub, the Actions will run (it can take a few minutes) and they will produce a **release** of your project...
 
-![GitHub release](_assets/github-release.png)
+![GitHub release](_assets/github-release.webp)
 
 And within the release you will have downloadable executables for Windows, Linux and Mac...
 
-![GitHub Release files](_assets/github-release-files.png)
+![GitHub Release files](_assets/github-release-files.webp)
 

@@ -59,7 +59,7 @@ fun main() {
 - `defaultCloseOperation`(kotlin) - tells Swing to quit the program when the window is closed
 - `isVisible = true`(kotlin) - makes the window appear
 
-![Swing Demo](_assets/swing-demo.png)
+![Swing Demo](_assets/swing-demo.webp)
 
 > [!IMPORTANT]
 > Swing code won't run in the browser-based Kotlin Playground used here, so the pages in this section show code snippets rather than runnable code. You'll need to run these snippets in an IDE like IntelliJ IDEA.

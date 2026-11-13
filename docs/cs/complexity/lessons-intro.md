@@ -20,7 +20,7 @@ An algorithm is a **set of steps or instructions**
 
 |||
 
-![Flowchart](_assets/algorithm.png)
+![Flowchart](_assets/algorithm.webp)
 
 |||
 
@@ -75,7 +75,7 @@ The computer's **CPU** needs to perform various **operations**, which take **tim
 
 |||
 
-![CPU](_assets/cpu.png)
+![CPU](_assets/cpu.webp)
 
 |||
 
@@ -91,7 +91,7 @@ Or, we could also say, it's a measure of the **time taken** to run the algorithm
 
 |||
 
-![Effort Meter](_assets/effort-gauge.png)
+![Effort Meter](_assets/effort-gauge.webp)
 
 |||
 
@@ -458,7 +458,7 @@ We refer the them as **Big-O Time Complexity** categories
 
 |||
 
-![O(1) chart](_assets/constant.png)
+![O(1) chart](_assets/constant.webp)
 
 |||
 
@@ -476,7 +476,7 @@ The effort / time taken is **always the same**, regardless of N
 
 |||
 
-![O(log N) chart](_assets/log.png)
+![O(log N) chart](_assets/log.webp)
 
 |||
 
@@ -494,7 +494,7 @@ The effort / time taken **goes up by 1 every time N doubles**
 
 |||
 
-![O(N) chart](_assets/linear.png)
+![O(N) chart](_assets/linear.webp)
 
 |||
 
@@ -512,7 +512,7 @@ The effort / time taken increases **proportionally to N**
 
 |||
 
-![O(N log N) chart](_assets/log-linear.png)
+![O(N log N) chart](_assets/log-linear.webp)
 
 |||
 
@@ -530,7 +530,7 @@ The effort / time taken increases **slightly steeper than proportional to N**
 
 |||
 
-![O(N^2) chart](_assets/quadratic.png)
+![O(N^2) chart](_assets/quadratic.webp)
 
 |||
 
@@ -548,7 +548,7 @@ The effort / time taken increases with the **square of N**
 
 |||
 
-![O(N^3) chart](_assets/cubic.png)
+![O(N^3) chart](_assets/cubic.webp)
 
 |||
 
@@ -566,7 +566,7 @@ The effort / time taken increases with the **cube of N**
 
 |||
 
-![O(2^N) chart](_assets/exponential.png)
+![O(2^N) chart](_assets/exponential.webp)
 
 |||
 
@@ -584,7 +584,7 @@ The effort / time taken increases with the **power of N**
 
 |||
 
-![O(N!) chart](_assets/factorial.png)
+![O(N!) chart](_assets/factorial.webp)
 
 |||
 

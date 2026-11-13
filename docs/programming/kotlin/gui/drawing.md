@@ -51,7 +51,7 @@ g.fillRect(50, 50, 200, 100)
 
 ## Drawing Shapes
 
-![Graphics Shapes Demo](_assets/shapes-demo.png)
+![Graphics Shapes Demo](_assets/shapes-demo.webp)
 
 
 | Method | What it draws |
@@ -182,7 +182,7 @@ class MainWindow(val app: App) {
 
 The code below will use a canvas to draw a level meter that relates to the level state within the app:
 
-![Graphics Demo](_assets/graphics-demo.png)
+![Graphics Demo](_assets/graphics-demo.webp)
 
 
 ```kotlin
@@ -272,7 +272,7 @@ class MainWindow(val app: App) {
 
 A runnable demo showing every shape from the table above:
 
-![Graphics Shapes Demo](_assets/shapes-demo.png)
+![Graphics Shapes Demo](_assets/shapes-demo.webp)
 
 
 ```kotlin

@@ -174,7 +174,7 @@ A small but significant number of your users will have colour-blindness of some 
         </ul>
     </section>
 
-    <img src="web/accessibility/_assets/spectrum.png" alt="Spectrum">
+    <img src="web/accessibility/_assets/spectrum.webp" alt="Spectrum">
 </main>
 ```
 

@@ -21,7 +21,7 @@
 
   <captioned>
 
-  ![](./_assets/pre/human-computer.jpg)
+  ![](./_assets/pre/human-computer.webp)
 
   A room of human computers
 
@@ -43,7 +43,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     <captioned>
 
-    ![](./_assets/pre/jacquard-loom.jpg)
+    ![](./_assets/pre/jacquard-loom.webp)
 
     Punched cards used as weaving loom instructions
 
@@ -55,7 +55,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     <captioned>
 
-    ![](./_assets/pre/analytical-engine.jpg)
+    ![](./_assets/pre/analytical-engine.webp)
 
     Part of Babbage's Analytical Engine
 
@@ -68,7 +68,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     <captioned>
 
-    ![](./_assets/pre/ada-lovelace.jpg)
+    ![](./_assets/pre/ada-lovelace.webp)
 
     Ada Lovelace, age 28
 
@@ -81,7 +81,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     <captioned>
 
-    ![](./_assets/pre/boole.jpg)
+    ![](./_assets/pre/boole.webp)
 
     George Boole and his logical 'Laws of Thought'
 
@@ -96,11 +96,11 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     <captioned>
 
-    ![](./_assets/pre/punched-card.jpg)
+    ![](./_assets/pre/punched-card.webp)
 
     test
 
-    ![](./_assets/pre/card-puncher.jpg)
+    ![](./_assets/pre/card-puncher.webp)
 
     Hollerith's punched cards
 
@@ -119,7 +119,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
 	<captioned>
 
-	![](./_assets/pre/vacuum-tubes.jpg)
+	![](./_assets/pre/vacuum-tubes.webp)
 
 	Early vacuum tubes in a circuit
 
@@ -143,7 +143,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
 	<captioned>
 
-	![](./_assets/pre/analogue-bush.jpg)
+	![](./_assets/pre/analogue-bush.webp)
 
 	Bush and the Differential Analyser
 
@@ -155,7 +155,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     <captioned>
 
-    ![](./_assets/pre/shannon.jpg)
+    ![](./_assets/pre/shannon.webp)
 
     Claude Shannon
 
@@ -167,7 +167,7 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     <captioned>
 
-    ![](./_assets/pre/turing.jpg)
+    ![](./_assets/pre/turing.webp)
 
     Alan Turing and the Universal Machine
 

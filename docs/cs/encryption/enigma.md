@@ -4,7 +4,7 @@
 
 <captioned>
 
-![Enigma Machine](_assets/enigma.png ':size=250')
+![Enigma Machine](_assets/enigma.webp ':size=250')
 
 The Enigma Machine
 

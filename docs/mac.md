@@ -819,7 +819,7 @@
         await showTextPage([
             `<img
                 class="no-zoom mac-chat-gui-image"
-                src="./_assets/macs/macintosh-screen.png"
+                src="./_assets/macs/macintosh-screen.webp"
             >`,
             `<button id="back" class="mac-chat-gui-back">Back</button>`,
         ])

@@ -47,4 +47,4 @@ fun main() {
 
 When you run your program, you should see an app window appear in the centre of your screen, using the FlatLAF look-and-feel and the Solarized Dark theme:
 
-![FlatLAF Demo](_assets/demo.png)
+![FlatLAF Demo](_assets/demo.webp)

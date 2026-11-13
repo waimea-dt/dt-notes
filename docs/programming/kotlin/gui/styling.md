@@ -23,7 +23,7 @@ For the font family, use these built-in constants rather than hardcoding a font 
 | `Font.SERIF`(kotlin) | Traditional with serifs - more formal |
 | `Font.MONOSPACED`(kotlin) | Fixed-width - great for code or numbers |
 
-![Font Demo](_assets/font-demo.png)
+![Font Demo](_assets/font-demo.webp)
 
 
 For the style, you can combine `BOLD`(kotlin) and `ITALIC`(kotlin) with `+`(kotlin):
@@ -53,7 +53,7 @@ For full control, you can also construct a colour from RGB values (0–255):
 val purple = Color(148, 85, 211)
 ```
 
-![Colour Demo](_assets/colour-demo.png)
+![Colour Demo](_assets/colour-demo.webp)
 
 
 > [!NOTE]
@@ -96,7 +96,7 @@ nameField.setBorder(BorderFactory.createLineBorder(Color(0x89b4fa), 2))
 textLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8))
 ```
 
-![Border Demo](_assets/border-demo.png)
+![Border Demo](_assets/border-demo.webp)
 
 
 > [!TIP]
@@ -108,7 +108,7 @@ textLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8))
 Here's `setupStyles()`(kotlin) for a small app, following on from the [elements example](/programming/kotlin/gui/elements.md):
 
 
-![Styling Demo](_assets/styles-demo.png)
+![Styling Demo](_assets/styles-demo.webp)
 
 
 ```kotlin

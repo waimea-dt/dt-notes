@@ -8,7 +8,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ### **O(1)** - Constant Time
 
-![O(1) curve](_assets/constant.png)
+![O(1) curve](_assets/constant.webp)
 
 **The best possible complexity** - the algorithm takes the same time regardless of input size.
 
@@ -27,7 +27,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ### **O(log N)** - Logarithmic Time
 
-![O(log N) curve](_assets/log.png)
+![O(log N) curve](_assets/log.webp)
 
 **Very efficient** - grows extremely slowly. Doubling N adds only one step.
 
@@ -44,7 +44,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ### **O(N)** - Linear Time
 
-![O(N) curve](_assets/linear.png)
+![O(N) curve](_assets/linear.webp)
 
 **Proportional to input** - if you double the input, you double the time.
 
@@ -62,7 +62,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ### **O(N log N)** - Log-Linear Time
 
-![O(N log N) curve](_assets/log-linear.png)
+![O(N log N) curve](_assets/log-linear.webp)
 
 **The "sweet spot" for sorting** - much better than **O(N<sup>2</sup>)** but not as good as **O(N)**.
 
@@ -79,7 +79,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ### **O(N<sup>2</sup>)** - Quadratic Time
 
-![O(N^2) curve](_assets/quadratic.png)
+![O(N^2) curve](_assets/quadratic.webp)
 
 **Gets slow quickly** - doubling input quadruples the time. Tolerable for small N, impractical for large N.
 
@@ -100,7 +100,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ### **O(N<sup>3</sup>)** - Cubic Time
 
-![O(N^3) curve](_assets/cubic.png)
+![O(N^3) curve](_assets/cubic.webp)
 
 **Very slow** - three nested loops. Only practical for small datasets.
 
@@ -117,7 +117,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ### **O(2<sup>N</sup>)** - Exponential Time
 
-![O(2^N) curve](_assets/exponential.png)
+![O(2^N) curve](_assets/exponential.webp)
 
 **Impractical for all but tiny inputs** - adding one item doubles the time!
 
@@ -139,7 +139,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 **The worst practical complexity** - used when checking all permutations. Becomes impossible almost immediately.
 
-![O(N!) curve](_assets/factorial.png)
+![O(N!) curve](_assets/factorial.webp)
 
 ### Examples:
 - Brute-force Travelling Salesperson (checking all routes)

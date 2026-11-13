@@ -11,7 +11,7 @@ This code for your `Main.kt`(kotlin) is a great starter for a GUI project. It ha
 - **`updateUI()`(kotlin) pattern** - a single method to refresh UI based on app state data
 
 
-![Starter App](_assets/starter.png)
+![Starter App](_assets/starter.webp)
 
 
 ```kotlin

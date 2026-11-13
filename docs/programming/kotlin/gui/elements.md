@@ -36,7 +36,7 @@ setBounds(x, y, width, height)
 
 `JLabel()`(kotlin) shows a piece of **text** on screen. Use it for titles, instructions, scores, status messages - anything that just needs to be *read*.
 
-![Label demo](_assets/element-label.png)
+![Label demo](_assets/element-label.webp)
 
 Create it like this:
 
@@ -62,7 +62,7 @@ titleLabel.text = "Hello, there!"
 
 `JButton()`(kotlin) creates a button the user can **click**. You wire it up to do something on the [actions page](/programming/kotlin/gui/actions.md).
 
-![Button demo](_assets/element-button.png)
+![Button demo](_assets/element-button.webp)
 
 Create it like this:
 
@@ -89,7 +89,7 @@ launchButton.isEnabled = true   // Re-enable it
 
 `JTextField()`(kotlin) is a single-line box the user can **type into**. Use it to collect a name, a search term, or any short piece of text.
 
-![Textbox demo](_assets/element-text.png)
+![Textbox demo](_assets/element-text.webp)
 
 Create it like this:
 
@@ -121,7 +121,7 @@ val nameField = JTextField("Enter your name...")
 
 Here's a complete example with all three components in one window:
 
-![Elements demo](_assets/elements-demo.png)
+![Elements demo](_assets/elements-demo.webp)
 
 
 ```kotlin
