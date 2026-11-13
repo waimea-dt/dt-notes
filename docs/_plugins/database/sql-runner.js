@@ -1,6 +1,9 @@
 /**
  * docsify-sql-runner.js - Makes ```sql run blocks interactive using Codapi's SQLite sandbox.
  *
+ * Queries run locally in the browser (WASI SQLite, ~2MB downloaded on first run) - no code
+ * is sent to the Codapi server, so it keeps working if that service is down or blocked.
+ *
  * Usage in markdown:
  *   ```sql id=create
  *   CREATE TABLE cats (id INTEGER PRIMARY KEY, name TEXT);
@@ -20,6 +23,8 @@
  * CodeMirror's lint addon (bracket matching, string tracking, etc.)
  *
  * Requires in index.html (in this order):
+ *   <script src="https://unpkg.com/@antonz/runno@0.6.1/dist/runno.js"></script>
+ *   <script src="https://unpkg.com/@antonz/codapi@0.20.0/dist/engine/wasi.js"></script>
  *   <script src="https://unpkg.com/@antonz/codapi@0.20.0/dist/snippet.js"></script>
  */
 
@@ -204,7 +209,7 @@
                     return '<div class="codapi-runner">' +
                            cleaned +
                            '</div>' +
-                           `<codapi-snippet id="${snippetId}" sandbox="sqlite" editor="external" exec-timeout="15000"${dependsAttr}></codapi-snippet>`
+                           `<codapi-snippet id="${snippetId}" engine="wasi" sandbox="sqlite" editor="external" exec-timeout="15000"${dependsAttr}></codapi-snippet>`
                 }
             )
         })
