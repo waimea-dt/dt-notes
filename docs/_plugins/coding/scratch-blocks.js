@@ -15,7 +15,7 @@
  * Inline (within text):
  *   Use `when flag clicked`{.language-scratch} for inline blocks.
  *
- * Requires: scratchblocks library (loaded via CDN in index.html)
+ * The scratchblocks library is loaded on demand, only on pages that contain Scratch blocks.
  */
 
 ;(function () {
@@ -24,13 +24,18 @@
     // Main Processing Function
     // -------------------------------------------------------------------------
 
-    function processScratchBlocks() {
-        // Check if scratchblocks is available
-        if (typeof scratchblocks === 'undefined') {
-            console.warn('scratchblocks library not loaded')
-            return
-        }
+    const SCRATCHBLOCKS_URL = 'https://cdn.jsdelivr.net/npm/scratchblocks@3.7.1/build/scratchblocks.min.js'
+    const SCRATCH_SELECTOR = 'pre[data-lang="scratch"], pre[data-lang="scratch-inline"], code.language-scratch'
 
+    function processScratchBlocks() {
+        if (!document.querySelector(SCRATCH_SELECTOR)) return
+
+        window.DocsifyUtils.loadScript(SCRATCHBLOCKS_URL)
+            .then(renderScratchBlocks)
+            .catch(error => console.warn('scratchblocks library failed to load', error))
+    }
+
+    function renderScratchBlocks() {
         // Render standard scratch blocks
         window.DocsifyUtils.processBlocks('scratch', () => {}, {
             processedClass: 'scratch-processed'
