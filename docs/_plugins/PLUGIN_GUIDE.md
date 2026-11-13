@@ -17,6 +17,8 @@ This guide is for writing new Docsify plugins in this project.
 - escapeHtml: For untrusted text inserted into HTML.
 - parseBoolean / parsePositiveInt: For attribute parsing.
 - randomHex / clamp / sleep / generateId and other general helpers.
+- loadScript(src) / loadScripts(srcs): Load a heavy CDN library only when a page needs it. Call it after
+  finding blocks to process (return early if none), then check the blocks are still connected before using it.
 
 ## Structure Pattern
 
