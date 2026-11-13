@@ -190,7 +190,7 @@ Plugin syntax is in `docs/_plugins/PLUGIN_REFERENCE.md`. Example pages are in `d
     Edits to `schema` and `seed` feed every block that depends on them, both straight away and after a reload (tested in a headless browser). Several query blocks can all use `depends=seed`.
   - SQL statements end with `;` (the "no semicolons" rule is for JavaScript only).
 - `<erd>` wrapping an SQL `CREATE TABLE` fence draws an ERD. `<db-schema>` / `<db-data>` render schema and data tables.
-- **Python runner**: ` ```python run ` (Codapi, `coding/python-runner.js`) and ` ```python trace `. `python-test.js` uses Pyodide v0.25.
+- **Python runner**: ` ```python run ` (Codapi, `coding/python-runner.js`) and ` ```python trace `. `python-test.js` also runs on Codapi's WASI Python.
   - **Tested by Steve (2026-11-05):** `sqlite3` works in the `python run` sandbox (SQLite 3.42.0). `:memory:` databases, `CREATE` / `INSERT` with `?` parameters, `commit()`, `JOIN`, and `PRAGMA foreign_keys = ON` (it raises `IntegrityError`) all work.
   - **Writing a file database fails**: `sqlite3.connect("test.db")` produced no output and no visible error. So in-page Python examples must use `sqlite3.connect(":memory:")`, with the setup SQL in a hidden block (see below) or at the top of the visible block. Real `data.db` files are only for students' local repos.
   - **Hidden blocks**: ` ```python id=NAME ` is hidden, and ` ```python run depends=NAME ` adds that hidden code to the start of the visible block when it runs. Each visible block can use only **one** hidden block: unlike the SQL runner, hidden blocks can't depend on each other, and there's no `run id=` form. So one hidden block per page usually holds the database setup *and* any fake input together.

@@ -10,8 +10,9 @@
  * - Live statistics: coverage %, test results, boundary testing
  * - Split-panel layout with editable tests and read-only source
  *
- * Executes Python via Pyodide (browser-based Python runtime) with full
- * stdout capture and detailed error reporting tied to specific test lines.
+ * Executes Python in the browser via codapi's WASI engine (the same Python the
+ * python-runner uses, so the interpreter is only downloaded once), with stdout
+ * capture and detailed error reporting tied to specific test lines.
  *
  * Usage in markdown:
  *   ```python test
@@ -34,7 +35,7 @@
  *   ```
  *
  * Requirements:
- *   - Pyodide v0.25.0 (loaded automatically from CDN)
+ *   - codapi WASI engine + runno (loaded in index.html)
  *   - CodeMirror for editable test panel
  *   - Prism.js for syntax highlighting
  */
@@ -42,39 +43,6 @@
 (function () {
 
     const { escapeHtml } = window.DocsifyUtils
-
-    // Shared hidden snippet for executing coverage tests
-    // Defined at module level so it's accessible from all functions
-    let globalSnippet = null
-    let globalPre = null
-    let globalCode = null
-
-    function ensureGlobalSnippet() {
-        if (globalSnippet && document.body.contains(globalSnippet)) {
-            return  // Already created and in DOM
-        }
-
-        // Create a persistent hidden execution environment
-        const container = document.createElement('div')
-        container.id = 'python-test-execution-env'
-        container.style.cssText = 'position: absolute; left: -9999px; opacity: 0; pointer-events: none;'
-
-        globalPre = document.createElement('pre')
-        globalPre.className = 'language-python'
-        globalCode = document.createElement('code')
-        globalCode.className = 'language-python'
-        globalCode.textContent = '# Execution environment'
-        globalPre.appendChild(globalCode)
-        container.appendChild(globalPre)
-
-        globalSnippet = document.createElement('codapi-snippet')
-        globalSnippet.setAttribute('engine', 'wasi')
-        globalSnippet.setAttribute('sandbox', 'python')
-        globalSnippet.setAttribute('editor', 'external')
-        container.appendChild(globalSnippet)
-
-        document.body.appendChild(container)
-    }
 
     var docsifyPythonTest = function (hook) {
 
@@ -191,8 +159,8 @@
                         renderFeedbackLoading(container, previousHeight)
                         clearCoverageFromSource(container)
 
-                        // Execute the instrumented code using Codapi
-                        const output = await executeSnippetDirect(instrumentedCode)
+                        // Execute the instrumented code
+                        const output = await runPython(instrumentedCode)
 
                         // Parse coverage data
                         const coverage = parseCoverageOutput(output, sourceCode, currentTestCode)
@@ -223,9 +191,6 @@
                     clearFeedback(container)
                 })
             })
-
-            // Initialize the shared execution environment
-            ensureGlobalSnippet()
         })
     }
 
@@ -607,51 +572,18 @@
     // Execution
     // -------------------------------------------------------------------------
 
-    async function executeSnippetDirect(code) {
-        // Strategy: Load and use Pyodide ourselves since Codapi doesn't expose it
-        // Pyodide is the most reliable way to run Python in the browser
+    async function runPython(code) {
+        // Each run starts a fresh interpreter, so nothing leaks between test runs
+        const engine = window.codapi?.engines?.wasi
+        if (!engine) throw new Error('Python execution failed: the codapi WASI engine is not loaded')
 
-        try {
-            // Load Pyodide if not already loaded
-            if (!window.pyodideInstance) {
-
-                // Load Pyodide from CDN
-                if (typeof loadPyodide === 'undefined') {
-                    // Inject Pyodide loader script
-                    await new Promise((resolve, reject) => {
-                        const script = document.createElement('script')
-                        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js'
-                        script.onload = resolve
-                        script.onerror = () => reject(new Error('Failed to load Pyodide'))
-                        document.head.appendChild(script)
-                    })
-                }
-
-                // Initialize Pyodide
-                window.pyodideInstance = await loadPyodide({
-                    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'
-                })
-            }
-
-            const pyodide = window.pyodideInstance
-
-            // Capture stdout
-            let output = ''
-            pyodide.setStdout({
-                batched: (text) => { output += text + '\n' }
-            })
-
-            // Run the code
-            await pyodide.runPythonAsync(code)
-
-            return output
-
-        } catch (err) {
-            console.error('Pyodide execution error:', err)
-            // Try to extract line number and error details from Python traceback
-            const errorInfo = parsePythonError(err.message, code)
-            throw new Error(`Python execution failed: ${errorInfo}`)
+        const result = await engine.exec({ sandbox: 'python', command: 'run', files: { '': code } })
+        if (!result.ok) {
+            const message = result.stderr || result.stdout || 'Unknown error'
+            console.error('Python execution error:', message)
+            throw new Error(`Python execution failed: ${parsePythonError(message, code)}`)
         }
+        return result.stdout
     }
 
     function parsePythonError(errorMessage, instrumentedCode) {
@@ -667,8 +599,8 @@
 
         // Try to find which test line caused the error
         const lines = instrumentedCode.split('\n')
-        // Match the line number from the File "<exec>" reference specifically
-        const testLineMatch = errorMessage.match(/File\s+"<exec>",\s+line\s+(\d+)/)
+        // Match the line number from the File "/src/main.py" reference specifically
+        const testLineMatch = errorMessage.match(/File\s+"\/src\/main\.py",\s+line\s+(\d+)/)
 
         if (testLineMatch) {
             const errorLine = parseInt(testLineMatch[1])
