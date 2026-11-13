@@ -1276,6 +1276,12 @@
             btnRun.classList.add('running')
 
             runInterval = setInterval(() => {
+                // Stop if the user navigated away while the program was running
+                if (!container.isConnected) {
+                    clearInterval(runInterval)
+                    runInterval = null
+                    return
+                }
                 const result = cpu.step()
                 updateUI(cpu, container, result.highlight || {})
                 statusMessage.textContent = result.message || 'Running...'

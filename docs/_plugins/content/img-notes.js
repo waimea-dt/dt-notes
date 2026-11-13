@@ -317,9 +317,15 @@
             })
 
             this.stage.addEventListener('mouseleave', deactivate)
-            window.addEventListener('resize', () => {
+            // Self-removes once the page changes and this stage is no longer in the DOM
+            const onResize = () => {
+                if (!this.stage.isConnected) {
+                    window.removeEventListener('resize', onResize)
+                    return
+                }
                 if (this.activeIndex >= 0) this.positionTooltip(this.activeIndex)
-            })
+            }
+            window.addEventListener('resize', onResize)
         }
     }
 

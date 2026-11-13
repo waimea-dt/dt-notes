@@ -745,10 +745,15 @@
             this.btnReset.addEventListener('click', () => this.reset())
             this.btnRandomise.addEventListener('click', () => this.randomise())
 
-            // Handle window resize to update item tile heights
-            window.addEventListener('resize', () => {
+            // Handle window resize to update item tile heights (self-removes once the page changes)
+            const onResize = () => {
+                if (!this.btnStart.isConnected) {
+                    window.removeEventListener('resize', onResize)
+                    return
+                }
                 this.renderInventory()
-            })
+            }
+            window.addEventListener('resize', onResize)
         }
 
         syncCapacityControls(value) {
