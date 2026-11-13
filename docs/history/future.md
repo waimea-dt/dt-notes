@@ -37,7 +37,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/quantum.webp)
+    ![An experimental quantum computer](./_assets/future/quantum.webp)
 
     An experimental quantum computer
 
@@ -50,7 +50,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/robot.webp)
+    ![Autonomous robots](./_assets/future/robot.webp)
 
     Autonomous robots
 
@@ -63,7 +63,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/neuromorphic.webp)
+    ![Processor board with neuromorphic chips](./_assets/future/neuromorphic.webp)
 
     Processor board with neuromorphic chips
 
@@ -76,7 +76,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/optical.webp)
+    ![Photonic processor](./_assets/future/optical.webp)
 
     Photonic processor
 
@@ -89,7 +89,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/dna-storage.webp)
+    ![Experimental DNA storage (1kB)](./_assets/future/dna-storage.webp)
 
     Experimental DNA storage (1kB)
 
@@ -102,7 +102,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/carbon.webp)
+    ![Carbon nanotube circuits](./_assets/future/carbon.webp)
 
     Carbon nanotube circuits
 
@@ -121,7 +121,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/quantum-crypto.webp)
+    ![Post-quantum cryptography](./_assets/future/quantum-crypto.webp)
 
     Post-quantum cryptography
 
@@ -133,7 +133,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/nlp.webp)
+    ![Natural-language programming](./_assets/future/nlp.webp)
 
     Natural-language programming
 
@@ -145,7 +145,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/agent-arch.webp)
+    ![AI agent workflow](./_assets/future/agent-arch.webp)
 
     AI agent workflow
 
@@ -158,7 +158,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/spatial.webp)
+    ![Spatial-computing interface](./_assets/future/spatial.webp)
 
     Spatial-computing interface
 
@@ -177,7 +177,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/ai-ethics.webp)
+    ![AI ethics](./_assets/future/ai-ethics.webp)
 
     AI ethics
 
@@ -190,7 +190,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/digital-id.webp)
+    ![Identity and privacy in connected systems](./_assets/future/digital-id.webp)
 
     Identity and privacy in connected systems
 
@@ -203,7 +203,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/ai-collab.webp)
+    ![People working with intelligent tools](./_assets/future/ai-collab.webp)
 
     People working with intelligent tools
 
@@ -216,7 +216,7 @@ I wonder what's coming in the future... I hope we don't end up **destroying huma
 
     <captioned>
 
-    ![](./_assets/future/sustainability.webp)
+    ![Sustainable technology choices](./_assets/future/sustainability.webp)
 
     Sustainable technology choices
 
