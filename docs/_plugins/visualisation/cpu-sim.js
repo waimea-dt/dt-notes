@@ -35,7 +35,7 @@
 
 ;(function () {
 
-    const escapeHtmlStrict = window.DocsifyUtils.escapeHtml
+    const { escapeHtml } = window.DocsifyUtils
 
     // -------------------------------------------------------------------------
     // Configuration Constants
@@ -1058,10 +1058,6 @@
         updateMemoryDisplay(cpu, container, highlight)
         updateCodeDisplay(cpu, container)
         updatePhaseAndCycle(cpu, container)
-    }
-
-    function escapeHtml(text) {
-        return escapeHtmlStrict(text)
     }
 
     function clearHighlighting(cpu, container) {

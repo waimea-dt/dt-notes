@@ -15,7 +15,7 @@
 
 ;(function () {
 
-    const escapeHtmlStrict = window.DocsifyUtils.escapeHtml
+    const { escapeHtml } = window.DocsifyUtils
 
     // -------------------------------------------------------------------------
     // Data - hashes pre-computed so the plugin renders synchronously
@@ -40,14 +40,6 @@
     ]
 
     const SPEEDS = { slow: 450, normal: 200, fast: 60 }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    function escapeHtml(str) {
-        return escapeHtmlStrict(str)
-    }
 
     // -------------------------------------------------------------------------
     // HTML

@@ -308,12 +308,5 @@
         })
     }
 
-    if (window.DocsifyUtils?.registerPlugin) {
-        window.DocsifyUtils.registerPlugin(docsifyRecommendations)
-    } else {
-        // Fallback if utils not loaded
-        if (window.$docsify) {
-            window.$docsify.plugins = [].concat(docsifyRecommendations, window.$docsify.plugins || [])
-        }
-    }
+    window.DocsifyUtils.registerPlugin(docsifyRecommendations)
 })()

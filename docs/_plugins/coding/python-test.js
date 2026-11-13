@@ -41,7 +41,7 @@
 
 (function () {
 
-    const escapeHtmlStrict = window.DocsifyUtils.escapeHtml
+    const { escapeHtml } = window.DocsifyUtils
 
     // Shared hidden snippet for executing coverage tests
     // Defined at module level so it's accessible from all functions
@@ -1055,10 +1055,6 @@
 
     function getCoverageLevel(percentage) {
         return percentage === 100 ? 'excellent' : 'poor'
-    }
-
-    function escapeHtml(text) {
-        return escapeHtmlStrict(text)
     }
 
     function highlightPythonLine(line) {

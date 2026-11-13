@@ -8,27 +8,11 @@
     const ZOOM_TRANSITION = 'transform 500ms ease'
     let globalCaptureAttached = false
 
-    function isSvgImage(img) {
-        if (window.DocsifyUtils?.isSvgImage) return window.DocsifyUtils.isSvgImage(img)
-        if (!img || img.tagName !== 'IMG') return false
-        const src = (img.getAttribute('src') || '').toLowerCase()
-        return src.endsWith('.svg') || src.startsWith('data:image/svg+xml')
-    }
+    const { isSvgImage, registerPlugin } = window.DocsifyUtils
 
     function isZoomDisabled(node) {
         return node.classList?.contains('no-zoom') ||
                node.dataset?.noZoom === 'true'
-    }
-
-    function registerPlugin(fn) {
-        if (window.DocsifyUtils?.registerPlugin) {
-            window.DocsifyUtils.registerPlugin(fn)
-            return
-        }
-
-        window.$docsify = window.$docsify || {}
-        const plugins = window.$docsify.plugins || []
-        window.$docsify.plugins = [fn, ...plugins]
     }
 
     function getZoomTargetFromEvent(event) {

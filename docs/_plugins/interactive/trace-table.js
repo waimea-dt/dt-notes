@@ -67,7 +67,7 @@
 
 ;(function () {
 
-    const escapeHtmlStrict = window.DocsifyUtils.escapeHtml
+    const { escapeHtml } = window.DocsifyUtils
     const { renderErrorBox } = window.DocsifyUtils
     const TRACE_TABLE_CONFIG = {
         maxWhileIterations: 1000,
@@ -99,10 +99,6 @@
                 continueOutsideLoop: 'continue used outside loop'
             }
         }
-    }
-
-    function escapeHtml(text) {
-        return escapeHtmlStrict(text)
     }
 
     function countIndent(line) {

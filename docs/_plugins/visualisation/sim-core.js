@@ -22,7 +22,7 @@
 
 ;(function () {
 
-    const escapeHtmlStrict = window.DocsifyUtils.escapeHtml
+    const { escapeHtml } = window.DocsifyUtils
 
     // -------------------------------------------------------------------------
     // Value Parsing
@@ -44,10 +44,6 @@
     // -------------------------------------------------------------------------
     // HTML Utilities
     // -------------------------------------------------------------------------
-
-    function escapeHtml(text) {
-        return escapeHtmlStrict(text)
-    }
 
     /**
      * Render a typed value as HTML with appropriate class.

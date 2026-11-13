@@ -32,7 +32,7 @@
 
 ;(function () {
 
-    const escapeHtmlStrict = window.DocsifyUtils.escapeHtml
+    const { escapeHtml } = window.DocsifyUtils
 
     // -------------------------------------------------------------------------
     // Constants
@@ -444,13 +444,6 @@
         `
 
         return html
-    }
-
-    /**
-     * Escape HTML special characters
-     */
-    function escapeHtml(text) {
-        return escapeHtmlStrict(text)
     }
 
     // -------------------------------------------------------------------------
