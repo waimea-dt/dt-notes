@@ -19,6 +19,18 @@ env:
   DEPLOY_RETRY_WAIT: 30
 
 jobs:
+  # Runs alongside the deploy and never blocks it: broken links show as a failed
+  # job (red X) with each one annotated against its file and line.
+  # Links to planned pages in sidebars and <menu> cards are ignored (see the script).
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check internal links and images
+        run: python3 .github/scripts/check-links.py
+
   deploy:
     environment:
       name: github-pages
