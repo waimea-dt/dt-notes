@@ -67,3 +67,14 @@ sequenceDiagram
     John-->>-Alice: Hi Alice, I can hear you!
     John-->>-Alice: I feel great!
 ```
+
+## Broken Diagram
+
+This diagram has deliberate syntax errors, so it should show an error message instead of a diagram.
+
+```mermaid
+flowchart LR
+    A[Start --> B{Missing bracket
+    B -->|Yes C
+    C ==> 
+```
