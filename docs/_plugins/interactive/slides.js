@@ -1,6 +1,6 @@
 /**
  * docsify-slides.js - Renders <slides>...</slides> blocks as embedded reveal.js presentations.
- * Requires reveal.js (no markdown plugin).
+ * Requires reveal.js (no markdown plugin), loaded on demand only on pages that contain slides.
  *
  * How it works: slides are a layout over the page, not a separate document. In beforeEach the
  * slide markers are rewritten into plain HTML wrappers (<section>, <aside>, fragment divs) with
@@ -210,8 +210,13 @@
   // instance answers the window's remote-control messages. So all decks share a single instance,
   // which is re-pointed at whichever deck asks for the speaker view (`s`).
   const NOTES_WINDOW_NAME = 'reveal.js - Notes'
-  const sharedNotes = typeof RevealNotes === 'undefined' ? null : RevealNotes()
+  let sharedNotes = null // created once reveal.js has loaded (see initDecks)
   let notesDeck = null
+
+  const REVEAL_SCRIPTS = [
+    'https://cdn.jsdelivr.net/npm/reveal.js@6.0.2/dist/reveal.js',
+    'https://cdn.jsdelivr.net/npm/reveal.js@6.0.2/dist/plugin/notes.js',
+  ]
 
   function openSpeakerView(reveal) {
     if (notesDeck && notesDeck !== reveal) window.open('', NOTES_WINDOW_NAME)?.close()
@@ -261,36 +266,48 @@
   function initDecks() {
     if (isReceiver) document.documentElement.classList.add('slides-receiver')
 
-    document.querySelectorAll('.reveal.docsify-slide-deck:not([data-initialized])').forEach((deck) => {
-      if (isReceiver && deck.id !== receiverDeckId) return
-      deck.setAttribute('data-initialized', 'true')
+    const decks = [...document.querySelectorAll('.reveal.docsify-slide-deck:not([data-initialized])')]
+      .filter((deck) => !isReceiver || deck.id === receiverDeckId)
+    if (!decks.length) return
 
-      const reveal = new Reveal(deck, {
-        embedded: true,
-        url: getReceiverUrl(deck),
-        postMessage: isReceiver,
-        plugins: sharedNotes ? [speakerViewPlugin] : [],
-        keyboardCondition: 'focused',
-        controls: true,
-        progress: true,
-        center: true,
-        transition: 'slide',
-        backgroundTransition: 'fade',
-        margin: 0.04,
-        width: 1280,
-        height: 720,
-        mouseWheel: false,
-        // view: 'scroll',
-      })
+    // Mark now so a repeat doneEach doesn't queue the same decks while reveal.js downloads
+    decks.forEach((deck) => deck.setAttribute('data-initialized', 'true'))
 
-      reveal.initialize().then(function () {
-        applyIncrementalLists(deck)
-        reveal.sync()
-        watchDeckLayout(deck, reveal)
-        deck.setAttribute('data-slides-ready', 'true')
-        refreshEditors(reveal.getCurrentSlide())
-        reveal.on('slidechanged', (event) => refreshEditors(event.currentSlide))
+    window.DocsifyUtils.loadScripts(REVEAL_SCRIPTS)
+      .then(() => {
+        if (!sharedNotes && typeof RevealNotes !== 'undefined') sharedNotes = RevealNotes()
+        // The page may have changed while reveal.js was downloading
+        decks.filter((deck) => deck.isConnected).forEach(startDeck)
       })
+      .catch((error) => console.error('Failed to load reveal.js', error))
+  }
+
+  function startDeck(deck) {
+    const reveal = new Reveal(deck, {
+      embedded: true,
+      url: getReceiverUrl(deck),
+      postMessage: isReceiver,
+      plugins: sharedNotes ? [speakerViewPlugin] : [],
+      keyboardCondition: 'focused',
+      controls: true,
+      progress: true,
+      center: true,
+      transition: 'slide',
+      backgroundTransition: 'fade',
+      margin: 0.04,
+      width: 1280,
+      height: 720,
+      mouseWheel: false,
+      // view: 'scroll',
+    })
+
+    reveal.initialize().then(function () {
+      applyIncrementalLists(deck)
+      reveal.sync()
+      watchDeckLayout(deck, reveal)
+      deck.setAttribute('data-slides-ready', 'true')
+      refreshEditors(reveal.getCurrentSlide())
+      reveal.on('slidechanged', (event) => refreshEditors(event.currentSlide))
     })
   }
 
