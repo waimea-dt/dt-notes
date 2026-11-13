@@ -5,7 +5,7 @@
 ## General Code Editors
 
 - [Visual Studio Code](https://code.visualstudio.com/)
-    ![](_assets/code.svg)
+    ![Visual Studio Code logo](_assets/code.svg)
     - **Recommended**
     - **Desktop**
     - **Free**
@@ -14,7 +14,7 @@
     - Built-in Git support
 
 - [Zed Editor](https://zed.dev/)
-    ![](_assets/zed.webp)
+    ![Zed Editor logo](_assets/zed.webp)
     - **Desktop**
     - **Free**
     - Clean, fast and modern
@@ -25,7 +25,7 @@
 ## Python IDEs
 
 - [Thonny](https://thonny.org/)
-    ![](_assets/thonny.webp)
+    ![Thonny logo](_assets/thonny.webp)
     - **Desktop**
     - **Free**
     - Simple interface
@@ -33,7 +33,7 @@
     - Perfect for learning Python
 
 - [Spyder](https://www.spyder-ide.org/)
-    ![](_assets/spyder.webp)
+    ![Spyder logo](_assets/spyder.webp)
     - **Desktop**
     - **Free**
     - Scientific Python IDE
@@ -41,7 +41,7 @@
     - Variable explorer
 
 - [PyCharm](https://www.jetbrains.com/pycharm/)
-    ![](_assets/pycharm.svg)
+    ![PyCharm logo](_assets/pycharm.svg)
     - **Desktop**
     - **Free**
     - Free Community Edition
@@ -52,7 +52,7 @@
 ## Kotlin IDEs
 
 - [IntelliJ IDEA](https://www.jetbrains.com/idea/)
-    ![](_assets/intellij.svg)
+    ![IntelliJ IDEA logo](_assets/intellij.svg)
     - **Recommended**
     - **Desktop**
     - **Free**

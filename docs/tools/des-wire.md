@@ -5,7 +5,7 @@
 ## Full-Site / Multi-Page Design
 
 - [Penpot](https://www.penpot.app/)
-    ![](_assets/penpot.svg)
+    ![Penpot logo](_assets/penpot.svg)
     - **Recommended**
     - **Online**
     - Free and open-source
@@ -13,7 +13,7 @@
     - Interactive prototypes
 
 - [Figma](https://www.figma.com/)
-    ![](_assets/figma.svg)
+    ![Figma logo](_assets/figma.svg)
     - **Online**
     - Powerful and popular
     - Complex layouts and designs

@@ -4,7 +4,7 @@
 
 ## Hacking & Computer Movies
 
-- ![](_assets/movies/war-games.webp)
+- ![War Games poster](_assets/movies/war-games.webp)
     [War Games](https://www.imdb.com/title/tt0086567/)
 
     - **Hacking**
@@ -14,7 +14,7 @@
 
     A teenage hacker accidentally connects to a military computer and almost triggers World War III. Awesome 80s tech.
 
-- ![](_assets/movies/sneakers.webp)
+- ![Sneakers poster](_assets/movies/sneakers.webp)
     [Sneakers](https://www.imdb.com/title/tt0105435/)
 
     - **Crime**
@@ -26,7 +26,7 @@
 
     A team of eccentric security experts and former hackers are forced by the government to steal a universal code-breaking device, but end up in an international conspiracy.
 
-- ![](_assets/movies/pirates-of-silicon-valley.webp)
+- ![Pirates of Silicon Valley poster](_assets/movies/pirates-of-silicon-valley.webp)
     [Pirates of Silicon Valley](https://www.imdb.com/title/tt0168122/)
 
     - **Drama**
@@ -37,7 +37,7 @@
 
     A sharp biographical drama about the early battle between Apple and Microsoft in the 80s. This is the era that shaped the future of personal computing.
 
-- ![](_assets/movies/tron.webp)
+- ![Tron poster](_assets/movies/tron.webp)
     [Tron](https://www.imdb.com/title/tt0084827/)
 
     - **Sci-Fi**
@@ -48,7 +48,7 @@
 
     Another great 80s movie, one of the first to use computer graphics. It's a neon-drenched digital adventure, good vs bad, lots of computing reference easter eggs.
 
-- ![](_assets/movies/micro-men.webp)
+- ![Micro Men poster](_assets/movies/micro-men.webp)
     [Micro Men](https://www.imdb.com/title/tt1459467/)
 
     - **History**
@@ -58,7 +58,7 @@
 
     An entertaining drama about conflict between some of the key figures in the 80s personal computer boom: Clive Sinclair (ZX 80/81/Spectrum), Chris Curry (Acorn, BBC Micro)
 
-- ![](_assets/movies/snowden.webp)
+- ![Snowden poster](_assets/movies/snowden.webp)
     [Snowden](https://www.imdb.com/title/tt3774114/)
 
     - **Thriller**
@@ -73,7 +73,7 @@
 
 ## War & Thrillers
 
-- ![](_assets/movies/the-imitation-game.webp)
+- ![The Imitation Game poster](_assets/movies/the-imitation-game.webp)
     [The Imitation Game](https://www.imdb.com/title/tt2084970/)
 
     - **Drama**
@@ -84,7 +84,7 @@
 
     A tense, human story about Alan Turing, Bletchley Park, and the codebreaking effort that changed history.
 
-- ![](_assets/movies/hunt-for-red-october.webp)
+- ![The Hunt for Red October poster](_assets/movies/hunt-for-red-october.webp)
     [The Hunt for Red October](https://www.imdb.com/title/tt0099810/)
 
     - **War**
@@ -95,7 +95,7 @@
 
     A tense Cold War submarine thriller full of strategy, suspicion, and nerve-rattling pressure.
 
-- ![](_assets/movies/crimson-tide.webp)
+- ![Crimson Tide poster](_assets/movies/crimson-tide.webp)
     [Crimson Tide](https://www.imdb.com/title/tt0112740/)
 
     - **War**
@@ -109,7 +109,7 @@
 
 ## Exploring Space
 
-- ![](_assets/movies/gravity.webp)
+- ![Gravity poster](_assets/movies/gravity.webp)
     [Gravity](https://www.imdb.com/title/tt1454468/)
 
     - **Space**
@@ -120,7 +120,7 @@
 
     A terrifying survival film set in low Earth orbit. Things go horribly wrong, every mistake feels fatal and every second matters.
 
-- ![](_assets/movies/hidden-figures.webp)
+- ![Hidden Figures poster](_assets/movies/hidden-figures.webp)
     [Hidden Figures](https://www.imdb.com/title/tt4846340/)
 
     - **Space**
@@ -130,7 +130,7 @@
 
     The true story of three brilliant African-American female mathematicians at NASA who overcame fierce racial and gender barriers to help launch the historic orbital flight of astronaut John Glenn.
 
-- ![](_assets/movies/apollo-11.webp)
+- ![Apollo 11 poster](_assets/movies/apollo-11.webp)
     [Apollo 11](https://www.imdb.com/title/tt8760684/)
 
     - **Space**
@@ -140,7 +140,7 @@
 
     An amazing documentary using restored archival footage and original audio recordings to vividly recreate humanity's first moon landing mission in 1969 without modern narration or interviews. Stunning
 
-- ![](_assets/movies/first-man.webp)
+- ![First Man poster](_assets/movies/first-man.webp)
     [First Man](https://www.imdb.com/title/tt1213641/)
 
     - **Space**
@@ -151,7 +151,7 @@
 
     Follows astronaut Neil Armstrong as he copes with personal grief and intense training during the dangerous decade leading up to the historic 1969 Apollo 11 moon landing.
 
-- ![](_assets/movies/apollo-13.webp)
+- ![Apollo 13 poster](_assets/movies/apollo-13.webp)
     [Apollo 13](https://www.imdb.com/title/tt0112384/)
 
     - **Space**
@@ -166,7 +166,7 @@
 
 ## Space Sci-Fi
 
-- ![](_assets/movies/2001.webp)
+- ![2001: A Space Odyssey poster](_assets/movies/2001.webp)
     [2001: A Space Odyssey](https://www.imdb.com/title/tt0062622/)
 
     - **Sci-Fi**
@@ -178,7 +178,7 @@
 
     A mysterious artifact is uncovered on the Moon, leading to a mission to Jupiter being launched to discover its origins, carrying two scientists and an AI computer. This film was groundbreaking for its time, and really defined a new era of sci-fi movies. The cinematography is impressive and the visuals still hold up today.
 
-- ![](_assets/movies/alien.webp)
+- ![Alien Series poster](_assets/movies/alien.webp)
     Alien Series
 
     - **Sci-Fi**
@@ -198,7 +198,7 @@
     - [Alien: Covenant](https://www.imdb.com/title/tt2316204/) (2017)
     - [Alien: Romulus](https://www.imdb.com/title/tt13681062/) (2024)
 
-- ![](_assets/movies/dune-1.webp)
+- ![Dune Series poster](_assets/movies/dune-1.webp)
     Dune Series
 
     - **Sci-Fi**
@@ -213,7 +213,7 @@
     - [Dune: Part 1](https://www.imdb.com/title/tt1160419/) (2021)
     - [Dune: Part 2](https://www.imdb.com/title/tt15239678/) (2024)
 
-- ![](_assets/movies/arrival.webp)
+- ![Arrival poster](_assets/movies/arrival.webp)
     [Arrival](https://www.imdb.com/title/tt2543164/)
 
     - **Sci-Fi**
@@ -224,7 +224,7 @@
 
     A smart, emotional sci-fi film about language, time, and the human cost of first contact. The styling of the alien ships and the aliens is so well done.
 
-- ![](_assets/movies/interstellar.webp)
+- ![Interstellar poster](_assets/movies/interstellar.webp)
     [Interstellar](https://www.imdb.com/title/tt0816692/)
 
     - **Sci-Fi**
@@ -235,7 +235,7 @@
 
     A huge, emotional space adventure about love, survival, and humanity's future beyond Earth. Takes a couple of viewings to follow it properly.
 
-- ![](_assets/movies/moon.webp)
+- ![Moon poster](_assets/movies/moon.webp)
     [Moon](https://www.imdb.com/title/tt1182345/)
 
     - **Sci-Fi**
@@ -247,7 +247,7 @@
 
     A worker on a moon base, coming to the end of his three-year mission, discovers a disturbing secret. Dark, claustrophobic and clever.
 
-- ![](_assets/movies/starship-troopers.webp)
+- ![Starship Troopers poster](_assets/movies/starship-troopers.webp)
     [Starship Troopers](https://www.imdb.com/title/tt0120201/)
 
     - **Sci-Fi**
@@ -258,7 +258,7 @@
 
     A satirical military sci-fi film packed with bugs, bravado, and a very big bug problem. Loosely based on Robert A. Heinlein's 1959 novel, but reframed brilliantly.
 
-- ![](_assets/movies/sunshine.webp)
+- ![Sunshine poster](_assets/movies/sunshine.webp)
     [Sunshine](https://www.imdb.com/title/tt0448134/)
 
     - **Sci-Fi**
@@ -269,7 +269,7 @@
 
     The Sun is dying and the Earth with it, so a last-ditch mission to restart the Sun with a huge nuclear bomb is launched. Daft premise, but q pretty good movie.
 
-- ![](_assets/movies/the-martian.webp)
+- ![The Martian poster](_assets/movies/the-martian.webp)
     [The Martian](https://www.imdb.com/title/tt3659388/)
 
     - **Sci-Fi**
@@ -281,7 +281,7 @@
 
     A great survival story about a astronaut stranded on Mars, trying to stay alive and stay sane. The book is even better than this movie adaption.
 
-- ![](_assets/movies/project-hail-mary.webp)
+- ![Project Hail Mary poster](_assets/movies/project-hail-mary.webp)
     [Project Hail Mary](https://www.imdb.com/title/tt12042730/)
 
     - **Sci-Fi**
@@ -292,7 +292,7 @@
 
     A lone astronaut wakes far from Earth with one impossible mission: save humanity. Along the way, he makes a pretty cool friend. Fantastic movie, even better book.
 
-- ![](_assets/movies/contact.webp)
+- ![Contact poster](_assets/movies/contact.webp)
     [Contact](https://www.imdb.com/title/tt0118884/)
 
     - **Sci-Fi**
@@ -303,7 +303,7 @@
 
     A thoughtful, inspiring look at the search for alien life and what it means to be human. The book it is based on has more depth, but still a good movie.
 
-- ![](_assets/movies/edge-of-tomorrow.webp)
+- ![Edge of Tomorrow poster](_assets/movies/edge-of-tomorrow.webp)
     [Edge of Tomorrow](https://www.imdb.com/title/tt1631867/)
 
     - **Sci-Fi**
@@ -315,7 +315,7 @@
 
     A clever time-loop action film where a soldier keeps reliving the same battle until he learns to win. The beachhead battle scenes are intense.
 
-- ![](_assets/movies/fifth-element.webp)
+- ![The Fifth Element poster](_assets/movies/fifth-element.webp)
     [The Fifth Element](https://www.imdb.com/title/tt0119116/)
 
     - **Sci-Fi**
@@ -326,7 +326,7 @@
 
     A wildly colourful space opera full of strange creatures, big ideas, memorable quotes, and very 90s flair. It's as close to a comic book as you can get in a movie.
 
-- ![](_assets/movies/enders-game.webp)
+- ![Ender's Game poster](_assets/movies/enders-game.webp)
     [Ender's Game](https://www.imdb.com/title/tt1731141/)
 
     - **Sci-Fi**
@@ -340,7 +340,7 @@
 
 ## Cyberpunk, AI & Dystopia
 
-- ![](_assets/movies/terminator.webp)
+- ![Terminator Series poster](_assets/movies/terminator.webp)
     Terminator Series
 
     - **Sci-Fi**
@@ -355,7 +355,7 @@
     - [T2: Judgement Day](https://www.imdb.com/title/tt0103064/) (1991)
     - [T3: Rise of the Machines](https://www.imdb.com/title/tt0181852/) (2003)
 
-- ![](_assets/movies/the-matrix.webp)
+- ![The Matrix Trilogy poster](_assets/movies/the-matrix.webp)
     The Matrix Trilogy
 
     - **Sci-Fi**
@@ -372,7 +372,7 @@
     - [The Matrix Revolutions](https://www.imdb.com/title/tt0242653/) (2003)
     - [The Matrix Resurrections](https://www.imdb.com/title/tt10838180/) (2021)
 
-- ![](_assets/movies/akira.webp)
+- ![Akira poster](_assets/movies/akira.webp)
     [Akira](https://www.imdb.com/title/tt0094625/)
 
     - **Animated**
@@ -383,7 +383,7 @@
 
     A landmark cyberpunk anime with explosive energy, huge ideas, and a gorgeous futuristic city. The cinematography and story-telling is so good.
 
-- ![](_assets/movies/ghost-in-the-shell.webp)
+- ![Ghost in the Shell poster](_assets/movies/ghost-in-the-shell.webp)
     [Ghost in the Shell](https://www.imdb.com/title/tt0113568/)
 
     - **Animated**
@@ -393,7 +393,7 @@
 
     A smart and atmospheric cyberpunk anime about identity, memory, and what makes a person real. Another animated classic.
 
-- ![](_assets/movies/blade-runner.webp)
+- ![Blade Runner poster](_assets/movies/blade-runner.webp)
     Blade Runner
 
     - **Sci-Fi**
@@ -407,7 +407,7 @@
     - [Blade Runner](https://www.imdb.com/title/tt0083658/) (1982)
     - [Blade Runner 2049](https://www.imdb.com/title/tt1856101/) (2017)
 
-- ![](_assets/movies/children-men.webp)
+- ![Children of Men poster](_assets/movies/children-men.webp)
     [Children of Men](https://www.imdb.com/title/tt0206634/)
 
     - **Dystopia**
@@ -418,7 +418,7 @@
 
     A near-future movie that is bleak. Globally, women have become infertile, but a miraculous pregnancy leads to a tense and terrifying journey. The camerawork and action pieces are really well done.
 
-- ![](_assets/movies/electric-state.webp)
+- ![The Electric State poster](_assets/movies/electric-state.webp)
     [The Electric State](https://www.imdb.com/title/tt7766378/)
 
     - **Dystopia**
@@ -430,7 +430,7 @@
 
     An amusing tale of a girl, her robot friend, and a rag-tag group travelling through a strange landscape. Based on wonderful [artwork by Simon Stalenhag](https://www.simonstalenhag.se/es.html), the movie is visually stunning.
 
-- ![](_assets/movies/ready-player-one.webp)
+- ![Ready Player One poster](_assets/movies/ready-player-one.webp)
     [Ready Player One](https://www.imdb.com/title/tt1677720/)
 
     - **Sci-Fi**
@@ -440,7 +440,7 @@
 
     A fast, flashy virtual-reality adventure with endless 80s computer / gaming references and huge world-building energy. Super fun, and the book is even more nerdy.
 
-- ![](_assets/movies/snowpiercer.webp)
+- ![Snowpiercer poster](_assets/movies/snowpiercer.webp)
     [Snowpiercer](https://www.imdb.com/title/tt1706620/)
 
     - **Sci-Fi**
@@ -452,7 +452,7 @@
 
     A brutal, claustrophobic survival story set on a train that carries the last of humanity. Crazy premise, but a great movie.
 
-- ![](_assets/movies/brazil.webp)
+- ![Brazil poster](_assets/movies/brazil.webp)
     [Brazil](https://www.imdb.com/title/tt0088846/)
 
     - **Sci-Fi**
@@ -463,7 +463,7 @@
 
     A darkly funny dystopian satire about bureaucracy, freedom, and a world gone wrong. Terry Gilliam (ex. Monty Python) world-building is fantastic.
 
-- ![](_assets/movies/district-9.webp)
+- ![District 9 poster](_assets/movies/district-9.webp)
     [District 9](https://www.imdb.com/title/tt1136608/)
 
     - **Sci-Fi**
@@ -475,7 +475,7 @@
 
     A gritty, inventive alien-invasion story that mixes action with sharp social commentary. The look and feel of this is so real. Clever movie.
 
-- ![](_assets/movies/ex-machina.webp)
+- ![Ex Machina poster](_assets/movies/ex-machina.webp)
     [Ex Machina](https://www.imdb.com/title/tt0470752/)
 
     - **Sci-Fi**
@@ -485,7 +485,7 @@
 
     A tense, intimate AI thriller that asks whether a machine can really think, feel, or deceive.
 
-- ![](_assets/movies/watchmen.webp)
+- ![Watchmen poster](_assets/movies/watchmen.webp)
     [Watchmen](https://www.imdb.com/title/tt0409459/)
 
     - **Sci-Fi**
@@ -499,7 +499,7 @@
 
 ## Brain-Twisters
 
-- ![](_assets/movies/inception.webp)
+- ![Inception poster](_assets/movies/inception.webp)
     [Inception](https://www.imdb.com/title/tt1375666/)
 
     - **Sci-Fi**
@@ -510,7 +510,7 @@
 
     A layered, high-stakes dream-heist film that turns architecture, psychology, and obsession into pure spectacle; need to watch it multiple times.
 
-- ![](_assets/movies/primer.webp)
+- ![Primer poster](_assets/movies/primer.webp)
     [Primer](https://www.imdb.com/title/tt0390384/)
 
     - **Sci-Fi**
@@ -524,7 +524,7 @@
 
 ## Fantasy & Adventure Movies
 
-- ![](_assets/movies/lotr.webp)
+- ![The Lord of the Rings poster](_assets/movies/lotr.webp)
     The Lord of the Rings
 
     - **Fantasy**
@@ -539,7 +539,7 @@
     - [The Two Towers](https://www.imdb.com/title/tt0167261/) (2002)
     - [The Return of the King](https://www.imdb.com/title/tt0167260/) (2003)
 
-- ![](_assets/movies/love-and-monsters.webp)
+- ![Love and Monsters poster](_assets/movies/love-and-monsters.webp)
     [Love and Monsters](https://www.imdb.com/title/tt2222042/)
 
     - **Fantasy**
@@ -553,7 +553,7 @@
 
 ## Action & Survival Movies
 
-- ![](_assets/movies/mad-max.webp)
+- ![Mad Max Series poster](_assets/movies/mad-max.webp)
     Mad Max Series
 
     - **Action**
@@ -569,7 +569,7 @@
     - [Mad Max Beyond Thunderdome](https://www.imdb.com/title/tt0094947/) (1985)
     - [Mad Max: Fury Road](https://www.imdb.com/title/tt1392190/) (2016)
 
-- ![](_assets/movies/source-code.webp)
+- ![Source Code poster](_assets/movies/source-code.webp)
     [Source Code](https://www.imdb.com/title/tt0945513/)
 
     - **Sci-Fi**
@@ -580,7 +580,7 @@
 
     A clever, fast-moving time-loop mystery where every restart carries a new clue and a new risk. Fun movie, and thought-provoking.
 
-- ![](_assets/movies/v-for-vendetta.webp)
+- ![V for Vendetta poster](_assets/movies/v-for-vendetta.webp)
     [V for Vendetta](https://www.imdb.com/title/tt0434409/)
 
     - **Action**
@@ -591,7 +591,7 @@
 
     A stylish dystopian action film about freedom, identity, and the power of a single voice. Based on a graphic novel, the film does well to capture its feel.
 
-- ![](_assets/movies/world-war-z.webp)
+- ![World War Z poster](_assets/movies/world-war-z.webp)
     [World War Z](https://www.imdb.com/title/tt0816711/)
 
     - **Action**
@@ -603,7 +603,7 @@
 
     A fast-moving zombie blockbuster about global panic, survival, and the cost of keeping humanity together. Brutal at times; the zombie hordes are done so well.
 
-- ![](_assets/movies/28-days-later.webp)
+- ![28 Days Later poster](_assets/movies/28-days-later.webp)
     [28 Days Later](https://www.imdb.com/title/tt0289043/)
 
     - **Dystopia**
@@ -615,7 +615,7 @@
 
     A mysterious, incurable virus spreads throughout the United Kingdom and a group of survivors try to find sanctuary. This movie changed the zombie genre, replacing the typical shuffling corpses with fast, terrifying infected.
 
-- ![](_assets/movies/kill-bill.webp)
+- ![Kill Bill poster](_assets/movies/kill-bill.webp)
     Kill Bill
 
     - **Action**
@@ -633,7 +633,7 @@
 
 ## Unlikely Heroes
 
-- ![](_assets/movies/kick-ass.webp)
+- ![Kick-Ass poster](_assets/movies/kick-ass.webp)
     [Kick-Ass](https://www.imdb.com/title/tt1250777/)
 
     - **Action**
@@ -645,7 +645,7 @@
 
     A funny, chaotic superhero story that turns the idea of being a hero into absolute chaos. Fun and funny in equal measure.
 
-- ![](_assets/movies/scott-pilgrim.webp)
+- ![Scott Pilgrim vs. the World poster](_assets/movies/scott-pilgrim.webp)
     [Scott Pilgrim vs. the World](https://www.imdb.com/title/tt0446029/)
 
     - **Action**
@@ -657,7 +657,7 @@
 
     A fast, stylish video-game movie with killer music, sharp jokes, and a lot of heart. Every nerd can empathise with the central character.
 
-- ![](_assets/movies/shaun-dead.webp)
+- ![Shaun of the Dead poster](_assets/movies/shaun-dead.webp)
     [Shaun of the Dead](https://www.imdb.com/title/tt0365748/)
 
     - **Comedy**
@@ -669,7 +669,7 @@
 
     Two hapless, every day mates find themselves in the midst of a zombie apocalypse. Obviously the pub will be the safest place to be.
 
-- ![](_assets/movies/free-guy.webp)
+- ![Free Guy poster](_assets/movies/free-guy.webp)
     [Free Guy](https://www.imdb.com/title/tt6264654/)
 
     - **Gaming**

@@ -5,7 +5,7 @@
 ## Source Code Management
 
 - [Git](https://git-scm.com/)
-    ![](_assets/git.svg)
+    ![Git logo](_assets/git.svg)
     - **Recommended**
     - **Free**
     - Version control system
@@ -39,7 +39,7 @@
 ## Git GUI Clients
 
 - [GitHub Desktop](https://desktop.github.com/)
-    ![](_assets/github-desktop.svg)
+    ![GitHub Desktop logo](_assets/github-desktop.svg)
     - **Recommended**
     - **Desktop**
     - **Free**

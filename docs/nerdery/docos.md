@@ -4,7 +4,7 @@
 
 ## Computers & Hacking
 
-- ![](_assets/docos/indie-game.webp)
+- ![Indie Game: The Movie poster](_assets/docos/indie-game.webp)
     [Indie Game: The Movie](https://www.imdb.com/title/tt1942884/)
 
     - **Gaming**
@@ -15,7 +15,7 @@
 
     Explores the history, culture, and evolution of video games from their early arcade origins into a massive global industry. Really interesting.
 
-- ![](_assets/docos/high-score.webp)
+- ![High Score poster](_assets/docos/high-score.webp)
     [High Score](https://www.imdb.com/title/tt12759400/)
 
     - **Gaming**
@@ -26,7 +26,7 @@
 
     A nostalgic journey through the golden age of video games, chronicling how visionary pioneers built a multi-billion-dollar industry from the pixel up.
 
-- ![](_assets/docos/internets-own-boy.webp)
+- ![The Internet's Own Boy poster](_assets/docos/internets-own-boy.webp)
     [The Internet's Own Boy](https://www.imdb.com/title/tt3268458/)
 
     - **Computing**
@@ -36,7 +36,7 @@
 
     The extraordinary life, groundbreaking tech contributions, and tragic federal prosecution of programming prodigy and open-access activist Aaron Swartz. Such a sad story.
 
-- ![](_assets/docos/general-magic.webp)
+- ![General Magic poster](_assets/docos/general-magic.webp)
     [General Magic](https://www.imdb.com/title/tt6849786/)
 
     - **Computing**
@@ -46,7 +46,7 @@
 
    Tells the story of the 1990 Apple spin-off that pioneered early smartphone concepts before failing commercially, but also launching the careers of several industry visionaries. Amazing story.
 
-- ![](_assets/docos/zero-days.webp)
+- ![Zero Days poster](_assets/docos/zero-days.webp)
     [Zero Days](https://www.imdb.com/title/tt5446858/)
 
     - **Computing**
@@ -57,7 +57,7 @@
 
     Investigates how a joint U.S. and Israeli cyberattack using the Stuxnet malware sabotaged Iran's nuclear program and exposed the unregulated reality of global cyber warfare.
 
-- ![](_assets/docos/alphago.webp)
+- ![AlphaGo poster](_assets/docos/alphago.webp)
     [AlphaGo](https://www.imdb.com/title/tt6700846/)
 
     - **Computing**
@@ -67,7 +67,7 @@
 
     Chronicles the historic match between Go champion Lee Sedol and Google DeepMind's artificial intelligence program, AlphaGo. Surprisingly tense.
 
-- ![](_assets/docos/machine-world.webp)
+- ![The Machine that Changed the World poster](_assets/docos/machine-world.webp)
     [The Machine that Changed the World](https://www.imdb.com/title/tt1245829/)
 
     - **Computing**
@@ -80,7 +80,7 @@
 
 ## Space
 
-- ![](_assets/docos/for-all-mankind.webp)
+- ![For All Mankind poster](_assets/docos/for-all-mankind.webp)
     [For All Mankind](https://www.imdb.com/title/tt0097372/)
 
     - **Space**
@@ -95,7 +95,7 @@
 
 ## Science & Nature
 
-- ![](_assets/docos/planet-earth.webp)
+- ![Planet Earth Series poster](_assets/docos/planet-earth.webp)
     Planet Earth Series
 
     - **Adventure**
@@ -116,7 +116,7 @@
     - [Frozen Planet II](https://www.imdb.com/title/tt9805678/) (2023)
     - [A Life on Our Planet](https://www.imdb.com/title/tt11989890/) (2020)
 
-- ![](_assets/docos/horizon.webp)
+- ![Horizon poster](_assets/docos/horizon.webp)
     [Horizon](https://www.imdb.com/title/tt0318224/episodes)
 
     - **Science**
@@ -126,7 +126,7 @@
 
     This UK TV show has created some of the best science-focussed TV for years. Always well produced, always interesting, and covering every topic that has impacted humanity for the past six decades.
 
-- ![](_assets/docos/particle-fever.webp)
+- ![Particle Fever poster](_assets/docos/particle-fever.webp)
     [Particle Fever](https://www.imdb.com/title/tt1385956/)
 
     - **Science**
@@ -136,7 +136,7 @@
 
     A really gripping documentary that follows scientists during the launch of the Large Hadron Collider. It captures the intensity of discovering the Higgs boson.
 
-- ![](_assets/docos/cosmos.webp)
+- ![Cosmos poster](_assets/docos/cosmos.webp)
     [Cosmos](https://www.imdb.com/title/tt0081846/)
     and [Cosmos: A Spacetime Odyssey](https://www.imdb.com/title/tt2395695/)
 
@@ -150,7 +150,7 @@
 
 ## Technology
 
-- ![](_assets/docos/the-secret-life-of-machines.webp)
+- ![The Secret Life of Machines poster](_assets/docos/the-secret-life-of-machines.webp)
     [The Secret Life of Machines](https://www.imdb.com/title/tt0431571/)
 
     - **History**

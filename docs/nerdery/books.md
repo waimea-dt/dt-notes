@@ -4,7 +4,7 @@
 
 ## Adventures
 
-- ![](_assets/books/cryptonomicon.webp)
+- ![Cryptonomicon cover](_assets/books/cryptonomicon.webp)
     [Cryptonomicon](hhttps://www.goodreads.com/book/show/816.Cryptonomicon)
 
     - **Adventure**
@@ -16,7 +16,7 @@
 
     Two interconnected storylines: One in WWII and one in the 1990s; linked by code breaking, conspiracies, computers, mysterious organisations, and gold... Lots of gold.
 
-- ![](_assets/books/reamde.webp)
+- ![REAMDE cover](_assets/books/reamde.webp)
     [REAMDE](https://www.goodreads.com/book/show/10552338-reamde)
 
     - **Action**
@@ -28,7 +28,7 @@
     A ransomware outbreak becomes a globe-spanning chase involving hackers, terrorists, spies and one very dangerous video game.
 
 
-- ![](_assets/books/project-dodo.webp)
+- ![Project DODO cover](_assets/books/project-dodo.webp)
     [Project DODO](https://www.goodreads.com/book/show/32920280-the-rise-and-fall-of-d-o-d-o)
 
     - **Sci-Fi**
@@ -40,7 +40,7 @@
 
     A government project combines magic, science and time travel in a secret attempt to rewrite history.
 
-- ![](_assets/books/baroque-cycle.webp)
+- ![The Baroque Cycle Trilogy cover](_assets/books/baroque-cycle.webp)
     [The Baroque Cycle Trilogy](https://www.goodreads.com/series/49317-the-baroque-cycle-3-volume)
 
     - **Adventure**
@@ -57,7 +57,7 @@
     1. [The System of the World](https://www.goodreads.com/book/show/116257.The_System_of_the_World) (2004)
 
 
-- ![](_assets/books/wasp-factory.webp)
+- ![The Wasp Factory cover](_assets/books/wasp-factory.webp)
     [The Wasp Factory](https://www.goodreads.com/en/book/show/567678.The_Wasp_Factory)
 
     - **Action**
@@ -71,7 +71,7 @@
 
 ## Space Sci-Fi
 
-- ![](_assets/books/the-martian.webp)
+- ![The Martian cover](_assets/books/the-martian.webp)
     [The Martian](https://www.goodreads.com/book/show/18007564-the-martian)
 
     - **Sci-Fi**
@@ -84,7 +84,7 @@
 
     Stranded alone on Mars, an astronaut uses science, stubbornness and a lot of potatoes to stay alive.
 
-- ![](_assets/books/project-hail-mary.webp)
+- ![Project Hail Mary cover](_assets/books/project-hail-mary.webp)
     [Project Hail Mary](https://www.goodreads.com/book/show/54493401-project-hail-mary)
 
     - **Sci-Fi**
@@ -97,7 +97,7 @@
 
     An astronaut wakes alone in deep space and must solve an impossible scientific problem to save Earth.
 
-- ![](_assets/books/artemis.webp)
+- ![Artemis cover](_assets/books/artemis.webp)
     [Artemis](https://www.goodreads.com/book/show/34928122-artemis)
 
     - **Sci-Fi**
@@ -110,7 +110,7 @@
 
     A smuggler on the Moon takes one risky job too many and finds herself caught in a conspiracy over the city of Artemis.
 
-- ![](_assets/books/three-body-problem.webp)
+- ![Remembrance of Earth's Past Series cover](_assets/books/three-body-problem.webp)
     [Remembrance of Earth's Past Series](https://www.goodreads.com/series/189931-remembrance-of-earth-s-past)
 
     - **Sci-Fi**
@@ -126,7 +126,7 @@
     1. [The Dark Forest](https://www.goodreads.com/book/show/20518873-the-dark-forest) (2008)
     1. [Death's End](https://www.goodreads.com/book/show/20518875-death-s-end) (2010)
 
-- ![](_assets/books/seveneves.webp)
+- ![Seveneves cover](_assets/books/seveneves.webp)
     [Seveneves](https://www.goodreads.com/book/show/22816087-seveneves)
 
     - **Sci-Fi**
@@ -139,7 +139,7 @@
 
     The world faces a catastrophic, unavoidable end, and races against time to save some of humanity. It all goes well... until it doesn't.
 
-- ![](_assets/books/dune.webp)
+- ![Dune Series cover](_assets/books/dune.webp)
     [Dune Series](https://www.goodreads.com/series/45935-dune)
 
     - **Sci-Fi**
@@ -158,7 +158,7 @@
 
     ... and many more
 
-- ![](_assets/books/hhgttg.webp)
+- ![The Hitchhikers Guide to the Galaxy Series cover](_assets/books/hhgttg.webp)
     [The Hitchhikers Guide to the Galaxy Series](https://www.goodreads.com/series/40957-the-hitchhiker-s-guide-to-the-galaxy)
 
     - **Sci-Fi**
@@ -176,7 +176,7 @@
     1. [So Long, and Thanks for All the Fish](https://www.goodreads.com/book/show/6091075-so-long-and-thanks-for-all-the-fish) (1984)
     1. [Mostly Harmless](https://www.goodreads.com/book/show/569429.Mostly_Harmless) (1992)
 
-- ![](_assets/books/enders-game.webp)
+- ![Ender's Saga Series cover](_assets/books/enders-game.webp)
     [Ender's Saga Series](https://www.goodreads.com/series/43963-ender-s-saga)
 
     - **Sci-Fi**
@@ -196,7 +196,7 @@
     1. [Ender in Exile](https://www.goodreads.com/book/show/3220405-ender-in-exile) (2008)
     1. [The Last Shadow](https://www.goodreads.com/book/show/7108926-the-last-shadow) (2021)
 
-- ![](_assets/books/culture.webp)
+- ![The Culture Series cover](_assets/books/culture.webp)
     [The Culture Series](https://www.goodreads.com/series/49118-culture)
 
     - **Sci-Fi**
@@ -221,7 +221,7 @@
     1. [The Hydrogen Sonata](https://www.goodreads.com/book/show/13497991-the-hydrogen-sonata) (2012)
 
 
-- ![](_assets/books/expanse.webp)
+- ![The Expanse Series cover](_assets/books/expanse.webp)
     [The Expanse Series](https://www.goodreads.com/series/56399-the-expanse)
 
     - **Sci-Fi**
@@ -247,7 +247,7 @@
 
 ## Other Sci-Fi
 
-- ![](_assets/books/snow-crash.webp)
+- ![Snow Crash cover](_assets/books/snow-crash.webp)
     [Snow Crash](https://www.goodreads.com/book/show/830.Snow_Crash)
 
     - **Sci-Fi**
@@ -258,7 +258,7 @@
 
     A pizza delivery driver and a sword-wielding hacker face a digital virus that threatens both the Metaverse and the real world.
 
-- ![](_assets/books/diamond-age.webp)
+- ![The Diamond Age cover](_assets/books/diamond-age.webp)
     [The Diamond Age](https://www.goodreads.com/en/book/show/827.The_Diamond_Age)
 
     - **Sci-Fi**
@@ -270,7 +270,7 @@
 
     A near-future novel in a world of social enclaves and nano-technology; a young girl comes upon an artificially intelligent book that will change her life and those around her.
 
-- ![](_assets/books/anathem.webp)
+- ![Anathem cover](_assets/books/anathem.webp)
     [Anathem](https://www.goodreads.com/book/show/2845024-anathem)
 
     - **Sci-Fi**
@@ -286,7 +286,7 @@
 
 ## Fantasy
 
-- ![](_assets/books/dark-materials.webp)
+- ![His Dark Materials Trilogy cover](_assets/books/dark-materials.webp)
     [His Dark Materials Trilogy](https://www.goodreads.com/series/44427-his-dark-materials)
 
     - **Fantasy**
@@ -302,7 +302,7 @@
     3. [The Amber Spyglass](https://www.goodreads.com/book/show/18122.The_Amber_Spyglass) (2000)
 
 
-- ![](_assets/books/lotr.webp)
+- ![Middle Earth Series cover](_assets/books/lotr.webp)
     [Middle Earth Series](https://www.goodreads.com/series/66175-middle-earth)
 
     - **Fantasy**
@@ -319,7 +319,7 @@
     4. [The Return of the King](https://www.goodreads.com/book/show/61215384-the-return-of-the-king) (1955)
 
 
-- ![](_assets/books/dark-tower.webp)
+- ![The Dark Tower Series cover](_assets/books/dark-tower.webp)
     [The Dark Tower Series](https://www.goodreads.com/series/40750-the-dark-tower)
 
     - **Fantasy**
@@ -340,7 +340,7 @@
     5. [The Wind Through the Keyhole](https://www.goodreads.com/book/show/12341557-the-wind-through-the-keyhole) (2012)
 
 
-- ![](_assets/books/good-omens.webp)
+- ![Good Omens cover](_assets/books/good-omens.webp)
     [Good Omens](https://www.goodreads.com/book/show/12067.Good_Omens)
 
     - **Fantasy**
@@ -353,7 +353,7 @@
     But how accurate? The apocalypse is next Saturday, armies of Good and Evil are massing, and the Antichrist is missing... Great writing, and excellent humour.
 
 
-- ![](_assets/books/end-mr-y.webp)
+- ![The End of Mr. Y cover](_assets/books/end-mr-y.webp)
     [The End of Mr. Y](https://www.goodreads.com/book/show/93436.The_End_of_Mr_Y)
 
     - **Fantasy**
@@ -365,7 +365,7 @@
     A find in an secondhand bookshop leads to an adventure involving science, love, death, and time travel. Really well written.
 
 
-- ![](_assets/books/graveyard.webp)
+- ![The Graveyard Book cover](_assets/books/graveyard.webp)
     [The Graveyard Book](https://www.goodreads.com/book/show/2213661.The_Graveyard_Book)
 
     - **Fantasy**
@@ -376,7 +376,7 @@
     Nobody Owens lives in a graveyard, raised by the dead. But now he's a little older, the world of the living is calling him... But is it safe?
 
 
-- ![](_assets/books/strange-norrell.webp)
+- ![Jonathan Strange & Mr. Norrell cover](_assets/books/strange-norrell.webp)
     [Jonathan Strange & Mr. Norrell](https://www.goodreads.com/book/show/14201.Jonathan_Strange_Mr_Norrell)
 
     - **Fantasy**
@@ -387,7 +387,7 @@
     An alternative 19th Century world where magic still exists, but long forgotten. One magician could win the war...
 
 
-- ![](_assets/books/cloud-atlas.webp)
+- ![The Cloud Atlas cover](_assets/books/cloud-atlas.webp)
     [The Cloud Atlas](https://www.goodreads.com/book/show/49628.Cloud_Atlas)
 
     - **Fantasy**
@@ -403,7 +403,7 @@
 
 ## History of Computing
 
-- ![](_assets/books/wizards.webp)
+- ![Where Wizards Stay Up Late cover](_assets/books/wizards.webp)
     [Where Wizards Stay Up Late](https://www.goodreads.com/book/show/281818.Where_Wizards_Stay_Up_Late)
 
     - **Computing**
@@ -417,7 +417,7 @@
     The amazing story of the creation of ARPANET, the predecessor of the Internet, and the incredible people who made it happen.
 
 
-- ![](_assets/books/hackers.webp)
+- ![Hackers: Heroes of the Computer Revolution cover](_assets/books/hackers.webp)
     [Hackers: Heroes of the Computer Revolution](https://www.goodreads.com/en/book/show/56829.Hackers)
 
     - **Computing**
@@ -429,7 +429,7 @@
     Chronicles the brilliant, eccentric pioneers who shaped early computer culture from the late 1950s through the early 1980s. Really interesting reading.
 
 
-- ![](_assets/books/cuckoos-egg.webp)
+- ![The Cuckoo's Egg cover](_assets/books/cuckoos-egg.webp)
     [The Cuckoo's Egg](https://www.goodreads.com/book/show/18154.The_Cuckoo_s_Egg)
 
     - **Computing**
@@ -444,7 +444,7 @@
     An systems administrator investigates a 75-cent accounting error, ends up spending a year tracking a computer hacker breaking into military networks, and eventually uncovers an international espionage ring linked to the KGB.
 
 
-- ![](_assets/books/computers-britain.webp)
+- ![The Computers that Made Britain cover](_assets/books/computers-britain.webp)
     [The Computers that Made Britain](https://www.goodreads.com/en/book/show/58312784-the-computers-that-made-britain)
 
     - **Computing**
@@ -456,7 +456,7 @@
     A short history of some of the innovative and novel computers produced in the UK during the 1980s personal computer boom, and the people behind them.
 
 
-- ![](_assets/books/cult-dead-cow.webp)
+- ![Cult of the Dead Cow cover](_assets/books/cult-dead-cow.webp)
     [Cult of the Dead Cow](https://www.goodreads.com/en/book/show/42283862-cult-of-the-dead-cow)
 
     - **Computing**
@@ -470,7 +470,7 @@
     A history of America's oldest and most influential hacking group, the Cult of the Dead Cow. Its members have impacted the world of technology in many ways, including hacktivism, digital privacy, and cybersecurity.
 
 
-- ![](_assets/books/innovators.webp)
+- ![The Innovators cover](_assets/books/innovators.webp)
     [The Innovators](https://www.goodreads.com/book/show/21856367-the-innovators)
 
     - **Computing**
@@ -486,7 +486,7 @@
 
 ## Science & Philosophy
 
-- ![](_assets/books/sophies-world.webp)
+- ![Sophie's World cover](_assets/books/sophies-world.webp)
     [Sophie's World](https://www.goodreads.com/book/show/10959.Sophie_s_World)
 
     - **Philosophy**
@@ -497,7 +497,7 @@
     "Who are you?" and "Where does the world come from?" These notes are the start of journey of discovery for Sophie, through the rich history of philosophy.
 
 
-- ![](_assets/books/sapiens.webp)
+- ![Sapiens: A Brief History of Humankind cover](_assets/books/sapiens.webp)
     [Sapiens: A Brief History of Humankind](https://www.goodreads.com/book/show/23692271-sapiens)
 
     - **Society**
@@ -508,7 +508,7 @@
 
     An amazing, comprehensive and engaging history of the forces and events that shaped the human species. Brilliantly accessible and super-interesting.
 
-- ![](_assets/books/emperors-new-mind.webp)
+- ![The Emperor's New Mind cover](_assets/books/emperors-new-mind.webp)
     [The Emperor's New Mind](https://www.goodreads.com/book/show/140377651-the-emporer-s-new-mind)
 
     - **Science**
@@ -521,7 +521,7 @@
 
     A deep and detailed journey through maths, philosophy and artificial intelligence - it's a pretty dense read, but still very readable
 
-- ![](_assets/books/selfish-gene.webp)
+- ![The Selfish Gene cover](_assets/books/selfish-gene.webp)
     [The Selfish Gene](https://www.goodreads.com/book/show/61535.The_Selfish_Gene)
 
     - **Science**
