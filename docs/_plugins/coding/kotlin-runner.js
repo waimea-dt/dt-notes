@@ -72,6 +72,8 @@
         })
     }
 
+    const KOTLIN_PLAYGROUND_URL = 'https://cdn.jsdelivr.net/npm/kotlin-playground@1.34.0'
+
     function initKotlinRunnerBlocks(root = document) {
         const kotlinCodeSelector = '.kotlin-run pre code.lang-kotlin, .kotlin-run pre code.language-kotlin'
         const kotlinContainers = []
@@ -95,12 +97,17 @@
         // Mark all containers up front so each one's position under its heading is known
         kotlinContainers.forEach(container => { if (container) container.dataset.persistType = 'kotlin' })
 
-        KotlinPlayground('.kotlin-runner-target').then(function () {
-            kotlinCodeBlocks.forEach(function (codeBlock) {
-                codeBlock.classList.remove('kotlin-runner-target')
+        // Kotlin Playground is loaded on demand - only pages with runnable Kotlin pay for it
+        window.DocsifyUtils.loadScript(KOTLIN_PLAYGROUND_URL).then(function () {
+            // The page may have changed while the library was downloading
+            if (!kotlinCodeBlocks[0].isConnected) return
+            return KotlinPlayground('.kotlin-runner-target').then(function () {
+                kotlinCodeBlocks.forEach(function (codeBlock) {
+                    codeBlock.classList.remove('kotlin-runner-target')
+                })
+                stripInjectedSemicolons(root)
+                persistKotlinEditors(kotlinContainers)
             })
-            stripInjectedSemicolons(root)
-            persistKotlinEditors(kotlinContainers)
         }).catch(function (err) {
             kotlinCodeBlocks.forEach(function (codeBlock) {
                 codeBlock.classList.remove('kotlin-runner-target')

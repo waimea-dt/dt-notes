@@ -40,6 +40,8 @@
  *   parsePositiveInt(value, fallback)   - Parse a positive integer attribute string
  *   generateId(prefix)                  - Generate a short random ID
  *   registerPlugin(fn, prepend)         - Register a Docsify plugin function
+ *   loadScript(src)                     - Load a script once on demand (cached promise)
+ *   loadScripts(srcs)                   - Load several scripts in order, on demand
  *   parseHeaderConfig(el, defaults)     - Parse header/title/sub-title attributes from a plugin element
  */
 ;(function () {
@@ -526,6 +528,42 @@
     }
 
     // -------------------------------------------------------------------------
+    // On-demand script loading
+    // -------------------------------------------------------------------------
+
+    const scriptPromises = new Map()
+
+    /**
+     * Load a script by URL the first time a page needs it. Docsify never reloads
+     * the page, so later calls (and concurrent ones) share the same promise.
+     * A failed load is forgotten so the next page visit can retry.
+     */
+    function loadScript(src) {
+        if (!scriptPromises.has(src)) {
+            const promise = new Promise((resolve, reject) => {
+                const script = document.createElement('script')
+                script.src = src
+                script.onload = () => resolve()
+                script.onerror = () => {
+                    scriptPromises.delete(src)
+                    script.remove()
+                    reject(new Error(`Failed to load script: ${src}`))
+                }
+                document.head.appendChild(script)
+            })
+            scriptPromises.set(src, promise)
+        }
+        return scriptPromises.get(src)
+    }
+
+    /**
+     * Load several scripts strictly in order (for libraries with dependencies).
+     */
+    async function loadScripts(srcs) {
+        for (const src of srcs) await loadScript(src)
+    }
+
+    // -------------------------------------------------------------------------
     // Export
     // -------------------------------------------------------------------------
 
@@ -564,6 +602,8 @@
         generateId,
         closeSingleTags,
         registerPlugin,
+        loadScript,
+        loadScripts,
         parseHeaderConfig,
     })
 
