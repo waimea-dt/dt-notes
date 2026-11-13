@@ -31,11 +31,14 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # Draft work lives in temp/ folders - keep it in the repo but off the live site
-      - name: Remove drafts and editor backups
+      # Dev / reference material stays in the repo but off the live site:
+      # drafts (temp/), editor backups, AI assistant notes, Freeform design
+      # sources, and curriculum/unit planning documents (courses/_assets).
+      - name: Remove dev-only files
         run: |
           find docs -type d -name temp -prune -exec rm -rf {} +
-          find docs -type f -name '*~' -delete
+          find docs -type f \( -name '*~' -o -name 'CLAUDE.md' -o -name 'AGENTS.md' -o -name '*.free' \) -delete
+          rm -rf docs/courses/_assets
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
