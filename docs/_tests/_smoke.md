@@ -456,7 +456,7 @@ ADD R0, 2
 ```html
 <h1>Smoke Test</h1>
 
-<img src="/_assets/macs/macintosh.svg">
+<img src="_assets/macintosh.svg">
 ```
 
 ```css
