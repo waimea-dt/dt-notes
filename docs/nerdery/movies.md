@@ -436,6 +436,7 @@
     - **Sci-Fi**
     - **Adventure**
     - **Action**
+    - **Gaming**
     - 2018
 
     A fast, flashy virtual-reality adventure with endless 80s computer / gaming references and huge world-building energy. Super fun, and the book is even more nerdy.
