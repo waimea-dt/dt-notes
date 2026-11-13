@@ -28,15 +28,33 @@
         return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
     }
 
+    // Loaded on demand - only pages containing an <excalidraw> tag pay for it.
+    const EXCALIDRAW_URL = 'https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.18.1/+esm'
+
+    async function importExcalidraw() {
+        // Excalidraw's worker chunks are cross-origin in this setup. Hide Worker during
+        // module init so it falls back to the main thread, then restore it.
+        const nativeWorker = window.Worker
+        window.Worker = undefined
+        try {
+            return await import(EXCALIDRAW_URL)
+        } finally {
+            window.Worker = nativeWorker
+        }
+    }
+
     async function loadExportToSvg() {
         if (!exportToSvgPromise) {
-            exportToSvgPromise = Promise.resolve(window.ExcalidrawReady)
-                .then(loadedModule => loadedModule || window.ExcalidrawLib)
+            exportToSvgPromise = importExcalidraw()
                 .then(module => {
                     if (!module || typeof module.exportToSvg !== 'function') {
                         throw new Error('Excalidraw exportToSvg is not available from loaded CDN module')
                     }
                     return module.exportToSvg
+                })
+                .catch(error => {
+                    exportToSvgPromise = null // allow a retry on the next page visit
+                    throw error
                 })
         }
         return exportToSvgPromise

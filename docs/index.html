@@ -193,26 +193,6 @@
         window.mermaid = mermaid;
     </script>
 
-    <script type="module">
-        const nativeWorker = window.Worker
-
-        // Excalidraw worker chunks are cross-origin in this setup.
-        // Disable worker detection during module init so it uses main-thread fallback.
-        window.Worker = undefined
-
-        window.ExcalidrawReady = import('https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.18.1/+esm')
-            .then(module => {
-                window.ExcalidrawLib = module
-                return module
-            })
-            .catch(error => {
-                console.error('Failed to load Excalidraw library from CDN.', error)
-                return null
-            })
-            .finally(() => {
-                window.Worker = nativeWorker
-            })
-    </script>
 
 
     <script src="https://unpkg.com/lucide@1.72.0"></script>
