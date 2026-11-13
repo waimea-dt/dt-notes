@@ -96,11 +96,11 @@ During the 19th and early 20th Centuries, a whole host of clever **mechanical ma
 
     <captioned>
 
-    ![](./_assets/pre/punched-card.webp)
+    ![A punched card with holes marking data in numbered columns](./_assets/pre/punched-card.webp)
 
     test
 
-    ![](./_assets/pre/card-puncher.webp)
+    ![An operator using a card punch machine](./_assets/pre/card-puncher.webp)
 
     Hollerith's punched cards
 

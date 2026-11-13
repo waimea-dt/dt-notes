@@ -30,7 +30,7 @@ Good UX can be summed up with a small set of practical rules. Keep these in mind
 
 The single biggest UX mistake is assuming your users think like you do. Different people have different goals, skills, expectations, and patience levels.
 
-![](_assets/ux/users.webp)
+![Illustrated portraits of four different people](_assets/ux/users.webp)
 
 #### Consider:
 - Who will use this? (age, experience, context)
@@ -51,7 +51,7 @@ The single biggest UX mistake is assuming your users think like you do. Differen
 
 A user flow is the step-by-step path to complete a task. Each flow should be short, clear, and free of dead ends.
 
-![](_assets/ux/flow-steps.webp)
+![User flow for viewing test results in a patient portal: login screen, portal home screen, lab results page, specific lab result](_assets/ux/flow-steps.webp)
 
 #### Consider:
 - What are your top 1-2 tasks (e.g. sign up, find info, submit form)?
@@ -73,7 +73,7 @@ A user flow is the step-by-step path to complete a task. Each flow should be sho
 
 Users learn faster when pages are consistent. Keep navigation, buttons, and layouts predictable.
 
-![](_assets/ux/consistent.webp)
+![A row of mobile app screens sharing the same colours, buttons and layout](_assets/ux/consistent.webp)
 
 #### Consider:
 - Are similar pages laid out in a similar way?
@@ -82,7 +82,7 @@ Users learn faster when pages are consistent. Keep navigation, buttons, and layo
 
 A great way to ensure consistency in your design is to use a design system (e.g. via CSS variables and rules):
 
-![](_assets/ux/design-system.webp)
+![A design system: colours, typography and spacing feed into consistent buttons, cards and text fields](_assets/ux/design-system.webp)
 
 > [!EXAMPLE]
 > To make sure that create a system that is consistent and clear, I will:
@@ -99,7 +99,7 @@ A great way to ensure consistency in your design is to use a design system (e.g.
 
 If tasks take too long, users give up. Reduce steps and remove unnecessary friction.
 
-![](_assets/ux/waiting.webp)
+![How waiting feels: under 1 second is fine, 1 to 3 seconds is noticeable, 3 to 10 seconds is boring, over 10 seconds and users give up](_assets/ux/waiting.webp)
 
 #### Consider:
 - Can common tasks be completed in as few steps as possible?
@@ -121,7 +121,7 @@ If tasks take too long, users give up. Reduce steps and remove unnecessary frict
 
 Labels, button text, and error messages should be simple and direct.
 
-![](_assets/ux/clear-language.webp)
+![Unclear: "Are you sure you want to discard your changes?" with Yes and No buttons. Clear: the same question with Keep and Discard buttons](_assets/ux/clear-language.webp)
 
 #### Consider:
 - Are labels and button text specific and action-oriented? ("Save changes" not "Submit")
@@ -143,7 +143,7 @@ Labels, button text, and error messages should be simple and direct.
 
 Simple testing catches problems early. Even 2-3 users can reveal major issues.
 
-![](_assets/ux/test.webp)
+![Why test: uncover problems in the design, discover opportunities to improve it, and learn about users' behaviour and preferences](_assets/ux/test.webp)
 
 #### Consider:
 - Have people outside the design team tried to use it?

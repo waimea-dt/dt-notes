@@ -29,13 +29,13 @@ In 1994, usability expert **Jakob Nielsen** published 10 general principles for 
 
 The system should always tell users what it's doing. If you click a button, you should see something happen (e.g. a loading spinner or a confirmation message). Without feedback, users don't know if their action worked.
 
-![](_assets/usability/system-status.webp)
+![Good: an upload progress bar showing 67%. Bad: just the message "Files are uploading... Please wait"](_assets/usability/system-status.webp)
 
 #### Examples:
 - When you upload a file to Google Drive, a progress bar shows how far along it is. Without it, you'd have no idea if anything was happening.
 - When ordering something, sites often show how far through the process you are.
 
-![](_assets/usability/progress-status.webp)
+![Checkout progress steps: Cart (done), Checkout (current), Billing, Done](_assets/usability/progress-status.webp)
 
 ---
 
@@ -45,7 +45,7 @@ The system should always tell users what it's doing. If you click a button, you 
 
 Use words, icons, and ideas that users already understand from everyday life. Avoid technical jargon. Information should appear in a natural, logical order.
 
-![](_assets/usability/real-world.webp)
+![Good: a notepad icon for notes. Bad: a floppy disk icon, which modern users may not recognise](_assets/usability/real-world.webp)
 
 #### Examples:
 - A notepad icon for a note-taking app makes sense to everyone, whereas a floppy disk for a save button makes no sense if you were born in the 21st Century!
@@ -60,7 +60,7 @@ Use words, icons, and ideas that users already understand from everyday life. Av
 
 People make mistakes. They need an easy way to undo actions and go back to where they were, without having to go through a long process.
 
-![](_assets/usability/freedom.webp)
+![Good: a message menu with Edit and Delete options. Bad: the same menu without them](_assets/usability/freedom.webp)
 
 #### Examples:
 - When posting a message, the ability to edit it or delete it completely allows users to undo mistakes.
@@ -75,7 +75,7 @@ People make mistakes. They need an easy way to undo actions and go back to where
 
 Buttons, icons, and words should mean the same thing throughout the app, and ideally match what users expect from other apps too. Consistency reduces the mental effort needed to learn a new system.
 
-![](_assets/usability/consistency.webp)
+![Good: three buttons in matching styles. Bad: the same buttons each in a different colour and font](_assets/usability/consistency.webp)
 
 #### Examples:
 - Keep your UI elements consistent: buttons should all be similar so the user recognises them instantly.
@@ -90,7 +90,7 @@ Buttons, icons, and words should mean the same thing throughout the app, and ide
 
 The best error message is one that never has to appear. Design the system so that mistakes are hard to make in the first place (e.g. confirmations for risky actions like deletions, form validation rules, etc.)
 
-![](_assets/usability/prevention.webp)
+![Good: a search box suggesting "Bicycle cards" and "Bicycle shop" for a misspelt search. Bad: just "Error: Item not found"](_assets/usability/prevention.webp)
 
 #### Examples:
 - When the user searches for something, but mistypes it, don't just return an error - instead suggest fixes.
@@ -105,7 +105,7 @@ The best error message is one that never has to appear. Design the system so tha
 
 Human short-term memory is limited. Instead of making users remember what to type or what options exist, show them choices they can recognise: menus, auto-complete, icons, etc.
 
-![](_assets/usability/recognition.webp)
+![Good: a search box listing recent searches. Bad: an empty search box](_assets/usability/recognition.webp)
 
 #### Examples:
 - Messaging apps often show your most recent contacts when beginning a new message.
@@ -120,7 +120,7 @@ Human short-term memory is limited. Instead of making users remember what to typ
 
 A system should work well for both new and experienced users. Beginners need clear guidance, whilst experienced users prefer shortcuts and ways to speed up repeated tasks.
 
-![](_assets/usability/flexibility.webp)
+![Good: an edit menu showing keyboard shortcuts next to Cut, Copy and Paste. Bad: the same menu without shortcuts](_assets/usability/flexibility.webp)
 
 #### Examples:
 - Most apps have full menus for beginners but also keyboard shortcuts (like `Ctrl+Z` to undo) that experts rely on heavily.
@@ -134,7 +134,7 @@ A system should work well for both new and experienced users. Beginners need cle
 
 Every extra button, image, or piece of text competes for the user's attention. Keep the design focused on what the user actually needs. Less visual 'noise' means the important things stand out more clearly.
 
-![](_assets/usability/minimal.webp)
+![Good: a clean weather app screen. Bad: the same screen cluttered with overlapping images and a hard-to-read font](_assets/usability/minimal.webp)
 
 #### Examples:
 - Google's homepage is famously minimal - just a search box - because that's the one thing users come to do.
@@ -148,7 +148,7 @@ Every extra button, image, or piece of text competes for the user's attention. K
 
 When something goes wrong, the error message should say what happened in plain language: explain why it's a problem, and suggest a way to fix it. Avoid cryptic error codes or technical terms.
 
-![](_assets/usability/recover.webp)
+![Good: a password field listing which rules are met and which are not. Bad: just "Your password is too weak. Try again."](_assets/usability/recover.webp)
 
 #### Examples:
 - When setting a password that requires particular characters, inform the user which ones they are missing, rather than just a fail message.
@@ -163,7 +163,7 @@ When something goes wrong, the error message should say what happened in plain l
 
 Ideally, a system is so intuitive that no manual is needed. But when users do need help, it should be easy to access - not buried in a separate PDF doc.
 
-![](_assets/usability/docs.webp)
+![A Frequently Asked Questions section with expandable questions](_assets/usability/docs.webp)
 
 #### Examples:
 - Apps can have sidebars or collapsible help sections that give answers without leaving the page you're on.
