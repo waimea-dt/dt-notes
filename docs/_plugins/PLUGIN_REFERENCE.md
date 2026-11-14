@@ -24,6 +24,8 @@ This site uses Docsify plugins to turn Markdown conventions, fenced code blocks,
 - `<!-- recommendations -->` (optionally `media`): styles the following recommendation list.
 - `!!!` / `!!` markers in table headings or cells: highlight selected columns, rows, or cells.
 - `[!NOTE]`, `[!TIP]`, `[!WARNING]`, etc. in blockquotes: styled callouts.
+- `<coming-soon></coming-soon>`: "Coming soon" box for a page not written yet; text (or simple HTML) inside replaces the default message. Every page linked from a sidebar or menu must exist, so planned pages are stubs holding this tag (the deploy link check enforces it). Remove the tag once the page has content.
+- `<site-search></site-search>`: in-page search box that sends the query to the sidebar search (used on `_404.md`, the page shown for missing routes).
 - Glossary entries in `_glossary.md` become definition tooltips; `<i data-lucide="icon-name"></i>` inserts a Lucide icon. A few supported emoji are replaced by corresponding icons.
 
 ## Navigation: sidebar and home page

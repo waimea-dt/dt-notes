@@ -42,6 +42,7 @@
     - [Cards](/_tests/cards.md)
     - [Recommendations](/_tests/recommendations.md)
     - [Callouts](/_tests/callouts.md)
+    - [Coming Soon & Search](/_tests/coming-soon.md)
     - [Tables](/_tests/tables.md)
     - [Unicode Lucide](/_tests/unicode-lucide.md)
     - [Definitions](/_tests/definitions.md)

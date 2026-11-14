@@ -1,0 +1,43 @@
+/** Site Search
+ * In-page search box (<site-search>) and the 404 page layout
+ */
+.markdown-section site-search {
+    display: block;
+    margin: var(--margin-block) auto;
+    max-width: 24rem;
+}
+
+.markdown-section .site-search {
+    display: flex;
+    gap: var(--gap-small);
+
+    input {
+        flex: 1;
+        min-width: 0;
+        padding: var(--butt-padding-block) var(--padding-med);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        background: var(--form-element-bg);
+        color: inherit;
+        font: inherit;
+    }
+}
+
+/* 404 page */
+.markdown-section .not-found {
+    text-align: center;
+    padding-block: var(--padding-xlarge);
+
+    & > p:first-child .icon,
+    & > .icon {
+        width: 8rem;
+        height: 8rem;
+        color: var(--secondary-color);
+        stroke-width: 1.25;
+        fill: var(--secondary-color-2);
+    }
+
+    h1 {
+        margin-top: var(--margin-block);
+    }
+}
