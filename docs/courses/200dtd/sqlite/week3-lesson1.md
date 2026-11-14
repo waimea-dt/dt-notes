@@ -1,5 +1,7 @@
 # Lesson 1: Foreign Keys
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

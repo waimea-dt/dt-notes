@@ -1,5 +1,7 @@
 # Lesson 1: Connect & Query
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

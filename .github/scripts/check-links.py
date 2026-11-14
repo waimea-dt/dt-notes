@@ -4,11 +4,10 @@
 Reports links to pages, images and files that don't exist. Run from the repo
 root:  python3 .github/scripts/check-links.py
 
-Ignored (work in progress):
-  - links in _sidebar.md files and <menu> card blocks that point to pages
-    not written yet. Broken images/assets there are still reported.
-Also skipped: code blocks, inline code, external URLs, temp/ drafts,
-AI notes and the plugin docs (which contain example paths).
+Planned pages should exist as a stub holding <coming-soon></coming-soon>,
+so sidebar and menu links are checked like any other.
+Skipped: code blocks, inline code, external URLs, temp/ drafts, AI notes and
+the plugin docs (which contain example paths).
 
 Docsify resolves links from the site root, while Markdown images resolve
 from the page's folder, so a target counts as found if it exists relative
@@ -32,7 +31,6 @@ HTML_ATTR = re.compile(r'\b(?:src|href)\s*=\s*"([^"]+)"')
 FENCE = re.compile(r'^\s*(```|~~~)')
 INLINE_CODE = re.compile(r'`[^`]*`')
 EXTERNAL = re.compile(r'^(?:[a-z][a-z0-9+.-]*:|//|#|\?)', re.I)
-ASSET_EXT = re.compile(r'\.(?:webp|png|jpe?g|gif|svg|avif|ico|mp4|webm|wav|mp3|pdf|zip|excalidraw|json|js|css|py|kt|sql|db|txt|csv|html)$', re.I)
 
 
 def target_exists(page: Path, url: str) -> bool:
@@ -57,34 +55,21 @@ def target_exists(page: Path, url: str) -> bool:
     return False
 
 
-def is_asset(url: str) -> bool:
-    return bool(ASSET_EXT.search(url.split('#')[0].split('?')[0]))
-
-
 def check_file(page: Path):
     problems = []
-    in_fence = in_menu = False
-    is_sidebar = page.name == '_sidebar.md'
+    in_fence = False
     for lineno, line in enumerate(page.read_text(encoding='utf-8').splitlines(), 1):
         if FENCE.match(line):
             in_fence = not in_fence
             continue
         if in_fence:
             continue
-        if '<menu' in line:
-            in_menu = True
         text = INLINE_CODE.sub('', line)
         for url in MD_LINK.findall(text) + HTML_ATTR.findall(text):
             if EXTERNAL.match(url) or '${' in url or '{{' in url:
                 continue
-            if target_exists(page, url):
-                continue
-            # Work in progress: planned pages listed in sidebars and menu cards
-            if (is_sidebar or in_menu) and not is_asset(url):
-                continue
-            problems.append((lineno, url))
-        if '</menu>' in line:
-            in_menu = False
+            if not target_exists(page, url):
+                problems.append((lineno, url))
     return problems
 
 

@@ -1,5 +1,7 @@
 # Lesson 2: INSERT
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

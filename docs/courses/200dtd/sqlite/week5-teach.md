@@ -1,5 +1,7 @@
 # Week 5: Apps with Streamlit
 
+<coming-soon></coming-soon>
+
 
 ## Lesson 1: Hello Streamlit
 

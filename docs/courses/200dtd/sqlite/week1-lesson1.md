@@ -1,5 +1,7 @@
 # Lesson 1: Tables & SELECT
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

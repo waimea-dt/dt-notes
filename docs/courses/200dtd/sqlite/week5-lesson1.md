@@ -1,5 +1,7 @@
 # Lesson 1: Hello Streamlit
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

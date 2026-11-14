@@ -1,5 +1,7 @@
 # Lesson 4: Build Linked Tables
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

@@ -1,5 +1,7 @@
 # Lesson 4: Build a Streamlit App
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

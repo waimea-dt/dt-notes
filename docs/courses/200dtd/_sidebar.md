@@ -17,7 +17,7 @@
 - [<i data-lucide="database"></i> Databases with **SQLite**](/courses/200dtd/sqlite/)
     - Creating and working with databases using SQLite
 
-- [<i data-lucide="flask-conical"></i> Web Dev with **Flask**](/courses/200dtd/flask/)
+- [<i data-lucide="flask-conical"></i> Web Dev with **Flask**](/web/flask/)
     - Web development with the Python Flask back-end library
 
 - [<i data-lucide="file-lock"></i> Computer Science: **Encryption**](/cs/encryption/)

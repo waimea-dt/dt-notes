@@ -1,5 +1,7 @@
 # Lesson 2: Filtering with WHERE
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

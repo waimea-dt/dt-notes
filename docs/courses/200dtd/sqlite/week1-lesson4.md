@@ -1,5 +1,7 @@
 # Lesson 4: Data Detective
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

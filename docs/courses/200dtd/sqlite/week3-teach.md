@@ -1,5 +1,7 @@
 # Week 3: Linking Tables
 
+<coming-soon></coming-soon>
+
 
 ## Lesson 1: Foreign Keys
 

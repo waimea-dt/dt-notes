@@ -1,5 +1,7 @@
 # Lesson 3: Forms & Changing Data
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

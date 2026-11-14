@@ -1,5 +1,7 @@
 # Lesson 3: Counting & Summaries
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

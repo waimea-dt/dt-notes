@@ -1,5 +1,7 @@
 # Week 1: Asking Questions
 
+<coming-soon></coming-soon>
+
 
 ## Lesson 1: Tables & SELECT
 

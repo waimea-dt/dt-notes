@@ -1,5 +1,7 @@
 # Lesson 3: UPDATE & DELETE
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

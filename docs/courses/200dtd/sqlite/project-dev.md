@@ -1,5 +1,7 @@
 # App Development
 
+<coming-soon></coming-soon>
+
 ## Repo Setup
 
 ## Query Functions

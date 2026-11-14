@@ -1,5 +1,7 @@
 # Lesson 3: A Menu App
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

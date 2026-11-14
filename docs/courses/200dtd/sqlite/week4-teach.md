@@ -1,5 +1,7 @@
 # Week 4: SQLite in Python
 
+<coming-soon></coming-soon>
+
 
 ## Lesson 1: Connect & Query
 

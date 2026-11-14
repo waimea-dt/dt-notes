@@ -1,5 +1,7 @@
 # Week 2: Building Tables
 
+<coming-soon></coming-soon>
+
 
 ## Lesson 1: CREATE TABLE
 

@@ -1,5 +1,7 @@
 # Lesson 3: More JOINs
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

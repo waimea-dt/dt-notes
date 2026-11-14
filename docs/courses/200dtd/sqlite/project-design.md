@@ -1,5 +1,7 @@
 # Database Design
 
+<coming-soon></coming-soon>
+
 ## Purpose & Users
 
 ## Entities & Relationships

@@ -1,5 +1,7 @@
 # Lesson 1: CREATE TABLE
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

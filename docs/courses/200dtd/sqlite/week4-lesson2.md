@@ -1,5 +1,7 @@
 # Lesson 2: Parameters & Changing Data
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

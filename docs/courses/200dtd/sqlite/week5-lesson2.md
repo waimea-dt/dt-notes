@@ -1,5 +1,7 @@
 # Lesson 2: Widgets & Filters
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals

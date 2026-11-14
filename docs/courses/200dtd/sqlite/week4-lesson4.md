@@ -1,5 +1,7 @@
 # Lesson 4: Build a CLI App
 
+<coming-soon></coming-soon>
+
 ## Warm-Up
 
 ## Learning Goals
