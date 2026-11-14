@@ -38,6 +38,7 @@ This site uses Docsify plugins to turn Markdown conventions, fenced code blocks,
 
 ## Visualisations
 
+- `<animation grid="16x9">...</animation>`: step-by-step animated SVG explanation. `---` starts a step, `+++` a beat, `Note:` teacher notes; each step's heading and text are its caption, and ```` ```scene ```` fences hold `id: type "label" props` lines (e.g. `a: rect "A" at 2 3`, `a: move +1 0 slow`, `l: arrow from a to b draw`). Full syntax: `docs/_plugins/visualisation/ANIMATION.md`.
 - `<computer type="...">...</computer>`: puts Markdown content inside a computer mockup (desktop, laptop, tablet, mobile, vintage, and related styles).
 - `<filetree>...</filetree>`: nested Markdown list rendered as a file/folder tree.
 - `<hierarchy>...</hierarchy>` and `<structure>...</structure>`: nested lists rendered as tree / organization diagrams.

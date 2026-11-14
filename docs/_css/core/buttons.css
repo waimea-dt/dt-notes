@@ -70,7 +70,7 @@
 }
 
 /* Icon button layout - flex alignment for text + icon combinations */
-:where(.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check)) {
+:where(.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check, .btn-prev, .btn-rewind, .btn-fullscreen, .btn-notes)) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -79,13 +79,13 @@
 }
 
 /* Icon-only button sizing */
-:where(.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check):empty) {
+:where(.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check, .btn-prev, .btn-rewind, .btn-fullscreen, .btn-notes):empty) {
     --butt-icon-size: 1.5em;
     min-inline-size: calc((var(--line-height) * 1em) + (2 * var(--butt-padding-inline)));
 }
 
 /* Icon button base styling - uses CSS mask-image for all icon types */
-.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check)::before {
+.markdown-section :is(.btn-go, .btn-stop, .btn-reset, .btn-step, .btn-next, .btn-shuffle, .btn-swap, .btn-sort, .btn-info, .btn-help, .btn-speak, .btn-save, .btn-copy, .btn-link, .btn-unlink, .btn-check, .btn-prev, .btn-rewind, .btn-fullscreen, .btn-notes)::before {
     content: "";
     inline-size: var(--butt-icon-size);
     block-size: var(--butt-icon-size);
@@ -114,6 +114,18 @@
 .markdown-section .btn-link::before { mask-image: var(--butt-icon-link); }
 .markdown-section .btn-unlink::before { mask-image: var(--butt-icon-unlink); }
 .markdown-section .btn-check::before { mask-image: var(--butt-icon-check); }
+.markdown-section .btn-prev::before { mask-image: var(--butt-icon-prev); }
+.markdown-section .btn-rewind::before { mask-image: var(--butt-icon-rewind); }
+.markdown-section .btn-fullscreen::before { mask-image: var(--butt-icon-fullscreen); }
+.markdown-section .btn-fullscreen.is-fullscreen::before { mask-image: var(--butt-icon-fullscreen-exit); }
+.markdown-section .btn-notes::before { mask-image: var(--butt-icon-notes); }
+
+/* Compact button variant - half the padding around the icon/label. Padding and the icon-only
+   minimum size are both calculated from these variables, so halving them shrinks everything */
+:where(.markdown-section .btn-compact) {
+    --butt-padding-block: calc(var(--padding-small) / 2);
+    --butt-padding-inline: calc(var(--padding-small) / 2);
+}
 
 /* Bordered button variant - uses --butt-action-color set by semantic button class
    Border = action color; background = translucent 10% opaque; hover increases to 33% */

@@ -1,0 +1,230 @@
+/** Animation
+ * Step-by-step animated SVG explanations (<animation> blocks)
+ */
+
+.markdown-section .animation {
+    /* Same surface as a slide deck, so the two sit together on a page */
+    --anim-bg:          var(--theme-color-0);
+    --anim-fg:          var(--color-text);
+    --anim-line:        var(--border-color);
+    --anim-muted:       var(--color-mono-5);
+    --anim-accent:      var(--theme-color);
+
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-block: var(--margin-block);
+    background: var(--anim-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    color: var(--anim-fg);
+
+    [hidden] {
+        display: none !important;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--anim-accent);
+        outline-offset: 2px;
+    }
+
+    /* Title (the step 1 `#`) */
+
+    .anim-title {
+        padding: var(--padding) var(--padding-large) 0;
+        font-size: var(--font-size-display);
+        font-weight: var(--font-weight-heading);
+        line-height: 1.2;
+        color: var(--theme-color-5, var(--theme-color));
+    }
+
+    /* Drawing */
+
+    .anim-stage {
+        min-height: 0;
+
+        svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: hidden;
+            font-family: var(--font-family);
+        }
+    }
+
+    .anim-label {
+        fill: var(--anim-fg);
+        pointer-events: none;
+    }
+
+    /* Labels on lines get a background halo so crossing lines don't hide them */
+    .anim-halo {
+        paint-order: stroke;
+        stroke: var(--anim-bg);
+        stroke-width: 8px;
+        stroke-linejoin: round;
+    }
+
+    /* Captions: one page per step stacked in one cell, so the panel keeps the tallest height */
+
+    .anim-caption {
+        display: grid;
+        padding: var(--padding-small) var(--padding-large) var(--padding);
+        border-top: 1px solid var(--anim-line);
+        overflow: hidden;
+    }
+
+    .anim-page {
+        grid-area: 1 / 1;
+        visibility: hidden;
+        min-width: 0;
+
+        &.is-active,
+        &.is-leaving {
+            visibility: visible;
+        }
+    }
+
+    .anim-heading > * {
+        margin: 0;
+        padding: 0;
+        border: none;
+        font-size: var(--font-size-xlarge);
+    }
+
+    .anim-body > .anim-part {
+        &:not(.is-shown, .is-leaving) {
+            visibility: hidden;
+        }
+
+        > :first-child { margin-top: var(--space-tiny); }
+        > :last-child { margin-bottom: 0; }
+    }
+
+    .anim-page.is-leaving:not(.is-active) .anim-part:not(.is-shown) {
+        visibility: hidden;
+    }
+
+    /* Controls: back, step dots, next and play on the left; notes and full screen on the right.
+       The buttons are the shared icon-only buttons from buttons.css. */
+
+    .anim-controls {
+        display: flex;
+        align-items: center;
+        gap: var(--gap-small);
+        padding: var(--padding-small) var(--padding);
+        border-top: 1px solid var(--anim-line);
+    }
+
+    .anim-spacer {
+        flex: 1;
+    }
+
+    button.anim-notes-btn.is-on {
+        --butt-action-color: var(--butt-bg-active);
+    }
+
+    .anim-dots {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4em;
+        padding-inline: var(--space-tiny);
+    }
+
+    button.anim-dot {
+        inline-size: 0.7em;
+        block-size: 0.7em;
+        min-inline-size: 0;
+        min-block-size: 0;
+        padding: 0;
+        border: 2px solid var(--anim-muted);
+        border-radius: 50%;
+        background: transparent;
+        cursor: pointer;
+
+        &:hover {
+            background: transparent;
+            border-color: var(--anim-accent);
+        }
+
+        &.is-current {
+            background: var(--anim-accent);
+            border-color: var(--anim-accent);
+        }
+    }
+
+    /* Teacher notes */
+
+    .anim-notes {
+        padding: var(--padding-small) var(--padding-large);
+        border-top: 1px dashed var(--anim-line);
+        font-size: var(--font-size-med);
+
+        &:empty::before {
+            content: 'No notes for this step.';
+            color: var(--anim-muted);
+        }
+    }
+
+    /* Errors and debug warnings */
+
+    .anim-messages {
+        margin: 0;
+        padding: var(--padding-small) var(--padding-large) var(--padding-small) calc(var(--padding-large) + 1em);
+        border-top: 1px solid var(--anim-line);
+        font-size: var(--font-size-small);
+        font-family: var(--font-family-mono);
+
+        .anim-error { color: var(--error-color); }
+        .anim-warning { color: var(--color-warning); }
+    }
+
+    .anim-debug-grid {
+        line {
+            stroke: var(--anim-muted);
+            stroke-width: 1;
+            opacity: 0.35;
+        }
+
+        text {
+            fill: var(--anim-muted);
+            font-size: 13px;
+            font-family: var(--font-family-mono);
+        }
+    }
+
+    .anim-debug-id {
+        fill: var(--color-warning);
+        font-size: 13px;
+        font-family: var(--font-family-mono);
+    }
+
+    /* Full screen: the drawing fills the space left by the caption and controls */
+
+    &:fullscreen {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        font-size: clamp(1rem, 1.6vmin, 1.6rem);
+
+        .anim-stage {
+            flex: 1;
+            display: grid;
+
+            svg {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+
+    &::backdrop {
+        background: var(--anim-bg);
+    }
+}

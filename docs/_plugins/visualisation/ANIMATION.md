@@ -1,6 +1,6 @@
 # Animation Plugin Spec
 
-Status: **design agreed, not yet built.** Planned file: `docs/_plugins/visualisation/animation.js`, with CSS in `docs/_css` and a test page `docs/_tests/animation.md`.
+Status: **first version built.** Plugin: `docs/_plugins/visualisation/animation.js`, CSS: `docs/_css/visualisation/animation.css`, test page: `docs/_tests/animation.md`.
 
 `<animation>` turns Markdown into a step-by-step animated explanation: an SVG drawing that changes between steps, with a caption for each step. It is drawn in the browser, so no video is exported. Its layout follows `<slides>`, so the two feel alike to write.
 
@@ -74,12 +74,12 @@ Within one beat, all changes play **at the same time**.
 │  Step heading                         │  caption: `##` and text
 │  Caption text                         │
 ├───────────────────────────────────────┤
-│  ◀  ● ● ◉ ○ ○  ▶   ⏵            ⛶     │  controls
+│  ⏮  ◀  ● ● ◉ ○ ○  ▶   ⏵         ✎  ⛶  │  controls
 └───────────────────────────────────────┘
 ```
 
 - **The drawing is the same size as a slide deck:** the full content width, 16:9 for the default grid, with the same border, corner radius and shadow as `<slides>`. Another grid changes the drawing's shape, not its width.
-- **Full screen:** the ⛶ button (or `F` when the widget has focus) shows the widget full-screen, with the drawing scaled to fit the screen and the caption and controls below it. `Esc` exits.
+- **Full screen:** the Full screen button (or `F` when the widget has focus) shows the widget full-screen, with the drawing scaled to fit the screen and the caption and controls below it. `Esc` exits.
 
 - **Captions are HTML, not SVG.** They never use grid coordinates. Text that must point at a shape is a `text` shape in the scene.
 - **The caption panel has a fixed height**, set by the tallest caption (measured once on render), so the controls never jump.
@@ -90,10 +90,12 @@ Within one beat, all changes play **at the same time**.
 
 ### Controls
 
-- ◀ / ▶ go back and forward one beat. The ← / → arrow keys do the same once the widget has focus.
+- **Rewind** goes straight back to the start (no transition). `Home` does the same once the widget has focus.
+- **Back** / **Next** go back and forward one beat. The ← / → arrow keys do the same once the widget has focus.
 - The step dots jump to a step **instantly**, with no transition.
-- ⏵ plays through the remaining beats automatically.
-- ⛶ / `F` toggles full screen.
+- **Play** plays through the remaining beats automatically (it becomes **Pause** while playing).
+- **Full screen** / `F` toggles full screen.
+- The buttons are the site's shared icon-only buttons (`btn-prev`, `btn-next`, `btn-go`, `btn-notes`, `btn-fullscreen` in `buttons.css`): back, the step dots, next and play on the left; notes and full screen on the right.
 
 ---
 
@@ -161,10 +163,14 @@ const PROPS = {
   size:   [['num', 'num'], ['num']],     // `size 2` = 2 × 2
   radius: [['num']],
   gap:    [['num']],                     // only after a placement
+  via:    [['num', 'num'], ['placement', 'id'], ['id']],   // repeatable: curve through these points
+  delay:  [['num']],                     // seconds to wait before this line's change starts
   fill:   [['colour']],
   stroke: [['colour']],
   width:  [['num']],                     // stroke thickness, × normal
   font:   [['num']],
+  angle:  [['num']],                     // degrees clockwise, 0 = upright
+  scale:  [['num']],                     // size multiplier about the centre
   align:  [['word']],                    // left | centre | right (`center` also accepted)
   bold:   [[]],
   dashed: [[]],
@@ -204,6 +210,22 @@ If nothing matches, the error names the expected forms, e.g. *`from` expects `x 
 r1: arrow from a to b width 2 stroke blue
 a: circle "A" at 3 6 width 0.5
 r1: width +1
+```
+
+### Angle and scale
+
+`angle <degrees>` rotates a shape about its centre: **0 is upright and positive angles turn clockwise**, so `angle 90` is a quarter turn to the right. `scale <n>` resizes it about its centre: `scale 2` is twice as big, `scale 0.5` half.
+
+- Valid on every shape **except `line` and `arrow`** (their ends set their direction and length).
+- The shape's label turns and scales with it.
+- Both tween on a change and follow the signed-number rule: `angle +90` turns a further quarter clockwise, `scale +0.5` grows by half.
+- An angle tweens the way the numbers go: `angle 270` from 0 turns three-quarters clockwise; `angle -90` (relative) turns a quarter anticlockwise. `angle +360` makes a full spin.
+- Line ends attached to the shape meet its real (rotated, scaled) edge, and `above` / `below` / `left-of` / `right-of` use the rotated outline.
+
+```
+cog: icon(cog) at 4 3 angle 45 scale 1.5
+t: text "Rotated" at 8 2 angle -30
+cog: angle +360 slow          a full clockwise spin
 ```
 
 ### 5.1 Labels
@@ -285,7 +307,25 @@ l: move 1 3            invalid
 - `at`, `x`, `y` and absolute `move` are errors on a line.
 - If an end is attached to a shape, setting it to a position **detaches** it. It stays at that position from then on.
 
-### 6.5 Layering
+### 6.5 Curved moves (`via`)
+
+`via` makes a move follow a smooth curve that passes **through** one or more points on the way:
+
+```
+a: move 9 3 via 5 1              one curve through (5, 1)
+a: move 9 3 via 3 1 via 6 5      repeat via for more points, in order
+s: move above c via 9 1          round a lake on the way to c
+a: move 1 3 via +2 -2            on a change, a signed via is relative to where the shape starts
+a: move 6 4 via b                through b's centre
+a: move 6 4 via above b          through the spot above b
+```
+
+- `via` takes the same values as `at`: `x y`, a shape id, or a placement and shape id. It can be repeated.
+- The curve is a smooth spline through the start, every via point and the end, and the shape moves along it at an **even speed** (the usual easing applies to the whole journey).
+- Only on a line that **moves an existing shape** (`at` / `move` / `goto`, or `x` / `y`). It's an error when creating a shape, on a line without a position change, on lines and arrows, and in `defaults:`.
+- Going back retraces the same curve. Line ends attached to the shape follow it along the curve.
+
+### 6.6 Layering
 
 Shapes are drawn in three layers, from bottom to top: `back`, normal, `front`.
 
@@ -342,14 +382,28 @@ a: remove instant
 - Default effect: `fade` for creating and removing.
 - Moves, resizes and colour changes always tween; only their speed can be set.
 - `slide` brings a shape in from, or sends it out to, the nearest edge of the canvas.
-- A beat lasts as long as its slowest change. The caption transition (§2) uses the beat's normal speed.
+- A beat lasts until its last change finishes (delay + duration). The caption transition (§2) uses the beat's normal speed.
+
+### Delays
+
+`delay <seconds>` waits before a line's change starts, so changes within one beat can happen one after another without an extra click:
+
+```
+s: move above b slow           the person travels for 1 second...
+b: fill green delay 1          ...and the city turns green when they arrive
+r1: arrow from a to b draw slow
+```
+
+- Works on any line: creating (the shape appears after the delay), changing, and `remove`.
+- If several lines change the same shape in one beat, the longest delay is used.
+- A delay is never a default (`defaults: delay 1` is an error), and it is ignored when stepping instantly (dots, rewind, reduced motion).
 
 ---
 
 ## 9. State, navigation and errors
 
-- **State model:** each beat's state is the previous state plus that beat's changes. The plugin works out every beat's state up front, so going back (◀) or jumping (dots) just rebuilds that state, with no undo logic.
-- Going **back** plays the transition in reverse at the same speed.
+- **State model:** each beat's state is the previous state plus that beat's changes. The plugin works out every beat's state up front, so going back or jumping (dots) just rebuilds that state, with no undo logic.
+- Going **back** plays the beat exactly in reverse at the same speed, delays included: the last change to start is the first to be undone.
 - **Errors** (unknown keyword, wrong value type, unknown id, invalid form) appear as a small inline message giving the step and line. The bad line is skipped and the rest of the scene still draws.
 - **Warnings** (only with `debug`): replacing an existing id with a new type word; positions outside the grid; a `defaults:` line that changes nothing.
 
@@ -361,6 +415,20 @@ a: remove instant
 - Colours come from CSS custom properties, so the theme toggle works without re-rendering.
 - `doneEach` must not process the same widget twice: mark each processed widget. Timers, key listeners and play loops stop when the widget leaves the page (see `PLUGIN_GUIDE.md`).
 - Respect `prefers-reduced-motion`: treat every transition as `instant`, while still changing the caption.
+
+---
+
+## 10a. Details settled while building
+
+- **Colour names:** `red`, `orange`, `amber`, `yellow`, `green`, `teal`, `cyan`, `blue`, `purple`, `pink`, `magenta`, `theme`, `muted`, `fg` (text colour), `bg` (background), `black`, `white`, `none`, or a hex colour. Named colours used as a **fill** are tinted towards the background, so labels on them stay readable in both themes.
+- **Default colours:** `rect` and `circle` have fill `bg` (so they cover lines behind them) and stroke `fg`; lines, arrows, text and icons use `fg`; images have no border.
+- **Text colour:** a `text` shape's colour is its `stroke` (text has no outline, so the stroke is its ink): `t: text "Hi" at 2 2 stroke blue`. Labels inside other shapes use the text colour.
+- **Bare placement:** `t: text "i" below a` is short for `at below a`, as in the examples above.
+- **Comments:** a scene line starting with `//` is ignored.
+- **Default speed:** a `defaults:` speed applies to every line after it (changes as well as creations), so `defaults: slow` slows a whole sequence.
+- **Replacing a shape** keeps lines attached to its id: they attach to the replacement.
+- **Line ends** can't be attached to another line.
+- **Teacher notes** are shown by a notes button in the controls (only when the animation has notes), under the caption.
 
 ---
 

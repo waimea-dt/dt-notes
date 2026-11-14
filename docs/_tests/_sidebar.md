@@ -61,6 +61,7 @@
     - [Memory Sim](/_tests/memory-sim.md)
     - [OOP Sim](/_tests/oop-sim.md)
     - [SimCore](/_tests/sim-core.md)
+    - [Animation](/_tests/animation.md)
 
 - <i data-lucide="mouse-pointer-click"></i> Interactive
     - **General**

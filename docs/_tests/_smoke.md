@@ -255,6 +255,27 @@ A[Smoke] --> B[Test]
 </computer>
 
 
+### animation.js ([tests](/_tests/animation.md))
+
+<animation grid="6x2">
+
+# Smoke!
+
+```scene
+a: rect "A" at 2 1
+b: circle "B" at 5 1
+l: arrow from a to b
+```
+
+---
+
+```scene
+a: move 3 2
+```
+
+</animation>
+
+
 
 
 ## Activity Plugins

@@ -34,6 +34,12 @@ This guide is for writing new Docsify plugins in this project.
 - Add short comments only where behaviour is not obvious.
 - Preserve existing naming conventions in surrounding files.
 
+## Buttons and Icons
+
+- Use the shared button styles in docs/_css/core/buttons.css: a plain `<button>` plus a semantic class (`btn-go`, `btn-next`, `btn-reset`…) gives the site's look, with the icon before any text label (see trace-table.js). Leave the button empty for an icon-only button, and give it an `aria-label`. Add `btn-compact` for half the padding, or `btn-bordered` for the outlined style. New icons go in docs/_css/core/theme.css as `--butt-icon-*` tokens, with matching classes in buttons.css.
+- Don't give buttons a `type` attribute: Docsify's core CSS styles `button[type]`, which outranks the zero-specificity `:where(...)` rules in buttons.css.
+- Add the `no-zoom` class to generated SVGs (including nested ones, such as icons inside a drawing), or svg-zoom.js makes them click-to-zoom.
+
 ## When Adding New Utilities
 
 Add to docs/_plugins/core/utils.js only if the function is general-purpose.
