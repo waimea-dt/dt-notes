@@ -427,3 +427,13 @@
     20% { transform: rotate(180deg) translateX(-10px); }
     30% { transform: rotate(180deg) translateX(5px); }
 }
+
+/* controls="none": no buttons or progress bar (the keys still work) */
+.markdown-section .animation.anim-no-controls :is(.anim-controls, .anim-progress) {
+    display: none;
+}
+
+/* Playing, but held at a `pause` until Next: next nudges, as it does before the first click */
+.markdown-section .animation.is-waiting button.anim-next:not(:disabled) {
+    animation: anim-bounce-next 2s ease-out infinite both;
+}

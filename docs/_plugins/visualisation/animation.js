@@ -142,7 +142,7 @@
 
   const RESERVED = new Set([
     ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(PROPS), ...Object.keys(ALIASES), ...Object.keys(SPEEDS),
-    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), 'remove', 'defaults', 'reset',
+    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), 'pause', 'auto', 'remove', 'defaults', 'reset',
   ])
 
   // ---------------------------------------------------------------------------
@@ -208,9 +208,25 @@
   const wrap = (open, body, close) => `${open}\n\n${body}\n\n${close}`
   const attr = (value) => encodeURIComponent(value)
 
+  // Tag attributes: bare flags (debug, autoplay, loop, loop-bounce) and name="value" pairs
+  // (grid, hold, speed, controls).
+  function parseAttrs(attrs) {
+    const out = {}
+    for (const m of attrs.matchAll(/([\w-]+)(?:\s*=\s*["']([^"']*)["'])?/g)) out[m[1].toLowerCase()] = m[2] ?? true
+    return out
+  }
+
   function buildSource(attrs, lines) {
-    const grid = (attrs.match(/\bgrid\s*=\s*["']([^"']*)["']/i) || [])[1] || ''
-    const debug = /(^|\s)debug(\s|=|$)/i.test(attrs)
+    const opts = parseAttrs(attrs)
+    const grid = typeof opts.grid === 'string' ? opts.grid : ''
+    const debug = 'debug' in opts
+    const playback = {
+      autoplay: 'autoplay' in opts,
+      loop: 'loop-bounce' in opts ? 'bounce' : 'loop' in opts ? 'loop' : null,
+      hold: opts.hold ?? null,
+      speed: opts.speed ?? null,
+      controls: opts.controls ?? null,
+    }
     const images = new Set()
 
     const steps = splitAtMarker(lines, MARKERS.step).map((stepLines) => {
@@ -230,7 +246,7 @@
       ? wrap(`<div class="anim-src-assets" data-paths="${attr(JSON.stringify(paths))}">`, paths.map((p) => `![](${p})`).join('\n\n'), '</div>')
       : ''
 
-    const open = `<div class="anim-source" data-grid="${escapeHtml(grid)}"${debug ? ' data-debug' : ''}>`
+    const open = `<div class="anim-source" data-grid="${escapeHtml(grid)}" data-playback="${attr(JSON.stringify(playback))}"${debug ? ' data-debug' : ''}>`
     return `\n\n${wrap(open, [...steps, assets].filter(Boolean).join('\n\n'), '</div>')}\n${SOURCE_END}\n\n`
   }
 
@@ -767,6 +783,23 @@
     return { shapes, runLine }
   }
 
+  // Timing lines (no id): `pause` waits for a click while playing, `pause n` holds n seconds,
+  // `auto` goes straight on to the next beat when this one finishes. Returns true if handled.
+  function runTimingLine(text, meta) {
+    const match = text.match(/^(pause|auto)\b\s*(.*)$/i)
+    if (!match) return false
+    const [, word, rest] = match
+    if (word.toLowerCase() === 'auto') {
+      if (rest) throw new Error('"auto" takes nothing after it')
+      meta.auto = true
+      return true
+    }
+    if (!rest) { meta.pause = 'click'; return true }
+    if (!NUMBER.test(rest) || /^[+-]/.test(rest)) throw new Error('"pause" takes nothing (wait for a click) or a number of seconds, e.g. "pause 2"')
+    meta.pause = parseFloat(rest) * 1000
+    return true
+  }
+
   // Compiles every beat's scene into a snapshot of all shapes, plus how each change animates.
   function compile(steps, context) {
     const compiler = createCompiler(context)
@@ -776,13 +809,14 @@
 
     steps.forEach((step, si) => {
       step.beats.forEach((beat, bi) => {
-        const meta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map() }
+        const meta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map(), pause: null, auto: false }
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
         beat.scene.split('\n').forEach((raw, li) => {
           const text = raw.trim()
           if (!text || text.startsWith('//')) return
           const warn = (message) => warnings.push(`${where(li)}: ${message}`)
           try {
+            if (runTimingLine(text, meta)) return
             compiler.runLine(text, meta, warn)
           } catch (error) {
             errors.push(`${where(li)}: ${error.message} — "${text}"`)
@@ -1318,6 +1352,19 @@
     const viewBox = viewBoxFor(source.dataset.grid, beats, warnings)
     if (debug) warnOutsideGrid(beats, viewBox, warnings)
 
+    // Playback options from the tag: autoplay, loop / loop-bounce, hold="s", speed="x", controls="none"
+    const opts = JSON.parse(decodeURIComponent(source.dataset.playback || '%7B%7D'))
+    const positive = (value, name, fallback) => {
+      if (value == null || value === true) return fallback
+      const n = parseFloat(value)
+      if (Number.isFinite(n) && n > 0) return n
+      warnings.push(`${name}="${value}" isn't a positive number, so ${fallback} is used`)
+      return fallback
+    }
+    const speed = positive(opts.speed, 'speed', 1)
+    const holdMs = (opts.hold === '0' ? 0 : positive(opts.hold, 'hold', PLAY_PAUSE / 1000)) * 1000
+    if (opts.controls != null && opts.controls !== 'none') warnings.push(`controls="${opts.controls}" isn't "none", so the controls are shown`)
+
     const widget = document.createElement('div')
     widget.className = 'animation anim-untouched' // until the first interaction (see CSS)
     widget.tabIndex = 0
@@ -1399,6 +1446,7 @@
     }
 
     if (debug) widget.classList.add('anim-debug')
+    if (opts.controls === 'none') widget.classList.add('anim-no-controls')
     source.replaceWith(widget)
 
     // -------------------------------------------------------------------------
@@ -1408,10 +1456,14 @@
     const renderer = createRenderer(svg, viewBox, debug)
     const empty = new Map()
     const emptyMeta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map() }
+    const last = beats.length - 1
     let current = 0
     let running = null // { finish }
     let playing = false
     let playTimer = 0
+    let playDir = 1 // -1 while a loop-bounce plays backwards
+    let waitingForClick = false // playing, but stopped at a `pause` until Next
+    let navId = 0 // bumped by every navigation, so older auto chains and play steps stop
 
     function showStatic(index) {
       const state = beats[index]?.state || empty
@@ -1438,7 +1490,7 @@
       const a = beats[from] || beats[0]
       const b = beats[to] || beats[0]
       if (!a || !b) return
-      const ms = animate && !reducedMotion() ? CAPTION_MS : 0
+      const ms = animate && !reducedMotion() ? CAPTION_MS / speed : 0
       const forward = to > from
       const pageA = pages[a.step]
       const pageB = pages[b.step]
@@ -1495,8 +1547,8 @@
       const forward = to > from
       const final = forward ? B : A
       // Each shape's change runs from its delay to delay + duration; backwards is the exact reverse.
-      const durOf = (uid) => meta.dur.get(uid) ?? 0
-      const delayOf = (uid) => meta.delay.get(uid) ?? 0
+      const durOf = (uid) => (meta.dur.get(uid) ?? 0) / speed
+      const delayOf = (uid) => (meta.delay.get(uid) ?? 0) / speed
       const uids = new Set([...meta.dur.keys(), ...meta.delay.keys()])
       const total = Math.max(0, ...[...uids].map((uid) => delayOf(uid) + durOf(uid)))
       const forwardT = (uid, time) => {
@@ -1537,44 +1589,145 @@
       })
     }
 
+    // How long to wait after arriving at a beat while playing: its `pause` (Infinity = until Next),
+    // or the hold. Holds and pauses scale with speed, like transitions.
+    const holdAfter = (index) => {
+      const pause = beats[index]?.meta.pause
+      return pause === 'click' ? Infinity : (pause ?? holdMs) / speed
+    }
+    const atEnd = (dir) => (dir > 0 ? current >= last : current <= 0)
+
+    // One step, following `auto` chains: arriving at a beat marked `auto` goes straight on in the
+    // same direction, so one click plays a chain forwards and one click undoes it.
+    function step(dir) {
+      const token = ++navId
+      const go = () => {
+        const target = current + dir
+        if (target < 0 || target > last) return Promise.resolve()
+        return goTo(target).then(() => {
+          if (token === navId && beats[current].meta.auto && !atEnd(dir)) return go()
+        })
+      }
+      return go()
+    }
+
+    function jump(index) {
+      ++navId
+      return goTo(index, { animate: false })
+    }
+
+    function setWaiting(on) {
+      waitingForClick = on
+      widget.classList.toggle('is-waiting', on)
+    }
+
     function stopPlaying() {
       playing = false
+      setWaiting(false)
       clearTimeout(playTimer)
       widget.classList.remove('is-playing')
       setButtonLabel(play, 'Play')
     }
 
+    function schedule(ms) {
+      clearTimeout(playTimer)
+      if (ms === Infinity) return setWaiting(true)
+      playTimer = setTimeout(playNext, ms)
+    }
+
+    // Playing ends at the last beat, unless the tag says loop (jump back to the start) or
+    // loop-bounce (play backwards to the start, then forwards again).
+    function finished() {
+      autoplayWanted = false
+      stopPlaying()
+    }
+
     function playNext() {
       if (!playing || !widget.isConnected) return stopPlaying()
-      if (current >= beats.length - 1) return stopPlaying()
-      goTo(current + 1).then(() => {
-        if (!playing) return
-        if (current >= beats.length - 1) return stopPlaying()
-        playTimer = setTimeout(playNext, PLAY_PAUSE)
+      setWaiting(false)
+      if (atEnd(playDir)) {
+        if (opts.loop === 'loop' && last > 0) {
+          playDir = 1
+          jump(0)
+          return schedule(holdAfter(0))
+        }
+        if (opts.loop === 'bounce' && last > 0) playDir = -playDir
+        else return finished()
+      }
+      const token = ++navId
+      goTo(current + playDir).then(() => {
+        if (!playing || token !== navId) return
+        if (beats[current].meta.auto && !atEnd(playDir)) return playNext() // straight on
+        if (atEnd(playDir) && !opts.loop) return finished()
+        schedule(holdAfter(current))
       })
     }
 
-    function startPlaying() {
+    function startPlaying({ waiting = false, holdFirst = false } = {}) {
       playing = true
       widget.classList.add('is-playing')
       setButtonLabel(play, 'Pause')
-      if (current >= beats.length - 1) {
-        goTo(0, { animate: false })
-        playTimer = setTimeout(playNext, PLAY_PAUSE)
-      } else {
-        playNext()
+      if (waiting) return schedule(Infinity)
+      if (holdFirst) return schedule(holdAfter(current)) // autoplay: show where it starts first
+      if (opts.loop !== 'bounce') playDir = 1
+      if (!opts.loop && current >= last) {
+        jump(0)
+        return schedule(holdAfter(0))
+      }
+      playNext()
+    }
+
+    // Autoplay: only while the animation is on screen and the tab is visible (resuming where it
+    // left off), never for viewers who prefer reduced motion. Any user navigation turns it off.
+    let autoplayWanted = Boolean(opts.autoplay) && !reducedMotion()
+    let onScreen = false
+    let suspendedWaiting = false
+    function updateAutoplay() {
+      if (!widget.isConnected) {
+        observer?.disconnect()
+        document.removeEventListener('visibilitychange', updateAutoplay)
+        return
+      }
+      const visible = onScreen && !document.hidden
+      if (visible && autoplayWanted && !playing) startPlaying({ waiting: suspendedWaiting, holdFirst: !suspendedWaiting })
+      else if (!visible && playing && autoplayWanted) {
+        suspendedWaiting = waitingForClick
+        stopPlaying()
       }
     }
+    const observer = autoplayWanted && 'IntersectionObserver' in window
+      ? new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; updateAutoplay() }, { threshold: 0.5 })
+      : null
+    if (autoplayWanted) {
+      if (observer) observer.observe(widget)
+      else onScreen = true
+      document.addEventListener('visibilitychange', updateAutoplay)
+    }
+
+    // User actions turn autoplay off; Next at a `pause` carries on playing instead.
+    const userStop = () => {
+      autoplayWanted = false
+      suspendedWaiting = false
+      stopPlaying()
+    }
+    const userNext = () => {
+      if (playing && waitingForClick) return playNext()
+      userStop()
+      step(1)
+    }
+    const userBack = () => { userStop(); step(-1) }
+    const userJump = (index) => { userStop(); jump(index) }
+    const userPlay = () => (playing ? userStop() : startPlaying())
 
     function toggleFullscreen() {
       if (document.fullscreenElement === widget) document.exitFullscreen?.()
       else widget.requestFullscreen?.().catch(() => {})
     }
 
-    rewind.addEventListener('click', () => { stopPlaying(); goTo(0, { animate: false }) })
-    prev.addEventListener('click', () => { stopPlaying(); goTo(current - 1) })
-    next.addEventListener('click', () => { stopPlaying(); goTo(current + 1) })
-    play.addEventListener('click', () => (playing ? stopPlaying() : startPlaying()))
+    rewind.addEventListener('click', () => userJump(0))
+    prev.addEventListener('click', userBack)
+    next.addEventListener('click', userNext)
+    play.addEventListener('click', userPlay)
     // The next/play nudge stops at the first interaction, as reveal.js's controls tutorial does
     const touched = () => widget.classList.remove('anim-untouched')
     controls.addEventListener('click', touched)
@@ -1585,8 +1738,7 @@
       touched()
       const rect = progress.getBoundingClientRect()
       const fraction = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
-      stopPlaying()
-      goTo(Math.round(fraction * (beats.length - 1)), { animate: false })
+      userJump(Math.round(fraction * last))
     })
     const toggleNotes = () => { if (hasNotes) notesPanel.hidden = !notesPanel.hidden }
     const help = buildHelp(widget, hasNotes)
@@ -1600,13 +1752,13 @@
       const backKey = key === 'ArrowLeft' || key === 'p' || (key === ' ' && event.shiftKey)
       if (key === 'Escape' && !help.hidden) help.hidden = true
       else if (key === '?') help.hidden = !help.hidden
-      else if (nextKey) { stopPlaying(); goTo(current + 1) }
-      else if (backKey) { stopPlaying(); goTo(current - 1) }
-      else if (key === 'Home') { stopPlaying(); goTo(0, { animate: false }) }
-      else if (key === 'End') { stopPlaying(); goTo(beats.length - 1, { animate: false }) }
+      else if (nextKey) userNext()
+      else if (backKey) userBack()
+      else if (key === 'Home') userJump(0)
+      else if (key === 'End') userJump(last)
       else if (key === 'f') toggleFullscreen()
       else if (key === 's') toggleNotes()
-      else if (key === 'a') (playing ? stopPlaying() : startPlaying())
+      else if (key === 'a') userPlay()
       else return
       event.preventDefault()
     })

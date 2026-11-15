@@ -656,6 +656,124 @@ i: size -0.25
 
 </animation>
 
+### Autoplay, loop and pause
+
+Plays by itself once it's on screen, then loops. Clicking anything turns autoplay off; `A` or Play plays by hand.
+
+<animation autoplay loop hold="1" grid="12x3">
+
+## Autoplay
+
+The dot sets off on its own.
+
+```scene
+dot: circle at 2,2 radius 0.4 fill blue
+```
+
+---
+
+## pause 2
+
+It holds here for 2 seconds (instead of the 1 second `hold`).
+
+```scene
+dot: move 6,2 slow
+pause 2
+```
+
+---
+
+## pause
+
+Now it waits until you click Next (which nudges).
+
+```scene
+dot: move 10,2 slow
+pause
+```
+
+---
+
+## Then it loops
+
+```scene
+dot: fill green
+```
+
+</animation>
+
+### Loop-bounce, speed and no controls
+
+`autoplay loop-bounce speed="2" hold="0.5" controls="none"`: no buttons or progress bar, double speed, backwards and forwards for ever.
+
+<animation autoplay loop-bounce speed="2" hold="0.5" controls="none" grid="12x2">
+
+```scene
+ball: circle at 1.5,1.5 radius 0.4 fill pink
+```
+
+---
+
+```scene
+ball: move 10.5,1.5 via 6,0.5 slow
+```
+
+---
+
+```scene
+ball: fill teal scale 1.3
+```
+
+</animation>
+
+### auto chains
+
+Not autoplaying: one click on Next plays the whole chain; Back undoes it in one go.
+
+<animation grid="12x3">
+
+## Before the chain
+
+```scene
+a: rect "a" at 2,2
+```
+
+---
+
+## The chain
+
+First it moves right...
+
+```scene
+a: move 6,2
+auto
+```
+
++++
+
+...then hops over...
+
+```scene
+a: move 10,2 via 8,0.8
+auto
+```
+
++++
+
+...then turns green.
+
+```scene
+a: fill green
+```
+
+---
+
+## After the chain
+
+Back from here returns to the end of the chain; Back again undoes the whole chain.
+
+</animation>
+
 ### Angle and scale
 
 <animation grid="12x5">
@@ -910,9 +1028,11 @@ The heading stays put; only this text changes.
 
 Bad lines are listed under the animation and skipped; the rest still draws.
 
-<animation grid="8x3" debug>
+<animation grid="8x3" debug hold="fast" controls="hidden">
 
 ```scene
+pause -1
+auto now
 a: rect "A" at 2,2
 b: rect at 9,9
 c: blob at 3,3

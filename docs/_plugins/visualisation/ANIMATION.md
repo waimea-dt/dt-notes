@@ -60,6 +60,12 @@ Within one beat, all changes play **at the same time**.
 |---|---|---|
 | `grid="CxR"` | `16x9` | Grid size in columns × rows. `grid="fit"` sizes the grid to the area every shape covers across all steps, plus a margin. |
 | `debug` | off | Draws numbered rows and columns and each shape's id, and shows warnings (see §9). |
+| `autoplay` | off | Plays without a click, once the animation is on screen (see Playback below). |
+| `loop` | off | When playing reaches the end, jump back to the start and play again. |
+| `loop-bounce` | off | When playing reaches the end, play backwards to the start, then forwards again. |
+| `hold="s"` | `1.5` | Seconds to wait between beats while playing. |
+| `speed="x"` | `1` | Tempo for the whole animation: `speed="2"` makes every transition, delay and hold twice as fast. |
+| `controls="none"` | shown | Hides the buttons and progress bar (the keys still work), e.g. for a looping decorative diagram. |
 
 ---
 
@@ -98,6 +104,39 @@ Within one beat, all changes play **at the same time**.
 - The controls copy reveal.js's (`<slides>`): transparent, in the link colour. Rewind, back, play and next are drawn from the same rounded bars as reveal.js's chevrons, floating in the bottom-right corner over the content (taking no space of their own). Rewind, back and play are faded until hovered; rewind, back and next are hidden when unavailable.
 - Until the first interaction, **Next** gives a small nudge every 2 seconds, as reveal.js's next arrow does.
 
+### Playback
+
+````markdown
+<animation autoplay loop hold="2">
+
+```scene
+p: rect "packet" at 2,4
+```
+
+---
+
+```scene
+p: move 8,4 slow
+auto                  straight on to the next beat
+```
+
++++
+
+```scene
+p: move 14,4 slow
+pause                 wait for a click before going on
+```
+
+</animation>
+````
+
+- **Play** (or `A`) steps through the beats on its own, waiting `hold` seconds after each (default 1.5).
+- **`pause n`** in a beat's scene makes playback wait `n` seconds after that beat instead of the hold. **`pause`** on its own waits until Next is clicked (Next gives its nudge while waiting); Next then carries on playing.
+- **`auto`** in a beat's scene goes straight on to the next beat when this one finishes, **whether playing or not**: one click plays a chain of beats in turn. Going back through a chain undoes the whole chain in one go too. Jumps (rewind, `Home` / `End`, the progress bar) don't follow chains.
+- **`loop`** jumps back to the start after holding on the last beat; **`loop-bounce`** plays backwards (the reverse transitions, with the same holds and pauses) to the start, then forwards again. Without either, playing stops at the end.
+- **`autoplay`** starts playing (after one hold on the current beat) when at least half the animation is on screen, pauses when it scrolls away or the browser tab is hidden, and resumes where it left off. It never starts for viewers who prefer reduced motion. Once someone navigates (back, next, rewind, the progress bar, Play or `A`), autoplay is off for good; Play or `A` still plays by hand. A non-looping autoplay stops at the end and stays there.
+- `speed` scales transitions, delays, holds and pauses alike; `hold="0"` goes straight on between beats.
+
 ---
 
 ## 3. Grid and coordinates
@@ -126,13 +165,15 @@ Every line in a `scene` block has the form:
 | `a: circle at 5,3` | A type word on an id that **already exists**: **replaces** that shape (cross-fade). `debug` warns, because this is often a mistake. |
 | `a: remove [effect] [speed]` | **Removes** the shape (default: `fade`). |
 | `defaults: …` | Sets defaults for shapes created after it (§7). |
+| `pause` / `pause n` | No id: while playing, wait after this beat for a click on Next, or for `n` seconds (§2, Playback). |
+| `auto` | No id: when this beat finishes, go straight on to the next one, whether playing or not (§2, Playback). |
 
 The parser reads the words after the colon from left to right. Properties may come in any order.
 
 ### Ids
 
 - Letters, digits, `_`, `-` and `.`, starting with a letter: `a`, `box1`, `arr.0`.
-- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), `remove` and `defaults`.
+- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), line styles and flow words, `pause`, `auto`, `remove` and `defaults`.
 
 ### Value types
 
