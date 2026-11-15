@@ -73,13 +73,12 @@ Within one beat, all changes play **at the same time**.
 ├───────────────────────────────────────┤
 │  Step heading                         │  caption: `##` and text
 │  Caption text                         │
-├───────────────────────────────────────┤
-│  ⏮  ◀  ● ● ◉ ○ ○  ▶   ⏵         ✎  ⛶  │  controls
-└───────────────────────────────────────┘
+│  Caption text              |‹ ‹ ▷ › │  rewind / back / play / next float over the corner
+└━━━━━━━━━━━━───────────────────────────┘  progress bar
 ```
 
 - **The drawing is the same size as a slide deck:** the full content width, 16:9 for the default grid, with the same border, corner radius and shadow as `<slides>`. Another grid changes the drawing's shape, not its width.
-- **Full screen:** the Full screen button (or `F` when the widget has focus) shows the widget full-screen, with the drawing scaled to fit the screen and the caption and controls below it. `Esc` exits.
+- **Full screen:** `F` (when the widget has focus) shows the widget full-screen, with the drawing scaled to fit the screen and the caption and controls below it. `Esc` exits.
 
 - **Captions are HTML, not SVG.** They never use grid coordinates. Text that must point at a shape is a `text` shape in the scene.
 - **The caption panel has a fixed height**, set by the tallest caption (measured once on render), so the controls never jump.
@@ -90,12 +89,14 @@ Within one beat, all changes play **at the same time**.
 
 ### Controls
 
-- **Rewind** goes straight back to the start (no transition). `Home` does the same once the widget has focus.
-- **Back** / **Next** go back and forward one beat. The ← / → arrow keys do the same once the widget has focus.
-- The step dots jump to a step **instantly**, with no transition.
-- **Play** plays through the remaining beats automatically (it becomes **Pause** while playing).
-- **Full screen** / `F` toggles full screen.
-- The buttons are the site's shared icon-only buttons (`btn-prev`, `btn-next`, `btn-go`, `btn-notes`, `btn-fullscreen` in `buttons.css`): back, the step dots, next and play on the left; notes and full screen on the right.
+- **Rewind** (or `Home`) goes straight back to the start, and `End` to the last step (no transition).
+- **Back** / **Next** go back and forward one beat. The keys are the same as on slides: → / `N` / `Space` for next, ← / `P` / `Shift+Space` for back.
+- The **progress bar** along the bottom edge counts every step and beat, and eases to each new position. Clicking it jumps to that point **instantly**, with no transition.
+- **Play** (or `A`, reveal.js's auto-slide key) plays through the remaining beats automatically; it becomes a pause sign while playing. From the last step it starts again from the beginning.
+- `F` toggles full screen, and `S` shows or hides the teacher notes (as on slides). Only rewind, back, play and next have buttons.
+- `?` shows a **Keyboard Shortcuts** table over the animation, like reveal.js's; `Esc` or its close button hides it.
+- The controls copy reveal.js's (`<slides>`): transparent, in the link colour. Rewind, back, play and next are drawn from the same rounded bars as reveal.js's chevrons, floating in the bottom-right corner over the content (taking no space of their own). Rewind, back and play are faded until hovered; rewind, back and next are hidden when unavailable.
+- Until the first interaction, **Next** gives a small nudge every 2 seconds, as reveal.js's next arrow does.
 
 ---
 
@@ -397,13 +398,13 @@ r1: arrow from a to b draw slow
 
 - Works on any line: creating (the shape appears after the delay), changing, and `remove`.
 - If several lines change the same shape in one beat, the longest delay is used.
-- A delay is never a default (`defaults: delay 1` is an error), and it is ignored when stepping instantly (dots, rewind, reduced motion).
+- A delay is never a default (`defaults: delay 1` is an error), and it is ignored when stepping instantly (progress bar, Home / End, reduced motion).
 
 ---
 
 ## 9. State, navigation and errors
 
-- **State model:** each beat's state is the previous state plus that beat's changes. The plugin works out every beat's state up front, so going back or jumping (dots) just rebuilds that state, with no undo logic.
+- **State model:** each beat's state is the previous state plus that beat's changes. The plugin works out every beat's state up front, so going back or jumping (progress bar, Home / End) just rebuilds that state, with no undo logic.
 - Going **back** plays the beat exactly in reverse at the same speed, delays included: the last change to start is the first to be undone.
 - **Errors** (unknown keyword, wrong value type, unknown id, invalid form) appear as a small inline message giving the step and line. The bad line is skipped and the rest of the scene still draws.
 - **Warnings** (only with `debug`): replacing an existing id with a new type word; positions outside the grid; a `defaults:` line that changes nothing.
@@ -429,7 +430,7 @@ r1: arrow from a to b draw slow
 - **Default speed:** a `defaults:` speed applies to every line after it (changes as well as creations), so `defaults: slow` slows a whole sequence.
 - **Replacing a shape** keeps lines attached to its id: they attach to the replacement.
 - **Line ends** can't be attached to another line.
-- **Teacher notes** are shown by a notes button in the controls (only when the animation has notes), under the caption.
+- **Teacher notes** are shown under the caption with `S` (only when the animation has notes).
 
 ---
 

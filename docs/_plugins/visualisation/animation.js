@@ -1131,12 +1131,12 @@
 
   const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-  // Icon-only buttons from the site's shared button styles (buttons.css): the btn-* class sets the
-  // icon, and an empty button gets the icon-only size. No type attribute: Docsify's core CSS
-  // styles button[type], which would override buttons.css.
+  // Transparent icon buttons styled like reveal.js's controls (animation.css): chevrons are drawn in
+  // CSS, other icons use the shared --butt-icon-* masks. No type attribute: Docsify's core CSS
+  // styles button[type].
   function createButton(className, label) {
     const button = document.createElement('button')
-    button.className = `anim-btn btn-compact ${className}`
+    button.className = `anim-ctrl ${className}`
     setButtonLabel(button, label)
     return button
   }
@@ -1144,6 +1144,38 @@
   function setButtonLabel(button, label) {
     button.setAttribute('aria-label', label)
     button.title = label
+  }
+
+  // The keyboard shortcuts summary (?), styled like reveal.js's help overlay.
+  function buildHelp(widget, hasNotes) {
+    const rows = [
+      ['→ , N , Space', 'Next step'],
+      ['← , P , Shift Space', 'Previous step'],
+      ['Home', 'Back to the start'],
+      ['End', 'Last step'],
+      ['A', 'Play / pause'],
+      ['F', 'Full screen'],
+      ...(hasNotes ? [['S', 'Teacher notes']] : []),
+      ['?', 'Show or hide these shortcuts'],
+      ['Esc', 'Close this / exit full screen'],
+    ]
+    const help = widget.appendChild(document.createElement('div'))
+    help.className = 'anim-help'
+    help.hidden = true
+    const close = help.appendChild(document.createElement('button'))
+    close.className = 'anim-help-close'
+    close.textContent = 'Esc'
+    close.setAttribute('aria-label', 'Close keyboard shortcuts')
+    close.addEventListener('click', () => { help.hidden = true; widget.focus() })
+    const inner = help.appendChild(document.createElement('div'))
+    inner.className = 'anim-help-inner'
+    const title = inner.appendChild(document.createElement('div'))
+    title.className = 'anim-help-title'
+    title.textContent = 'Keyboard Shortcuts'
+    const table = inner.appendChild(document.createElement('table'))
+    table.innerHTML = `<thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>${rows
+      .map(([key, action]) => `<tr><td>${escapeHtml(key)}</td><td>${escapeHtml(action)}</td></tr>`).join('')}</tbody>`
+    return help
   }
 
   // Reads the compiled caption markup back out of the source element.
@@ -1185,7 +1217,7 @@
     if (debug) warnOutsideGrid(beats, viewBox, warnings)
 
     const widget = document.createElement('div')
-    widget.className = 'animation'
+    widget.className = 'animation anim-untouched' // until the first interaction (see CSS)
     widget.tabIndex = 0
     widget.setAttribute('role', 'region')
     widget.setAttribute('aria-label', title ? `Animation: ${title.textContent.trim()}` : 'Animation')
@@ -1223,27 +1255,27 @@
     })
     if (!pages.some((p) => p.headingText || p.parts.some((part) => part.textContent.trim() || part.children.length))) caption.hidden = true
 
-    // Controls
+    // Controls, like reveal.js's: rewind, back, play and next floating in the bottom-right corner
+    // over the content, and a progress bar (every step and beat) along the bottom edge. Notes (S),
+    // full screen (F) and the shortcuts summary (?) are keyboard-only.
     const controls = widget.appendChild(document.createElement('div'))
     controls.className = 'anim-controls'
-    const rewind = controls.appendChild(createButton('anim-rewind btn-rewind', 'Back to the start'))
-    const prev = controls.appendChild(createButton('anim-prev btn-prev', 'Back'))
-    const dots = controls.appendChild(document.createElement('div'))
-    dots.className = 'anim-dots'
-    const dotButtons = steps.map((_, i) => {
-      const dot = dots.appendChild(document.createElement('button'))
-      dot.className = 'anim-dot'
-      dot.setAttribute('aria-label', `Step ${i + 1}`)
-      dot.title = `Step ${i + 1}`
-      return dot
-    })
-    const next = controls.appendChild(createButton('anim-next btn-next', 'Next'))
-    const play = controls.appendChild(createButton('anim-play btn-go', 'Play'))
-    const spacer = controls.appendChild(document.createElement('div'))
-    spacer.className = 'anim-spacer'
+    const rewind = controls.appendChild(createButton('anim-rewind anim-chevron', 'Back to the start'))
+    rewind.appendChild(document.createElement('span')).className = 'anim-chevron-bar'
+    const prev = controls.appendChild(createButton('anim-prev anim-chevron', 'Back'))
+    const play = controls.appendChild(createButton('anim-play anim-chevron', 'Play'))
+    play.appendChild(document.createElement('span')).className = 'anim-chevron-bar'
+    play.appendChild(document.createElement('span')).className = 'anim-chevron-bar anim-pause-bar'
+    const next = controls.appendChild(createButton('anim-next anim-chevron', 'Next'))
     const hasNotes = steps.some((step) => step.notes)
-    const notesButton = hasNotes ? controls.appendChild(createButton('anim-notes-btn btn-notes', 'Teacher notes')) : null
-    const fullscreen = controls.appendChild(createButton('anim-fullscreen btn-fullscreen', 'Full screen'))
+
+    const progress = widget.appendChild(document.createElement('div'))
+    progress.className = 'anim-progress'
+    progress.setAttribute('role', 'progressbar')
+    progress.setAttribute('aria-label', 'Progress')
+    progress.setAttribute('aria-valuemin', '0')
+    progress.setAttribute('aria-valuemax', String(Math.max(0, beats.length - 1)))
+    const progressBar = progress.appendChild(document.createElement('span'))
 
     const notesPanel = widget.appendChild(document.createElement('div'))
     notesPanel.className = 'anim-notes'
@@ -1289,11 +1321,10 @@
       prev.disabled = current === 0
       rewind.disabled = current === 0
       next.disabled = current >= beats.length - 1
-      dotButtons.forEach((dot, i) => {
-        dot.classList.toggle('is-current', i === step)
-        dot.setAttribute('aria-current', i === step ? 'step' : 'false')
-      })
-      if (notesButton) notesPanel.replaceChildren(...notes[step])
+      progressBar.style.transform = `scaleX(${beats.length > 1 ? current / (beats.length - 1) : 1})`
+      progress.setAttribute('aria-valuenow', String(current))
+      progress.setAttribute('aria-valuetext', `Step ${step + 1} of ${steps.length}`)
+      if (hasNotes) notesPanel.replaceChildren(...notes[step])
     }
 
     function animateEl(el, frames, ms) {
@@ -1407,7 +1438,7 @@
     function stopPlaying() {
       playing = false
       clearTimeout(playTimer)
-      play.classList.remove('playing')
+      widget.classList.remove('is-playing')
       setButtonLabel(play, 'Play')
     }
 
@@ -1423,7 +1454,7 @@
 
     function startPlaying() {
       playing = true
-      play.classList.add('playing')
+      widget.classList.add('is-playing')
       setButtonLabel(play, 'Pause')
       if (current >= beats.length - 1) {
         goTo(0, { animate: false })
@@ -1442,27 +1473,40 @@
     prev.addEventListener('click', () => { stopPlaying(); goTo(current - 1) })
     next.addEventListener('click', () => { stopPlaying(); goTo(current + 1) })
     play.addEventListener('click', () => (playing ? stopPlaying() : startPlaying()))
-    dotButtons.forEach((dot, i) => dot.addEventListener('click', () => {
+    // The next/play nudge stops at the first interaction, as reveal.js's controls tutorial does
+    const touched = () => widget.classList.remove('anim-untouched')
+    controls.addEventListener('click', touched)
+    widget.addEventListener('keydown', touched)
+
+    // Clicking the progress bar jumps to that point (as in reveal.js)
+    progress.addEventListener('click', (event) => {
+      touched()
+      const rect = progress.getBoundingClientRect()
+      const fraction = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
       stopPlaying()
-      goTo(beats.findIndex((b) => b.step === i), { animate: false })
-    }))
-    fullscreen.addEventListener('click', toggleFullscreen)
-    notesButton?.addEventListener('click', () => {
-      notesPanel.hidden = !notesPanel.hidden
-      notesButton.classList.toggle('is-on', !notesPanel.hidden)
+      goTo(Math.round(fraction * (beats.length - 1)), { animate: false })
     })
-    widget.addEventListener('fullscreenchange', () => {
-      const on = document.fullscreenElement === widget
-      fullscreen.classList.toggle('is-fullscreen', on)
-      setButtonLabel(fullscreen, on ? 'Exit full screen' : 'Full screen')
-    })
+    const toggleNotes = () => { if (hasNotes) notesPanel.hidden = !notesPanel.hidden }
+    const help = buildHelp(widget, hasNotes)
+
+    // Keys, as on slides: → N Space next, ← P Shift+Space back, Home / End, A (play), F, S, ? and Esc.
     widget.addEventListener('keydown', (event) => {
       if (event.target.closest('input, textarea, select, [contenteditable], .CodeMirror')) return
       if (event.altKey || event.ctrlKey || event.metaKey) return
-      if (event.key === 'ArrowRight') { stopPlaying(); goTo(current + 1); event.preventDefault() }
-      else if (event.key === 'ArrowLeft') { stopPlaying(); goTo(current - 1); event.preventDefault() }
-      else if (event.key === 'Home') { stopPlaying(); goTo(0, { animate: false }); event.preventDefault() }
-      else if (event.key === 'f' || event.key === 'F') { toggleFullscreen(); event.preventDefault() }
+      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
+      const nextKey = key === 'ArrowRight' || key === 'n' || (key === ' ' && !event.shiftKey)
+      const backKey = key === 'ArrowLeft' || key === 'p' || (key === ' ' && event.shiftKey)
+      if (key === 'Escape' && !help.hidden) help.hidden = true
+      else if (key === '?') help.hidden = !help.hidden
+      else if (nextKey) { stopPlaying(); goTo(current + 1) }
+      else if (backKey) { stopPlaying(); goTo(current - 1) }
+      else if (key === 'Home') { stopPlaying(); goTo(0, { animate: false }) }
+      else if (key === 'End') { stopPlaying(); goTo(beats.length - 1, { animate: false }) }
+      else if (key === 'f') toggleFullscreen()
+      else if (key === 's') toggleNotes()
+      else if (key === 'a') (playing ? stopPlaying() : startPlaying())
+      else return
+      event.preventDefault()
     })
 
     showStatic(0)

@@ -140,6 +140,13 @@
           return;
         }
 
+        // Skip plugin content marked up as plain HTML before its plugin runs, by class
+        // (animation.js: step/beat captions and teacher notes)
+        const skipClasses = ['anim-source'];
+        if (skipClasses.some(cls => node.classList.contains(cls))) {
+          return;
+        }
+
         // Recursively process child nodes
         const children = Array.from(node.childNodes);
         children.forEach(replaceInTextNode);

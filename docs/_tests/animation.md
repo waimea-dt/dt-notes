@@ -13,12 +13,12 @@ Click an animation to give it focus, then use ← / → to step and `F` for full
 We start with an unsorted array.
 
 ```scene
-defaults: fill none
-a0: rect "5" at 5 3
-a1: rect "3" at 6 3
-a2: rect "8" at 7 3
-a3: rect "1" at 8 3
-i: text "i" below a0
+defaults: fill blue
+a5: rect "5" at 5 3 size 0.9
+a3: rect "3" at 6 3 size 0.9
+a8: rect "8" at 7 3 size 0.9
+a1: rect "1" at 8 3 size 0.9
+i: text "i" below a5
 ```
 
 ---
@@ -28,19 +28,27 @@ i: text "i" below a0
 Is `5` bigger than `3`?
 
 ```scene
-a0: fill amber
-a1: fill green
+a5: fill amber
+a3: fill amber
+```
+
++++
+
+Yes it is!
+
+```scene
+a5: fill green
 ```
 
 ---
 
 ## Swap
 
-Yes, so they swap places...
+So they swap places...
 
 ```scene
-a0: move 6 3 via +0.5 -0.5
-a1: move 5 3 via -0.5 +0.5
+a5: move 6 3 via +0.5 -0.5
+a3: move 5 3 via -0.5 +0.5
 ```
 
 +++
@@ -48,9 +56,9 @@ a1: move 5 3 via -0.5 +0.5
 ...and `i` moves on.
 
 ```scene
-a0: fill none
-a1: fill none
-i: move below a0
+a5: fill blue
+a3: fill none
+i: move below a5
 ```
 
 Note:

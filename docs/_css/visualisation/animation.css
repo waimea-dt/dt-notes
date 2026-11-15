@@ -6,10 +6,15 @@
     /* Same surface as a slide deck, so the two sit together on a page */
     --anim-bg:          var(--theme-color-0);
     --anim-fg:          var(--color-text);
+
     --anim-line:        var(--border-color);
     --anim-muted:       var(--color-mono-5);
     --anim-accent:      var(--theme-color);
 
+    --anim-highlight:   color-mix(in srgb, var(--anim-accent) 55%, transparent);
+
+    
+    position: relative; /* for the progress bar */
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -32,7 +37,7 @@
     transition: outline-color 0.2s ease;
 
     &:focus-within {
-        outline-color: color-mix(in srgb, var(--anim-accent) 55%, transparent);
+        outline-color: var(--anim-highlight);
     }
 
     /* Title (the step 1 `#`) */
@@ -112,52 +117,231 @@
         }
     }
 
-    /* Controls: back, step dots, next and play on the left; notes and full screen on the right.
-       The buttons are the shared icon-only buttons from buttons.css. */
+    /* Controls, styled and placed like reveal.js's (slides): back and next chevrons in the link
+       colour, floating in the bottom-right corner over whatever content is there */
 
     .anim-controls {
+        --anim-ctrl-color: var(--link-color);
+
+        position: absolute;
+        right: var(--space-small);
+        bottom: var(--space-small);
+        z-index: 3;
         display: flex;
         align-items: center;
-        gap: var(--gap-small);
-        padding: var(--padding-small) var(--padding);
-        border-top: 1px solid var(--anim-line);
+        gap: var(--space-small);
+        pointer-events: none;
 
-        .anim-spacer {
-            flex: 1;
+        button { pointer-events: auto; }
+    }
+
+    button.anim-ctrl {
+        position: relative;
+        inline-size: 2.2em;
+        block-size: 2.2em;
+        min-inline-size: 0;
+        min-block-size: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--anim-ctrl-color);
+        opacity: 0.9;
+        cursor: pointer;
+        transition: color 0.2s, opacity 0.2s, transform 0.2s;
+
+        &:hover:not(:disabled) {
+            background: transparent;
+            color: var(--anim-ctrl-color);
+            opacity: 1;
         }
 
-        button.anim-notes-btn.is-on {
-            --butt-action-color: var(--butt-bg-active);
+        &:active:not(:disabled) {
+            transform: none;
         }
 
-        .anim-dots {
-            display: flex;
-            flex-wrap: wrap;
+        /* Hidden while unavailable, as reveal.js hides disabled arrows */
+        &:disabled {
+            visibility: hidden;
+            opacity: 0;
+        }
+    }
+
+    /* Chevrons drawn from two rounded bars, as reveal.js's controls arrows */
+    button.anim-chevron {
+        font-size: 8px;
+        inline-size: 3.6em;
+        block-size: 3.6em;
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0.55em;
+            inline-size: 2.6em;
+            block-size: 0.5em;
+            border-radius: 0.25em;
+            background-color: currentColor;
+            transform-origin: 0.2em;
+            transition: transform 0.15s;
+        }
+
+        &::before { transform: translateY(1.55em) rotate(45deg); }
+        &::after { transform: translateY(1.55em) rotate(-45deg); }
+        &:hover:not(:disabled)::before { transform: translateY(1.55em) rotate(40deg); }
+        &:hover:not(:disabled)::after { transform: translateY(1.55em) rotate(-40deg); }
+        &:active:not(:disabled)::before { transform: translateY(1.55em) rotate(36deg); }
+        &:active:not(:disabled)::after { transform: translateY(1.55em) rotate(-36deg); }
+    }
+
+    /* Rewind, back and play are faded until hovered, as reveal.js's controlsBackArrows: 'faded' */
+    button:is(.anim-prev, .anim-rewind, .anim-play):not(:hover) { opacity: 0.3; }
+
+    /* Play: the next chevron with a bar across its open side makes a triangle (the button is
+       turned 180deg like next); while playing, two upright bars make a pause sign */
+    button.anim-play {
+        transform: rotate(180deg);
+
+        &:active:not(:disabled) { transform: rotate(180deg); }
+        &:hover::before { transform: translateY(1.55em) rotate(45deg); }
+        &:hover::after { transform: translateY(1.55em) rotate(-45deg); }
+
+        .anim-chevron-bar {
+            position: absolute;
+            top: 0.1em;
+            left: 2.2em;
+            inline-size: 0.5em;
+            block-size: 3.4em;
+            border-radius: 0.25em;
+            background-color: currentColor;
+        }
+
+        .anim-pause-bar { display: none; }
+    }
+
+    &.is-playing button.anim-play {
+        &::before,
+        &::after { display: none; }
+
+        .anim-chevron-bar { left: 2.1em; top: 0.1em; block-size: 3.4em; }
+        .anim-pause-bar { display: block; left: 0.9em; }
+    }
+
+    /* Rewind: the back chevron plus a bar at its point ("skip to start"), a little smaller than
+       back so the main arrows stand out */
+    button.anim-rewind {
+        font-size: 6.75px;
+
+        &::before,
+        &::after { left: 1.25em; }
+
+        .anim-chevron-bar {
+            position: absolute;
+            top: 0.1em;
+            left: 0.4em;
+            inline-size: 0.5em;
+            block-size: 3.4em;
+            border-radius: 0.25em;
+            background-color: currentColor;
+        }
+    }
+    button.anim-next { transform: rotate(180deg); }
+    button.anim-next:active:not(:disabled) { transform: rotate(180deg); }
+
+    /* Until the first interaction, next nudges every 2 seconds (reveal.js's controls tutorial) */
+    &.anim-untouched button.anim-next:not(:disabled) {
+        animation: anim-bounce-next 2s ease-out 50 both;
+    }
+
+    /* Keyboard shortcuts summary (?), like reveal.js's help overlay */
+    .anim-help {
+        position: absolute;
+        inset: 0;
+        z-index: 4; /* over the controls */
+        overflow: auto;
+        padding: var(--padding-large) var(--padding);
+        background: color-mix(in srgb, var(--color-min, #000) 92%, transparent);
+        color: var(--anim-fg);
+
+        .anim-help-close {
+            position: absolute;
+            top: var(--space-small);
+            right: var(--space-small);
+            display: inline-flex;
             align-items: center;
             gap: 0.4em;
-            padding-inline: var(--space-tiny);
-        }
-
-        button.anim-dot {
-            inline-size: 0.9em;
-            block-size: 0.9em;
-            min-inline-size: 0;
-            min-block-size: 0;
-            padding: 0;
-            border: 2px solid var(--anim-muted);
-            border-radius: 50%;
+            padding: var(--space-tiny) var(--space-small);
+            border: 0;
             background: transparent;
+            color: var(--anim-fg);
+            font-size: var(--font-size-med);
             cursor: pointer;
+
+            &::after {
+                content: "\2715";
+                font-size: 1.3em;
+            }
 
             &:hover {
                 background: transparent;
-                border-color: var(--anim-accent);
+                color: var(--link-color);
             }
+        }
 
-            &.is-current {
-                background: var(--anim-accent);
-                border-color: var(--anim-accent);
-            }
+        .anim-help-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--gap);
+        }
+
+        .anim-help-title {
+            font-size: var(--font-size-xlarge);
+        }
+
+        table {
+            display: table;
+            width: auto;
+            margin: 0;
+            border-collapse: collapse;
+            font-size: var(--font-size-med);
+        }
+
+        th,
+        td {
+            padding: var(--space-small) var(--space);
+            border: 1px solid var(--anim-line);
+            text-align: left;
+            background: color-mix(in srgb, var(--anim-bg) 70%, transparent);
+        }
+
+        th {
+            text-transform: uppercase;
+        }
+    }
+
+    /* Progress bar along the bottom edge, as reveal.js's: every step and beat */
+    .anim-progress {
+        position: absolute;
+        inset: auto 0 0 0;
+        block-size: 3px;
+        background-color: #0003;
+        cursor: pointer;
+
+        /* A taller invisible hit area for clicking */
+        &::after {
+            content: "";
+            position: absolute;
+            inset: -10px 0 0 0;
+        }
+
+        span {
+            display: block;
+            block-size: 100%;
+            background-color: var(--link-color);
+            transform-origin: 0 0;
+            transform: scaleX(0);
+            transition: transform 0.8s cubic-bezier(0.26, 0.86, 0.44, 0.985);
         }
     }
 
@@ -235,4 +419,11 @@
     &::backdrop {
         background: var(--anim-bg);
     }
+}
+
+/* reveal.js's bounce, with the next chevron's 180deg turn kept in */
+@keyframes anim-bounce-next {
+    0%, 10%, 25%, 40%, 50% { transform: rotate(180deg) translateX(0); }
+    20% { transform: rotate(180deg) translateX(-10px); }
+    30% { transform: rotate(180deg) translateX(5px); }
 }
