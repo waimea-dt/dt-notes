@@ -507,7 +507,7 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 <animation grid="12x4">
 
 ```scene
-r: rect "rect" at 2 2 size 2 1
+r: rect "rect" at 2 2 size 2 1 radius 0.15 dotted
 c: circle "circle" at 5 2 radius 0.8 fill blue
 t: text "text, left" at 8 1 align left stroke theme
 b: text "bold, 1.5x" at 8 3 font 1.5 bold
@@ -521,7 +521,7 @@ i: icon(laptop) "icon" at 11 2
 Fills tween; labels cross-fade.
 
 ```scene
-r: fill green "done"
+r: fill green "done" solid
 c: fill pink stroke red width 2
 t: stroke amber "changed"
 i: stroke blue
@@ -529,11 +529,81 @@ i: stroke blue
 
 ---
 
-## Dashed and thick
+## Dashed, thick and rounded
+
+`r: radius 0.5` turns the rounded rect into a pill.
 
 ```scene
-r: dashed width 3
-c: size 1
+r: radius 0.5
+c: size 1 width 3
+```
+
+</animation>
+
+### Line styles and flow
+
+<animation grid="12x5">
+
+## Solid
+
+```scene
+a: circle "A" at 2 2 radius 0.5
+b: circle "B" at 10 2 radius 0.5
+l: line from a to b width 2
+ring: circle at 6 3.3 radius 0.6 width 1.5 stroke teal
+```
+
+---
+
+## Solid to dashed
+
+The solid line fades into a dashed one.
+
+```scene
+l: dashed slow
+ring: dashed slow
+```
+
+---
+
+## Dashed to dotted
+
+The dashes fade into dots.
+
+```scene
+l: dotted slow
+```
+
+---
+
+## Flow
+
+`l: flow` sends the dots from A to B; the ring's dashes march round it.
+
+```scene
+l: flow
+ring: flow
+```
+
+---
+
+## Flow reversed
+
+`l: flow-reverse` sends them back from B to A.
+
+```scene
+l: flow-reverse
+```
+
+---
+
+## Back to solid
+
+`l: solid flow-off slow`: the dots fade back into a solid line.
+
+```scene
+l: solid flow-off slow
+ring: solid flow-off slow
 ```
 
 </animation>

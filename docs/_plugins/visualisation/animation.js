@@ -49,7 +49,12 @@
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
   const ALIGNS = { left: 'left', centre: 'centre', center: 'centre', right: 'right' }
-  const FLAGS = ['bold', 'dashed']
+  const FLAGS = ['bold']
+  const LINE_STYLES = ['solid', 'dashed', 'dotted']
+  // Each pattern as a visible dash and gap, in multiples of the stroke unit
+  const PATTERNS = { dashed: { d: 12, g: 9 }, dotted: { d: 0, g: 7.5 } }
+  const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', 'flow-off': 'none' }
+  const FLOW_SPEED = 2 * 80 // px per second (two cells)
   const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
   const RESOURCE_TYPES = ['image', 'icon']
   const LINE_TYPES = ['line', 'arrow']
@@ -85,12 +90,13 @@
     at: BOXED, x: BOXED, y: BOXED,
     from: LINE_TYPES, to: LINE_TYPES,
     size: ['rect', 'circle', 'image', 'icon'],
-    radius: ['circle'],
+    radius: ['circle', 'rect'], // a rect's radius rounds its corners
     fill: ['rect', 'circle'],
     stroke: ALL, width: ALL, font: ALL, bold: ALL,
     angle: BOXED, scale: BOXED,
     align: ['text'],
-    dashed: ['rect', 'circle', 'line', 'arrow', 'image'],
+    linestyle: ['rect', 'circle', 'line', 'arrow', 'image'], // solid | dashed | dotted
+    flow: ['rect', 'circle', 'line', 'arrow', 'image'], // dashes/dots march along the stroke
   }
 
   const point = (types) => [[...types, 'num', 'num'], [...types, 'id']]
@@ -132,7 +138,7 @@
 
   const RESERVED = new Set([
     ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(PROPS), ...Object.keys(ALIASES), ...Object.keys(SPEEDS),
-    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, 'remove', 'defaults', 'reset',
+    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), 'remove', 'defaults', 'reset',
   ])
 
   // ---------------------------------------------------------------------------
@@ -333,6 +339,8 @@
       else if (EFFECTS.includes(word)) set('effect', word)
       else if (word in LAYERS) set('layer', word)
       else if (FLAGS.includes(word)) set(word, true)
+      else if (LINE_STYLES.includes(word)) set('linestyle', word, 'line style')
+      else if (word in FLOWS) set('flow', word, 'flow')
       else if (word === 'reset' && mode === 'defaults') set('reset', true)
       else if (SHAPE_TYPES.includes(word) || word === 'remove') throw new Error(`"${word}" must come straight after the id`)
       else throw new Error(`unknown word "${token.value}"`)
@@ -498,8 +506,8 @@
   // ---------------------------------------------------------------------------
 
   function baseShape(type) {
-    const shape = { type, label: '', stroke: 'fg', fill: 'none', width: 1, font: 1, angle: 0, scale: 1, bold: false, dashed: false, align: 'centre', layer: 'normal' }
-    if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, fill: 'bg' })
+    const shape = { type, label: '', stroke: 'fg', fill: 'none', width: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
+    if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, r: 0, fill: 'bg' }) // r: corner radius
     if (type === 'circle') Object.assign(shape, { r: CELL / 2, fill: 'bg' })
     if (type === 'image') Object.assign(shape, { w: CELL, h: CELL, stroke: 'none' })
     if (type === 'icon') Object.assign(shape, { w: CELL, h: CELL })
@@ -519,8 +527,8 @@
     let defaults = {}
     let uid = 0
 
-    const check = (shape, key) => {
-      if (!APPLIES[key].includes(shape.type)) throw new Error(`"${key}" doesn't apply to ${shape.type === 'arrow' || shape.type === 'icon' || shape.type === 'image' ? 'an' : 'a'} ${shape.type}`)
+    const check = (shape, key, word = key) => {
+      if (!APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${shape.type === 'arrow' || shape.type === 'icon' || shape.type === 'image' ? 'an' : 'a'} ${shape.type}`)
     }
 
     // Applies parsed props to a shape (a fresh one when creating, a copy when changing).
@@ -558,7 +566,12 @@
       if (props.angle) { check(shape, 'angle'); shape.angle = num(props.angle, shape.angle, 1) }
       if (props.scale) { check(shape, 'scale'); shape.scale = Math.max(0, num(props.scale, shape.scale, 1)) }
       if (props.bold) shape.bold = true
-      if (props.dashed) { check(shape, 'dashed'); shape.dashed = true }
+      if (props.linestyle) { check(shape, 'linestyle', props.linestyle); shape.linestyle = props.linestyle }
+      if (props.flow) {
+        check(shape, 'flow', props.flow)
+        shape.flow = FLOWS[props.flow]
+        if (shape.flow !== 'none' && shape.linestyle === 'solid') warn(`"${props.flow}" only shows on a dashed or dotted line`)
+      }
       if (props.layer) shape.layer = props.layer
 
       if (isLine) {
@@ -817,6 +830,7 @@
   // SVG rendering
   // ---------------------------------------------------------------------------
 
+  const flowState = new WeakMap() // stroke element -> { key, anim } for flowing dashes
   const SVG_NS = 'http://www.w3.org/2000/svg'
   const svgEl = (tag, attrs = {}) => {
     const el = document.createElementNS(SVG_NS, tag)
@@ -897,7 +911,59 @@
     function drawNode(node, s, v, colours, ms, byId) {
       const { g } = node
       const strokeWidth = STROKE * s.width
-      const dash = s.dashed ? `${STROKE * 4 * Math.max(s.width, 0.5)} ${STROKE * 3 * Math.max(s.width, 0.5)}` : 'none'
+      // Dash patterns use round caps, so each drawn dash is shortened (and gap lengthened) by the
+      // stroke width to keep the visible lengths; a dash of 0 is a round dot. Scales with the width.
+      const k = STROKE * Math.max(s.width, 0.5)
+      const dashFor = (style) => {
+        if (style === 'solid' || !PATTERNS[style]) return { dash: 'none', cap: '', dashLen: 0, gapLen: 0, plain: true }
+        const dashLen = Math.max(0, PATTERNS[style].d * k - strokeWidth)
+        const gapLen = PATTERNS[style].g * k + strokeWidth
+        return { dash: `${dashLen} ${gapLen}`, cap: 'round', dashLen, gapLen, plain: false }
+      }
+      const { dash, cap, dashLen, gapLen, plain } = dashFor(s.linestyle)
+
+      // A style change cross-fades: a copy of the stroke in the old style (the ghost) fades out on
+      // top while the new style fades in. The ghost mirrors the stroke's geometry and colour.
+      const fading = s.fromStyle && s.fromStyle !== s.linestyle && v.draw >= 1
+      const syncGhost = (body) => {
+        if (!fading) {
+          node.ghost?.remove()
+          node.ghost = null
+          body.style.strokeOpacity = ''
+          return
+        }
+        if (!node.ghost) node.ghost = body.cloneNode(false)
+        const ghost = node.ghost
+        for (const name of ['x', 'y', 'width', 'height', 'rx', 'ry', 'r', 'x1', 'y1', 'x2', 'y2']) {
+          const value = body.getAttribute(name)
+          if (value === null) ghost.removeAttribute(name)
+          else ghost.setAttribute(name, value)
+        }
+        if (ghost.previousSibling !== body) body.after(ghost)
+        const old = dashFor(s.fromStyle)
+        ghost.style.cssText = ''
+        Object.assign(ghost.style, {
+          fill: 'none', stroke: body.style.stroke, strokeWidth: body.style.strokeWidth,
+          strokeDasharray: old.dash, strokeLinecap: old.cap, strokeOpacity: String(1 - s.styleT),
+        })
+        body.style.strokeOpacity = String(s.styleT)
+      }
+      // Flow: a looping Web Animation moves the dash offset by one pattern period (seamless);
+      // reverse runs it backwards. Restarted only when the period or direction changes.
+      const setFlow = (el) => {
+        const on = s.flow !== 'none' && !plain && v.draw >= 1 && !reducedMotion()
+        const period = Math.round(dashLen + gapLen)
+        const key = on ? `${period}|${s.flow}` : ''
+        const state = flowState.get(el)
+        if ((state?.key || '') === key) return
+        state?.anim.cancel()
+        flowState.delete(el)
+        if (!on || !el.animate || !period) return
+        const anim = el.animate([{ strokeDashoffset: '0px' }, { strokeDashoffset: `${-period}px` }], {
+          duration: (period / FLOW_SPEED) * 1000, iterations: Infinity, direction: s.flow === 'reverse' ? 'reverse' : 'normal',
+        })
+        flowState.set(el, { key, anim })
+      }
       g.style.opacity = v.opacity
       const fontSize = FONT * s.font
       node.label.style.fontSize = `${fontSize}px`
@@ -932,13 +998,18 @@
         node.body.setAttribute('x2', end.x); node.body.setAttribute('y2', end.y)
         node.body.style.strokeWidth = strokeWidth
         if (v.draw < 1) {
+          setFlow(node.body) // off while drawing in
+          syncGhost(node.body)
           node.body.setAttribute('pathLength', '1')
           node.body.style.strokeDasharray = '1 1'
           node.body.style.strokeDashoffset = String(1 - v.draw)
         } else {
           node.body.removeAttribute('pathLength')
           node.body.style.strokeDasharray = dash
+          node.body.style.strokeLinecap = cap
           node.body.style.strokeDashoffset = ''
+          setFlow(node.body)
+          syncGhost(node.body)
         }
         setColour(node, node.body, 'stroke', colours.stroke, ms)
         const mx = (from.x + to.x) / 2
@@ -958,6 +1029,8 @@
       if (node.type === 'rect') {
         node.body.setAttribute('x', -hw); node.body.setAttribute('y', -hh)
         node.body.setAttribute('width', 2 * hw); node.body.setAttribute('height', 2 * hh)
+        const corner = Math.max(0, Math.min(s.r || 0, hw, hh))
+        node.body.setAttribute('rx', corner); node.body.setAttribute('ry', corner)
       }
       if (node.type === 'circle') node.body.setAttribute('r', s.r)
       if (['rect', 'circle'].includes(node.type)) {
@@ -965,6 +1038,9 @@
         setColour(node, node.body, 'stroke', s.width ? colours.stroke : 'none', ms)
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
+        node.body.style.strokeLinecap = cap
+        setFlow(node.body)
+        syncGhost(node.body)
       }
       if (node.type === 'image') {
         for (const el of [node.image, node.body]) {
@@ -974,6 +1050,9 @@
         setColour(node, node.body, 'stroke', s.width ? colours.stroke : 'none', ms)
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
+        node.body.style.strokeLinecap = cap
+        setFlow(node.body)
+        syncGhost(node.body)
       }
       if (node.type === 'icon') {
         node.icon.setAttribute('x', -hw); node.icon.setAttribute('y', -hh)
@@ -1037,6 +1116,11 @@
       const s = { ...b }
       for (const key of ['x', 'y', 'w', 'h', 'r', 'width', 'font', 'angle', 'scale']) {
         if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], t)
+      }
+      // A line style change cross-fades from the old style to the new (see syncGhost)
+      if (a.linestyle !== b.linestyle && t < 1) {
+        s.fromStyle = a.linestyle
+        s.styleT = t
       }
       return s
     }

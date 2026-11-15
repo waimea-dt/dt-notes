@@ -146,7 +146,7 @@ Each token's type can be told from the token itself:
 | `colour` | `red`, `muted`, `#f80`, `none` | Named colours map to the site's theme variables, so light and dark themes work. |
 | `word` | `left`, `centre` | One of a fixed set for that property. |
 | resource | `image(_assets/goat.svg)`, `icon(laptop)` | Parentheses: something the shape loads. |
-| flag | `bold`, `dashed` | A keyword with no value. |
+| flag | `bold`, `dashed`, `dotted` | A keyword with no value. |
 
 Commas are treated as spaces, so `at 2, 3` is the same as `at 2 3`.
 
@@ -162,7 +162,7 @@ const PROPS = {
   from:   [['num', 'num'], ['id']],
   to:     [['num', 'num'], ['id']],
   size:   [['num', 'num'], ['num']],     // `size 2` = 2 × 2
-  radius: [['num']],
+  radius: [['num']],                     // circle radius, or a rect's corner radius
   gap:    [['num']],                     // only after a placement
   via:    [['num', 'num'], ['placement', 'id'], ['id']],   // repeatable: curve through these points
   delay:  [['num']],                     // seconds to wait before this line's change starts
@@ -174,7 +174,8 @@ const PROPS = {
   scale:  [['num']],                     // size multiplier about the centre
   align:  [['word']],                    // left | centre | right (`center` also accepted)
   bold:   [[]],
-  dashed: [[]],
+  solid / dashed / dotted: [[]],         // line style flags (solid is the default)
+  flow / flow-reverse / flow-off: [[]],  // march the dashes along the stroke
 }
 ```
 
@@ -186,7 +187,7 @@ If nothing matches, the error names the expected forms, e.g. *`from` expects `x 
 
 | Type | Example | Default size | Notes |
 |---|---|---|---|
-| `rect` | `a: rect "A" at 2 3 size 2 1` | 1 × 1 | |
+| `rect` | `a: rect "A" at 2 3 size 2 1 radius 0.1` | 1 × 1 | `radius` rounds the corners, in grid cells (`radius 0.1` is a tenth of a cell; at most half the shorter side, which gives a pill). Default 0 (square corners). |
 | `circle` | `c: circle "C" at 4 8 radius 2` | radius 0.5 | |
 | `text` | `t: text "Jim" at 7 1 align left` | n/a | A shape with no outline. `align` sets which side of the cell the text is anchored to. |
 | `line` | `l: line from a to c "Yes"` | n/a | No single position (§6.3). |
@@ -212,6 +213,35 @@ r1: arrow from a to b width 2 stroke blue
 a: circle "A" at 3 6 width 0.5
 r1: width +1
 ```
+
+### Line style
+
+`solid` (the default), `dashed` and `dotted` set how a line, arrow, rect or circle outline, or image border is drawn. They are flags, so a later step can switch between them, e.g. `l: dotted` then `l: solid`.
+
+- Dashes and dots scale with `width`. Dots are round.
+- Only one style per line: `dashed dotted` together is an error.
+- Not for `text` or `icon`.
+- **Changing style animates:** the old style cross-fades into the new one, at the line's speed and delay (backwards in reverse).
+
+```
+l: line from a to b dotted
+r: rect at 4 2 dashed width 2
+l: solid slow                 the dots fade into a solid line
+```
+
+### Flow
+
+`flow` makes a dashed or dotted stroke's pattern march along it, from the `from` end to the `to` end (round an outline, clockwise from its start); `flow-reverse` marches the other way; `flow-off` stops it.
+
+```
+link: line from browser to server dotted flow      data travelling to the server
+link: flow-reverse                                  ...and back
+link: flow-off
+```
+
+- It moves at a steady speed (two cells a second), keeps going between steps until changed, and loops seamlessly.
+- It shows only on a `dashed` or `dotted` stroke (`debug` warns on a solid one); it pauses while a line is drawing in (`draw`), and is off when the viewer prefers reduced motion.
+- Valid wherever a line style is (lines, arrows, rect and circle outlines, image borders).
 
 ### Angle and scale
 
