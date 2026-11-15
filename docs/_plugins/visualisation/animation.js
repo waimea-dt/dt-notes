@@ -39,7 +39,7 @@
   const FONT = 30                  // normal font size
   const PLACE_GAP = 0.25 * CELL    // default gap for above / below / left-of / right-of
   const EDGE_GAP = 0.06 * CELL     // gap between a line end and the edge of its shape
-  const HEAD = 0.2 * CELL          // arrowhead length at normal width
+  const HEAD = 0.2 * CELL          // arrowhead length at normal weight
   const CAPTION_MS = 500           // caption transition (the normal speed)
   const PLAY_PAUSE = 1500          // pause between beats while playing
 
@@ -51,8 +51,9 @@
   const ALIGNS = { left: 'left', centre: 'centre', center: 'centre', right: 'right' }
   const FLAGS = ['bold']
   const LINE_STYLES = ['solid', 'dashed', 'dotted']
-  // Each pattern as a visible dash and gap, in multiples of the stroke unit
-  const PATTERNS = { dashed: { d: 12, g: 9 }, dotted: { d: 0, g: 7.5 } }
+  // Each pattern as a visible mark and gap, in multiples of the line's thickness (w):
+  // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
+  const PATTERNS = { dashed: { d: 3, g: 3 }, dotted: { d: 1, g: 1 } }
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', 'flow-off': 'none' }
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
   const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
@@ -92,7 +93,8 @@
     size: ['rect', 'circle', 'image', 'icon'],
     radius: ['circle', 'rect'], // a rect's radius rounds its corners
     fill: ['rect', 'circle'],
-    stroke: ALL, width: ALL, font: ALL, bold: ALL,
+    stroke: ALL, weight: ALL, font: ALL, bold: ALL,
+    width: ['rect', 'image', 'icon'], height: ['rect', 'image', 'icon'],
     angle: BOXED, scale: BOXED,
     align: ['text'],
     linestyle: ['rect', 'circle', 'line', 'arrow', 'image'], // solid | dashed | dotted
@@ -104,26 +106,28 @@
   const PROPS = {
     at: {
       sigs: [['num', 'num'], ['placement', 'id'], ['id']],
-      help: '"x y", a shape id, or a placement and a shape id (e.g. "below a")',
+      help: '"x,y", a shape id, or a placement and a shape id (e.g. "below a")',
       build: (v, sig) => sig.length === 2 && sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
         : sig.length === 2 ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] },
     },
     x: { sigs: [['num']], help: 'a number' },
     y: { sigs: [['num']], help: 'a number' },
-    from: { sigs: point([]), help: '"x y" or a shape id', build: buildEnd },
-    to: { sigs: point([]), help: '"x y" or a shape id', build: buildEnd },
-    size: { sigs: [['num', 'num'], ['num']], help: '"w h" or one number', build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }) },
+    from: { sigs: point([]), help: '"x,y" or a shape id', build: buildEnd },
+    to: { sigs: point([]), help: '"x,y" or a shape id', build: buildEnd },
+    size: { sigs: [['num', 'num'], ['num']], help: '"w,h", "wxh" or one number', build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }) },
     radius: { sigs: [['num']], help: 'a number' },
     gap: { sigs: [['num']], help: 'a number' },
     delay: { sigs: [['num']], help: 'a number of seconds' },
     via: {
       sigs: [['num', 'num'], ['placement', 'id'], ['id']],
-      help: '"x y", a shape id, or a placement and a shape id (e.g. "via above b")',
+      help: '"x,y", a shape id, or a placement and a shape id (e.g. "via above b")',
       build: (v, sig) => PROPS.at.build(v, sig),
     },
     fill: { sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' },
     stroke: { sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' },
-    width: { sigs: [['num']], help: 'a number (a multiple of the normal thickness)' },
+    weight: { sigs: [['num']], help: 'a number (a multiple of the normal stroke thickness)' },
+    width: { sigs: [['num']], help: 'a number of cells' },
+    height: { sigs: [['num']], help: 'a number of cells' },
     font: { sigs: [['num']], help: 'a number (a multiple of the normal size)' },
     angle: { sigs: [['num']], help: 'a number of degrees (clockwise, 0 = upright)' },
     scale: { sigs: [['num']], help: 'a number (a multiple of the normal size)' },
@@ -273,7 +277,12 @@
       if (m[1] !== undefined) tokens.push({ kind: 'str', value: m[1].replace(/\\(.)/g, '$1') })
       else if (m[2] !== undefined) tokens.push({ kind: 'res', name: m[2].toLowerCase(), arg: m[3].trim() })
       else if (m[4] !== undefined) throw new Error('a label is missing its closing quote')
-      else tokens.push({ kind: 'word', value: m[5], lower: m[5].toLowerCase() })
+      else {
+        // "2x1" (a size) is two numbers
+        const pair = m[5].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
+        const words = pair ? [pair[1], pair[2]] : [m[5]]
+        words.forEach((word) => tokens.push({ kind: 'word', value: word, lower: word.toLowerCase() }))
+      }
     }
     return tokens
   }
@@ -506,7 +515,7 @@
   // ---------------------------------------------------------------------------
 
   function baseShape(type) {
-    const shape = { type, label: '', stroke: 'fg', fill: 'none', width: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
+    const shape = { type, label: '', stroke: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
     if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, r: 0, fill: 'bg' }) // r: corner radius
     if (type === 'circle') Object.assign(shape, { r: CELL / 2, fill: 'bg' })
     if (type === 'image') Object.assign(shape, { w: CELL, h: CELL, stroke: 'none' })
@@ -545,22 +554,29 @@
 
       if (props.label !== undefined) shape.label = props.label
       if (props.font) { check(shape, 'font'); shape.font = Math.max(0.1, num(props.font, shape.font, 1)) }
+      // size: absolute, or one signed number on a change (both sides by that amount). A relative
+      // pair (size +1x+0) isn't allowed: width / height change one side.
       if (props.size) {
         check(shape, 'size')
+        const relative = !creating && (props.size.w.rel || props.size.h.rel)
+        if (relative && !props.size.one) throw new Error('a relative size takes one number (e.g. "size +1"): use "width +1" / "height +1" to change one side')
         if (shape.type === 'circle') {
           if (!props.size.one) throw new Error('a circle takes one size (or use radius)')
-          shape.r = Math.max(0, num(props.size.w, shape.r * 2, CELL) / 2)
+          shape.r = Math.max(0, relative ? shape.r + (props.size.w.v * CELL) / 2 : (props.size.w.v * CELL) / 2)
         } else {
-          shape.w = Math.max(0, num(props.size.w, shape.w, CELL))
-          shape.h = Math.max(0, num(props.size.h, shape.h, CELL))
+          shape.w = Math.max(0, relative ? shape.w + props.size.w.v * CELL : props.size.w.v * CELL)
+          shape.h = Math.max(0, relative ? shape.h + props.size.h.v * CELL : props.size.h.v * CELL)
         }
       }
+      if (props.size && (props.width || props.height)) throw new Error('give either "size" or "width" / "height", not both')
+      if (props.width) { check(shape, 'width'); shape.w = Math.max(0, num(props.width, shape.w, CELL)) }
+      if (props.height) { check(shape, 'height'); shape.h = Math.max(0, num(props.height, shape.h, CELL)) }
       if (props.radius) { check(shape, 'radius'); shape.r = Math.max(0, num(props.radius, shape.r, CELL)) }
       if (props.fill) { check(shape, 'fill'); shape.fill = props.fill }
       if (props.stroke) shape.stroke = props.stroke
-      if (props.width) {
-        if (shape.type === 'text') warn('"width" has no effect on text')
-        shape.width = Math.max(0, num(props.width, shape.width, 1))
+      if (props.weight) {
+        if (shape.type === 'text') warn('"weight" has no effect on text')
+        shape.weight = Math.max(0, num(props.weight, shape.weight, 1))
       }
       if (props.align) { check(shape, 'align'); shape.align = props.align }
       if (props.angle) { check(shape, 'angle'); shape.angle = num(props.angle, shape.angle, 1) }
@@ -575,9 +591,9 @@
       if (props.layer) shape.layer = props.layer
 
       if (isLine) {
-        if (props.x || props.y || props.at?.kind === 'ref' || props.at?.kind === 'place') throw new Error('a line has no single position: use from / to, or "move +x +y" to shift it')
+        if (props.x || props.y || props.at?.kind === 'ref' || props.at?.kind === 'place') throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
         if (props.at) {
-          if (!props.at.x.rel || !props.at.y.rel || creating) throw new Error('a line has no single position: use from / to, or "move +x +y" to shift it')
+          if (!props.at.x.rel || !props.at.y.rel || creating) throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
           const ends = resolveEnds(shape, shapes)
           shape.from = { x: ends.from.x + props.at.x.v * CELL, y: ends.from.y + props.at.y.v * CELL }
           shape.to = { x: ends.to.x + props.at.x.v * CELL, y: ends.to.y + props.at.y.v * CELL }
@@ -592,13 +608,13 @@
             y: (current && rel(end.y, current.y, CELL, false)) ?? cellToPx(end.y.v),
           }
         }
-        if (creating && (!shape.from || !shape.to)) throw new Error('a line needs both ends, e.g. "from 2 3 to 7 8" or "from a to b"')
+        if (creating && (!shape.from || !shape.to)) throw new Error('a line needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"')
         if (props.via) throw new Error('"via" moves a shape along a curve, so it can\'t be used on a line')
         return null
       }
 
       if (props.via && creating) throw new Error('"via" only works when moving an existing shape')
-      if (props.via && !props.at && !props.x && !props.y) throw new Error('"via" needs a move too, e.g. "move 9 3 via 5 1"')
+      if (props.via && !props.at && !props.x && !props.y) throw new Error('"via" needs a move too, e.g. "move 9,3 via 5,1"')
       const start = { x: shape.x, y: shape.y }
 
       const pos = (value, current) => rel(value, current, CELL, creating) ?? cellToPx(value.v)
@@ -611,7 +627,7 @@
       }
       if (props.x) shape.x = pos(props.x, shape.x)
       if (props.y) shape.y = pos(props.y, shape.y)
-      if (creating && (shape.x === undefined || shape.y === undefined)) throw new Error('needs a position, e.g. "at 3 2"')
+      if (creating && (shape.x === undefined || shape.y === undefined)) throw new Error('needs a position, e.g. "at 3,2"')
       if (!props.via) return null
 
       // Via points: signed numbers are relative to where the shape starts.
@@ -634,7 +650,9 @@
         if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = (value.w.v * CELL) / 2; continue }
         if (key === 'size') { shape.w = value.w.v * CELL; shape.h = value.h.v * CELL; continue }
         if (key === 'radius') { shape.r = value.v * CELL; continue }
-        if (['width', 'font', 'angle', 'scale'].includes(key)) { shape[key] = value.v; continue }
+        if (key === 'width') { shape.w = value.v * CELL; continue }
+        if (key === 'height') { shape.h = value.v * CELL; continue }
+        if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = value.v; continue }
         shape[key] = value
       }
     }
@@ -910,10 +928,10 @@
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
     function drawNode(node, s, v, colours, ms, byId) {
       const { g } = node
-      const strokeWidth = STROKE * s.width
+      const strokeWidth = STROKE * s.weight
       // Dash patterns use round caps, so each drawn dash is shortened (and gap lengthened) by the
-      // stroke width to keep the visible lengths; a dash of 0 is a round dot. Scales with the width.
-      const k = STROKE * Math.max(s.width, 0.5)
+      // stroke width to keep the visible lengths; a dash of 0 is a round dot. Scales with the weight.
+      const k = STROKE * Math.max(s.weight, 0.5) // the line's thickness in px (w)
       const dashFor = (style) => {
         if (style === 'solid' || !PATTERNS[style]) return { dash: 'none', cap: '', dashLen: 0, gapLen: 0, plain: true }
         const dashLen = Math.max(0, PATTERNS[style].d * k - strokeWidth)
@@ -981,7 +999,7 @@
         const uy = len ? (to.y - from.y) / len : 0
         let end = to
         if (node.head) {
-          const head = Math.min(HEAD * (0.6 + 0.4 * s.width), len * 0.6)
+          const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), len * 0.6)
           const back = { x: to.x - ux * head, y: to.y - uy * head }
           const half = head * 0.55
           const drawn = { x: from.x + (to.x - from.x) * v.draw, y: from.y + (to.y - from.y) * v.draw }
@@ -1035,7 +1053,7 @@
       if (node.type === 'circle') node.body.setAttribute('r', s.r)
       if (['rect', 'circle'].includes(node.type)) {
         setColour(node, node.body, 'fill', colours.fill, ms)
-        setColour(node, node.body, 'stroke', s.width ? colours.stroke : 'none', ms)
+        setColour(node, node.body, 'stroke', s.weight ? colours.stroke : 'none', ms)
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
         node.body.style.strokeLinecap = cap
@@ -1047,7 +1065,7 @@
           el.setAttribute('x', -hw); el.setAttribute('y', -hh)
           el.setAttribute('width', 2 * hw); el.setAttribute('height', 2 * hh)
         }
-        setColour(node, node.body, 'stroke', s.width ? colours.stroke : 'none', ms)
+        setColour(node, node.body, 'stroke', s.weight ? colours.stroke : 'none', ms)
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
         node.body.style.strokeLinecap = cap
@@ -1057,7 +1075,7 @@
       if (node.type === 'icon') {
         node.icon.setAttribute('x', -hw); node.icon.setAttribute('y', -hh)
         node.icon.setAttribute('width', 2 * hw); node.icon.setAttribute('height', 2 * hh)
-        node.icon.setAttribute('stroke-width', 2 * s.width)
+        node.icon.setAttribute('stroke-width', 2 * s.weight)
         setColour(node, node.icon, 'stroke', colours.stroke, ms)
       }
       if (node.title && node.title.textContent !== s.label) node.title.textContent = s.label
@@ -1114,7 +1132,7 @@
 
     function interpolate(a, b, t) {
       const s = { ...b }
-      for (const key of ['x', 'y', 'w', 'h', 'r', 'width', 'font', 'angle', 'scale']) {
+      for (const key of ['x', 'y', 'w', 'h', 'r', 'weight', 'font', 'angle', 'scale']) {
         if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], t)
       }
       // A line style change cross-fades from the old style to the new (see syncGhost)

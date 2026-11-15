@@ -14,10 +14,10 @@ We start with an unsorted array.
 
 ```scene
 defaults: fill blue
-a5: rect "5" at 5 3 size 0.9
-a3: rect "3" at 6 3 size 0.9
-a8: rect "8" at 7 3 size 0.9
-a1: rect "1" at 8 3 size 0.9
+a5: rect "5" at 5,3 size 0.9
+a3: rect "3" at 6,3 size 0.9
+a8: rect "8" at 7,3 size 0.9
+a1: rect "1" at 8,3 size 0.9
 i: text "i" below a5
 ```
 
@@ -47,8 +47,8 @@ a5: fill green
 So they swap places...
 
 ```scene
-a5: move 6 3 via +0.5 -0.5
-a3: move 5 3 via -0.5 +0.5
+a5: move 6,3 via +0.5,-0.5
+a3: move 5,3 via -0.5,+0.5
 ```
 
 +++
@@ -76,11 +76,11 @@ Five cities, with a road between every pair. The salesperson starts at **A**.
 
 ```scene
 defaults: fill bg stroke fg
-a: circle "A" at 3 6
-b: circle "B" at 6 2
-c: circle "C" at 11 3
-d: circle "D" at 13 6
-e: circle "E" at 7 7
+a: circle "A" at 3,6
+b: circle "B" at 6,2
+c: circle "C" at 11,3
+d: circle "D" at 13,6
+e: circle "E" at 7,7
 
 defaults: stroke muted back
 ab: line from a to b
@@ -106,7 +106,7 @@ a: fill blue
 The first leg of the route.
 
 ```scene
-defaults: stroke blue width 2 slow
+defaults: stroke blue weight 2 slow
 r1: arrow from a to b draw
 s: move above b gap 0.1
 b: fill blue delay 0.25
@@ -182,11 +182,11 @@ Ask: how many different routes are there from A? (4 × 3 × 2 × 1 = 24.)
 Alice wants to send Bob a secret message over the internet, where anyone (like Eve) could be listening.
 
 ```scene
-net: line from 1 5.5 to 15 5.5 dashed stroke muted "the internet" back
-alice: icon(user) "Alice" at 2 3 scale 1.5
-bob: icon(user) "Bob" at 14 3 scale 1.5
-eve: icon(venetian-mask) "Eve" at 8 7 scale 1.2 stroke muted
-msg: rect "Hi Bob" at 4 5.5 size 2 0.8 fill blue
+net: line from 1,5.5 to 15,5.5 dashed stroke muted "the internet" back
+alice: icon(user) "Alice" at 2,3 scale 1.5
+bob: icon(user) "Bob" at 14,3 scale 1.5
+eve: icon(venetian-mask) "Eve" at 8,7 scale 1.2 stroke muted
+msg: rect "Hi Bob" at 4,5.5 size 2x0.8 fill blue
 ```
 
 ---
@@ -196,8 +196,8 @@ msg: rect "Hi Bob" at 4 5.5 size 2 0.8 fill blue
 Bob creates two matching keys. Anything locked with his **public key** can only be unlocked with his **private key**.
 
 ```scene
-pub: icon(key-round) "Public" at 12 1.5 stroke green pop
-priv: icon(key-round) "Private" at 15.2 1.5 stroke red pop
+pub: icon(key-round) "Public" at 12,1.5 stroke green pop
+priv: icon(key-round) "Private" at 15.2,1.5 stroke red pop
 ```
 
 +++
@@ -205,10 +205,10 @@ priv: icon(key-round) "Private" at 15.2 1.5 stroke red pop
 The private key never leaves Bob.
 
 ```scene
-priv: width 1.5 fast
+priv: weight 1.5 fast
 // copies of the public key, hidden under the original until Bob shares them
-pubA: icon(key-round) at 12 1.5 stroke green instant
-pubE: icon(key-round) at 12 1.5 stroke green instant
+pubA: icon(key-round) at 12,1.5 stroke green instant
+pubE: icon(key-round) at 12,1.5 stroke green instant
 ```
 
 ---
@@ -218,8 +218,8 @@ pubE: icon(key-round) at 12 1.5 stroke green instant
 It's public, so Bob gives a copy to anyone who asks: Alice, and Eve too.
 
 ```scene
-pubA: move 4 2 via 8 1.3 slow
-pubE: move 9.5 7 via 11 4.5 slow
+pubA: move 4,2 via 8,1.3 slow
+pubE: move 9.5,7 via 11,4.5 slow
 ```
 
 ---
@@ -239,7 +239,7 @@ lock: icon(lock) right-of msg stroke amber pop delay 1
 Even Alice can't unlock it now: a public key can only lock.
 
 ```scene
-pubA: move 4 2
+pubA: move 4,2
 ```
 
 ---
@@ -249,8 +249,8 @@ pubA: move 4 2
 The scrambled message travels across the internet.
 
 ```scene
-msg: move +8 +0 slow
-lock: move +8 +0 slow
+msg: move +8,+0 slow
+lock: move +8,+0 slow
 ```
 
 +++
@@ -279,7 +279,7 @@ msg: "Hi Bob" fill green delay 1
 His private key goes straight back where it was. It never travelled across the internet.
 
 ```scene
-priv: move 15.2 1.5 slow
+priv: move 15.2,1.5 slow
 ```
 
 ---
@@ -304,10 +304,10 @@ Ask: what would Bob need to do so Alice could also receive secret replies? (Alic
 The browser wants to visit **https://bank.example**. Before anything private is sent, the two sides agree a secret **session key**, without Eve ever learning it.
 
 ```scene
-net: line from 1 5.5 to 15 5.5 dashed stroke muted "the internet" back
-browser: icon(laptop) "Browser" at 2 3 scale 1.5
-server: icon(server) "bank.example" at 14 3 scale 1.5
-eve: icon(venetian-mask) "Eve" at 8 7 scale 1.2 stroke muted
+net: line from 1,5.5 to 15,5.5 dashed stroke muted "the internet" back
+browser: icon(laptop) "Browser" at 2,3 scale 1.5
+server: icon(server) "bank.example" at 14,3 scale 1.5
+eve: icon(venetian-mask) "Eve" at 8,7 scale 1.2 stroke muted
 ```
 
 ---
@@ -317,7 +317,7 @@ eve: icon(venetian-mask) "Eve" at 8 7 scale 1.2 stroke muted
 The browser says hello, listing the encryption methods it supports.
 
 ```scene
-m1: rect "Hello + options" at 4.5 5.5 size 3 0.8 font 0.8 fill blue pop
+m1: rect "Hello + options" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 ```
 
 +++
@@ -325,7 +325,7 @@ m1: rect "Hello + options" at 4.5 5.5 size 3 0.8 font 0.8 fill blue pop
 It's sent in the open. Eve can read it, but there's nothing secret in it.
 
 ```scene
-m1: move +7 +0 slow
+m1: move +7,+0 slow
 ```
 
 ---
@@ -336,17 +336,17 @@ The server picks a method and replies with its **certificate**: its **public key
 
 ```scene
 m1: remove
-pub: icon(key-round) "Public" at 12.3 0.9 stroke green pop
-priv: icon(key-round) "Private" at 15.3 0.9 stroke red pop
-m2: rect "Certificate" at 11.5 5.5 size 3 0.8 font 0.8 fill teal pop
+pub: icon(key-round) "Public" at 12.3,0.9 stroke green pop
+priv: icon(key-round) "Private" at 15.3,0.9 stroke red pop
+m2: rect "Certificate" at 11.5,5.5 size 3x0.8 font 0.8 fill teal pop
 pubB: icon(key-round) above m2 stroke green scale 0.8 pop
 ```
 
 +++
 
 ```scene
-m2: move -7 +0 slow
-pubB: move -7 +0 slow
+m2: move -7,+0 slow
+pubB: move -7,+0 slow
 ```
 
 ---
@@ -369,7 +369,7 @@ The browser makes a brand-new random **session key**.
 ```scene
 m2: remove
 check: remove
-sess: icon(key-round) "Session key" at 4.5 2 stroke amber pop
+sess: icon(key-round) "Session key" at 4.5,2 stroke amber pop
 ```
 
 +++
@@ -377,8 +377,8 @@ sess: icon(key-round) "Session key" at 4.5 2 stroke amber pop
 It locks a copy with the **server's public key**...
 
 ```scene
-pubB: move 4.5 4.3 slow
-m3: rect "session key" at 4.5 5.5 size 3 0.8 font 0.8 fill amber pop delay 1
+pubB: move 4.5,4.3 slow
+m3: rect "session key" at 4.5,5.5 size 3x0.8 font 0.8 fill amber pop delay 1
 lock3: icon(lock) right-of m3 stroke amber pop delay 1
 ```
 
@@ -388,8 +388,8 @@ lock3: icon(lock) right-of m3 stroke amber pop delay 1
 
 ```scene
 pubB: remove
-m3: move +7 +0 slow
-lock3: move +7 +0 slow
+m3: move +7,+0 slow
+lock3: move +7,+0 slow
 ```
 
 ---
@@ -402,7 +402,7 @@ The server unlocks it with its private key. Now both sides have the same session
 priv: move lock3 slow front
 lock3: remove pop delay 1
 m3: remove delay 1
-ssk: icon(key-round) "Session key" at 10 2 stroke amber pop delay 1.2
+ssk: icon(key-round) "Session key" at 10,2 stroke amber pop delay 1.2
 ```
 
 +++
@@ -412,8 +412,8 @@ The public and private keys have done their job. From here on, everything is loc
 ```scene
 pub: remove slow
 priv: remove slow
-sess: width 1.5
-ssk: width 1.5
+sess: weight 1.5
+ssk: weight 1.5
 ```
 
 ---
@@ -423,7 +423,7 @@ ssk: width 1.5
 The browser asks for the page...
 
 ```scene
-req: rect "GET /balance" at 4.5 5.5 size 3 0.8 font 0.8 fill blue pop
+req: rect "GET /balance" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 ```
 
 +++
@@ -440,8 +440,8 @@ lk4: icon(lock) right-of req stroke amber pop
 ...and sends it. Eve only sees scrambled data.
 
 ```scene
-req: move +7 +0 slow
-lk4: move +7 +0 slow
+req: move +7,+0 slow
+lk4: move +7,+0 slow
 ```
 
 ---
@@ -461,15 +461,15 @@ req: "GET /balance" fill blue
 
 ```scene
 req: remove
-res: rect "Zq!7x" at 11.5 5.5 size 3 0.8 font 0.8 fill amber pop
+res: rect "Zq!7x" at 11.5,5.5 size 3x0.8 font 0.8 fill amber pop
 lk5: icon(lock) left-of res stroke amber pop
 ```
 
 +++
 
 ```scene
-res: move -7 +0 slow
-lk5: move -7 +0 slow
+res: move -7,+0 slow
+lk5: move -7,+0 slow
 ```
 
 +++
@@ -507,11 +507,11 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 <animation grid="12x4">
 
 ```scene
-r: rect "rect" at 2 2 size 2 1 radius 0.15 dotted
-c: circle "circle" at 5 2 radius 0.8 fill blue
-t: text "text, left" at 8 1 align left stroke theme
-b: text "bold, 1.5x" at 8 3 font 1.5 bold
-i: icon(laptop) "icon" at 11 2
+r: rect "rect" at 2,2 size 2x1 radius 0.15 dotted
+c: circle "circle" at 5,2 radius 0.8 fill blue
+t: text "text, left" at 8,1 align left stroke theme
+b: text "bold, 1.5x" at 8,3 font 1.5 bold
+i: icon(laptop) "icon" at 11,2
 ```
 
 ---
@@ -522,7 +522,7 @@ Fills tween; labels cross-fade.
 
 ```scene
 r: fill green "done" solid
-c: fill pink stroke red width 2
+c: fill pink stroke red weight 2
 t: stroke amber "changed"
 i: stroke blue
 ```
@@ -535,7 +535,7 @@ i: stroke blue
 
 ```scene
 r: radius 0.5
-c: size 1 width 3
+c: size 1 weight 3
 ```
 
 </animation>
@@ -547,10 +547,10 @@ c: size 1 width 3
 ## Solid
 
 ```scene
-a: circle "A" at 2 2 radius 0.5
-b: circle "B" at 10 2 radius 0.5
-l: line from a to b width 2
-ring: circle at 6 3.3 radius 0.6 width 1.5 stroke teal
+a: circle "A" at 2,2 radius 0.5
+b: circle "B" at 10,2 radius 0.5
+l: line from a to b weight 2
+ring: circle at 6,3.3 radius 0.6 weight 1.5 stroke teal
 ```
 
 ---
@@ -608,6 +608,54 @@ ring: solid flow-off slow
 
 </animation>
 
+### Size, width and height
+
+<animation grid="12x4">
+
+## size
+
+`r: rect at 3,2 size 2x1`
+
+```scene
+r: rect "R" at 3,2 size 2x1 radius 0.1
+i: icon(laptop) "icon" at 9,2
+```
+
+---
+
+## width / height (relative)
+
+`r: width +2` and `i: height +1`
+
+```scene
+r: width +2
+i: height +1
+```
+
+---
+
+## size (absolute)
+
+`r: size 1x1` and `i: size 1`
+
+```scene
+r: size 1x1
+i: size 1
+```
+
+---
+
+## size (relative)
+
+`r: size +1` grows both sides by a cell; `i: size -0.25` shrinks it.
+
+```scene
+r: size +1
+i: size -0.25
+```
+
+</animation>
+
 ### Angle and scale
 
 <animation grid="12x5">
@@ -617,12 +665,12 @@ ring: solid flow-off slow
 Images, shapes, text and icons can be turned (degrees clockwise, 0 = upright) and scaled.
 
 ```scene
-mac: image(../_assets/macs/macintosh.svg) at 2 3 size 2 angle -15
-r: rect "45°" at 5 2 angle 45
-c: rect "wide" at 5 4 size 2 1 angle 90 scale 0.8
-t: text "Tilted text" at 8 1 angle 20 font 1.2
-cog: icon(cog) at 8 4 scale 1.5
-box: rect "B" at 11 3
+mac: image(../_assets/macs/macintosh.svg) at 2,3 size 2 angle -15
+r: rect "45°" at 5,2 angle 45
+c: rect "wide" at 5,4 size 2x1 angle 90 scale 0.8
+t: text "Tilted text" at 8,1 angle 20 font 1.2
+cog: icon(cog) at 8,4 scale 1.5
+box: rect "B" at 11,3
 l: arrow from r to box "edge"
 ```
 
@@ -660,9 +708,9 @@ cog: angle -360 slow
 ## Start
 
 ```scene
-a: circle "a" at 2 4 radius 0.4 fill blue
-b: rect "b" at 6 3
-c: circle "c" at 2 2.5 radius 0.4 fill pink
+a: circle "a" at 2,4 radius 0.4 fill blue
+b: rect "b" at 6,3
+c: circle "c" at 2,2.5 radius 0.4 fill pink
 l: line from a to c dashed
 ```
 
@@ -670,31 +718,31 @@ l: line from a to c dashed
 
 ## One via point
 
-`a: move 8 4 via 5 1` — a semicircle over `b` (the via point is centred, half the distance away).
+`a: move 8,4 via 5,1` — a semicircle over `b` (the via point is centred, half the distance away).
 
 ```scene
-a: move 8 4 via 5 1 slow
+a: move 8,4 via 5,1 slow
 ```
 
 ---
 
 ## Several via points
 
-`c: move 10 2.5 via 4 4 via 6 2.5 via 8 1` — zig-zag via points give a sine-like wave, at an even speed. The dashed line follows both ends.
+`c: move 10,2.5 via 4,4 via 6,2.5 via 8,1` — zig-zag via points give a sine-like wave, at an even speed. The dashed line follows both ends.
 
 ```scene
-c: move 10 2.5 via 4 4 via 6 2.5 via 8 1 slow
+c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 slow
 ```
 
 ---
 
 ## Via a shape, and relative
 
-`a` loops through the spot below `b`; `c` goes `via -2 +2` (relative to where it starts).
+`a` loops through the spot below `b`; `c` goes `via -2,+2` (relative to where it starts).
 
 ```scene
-a: move 2 4 via below b slow
-c: move 2 2.5 via -2 +2 slow
+a: move 2,4 via below b slow
+c: move 2,2.5 via -2,+2 slow
 ```
 
 </animation>
@@ -704,12 +752,12 @@ c: move 2 2.5 via -2 +2 slow
 <animation grid="8x2" debug>
 
 ```scene
-a: rect at 2 1
-b: rect at 4 1 via 5 2
-a: fill blue via 3 2
-l: line from a to 6 1 via 3 2
-defaults: via 2 2
-a: move 6 1 via zz
+a: rect at 2,1
+b: rect at 4,1 via 5,2
+a: fill blue via 3,2
+l: line from a to 6,1 via 3,2
+defaults: via 2,2
+a: move 6,1 via zz
 ```
 
 </animation>
@@ -723,9 +771,9 @@ a: move 6 1 via zz
 The debug grid shows rows, columns and ids.
 
 ```scene
-mac: image(../_assets/macs/macintosh.svg) "A Mac" at 3 2 size 2
-box: rect "box" at 9 2
-l: line from 2 5 to 6 5 "line"
+mac: image(../_assets/macs/macintosh.svg) "A Mac" at 3,2 size 2
+box: rect "box" at 9,2
+l: line from 2,5 to 6,5 "line"
 p: arrow from mac to box
 ```
 
@@ -733,10 +781,10 @@ p: arrow from mac to box
 
 ## Relative moves
 
-`box: move +1 +2`, `mac: x +3`.
+`box: move +1,+2`, `mac: x +3`.
 
 ```scene
-box: move +1 +2
+box: move +1,+2
 mac: x +3
 ```
 
@@ -744,10 +792,10 @@ mac: x +3
 
 ## One end of a line
 
-`l: to +4 -1` moves only the end; the arrow follows `box`.
+`l: to +4,-1` moves only the end; the arrow follows `box`.
 
 ```scene
-l: to +4 -1
+l: to +4,-1
 box: y -1
 ```
 
@@ -756,8 +804,8 @@ box: y -1
 ## Shift a whole line
 
 ```scene
-l: move +0 -1
-p: to 11 1
+l: move +0,-1
+p: to 11,1
 ```
 
 </animation>
@@ -771,15 +819,15 @@ p: to 11 1
 Each shape enters with a different effect.
 
 ```scene
-f: rect "fade" at 2 2
+f: rect "fade" at 2,2
 ```
 
 ---
 
 ```scene
-p: rect "pop" at 5 2 pop
-d: arrow from 1 3 to 11 3 draw slow
-s: circle "slide" at 9 2 slide
+p: rect "pop" at 5,2 pop
+d: arrow from 1,3 to 11,3 draw slow
+s: circle "slide" at 9,2 slide
 ```
 
 +++
@@ -798,13 +846,13 @@ s: remove slide
 
 ```scene
 d: remove instant
-sl: rect "slow" at 2 2
+sl: rect "slow" at 2,2
 ```
 
 +++
 
 ```scene
-sl: move 11 2 slow
+sl: move 11,2 slow
 ```
 
 </animation>
@@ -816,9 +864,9 @@ sl: move 11 2 slow
 ## Back, normal and front
 
 ```scene
-a: rect "normal" at 4 2 size 3 1 fill blue
-b: circle at 3 2 radius 1 fill amber back
-c: circle at 6 2 radius 1 fill pink front
+a: rect "normal" at 4,2 size 3x1 fill blue
+b: circle at 3,2 radius 1 fill amber back
+c: circle at 6,2 radius 1 fill pink front
 ```
 
 ---
@@ -839,8 +887,8 @@ c: back
 <animation grid="fit">
 
 ```scene
-a: rect "A" at 3 3
-b: rect "B" at 6 3
+a: rect "A" at 3,3
+b: rect "B" at 6,3
 l: arrow from a to b "fit"
 ```
 
@@ -865,17 +913,20 @@ Bad lines are listed under the animation and skipped; the rest still draws.
 <animation grid="8x3" debug>
 
 ```scene
-a: rect "A" at 2 2
-b: rect at 9 9
-c: blob at 3 3
+a: rect "A" at 2,2
+b: rect at 9,9
+c: blob at 3,3
 a: wibble 3
 d: line from a to zz
-e: rect "x" "y" at 4 2
-f: circle at 5 2 size 1 2
-g: rect at 6 2 x 3
+e: rect "x" "y" at 4,2
+f: circle at 5,2 size 1x2
+g: rect at 6,2 x 3
+h: rect at 7,2
+h: size +1x0
+k: circle at 1,1 width 2
 defaults: fill none
 defaults: fill none
-remove: rect at 1 1
+remove: rect at 1,1
 ```
 
 </animation>
@@ -887,7 +938,7 @@ This block must stay as code:
 ````markdown
 <animation>
 ```scene
-a: rect at 2 3
+a: rect at 2,3
 ```
 </animation>
 ````
