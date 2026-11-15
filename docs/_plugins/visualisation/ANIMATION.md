@@ -321,7 +321,8 @@ a: move 6 4 via above b          through the spot above b
 ```
 
 - `via` takes the same values as `at`: `x y`, a shape id, or a placement and shape id. It can be repeated.
-- The curve is a smooth spline through the start, every via point and the end, and the shape moves along it at an **even speed** (the usual easing applies to the whole journey).
+- The curve is made of circular arcs, so it stays rounded: with **one** via point it is the exact arc of the circle through the start, the via point and the end (a via point centred between them, half their distance away, gives a semicircle); with **several**, each section blends the circles through neighbouring points, so zig-zag via points give a sine-like wave.
+- The shape moves along the curve at an **even speed** (the usual easing applies to the whole journey).
 - Only on a line that **moves an existing shape** (`at` / `move` / `goto`, or `x` / `y`). It's an error when creating a shape, on a line without a position change, on lines and arrows, and in `defaults:`.
 - Going back retraces the same curve. Line ends attached to the shape follow it along the curve.
 

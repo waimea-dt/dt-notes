@@ -74,37 +74,37 @@
         padding: var(--padding-small) var(--padding-large) var(--padding);
         border-top: 1px solid var(--anim-line);
         overflow: hidden;
-    }
 
-    .anim-page {
-        grid-area: 1 / 1;
-        visibility: hidden;
-        min-width: 0;
-
-        &.is-active,
-        &.is-leaving {
-            visibility: visible;
-        }
-    }
-
-    .anim-heading > * {
-        margin: 0;
-        padding: 0;
-        border: none;
-        font-size: var(--font-size-xlarge);
-    }
-
-    .anim-body > .anim-part {
-        &:not(.is-shown, .is-leaving) {
+        .anim-page {
+            grid-area: 1 / 1;
             visibility: hidden;
+            min-width: 0;
+
+            &.is-active,
+            &.is-leaving {
+                visibility: visible;
+            }
+
+            .anim-heading > * {
+                margin: 0;
+                padding: 0;
+                border: none;
+                font-size: var(--font-size-xlarge);
+            }
+
+            .anim-body > .anim-part {
+                &:not(.is-shown, .is-leaving) {
+                    visibility: hidden;
+                }
+
+                > :first-child { margin-top: var(--space-tiny); }
+                > :last-child { margin-bottom: 0; }
+            }
+
+            &.is-leaving:not(.is-active) .anim-part:not(.is-shown) {
+                visibility: hidden;
+            }
         }
-
-        > :first-child { margin-top: var(--space-tiny); }
-        > :last-child { margin-bottom: 0; }
-    }
-
-    .anim-page.is-leaving:not(.is-active) .anim-part:not(.is-shown) {
-        visibility: hidden;
     }
 
     /* Controls: back, step dots, next and play on the left; notes and full screen on the right.
@@ -116,43 +116,43 @@
         gap: var(--gap-small);
         padding: var(--padding-small) var(--padding);
         border-top: 1px solid var(--anim-line);
-    }
 
-    .anim-spacer {
-        flex: 1;
-    }
-
-    button.anim-notes-btn.is-on {
-        --butt-action-color: var(--butt-bg-active);
-    }
-
-    .anim-dots {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.4em;
-        padding-inline: var(--space-tiny);
-    }
-
-    button.anim-dot {
-        inline-size: 0.7em;
-        block-size: 0.7em;
-        min-inline-size: 0;
-        min-block-size: 0;
-        padding: 0;
-        border: 2px solid var(--anim-muted);
-        border-radius: 50%;
-        background: transparent;
-        cursor: pointer;
-
-        &:hover {
-            background: transparent;
-            border-color: var(--anim-accent);
+        .anim-spacer {
+            flex: 1;
         }
 
-        &.is-current {
-            background: var(--anim-accent);
-            border-color: var(--anim-accent);
+        button.anim-notes-btn.is-on {
+            --butt-action-color: var(--butt-bg-active);
+        }
+
+        .anim-dots {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.4em;
+            padding-inline: var(--space-tiny);
+        }
+
+        button.anim-dot {
+            inline-size: 0.9em;
+            block-size: 0.9em;
+            min-inline-size: 0;
+            min-block-size: 0;
+            padding: 0;
+            border: 2px solid var(--anim-muted);
+            border-radius: 50%;
+            background: transparent;
+            cursor: pointer;
+
+            &:hover {
+                background: transparent;
+                border-color: var(--anim-accent);
+            }
+
+            &.is-current {
+                background: var(--anim-accent);
+                border-color: var(--anim-accent);
+            }
         }
     }
 

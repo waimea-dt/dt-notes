@@ -13,7 +13,7 @@ Click an animation to give it focus, then use ← / → to step and `F` for full
 We start with an unsorted array.
 
 ```scene
-defaults: fill none fast
+defaults: fill none
 a0: rect "5" at 5 3
 a1: rect "3" at 6 3
 a2: rect "8" at 7 3
@@ -257,7 +257,7 @@ cog: angle -360 slow
 ```scene
 a: circle "a" at 2 4 radius 0.4 fill blue
 b: rect "b" at 6 3
-c: circle "c" at 2 2 radius 0.4 fill pink
+c: circle "c" at 2 2.5 radius 0.4 fill pink
 l: line from a to c dashed
 ```
 
@@ -265,20 +265,20 @@ l: line from a to c dashed
 
 ## One via point
 
-`a: move 10 4 via 6 1` curves over the top of `b`.
+`a: move 8 4 via 5 1` — a semicircle over `b` (the via point is centred, half the distance away).
 
 ```scene
-a: move 10 4 via 6 1 slow
+a: move 8 4 via 5 1 slow
 ```
 
 ---
 
 ## Several via points
 
-`c: move 10 2 via 4 5 via 8 0.5` — an S-bend, at an even speed. The dashed line follows both ends.
+`c: move 10 2.5 via 4 4 via 6 2.5 via 8 1` — zig-zag via points give a sine-like wave, at an even speed. The dashed line follows both ends.
 
 ```scene
-c: move 10 2 via 4 5 via 8 0.5 slow
+c: move 10 2.5 via 4 4 via 6 2.5 via 8 1 slow
 ```
 
 ---
@@ -289,7 +289,7 @@ c: move 10 2 via 4 5 via 8 0.5 slow
 
 ```scene
 a: move 2 4 via below b slow
-c: move 2 2 via -2 +2 slow
+c: move 2 2.5 via -2 +2 slow
 ```
 
 </animation>

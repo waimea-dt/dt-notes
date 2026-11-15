@@ -434,19 +434,45 @@
     }
   }
 
-  // A smooth curve through points (Catmull-Rom spline), sampled into a polyline with cumulative
-  // lengths so a shape can move along it at an even speed.
+  // An arc of the circle through a, b, c, from p to q, turning the way a -> b -> c goes.
+  // Returns t (0-1) -> point, or null when the three points are in a straight line.
+  function arcThrough(a, b, c, p, q) {
+    const d = 2 * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y))
+    if (Math.abs(d) < 1e-6) return null
+    const sq = (pt) => pt.x * pt.x + pt.y * pt.y
+    const cx = (sq(a) * (b.y - c.y) + sq(b) * (c.y - a.y) + sq(c) * (a.y - b.y)) / d
+    const cy = (sq(a) * (c.x - b.x) + sq(b) * (a.x - c.x) + sq(c) * (b.x - a.x)) / d
+    const r = Math.hypot(a.x - cx, a.y - cy)
+    const ccw = (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x) > 0 // increasing angle
+    const from = Math.atan2(p.y - cy, p.x - cx)
+    let sweep = Math.atan2(q.y - cy, q.x - cx) - from
+    if (ccw) while (sweep <= 0) sweep += 2 * Math.PI
+    else while (sweep >= 0) sweep -= 2 * Math.PI
+    return (t) => ({ x: cx + r * Math.cos(from + sweep * t), y: cy + r * Math.sin(from + sweep * t) })
+  }
+
+  // A smooth, rounded curve through points, sampled into a polyline with cumulative lengths so a
+  // shape can move along it at an even speed. Each section between two points blends the circle
+  // through its previous three points with the circle through its next three, so one via point
+  // gives an exact circular arc and zig-zag via points give a sine-like wave.
   function buildPath(points) {
-    const SAMPLES = 24
-    const p = (i) => points[Math.max(0, Math.min(points.length - 1, i))]
-    const curve = (a, b, c, d, t) => 0.5 * (2 * b + (c - a) * t + (2 * a - 5 * b + 4 * c - d) * t * t + (3 * b - a - 3 * c + d) * t * t * t)
+    const SAMPLES = 32
+    const straight = (p, q) => (t) => ({ x: lerp(p.x, q.x, t), y: lerp(p.y, q.y, t) })
     const samples = [{ ...points[0], at: 0 }]
     for (let i = 0; i < points.length - 1; i++) {
+      const p = points[i]
+      const q = points[i + 1]
+      const left = i > 0 ? arcThrough(points[i - 1], p, q, p, q) || straight(p, q) : null
+      const right = i + 2 < points.length ? arcThrough(p, q, points[i + 2], p, q) || straight(p, q) : null
       for (let k = 1; k <= SAMPLES; k++) {
         const t = k / SAMPLES
-        const pt = {
-          x: curve(p(i - 1).x, p(i).x, p(i + 1).x, p(i + 2).x, t),
-          y: curve(p(i - 1).y, p(i).y, p(i + 1).y, p(i + 2).y, t),
+        let pt
+        if (left && right) {
+          const a = left(t)
+          const b = right(t)
+          pt = { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) }
+        } else {
+          pt = (left || right || straight(p, q))(t)
         }
         const last = samples[samples.length - 1]
         samples.push({ ...pt, at: last.at + Math.hypot(pt.x - last.x, pt.y - last.y) })
