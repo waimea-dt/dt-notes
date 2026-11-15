@@ -295,6 +295,211 @@ Ask: what would Bob need to do so Alice could also receive secret replies? (Alic
 
 </animation>
 
+## HTTPS: TLS Handshake
+
+<animation grid="16x8">
+
+# HTTPS: The TLS Handshake
+
+The browser wants to visit **https://bank.example**. Before anything private is sent, the two sides agree a secret **session key**, without Eve ever learning it.
+
+```scene
+net: line from 1 5.5 to 15 5.5 dashed stroke muted "the internet" back
+browser: icon(laptop) "Browser" at 2 3 scale 1.5
+server: icon(server) "bank.example" at 14 3 scale 1.5
+eve: icon(venetian-mask) "Eve" at 8 7 scale 1.2 stroke muted
+```
+
+---
+
+## 1. Client Hello
+
+The browser says hello, listing the encryption methods it supports.
+
+```scene
+m1: rect "Hello + options" at 4.5 5.5 size 3 0.8 font 0.8 fill blue pop
+```
+
++++
+
+It's sent in the open. Eve can read it, but there's nothing secret in it.
+
+```scene
+m1: move +7 +0 slow
+```
+
+---
+
+## 2. Server Hello and certificate
+
+The server picks a method and replies with its **certificate**: its **public key**, signed by a certificate authority (CA) that browsers trust. Its **private key** stays on the server.
+
+```scene
+m1: remove
+pub: icon(key-round) "Public" at 12.3 0.9 stroke green pop
+priv: icon(key-round) "Private" at 15.3 0.9 stroke red pop
+m2: rect "Certificate" at 11.5 5.5 size 3 0.8 font 0.8 fill teal pop
+pubB: icon(key-round) above m2 stroke green scale 0.8 pop
+```
+
++++
+
+```scene
+m2: move -7 +0 slow
+pubB: move -7 +0 slow
+```
+
+---
+
+## 3. The browser checks the certificate
+
+It checks the CA's signature, the name **bank.example** and the dates. A fake certificate fails here, so Eve can't pretend to be the bank.
+
+```scene
+m2: fill green delay 0.25
+check: icon(badge-check) left-of m2 stroke green pop
+```
+
+---
+
+## 4. Key exchange
+
+The browser makes a brand-new random **session key**.
+
+```scene
+m2: remove
+check: remove
+sess: icon(key-round) "Session key" at 4.5 2 stroke amber pop
+```
+
++++
+
+It locks a copy with the **server's public key**...
+
+```scene
+pubB: move 4.5 4.3 slow
+m3: rect "session key" at 4.5 5.5 size 3 0.8 font 0.8 fill amber pop delay 1
+lock3: icon(lock) right-of m3 stroke amber pop delay 1
+```
+
++++
+
+...and sends it. Eve sees it pass, but only the server's **private key** can unlock it.
+
+```scene
+pubB: remove
+m3: move +7 +0 slow
+lock3: move +7 +0 slow
+```
+
+---
+
+## 5. Both sides share the session key
+
+The server unlocks it with its private key. Now both sides have the same session key, and Eve doesn't.
+
+```scene
+priv: move lock3 slow front
+lock3: remove pop delay 1
+m3: remove delay 1
+ssk: icon(key-round) "Session key" at 10 2 stroke amber pop delay 1.2
+```
+
++++
+
+The public and private keys have done their job. From here on, everything is locked and unlocked with the session key. This is **symmetric encryption**: much faster than public and private keys.
+
+```scene
+pub: remove slow
+priv: remove slow
+sess: width 1.5
+ssk: width 1.5
+```
+
+---
+
+## 6. An encrypted request
+
+The browser asks for the page...
+
+```scene
+req: rect "GET /balance" at 4.5 5.5 size 3 0.8 font 0.8 fill blue pop
+```
+
++++
+
+...locks it with the session key...
+
+```scene
+req: "k#2@Lp" fill amber
+lk4: icon(lock) right-of req stroke amber pop
+```
+
++++
+
+...and sends it. Eve only sees scrambled data.
+
+```scene
+req: move +7 +0 slow
+lk4: move +7 +0 slow
+```
+
+---
+
+## 7. An encrypted response
+
+The server unlocks the request with its copy of the session key...
+
+```scene
+lk4: remove pop
+req: "GET /balance" fill blue
+```
+
++++
+
+...and locks its response the same way before sending it back.
+
+```scene
+req: remove
+res: rect "Zq!7x" at 11.5 5.5 size 3 0.8 font 0.8 fill amber pop
+lk5: icon(lock) left-of res stroke amber pop
+```
+
++++
+
+```scene
+res: move -7 +0 slow
+lk5: move -7 +0 slow
+```
+
++++
+
+The browser unlocks it and shows the page.
+
+```scene
+lk5: remove pop
+res: "Balance: $42" fill green
+```
+
+---
+
+## The padlock
+
+That padlock in the address bar means all of this happened: the certificate checked out, and everything since has been encrypted with the session key.
+
+```scene
+pad: icon(lock) "https://" above browser stroke green pop
+```
+
+- **Public and private keys** are only used to share the session key safely.
+- The **session key** (symmetric encryption) does the fast work of locking every request and response.
+- The **certificate** proves the server really is bank.example.
+
+Note:
+This is the older RSA-style key exchange, as it's the easiest to follow. Modern TLS 1.3 agrees the session key with Diffie-Hellman instead (each side contributes a part, so the session key is never sent at all), but the overall shape is the same: hello, certificate, agree a key, then encrypt everything with it.
+
+</animation>
+
 ## Feature Tests
 
 ### Shapes, labels and colours
