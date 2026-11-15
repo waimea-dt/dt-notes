@@ -71,8 +71,8 @@ defaults: fill bg stroke fg
 a: circle "A" at 3 6
 b: circle "B" at 6 2
 c: circle "C" at 11 3
-d: circle "D" at 13 7
-e: circle "E" at 7 8
+d: circle "D" at 13 6
+e: circle "E" at 7 7
 
 defaults: stroke muted back
 ab: line from a to b
@@ -87,7 +87,7 @@ ce: line from c to e
 de: line from d to e
 
 defaults: reset
-s: icon(user) above a gap 0.1 pop front
+s: icon(user) left-of a gap 0.1 pop front
 a: fill blue
 ```
 
@@ -120,7 +120,7 @@ c: fill blue delay 0.25
 
 ```scene
 r3: arrow from c to d draw
-s: move above d gap 0.1
+s: move right-of d gap 0.1
 d: fill blue delay 0.25
 ```
 
@@ -132,7 +132,7 @@ Every city has now been visited.
 
 ```scene
 r4: arrow from d to e draw
-s: move above e gap 0.1
+s: move below e gap 0.1
 e: fill blue delay 0.25
 ```
 
@@ -144,7 +144,7 @@ The salesperson returns home to finish the tour.
 
 ```scene
 r5: arrow from e to a draw
-s: move above a gap 0.1
+s: move left-of a gap 0.1
 a: fill green delay 0.25
 ```
 

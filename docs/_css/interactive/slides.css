@@ -67,6 +67,17 @@ html.slides-receiver {
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
 
+    /* Subtle highlight on the deck reveal.js is listening to for keys (it adds .focused to the
+       clicked deck); matches the animation plugin's focus outline */
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    transition: outline-color 0.2s ease;
+
+    &.focused,
+    &:focus-within {
+        outline-color: color-mix(in srgb, var(--theme-color) 55%, transparent);
+    }
+
     /* Hide raw slide content until reveal.js has laid it out */
     &:not([data-slides-ready]) > .slides {
         visibility: hidden;

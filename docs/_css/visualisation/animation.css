@@ -25,9 +25,14 @@
         display: none !important;
     }
 
-    &:focus-visible {
-        outline: 2px solid var(--anim-accent);
-        outline-offset: 2px;
+    /* Subtle highlight while the animation (or one of its buttons) has focus, i.e. when the
+       arrow keys and F control it */
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    transition: outline-color 0.2s ease;
+
+    &:focus-within {
+        outline-color: color-mix(in srgb, var(--anim-accent) 55%, transparent);
     }
 
     /* Title (the step 1 `#`) */
@@ -167,6 +172,9 @@
             content: 'No notes for this step.';
             color: var(--anim-muted);
         }
+
+        > :first-child { margin-top: 0; }
+        > :last-child { margin-bottom: 0; }
     }
 
     /* Errors and debug warnings */

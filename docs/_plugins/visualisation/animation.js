@@ -1248,11 +1248,10 @@
     const notesPanel = widget.appendChild(document.createElement('div'))
     notesPanel.className = 'anim-notes'
     notesPanel.hidden = true
-    const notes = steps.map((step) => {
-      const panel = document.createElement('div')
-      if (step.notes) panel.append(...step.notes.childNodes)
-      return panel
-    })
+    // Each step's note nodes go straight into the panel (no wrapper, no whitespace-only text), so a
+    // step without notes leaves the panel :empty.
+    const notes = steps.map((step) => [...(step.notes?.childNodes || [])]
+      .filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim()))
 
     const messages = [...errors.map((m) => ['error', m]), ...(debug ? warnings.map((m) => ['warning', m]) : [])]
     if (messages.length) {
@@ -1294,7 +1293,7 @@
         dot.classList.toggle('is-current', i === step)
         dot.setAttribute('aria-current', i === step ? 'step' : 'false')
       })
-      if (notesButton) notesPanel.replaceChildren(notes[step])
+      if (notesButton) notesPanel.replaceChildren(...notes[step])
     }
 
     function animateEl(el, frames, ms) {
