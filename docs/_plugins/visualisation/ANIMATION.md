@@ -73,7 +73,7 @@ Within one beat, all changes play **at the same time**.
 ├───────────────────────────────────────┤
 │  Step heading                         │  caption: `##` and text
 │  Caption text                         │
-│  Caption text              |‹ ‹ ▷ › │  rewind / back / play / next float over the corner
+│  Caption text                |‹ ‹ ▷ › │  controls
 └━━━━━━━━━━━━───────────────────────────┘  progress bar
 ```
 

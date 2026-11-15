@@ -173,6 +173,128 @@ Ask: how many different routes are there from A? (4 × 3 × 2 × 1 = 24.)
 
 </animation>
 
+## Public-Key Encryption
+
+<animation grid="16x8">
+
+# Public-Key Encryption
+
+Alice wants to send Bob a secret message over the internet, where anyone (like Eve) could be listening.
+
+```scene
+net: line from 1 5.5 to 15 5.5 dashed stroke muted "the internet" back
+alice: icon(user) "Alice" at 2 3 scale 1.5
+bob: icon(user) "Bob" at 14 3 scale 1.5
+eve: icon(venetian-mask) "Eve" at 8 7 scale 1.2 stroke muted
+msg: rect "Hi Bob" at 4 5.5 size 2 0.8 fill blue
+```
+
+---
+
+## Bob makes a key pair
+
+Bob creates two matching keys. Anything locked with his **public key** can only be unlocked with his **private key**.
+
+```scene
+pub: icon(key-round) "Public" at 12 1.5 stroke green pop
+priv: icon(key-round) "Private" at 15.2 1.5 stroke red pop
+```
+
++++
+
+The private key never leaves Bob.
+
+```scene
+priv: width 1.5 fast
+// copies of the public key, hidden under the original until Bob shares them
+pubA: icon(key-round) at 12 1.5 stroke green instant
+pubE: icon(key-round) at 12 1.5 stroke green instant
+```
+
+---
+
+## Bob shares his public key
+
+It's public, so Bob gives a copy to anyone who asks: Alice, and Eve too.
+
+```scene
+pubA: move 4 2 via 8 1.3 slow
+pubE: move 9.5 7 via 11 4.5 slow
+```
+
+---
+
+## Alice locks the message
+
+Alice locks her message with **Bob's public key**. It's now scrambled.
+
+```scene
+pubA: move above msg slow
+msg: "x7#q!" fill amber delay 1
+lock: icon(lock) right-of msg stroke amber pop delay 1
+```
+
++++
+
+Even Alice can't unlock it now: a public key can only lock.
+
+```scene
+pubA: move 4 2
+```
+
+---
+
+## Sending it
+
+The scrambled message travels across the internet.
+
+```scene
+msg: move +8 +0 slow
+lock: move +8 +0 slow
+```
+
++++
+
+Eve copies it as it passes, but her public key can't unlock it. All she sees is `x7#q!`.
+
+```scene
+eve: stroke red
+pubE: angle 20 fast
+```
+
+---
+
+## Bob unlocks it
+
+Only **Bob's private key** can unlock the message.
+
+```scene
+priv: move lock slow front
+lock: remove pop delay 1
+msg: "Hi Bob" fill green delay 1
+```
+
++++
+
+His private key goes straight back where it was. It never travelled across the internet.
+
+```scene
+priv: move 15.2 1.5 slow
+```
+
+---
+
+## Why it works
+
+- The **public key** locks, and can be shared with anyone.
+- Only the matching **private key** unlocks, and it is never shared.
+- So Eve, with the public key and the scrambled message, still can't read it.
+
+Note:
+Ask: what would Bob need to do so Alice could also receive secret replies? (Alice makes her own key pair and shares her public key.)
+
+</animation>
+
 ## Feature Tests
 
 ### Shapes, labels and colours
