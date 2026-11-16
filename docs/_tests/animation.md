@@ -28,9 +28,8 @@ i: text "i" below a5
 Is `5` bigger than `3`?
 
 ```anim
-a5: fill amber
-a3: fill amber
-pair: group a5 a3 highlight spotlight
+a5: highlight spotlight
+a3: highlight spotlight
 ```
 
 +++
@@ -38,7 +37,7 @@ pair: group a5 a3 highlight spotlight
 Yes it is!
 
 ```anim
-a5: fill green pulse
+a5: fill amber pulse
 ```
 
 ---
@@ -57,14 +56,93 @@ a3: move 5,3 via -0.5,+0.5
 ...and `i` moves on.
 
 ```anim
-a5: fill blue
-a3: fill none
-pair: ungroup
+a5: fill blue highlight clear
+a3: fill blue highlight clear
 i: move below a5
 ```
 
 Note:
 Ask the class to predict the next comparison before advancing.
+
+---
+
+## Compare the next pair
+
+Is `5` bigger than `8`?
+
+```anim
+a5: highlight spotlight
+a8: highlight spotlight
+```
+
++++
+
+No it's not
+
+```anim
+a8: fill amber pulse
+```
+
+---
+
+## Swap
+
+So they remain in place...
+
++++
+
+...and `i` moves on.
+
+```anim
+a5: fill blue highlight clear
+a8: fill blue highlight clear
+i: move below a8
+```
+
+Note:
+Ask the class to predict the next comparison before advancing.
+
+---
+
+## Compare the next pair
+
+Is `8` bigger than `1`?
+
+```anim
+a8: highlight spotlight
+a1: highlight spotlight
+```
+
++++
+
+Yes it is!
+
+```anim
+a8: fill amber pulse
+```
+
+---
+
+## Swap
+
+So they swap places...
+
+```anim
+a8: move 8,3 via +0.5,-0.5
+a1: move 7,3 via -0.5,+0.5
+```
+
++++
+
+...and that pass is done.
+
+The largest value, 8, has 'bubbled' to the end!
+
+```anim
+a8: fill green highlight clear
+a1: fill blue highlight clear
+i: remove
+```
 
 </animation>
 
@@ -1120,10 +1198,10 @@ a: move 6,1 via zz
 The debug grid shows rows, columns and ids.
 
 ```anim
-mac: image(../_assets/macs/macintosh.svg) "A Mac" at 3,2 size 2
+mac: image(../_assets/macs/macintosh.svg) "A Mac" at 3,2 size 1.5x2
 box: rect "box" at 9,2
-l: line from 2,5 to 6,5 "line"
-p: arrow from mac to box
+l: line from 2,5 to 6,5 "line" stroke pink
+p: arrow from mac to box stroke yellow
 ```
 
 ---
@@ -1236,8 +1314,8 @@ c: back
 <animation grid="fit">
 
 ```anim
-a: rect "A" at 3,3
-b: rect "B" at 6,3
+a: rect "A" at 3,3 corner 0.2
+b: rect "B" at 6,3 corner 0.2
 l: arrow from a to b "fit"
 ```
 
