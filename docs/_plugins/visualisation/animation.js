@@ -473,6 +473,24 @@
     return placeNextTo(shape, ref, spec.side, spec.gap ?? PLACE_GAP)
   }
 
+  // The one constraint resolver: places every attached shape and group member from its ref, refs
+  // first (depth-first, so chains and nested groups need no repeated passes). Used when compiling
+  // a scene and on every frame. specOf(shape) gives the shape's attachment (or null to leave it),
+  // place(shape, pos) applies the position; line ends are resolved separately by resolveEnds.
+  function resolveAttachments(byId, specOf = (shape) => shape.attach, place = (shape, pos) => Object.assign(shape, pos)) {
+    const done = new Set()
+    const visit = (shape, depth) => {
+      if (!shape || done.has(shape.id) || depth > 16) return
+      done.add(shape.id)
+      const spec = specOf(shape)
+      const ref = spec && byId.get(spec.ref)
+      if (!ref) return
+      visit(ref, depth + 1)
+      place(shape, attachPos(shape, byId.get(spec.ref), spec))
+    }
+    for (const shape of [...byId.values()]) visit(shape, 0)
+  }
+
   // The point where a line from `shape`'s centre towards `toward` leaves the shape.
   function edgePoint(shape, toward) {
     const c = boxCentre(shape)
@@ -812,17 +830,8 @@
     // After every line: put attached shapes and group members where their refs now are
     // (several passes, for chains), and fit each group's box round its members.
     function settle() {
-      for (let pass = 0; pass < 8; pass++) {
-        let changed = false
-        for (const shape of shapes.values()) {
-          if (!shape.attach) continue
-          const ref = shapes.get(shape.attach.ref)
-          if (!ref) { shape.attach = null; continue }
-          const p = attachPos(shape, ref, shape.attach)
-          if (Math.abs(p.x - shape.x) > 1e-6 || Math.abs(p.y - shape.y) > 1e-6) { Object.assign(shape, p); changed = true }
-        }
-        if (!changed) break
-      }
+      for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
+      resolveAttachments(shapes)
       for (const group of shapes.values()) {
         if (group.type !== 'group' || !group.members.length) continue
         const b = unionBounds(group.members.map((id) => shapes.get(id)).filter(Boolean), shapes)
@@ -1140,14 +1149,26 @@
   const clamp01 = (t) => Math.min(1, Math.max(0, t))
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
-  // Parses a computed colour (rgb(), rgba() or color(srgb …)) to [r, g, b, a] (0-255, alpha 0-1).
+  // Parses a computed colour to [r, g, b, a] (0-255, alpha 0-1). rgb() and color(srgb …) are read
+  // directly; anything else (the theme's oklch palette, lab, …) is converted by painting one pixel
+  // on a canvas and reading it back as sRGB.
+  let pixel = null
   function parseColour(text) {
-    const srgb = text.match(/color\(srgb\s+([\d.e-]+)\s+([\d.e-]+)\s+([\d.e-]+)(?:\s*\/\s*([\d.e-]+))?\)/)
+    if (!text || text === 'none') return null
+    const srgb = text.match(/^color\(srgb\s+([\d.e-]+)\s+([\d.e-]+)\s+([\d.e-]+)(?:\s*\/\s*([\d.e-]+))?\)$/)
     if (srgb) return [srgb[1] * 255, srgb[2] * 255, srgb[3] * 255, srgb[4] === undefined ? 1 : +srgb[4]]
-    const rgb = text.match(/rgba?\(([^)]+)\)/)
-    if (!rgb) return null
-    const [r, g, b, a = 1] = rgb[1].split(/[\s,/]+/).filter(Boolean).map(Number)
-    return [r, g, b, a]
+    const rgb = text.match(/^rgba?\(([^)]+)\)$/)
+    if (rgb) {
+      const [r, g, b, a = 1] = rgb[1].split(/[\s,/]+/).filter(Boolean).map(Number)
+      return [r, g, b, a]
+    }
+    pixel ??= document.createElement('canvas').getContext('2d', { willReadFrequently: true })
+    if (!pixel) return null
+    pixel.clearRect(0, 0, 1, 1)
+    pixel.fillStyle = text
+    pixel.fillRect(0, 0, 1, 1)
+    const [r, g, b, a] = pixel.getImageData(0, 0, 1, 1).data
+    return [r, g, b, a / 255]
   }
 
   function colourCss(name, role) {
@@ -1509,31 +1530,23 @@
         if (!LINE_TYPES.includes(shape.type) && (!now.has(shape.id) || b)) now.set(shape.id, { ...shape, x: shape.x + v.dx, y: shape.y + v.dy })
       }
 
-      // Attached shapes and group members follow their ref's current (interpolated) place, so
-      // they stay together along curves and routes. Several passes, for chains.
-      for (let pass = 0; pass < 8; pass++) {
-        let changed = false
-        for (const item of items) {
-          const spec = (item.b || item.a).attach
-          if (!spec || LINE_TYPES.includes(item.shape.type)) continue
-          const before = item.a?.attach
-          const same = !item.a || !item.b || (before && before.ref === spec.ref && before.side === spec.side)
-          const ref = now.get(spec.ref)
-          if (!same || !ref) continue
-          // a group member moved within its group glides to its new offset
-          const offset = spec.dx !== undefined && before?.dx !== undefined
-            ? { dx: lerp(before.dx, spec.dx, item.t), dy: lerp(before.dy, spec.dy, item.t) } : spec
-          const p = attachPos(item.shape, ref, { ...spec, ...(spec.dx !== undefined ? offset : {}) })
-          const x = p.x + item.v.dx
-          const y = p.y + item.v.dy
-          if (Math.abs(x - item.shape.x) > 1e-6 || Math.abs(y - item.shape.y) > 1e-6) {
-            item.shape = { ...item.shape, x: p.x, y: p.y }
-            now.set(item.shape.id, { ...item.shape, x, y })
-            changed = true
-          }
-        }
-        if (!changed) break
-      }
+      // Attached shapes and group members follow their ref's current (interpolated) place, so they
+      // stay together along curves and routes. A shape whose attachment changes this beat keeps its
+      // own interpolated path; a group member moved within its group glides to its new offset.
+      const byItem = new Map(items.map((item) => [item.shape.id, item]))
+      resolveAttachments(now, (shape) => {
+        const item = byItem.get(shape.id)
+        const spec = item && !LINE_TYPES.includes(item.shape.type) && (item.b || item.a).attach
+        if (!spec) return null
+        const before = item.a?.attach
+        if (item.a && item.b && !(before && before.ref === spec.ref && before.side === spec.side)) return null
+        if (spec.dx === undefined || before?.dx === undefined) return spec
+        return { ...spec, dx: lerp(before.dx, spec.dx, item.t), dy: lerp(before.dy, spec.dy, item.t) }
+      }, (shape, p) => {
+        const item = byItem.get(shape.id)
+        item.shape = { ...item.shape, x: p.x, y: p.y }
+        Object.assign(shape, { x: p.x + item.v.dx, y: p.y + item.v.dy }) // `now` keeps the drawn place
+      })
 
       // Lines whose ends move between A and B (or swap between a shape and a point) blend the two.
       for (const item of items) {
