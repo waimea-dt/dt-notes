@@ -1,0 +1,55 @@
+{
+  "name": "dt-notes-anim-syntax",
+  "displayName": "DT Notes Anim Syntax",
+  "description": "Syntax highlighting and colour swatches for <animation> scene lines (```anim fences in Markdown, and .anim files).",
+  "version": "0.3.0",
+  "publisher": "dt-notes",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/waimea-dt/dt-notes"
+  },
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:anim",
+    "onLanguage:markdown"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "anim",
+        "aliases": [
+          "Anim",
+          "anim"
+        ],
+        "extensions": [
+          ".anim"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "anim",
+        "scopeName": "source.anim",
+        "path": "./syntaxes/anim.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.anim.codeblock",
+        "path": "./syntaxes/anim-markdown.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.anim": "anim"
+        }
+      }
+    ]
+  }
+}
