@@ -1,5 +1,5 @@
 {
-  "$comment": "Scene lines for <animation> blocks: see ../../ANIMATION.md",
+  "$comment": "Scene lines for <animation> blocks: see docs/_plugins/visualisation/ANIMATION.md",
   "name": "Anim",
   "scopeName": "source.anim",
   "patterns": [

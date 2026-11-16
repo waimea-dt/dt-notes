@@ -1,6 +1,6 @@
 # Anim syntax for VS Code
 
-Highlights `<animation>` scene lines (see `../ANIMATION.md`): inside ```` ```anim ```` fences in Markdown, and in `.anim` files.
+Highlights `<animation>` scene lines (see `docs/_plugins/visualisation/ANIMATION.md`): inside ```` ```anim ```` fences in Markdown, and in `.anim` files.
 
 ## Install or update
 

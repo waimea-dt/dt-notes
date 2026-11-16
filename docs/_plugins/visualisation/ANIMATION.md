@@ -1,7 +1,7 @@
 # Animation Cheat-Sheet
 
 `<animation>` blocks: a step-by-step animated SVG drawing with a caption per step.
-Plugin `animation.js` · CSS `_css/visualisation/animation.css` · examples `_tests/animation.md` · VS Code highlighting `anim-syntax/` (see its README).
+Plugin `animation.js` · CSS `_css/visualisation/animation.css` · examples `_tests/animation.md` · VS Code highlighting: `vscode/anim-syntax/` in the repo root (see its README).
 
 ## Block
 
