@@ -439,11 +439,13 @@ r: arrow from a to b front     drawn over everything in the normal layer
 
 `above` / `below` are placement words (§6.3), not layering words.
 
+The placement words are used the same way everywhere, side first: `below a`, `move right-of a`, `attach above a`, and for a callout's side, `callout "…" left-of`.
+
 ### 6.7 Copies, attachments, groups and routes
 
 ```
 key2: copy key move 8,1.5 via 5.5,0.7     a copy flies off from the original
-lock: icon(lock) attach msg right         rides beside msg wherever it goes
+lock: icon(lock) attach right-of msg         rides beside msg wherever it goes
 pkt: group msg lock                       an invisible group of both
 pkt: move 11,2.5 slow                     ...moves them together
 pkt: travel r1 r2 r3 srv slow             hop by hop through shapes and/or x,y points
@@ -451,7 +453,7 @@ ack: follow-reverse l5 slow               along a line, from its end (follow: fr
 ```
 
 - **`b: copy a`** makes `b` an identical copy of `a`'s current state, starting on top of it, so changes on the same line (a move, a via, a colour) animate *away from the original*. The copy doesn't inherit `a`'s attachment, group, highlight or callout. Groups can't be copied.
-- **`attach <id> [side]`** keeps the shape beside another (`left`, `right`, `above`, `below`, or `centre` on top; default `centre`; `gap n` sets the space) wherever it goes, along curves and routes too. It works when creating (`lock: icon(lock) attach msg right`) or changing. Moving the shape itself, or `detach`, releases it; removing the one it's attached to leaves it where it is.
+- **`attach [side] <id>`** keeps the shape beside another (`above`, `below`, `left-of`, `right-of`, the same words as placement; with no side, on top of it; `gap n` sets the space) wherever it goes, along curves and routes too. It works when creating (`lock: icon(lock) attach right-of msg`) or changing. Moving the shape itself, or `detach`, releases it; removing the one it's attached to leaves it where it is.
 - **`d: group a b …`** makes an invisible group centred on its members. Moving, `via`, `travel`, `follow`, `highlight` and `remove` on the group act on all of them (removing a group removes its members). Moving a member within the group keeps it in the group at its new place; `detach` takes it out; `d: ungroup` dissolves the group. A line can join a group only if both its ends are attached to shapes (it follows them anyway). Groups can be nested.
 - **`travel <stops…>`** moves through each stop in turn, in straight hops, at an even speed, ending on the last: stops are shape ids (their centres) or `x,y` points (a signed point is relative to the stop before). **`follow <line>`** moves to the line's start and along it to its end; **`follow-reverse <line>`** goes from its end to its start. Both work on any shape or group that already exists, but not with `at` / `move` / `via` on the same line, and not on lines.
 
@@ -463,7 +465,7 @@ b: highlight shake          a one-off shake (e.g. a key that doesn't fit)
 c: highlight box            a rounded box in the highlight colour, until cleared
 a: highlight spotlight      dims everything that isn't spotlit (several shapes can be)
 a: highlight clear          removes box and spotlight (none does the same)
-b: callout "Look at this!"  a speech bubble pointing at the shape (above, below, left, right)
+b: callout "Look at this!"  a speech bubble pointing at the shape (above, below, left-of, right-of)
 b: callout clear            removes it (none does the same)
 ```
 

@@ -55,12 +55,8 @@
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
   const PATTERNS = { dashed: { d: 3, g: 3 }, dotted: { d: 1, g: 1 } }
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', 'flow-off': 'none' }
-  // attach <id> [side]: where the attached shape sits (placement words, or centre = on top)
-  const ATTACH_SIDES = {
-    left: 'left-of', 'left-of': 'left-of', right: 'right-of', 'right-of': 'right-of', above: 'above', top: 'above',
-    below: 'below', bottom: 'below', centre: 'centre', center: 'centre', on: 'centre',
-  }
-  const CALLOUT_SIDES = { above: 'above', top: 'above', below: 'below', bottom: 'below', left: 'left', right: 'right' }
+  // Callout sides use the placement words (the bubble's side of the shape)
+  const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   const HIGHLIGHTS = ['pulse', 'shake', 'box', 'spotlight', 'clear', 'none']
   const ACTIONS = ['copy', 'attach', 'detach', 'group', 'ungroup', 'travel', 'follow', 'follow-reverse', 'highlight', 'callout']
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
@@ -349,9 +345,9 @@
     const wordAt = (j) => (tokens[j]?.kind === 'word' ? tokens[j].lower : '')
     switch (word) {
       case 'attach': {
-        const ref = idAt(i + 1, 'attach')
-        const side = ATTACH_SIDES[wordAt(i + 2)]
-        set('attach', { ref, side: side || 'centre' })
+        // attach [above | below | left-of | right-of] <id>; with no side, on top of it
+        const side = PLACEMENTS.includes(wordAt(i + 1)) ? wordAt(i + 1) : null
+        set('attach', { ref: idAt(i + (side ? 2 : 1), 'attach'), side: side || 'centre' })
         return i + (side ? 3 : 2)
       }
       case 'detach': set('detach', true); return i + 1

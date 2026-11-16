@@ -230,7 +230,7 @@ Alice locks her message with **Bob's public key**. It's now scrambled.
 ```scene
 pubA: move above msg slow
 msg: "x7#q!" fill amber delay 1
-lock: icon(lock) attach msg right stroke amber pop delay 1
+lock: icon(lock) attach right-of msg stroke amber pop delay 1
 ```
 
 +++
@@ -256,7 +256,7 @@ msg: move +8,+0 slow
 Eve copies it as it passes, but her public key can't unlock it. All she sees is `x7#q!`.
 
 ```scene
-eve: stroke red callout "x7#q! ???" left
+eve: stroke red callout "x7#q! ???" left-of
 pubE: highlight shake
 ```
 
@@ -338,7 +338,7 @@ m1: remove
 pub: icon(key-round) "Public" at 12.3,0.9 stroke green pop
 priv: icon(key-round) "Private" at 15.3,0.9 stroke red pop
 m2: rect "Certificate" at 11.5,5.5 size 3x0.8 font 0.8 fill teal pop
-pubB: icon(key-round) attach m2 above stroke green scale 0.8 pop
+pubB: icon(key-round) attach above m2 stroke green scale 0.8 pop
 ```
 
 +++
@@ -357,7 +357,7 @@ It checks the CA's signature, the name **bank.example** and the dates. A fake ce
 
 ```scene
 m2: fill green delay 0.25 highlight box
-check: icon(badge-check) attach m2 left stroke green pop
+check: icon(badge-check) attach left-of m2 stroke green pop
 ```
 
 ---
@@ -379,7 +379,7 @@ It locks a copy with the **server's public key**...
 ```scene
 pubB: move 4.5,4.3 slow
 m3: rect "session key" at 4.5,5.5 size 3x0.8 font 0.8 fill amber pop delay 1
-lock3: icon(lock) attach m3 right stroke amber pop delay 1
+lock3: icon(lock) attach right-of m3 stroke amber pop delay 1
 ```
 
 +++
@@ -431,7 +431,7 @@ req: rect "GET /balance" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 
 ```scene
 req: "k#2@Lp" fill amber
-lk4: icon(lock) attach req right stroke amber pop
+lk4: icon(lock) attach right-of req stroke amber pop
 ```
 
 +++
@@ -440,7 +440,7 @@ lk4: icon(lock) attach req right stroke amber pop
 
 ```scene
 req: move +7,+0 slow
-eve: callout "k#2@Lp ???" left
+eve: callout "k#2@Lp ???" left-of
 ```
 
 ---
@@ -462,7 +462,7 @@ req: "GET /balance" fill blue
 ```scene
 req: remove
 res: rect "Zq!7x" at 11.5,5.5 size 3x0.8 font 0.8 fill amber pop
-lk5: icon(lock) attach res left stroke amber pop
+lk5: icon(lock) attach left-of res stroke amber pop
 ```
 
 +++
@@ -801,10 +801,10 @@ key2: copy key move 8,1.5 via 5.5,0.7 slow
 
 ## attach
 
-`lock: icon(lock) attach msg right`: the lock rides on the message, even round a curve.
+`lock: icon(lock) attach right-of msg`: the lock rides on the message, even round a curve.
 
 ```scene
-lock: icon(lock) attach msg right stroke amber pop
+lock: icon(lock) attach right-of msg stroke amber pop
 ```
 
 +++
@@ -928,7 +928,7 @@ c: highlight spotlight
 
 ```scene
 b: callout "Look at this!"
-a: callout "Left side" left
+a: callout "Left side" left-of
 ```
 
 +++
