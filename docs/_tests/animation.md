@@ -961,6 +961,50 @@ c: highlight clear
 
 </animation>
 
+### Multi-line layout
+
+A line indented more than the line that started a command continues it, so long commands can be laid out one property per line. `one` and `two` should look the same.
+
+<animation grid="12x3">
+
+```anim
+one: rect "one line" at 3,2 size 3x0.8 font 0.8 fill blue radius 0.2
+
+two:
+    rect "laid out"     # comments still work
+    at 9,2
+    size 3x0.8
+
+    font 0.8            # and blank lines inside
+    fill blue
+    radius 0.2
+```
+
+---
+
+## Changes too
+
+```anim
+two:
+    move 9,1
+    fill green
+    speed slow
+one: move 3,1 fill green speed slow
+```
+
+---
+
+## A whole block indented
+
+Every line here is indented by the same amount, so each is its own command.
+
+```anim
+    one: fill amber
+    two: fill amber
+```
+
+</animation>
+
 ### Angle and scale
 
 <animation grid="12x5">

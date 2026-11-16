@@ -73,8 +73,19 @@ a: remove                   # remove (optionally with an effect and speed)
 # a comment line
 ```
 
+A long command can be laid out one property per line: a line indented more than the line that started the command continues it.
+
+```anim
+m1:
+    rect "Hello + options"
+    at 4.5,5.5
+    size 3x0.8
+    fill blue      # comments and blank lines are fine inside
+    pop
+```
+
 - `#` followed by a space starts a comment, on its own line or after a command (`#f80` is still a colour).
-- Properties go in any order. One quoted string per line = the label.
+- Properties go in any order. One quoted string per command = the label.
 - A type word on an existing id replaces the shape (`debug` warns).
 - Ids: letters, digits, `_ - .`, starting with a letter. Keywords can't be ids.
 - Bad lines show an inline error (step + line) and are skipped.

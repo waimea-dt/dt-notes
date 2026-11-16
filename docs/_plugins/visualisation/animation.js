@@ -1030,6 +1030,23 @@
     return line
   }
 
+  // Joins a scene's lines into commands: a line indented more than the line that started the
+  // current command continues it (as if joined with a space), so a long command can be laid out
+  // one property per line. Comments are removed and blank lines skipped first; `li` is the line
+  // the command starts on (for error messages).
+  function logicalLines(scene) {
+    const out = []
+    let current = null
+    scene.split('\n').forEach((raw, li) => {
+      const text = stripComment(raw).trimEnd()
+      if (!text.trim()) return
+      const indent = text.length - text.trimStart().length
+      if (current && indent > current.indent) current.text += ` ${text.trim()}`
+      else out.push((current = { text: text.trim(), li, indent }))
+    })
+    return out
+  }
+
   // One record per shape per beat: how its change animates (duration and delay in ms, the route
   // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect).
   function tween(meta, uid) {
@@ -1066,9 +1083,7 @@
       step.beats.forEach((beat, bi) => {
         const meta = { tweens: new Map(), pause: null, auto: false }
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
-        beat.scene.split('\n').forEach((raw, li) => {
-          const text = stripComment(raw).trim()
-          if (!text) return
+        logicalLines(beat.scene).forEach(({ text, li }) => {
           const warn = (message) => warnings.push(`${where(li)}: ${message}`)
           try {
             if (runTimingLine(text, meta)) return
