@@ -417,13 +417,39 @@
 
   const cellToPx = (c) => (c - 0.5) * CELL
 
-  // Half-width and half-height of a shape's box (text is estimated from its label).
+  // The width of some text in the site's font, measured once with a hidden SVG <text> and cached
+  // (falls back to an estimate when it can't be measured, e.g. before the page has a body).
+  const textWidths = new Map()
+  let measurer = null
+  function textWidth(text, size, bold = false) {
+    const key = `${size}|${bold ? 'b' : ''}|${text}`
+    if (textWidths.has(key)) return textWidths.get(key)
+    if (!measurer && document.body) {
+      const holder = svgEl('svg', { width: 0, height: 0, 'aria-hidden': 'true' })
+      holder.style.cssText = 'position: absolute; left: -9999px; top: 0; visibility: hidden'
+      measurer = holder.appendChild(svgEl('text'))
+      measurer.style.fontFamily = 'var(--font-family)'
+      document.body.appendChild(holder)
+    }
+    let width = 0
+    if (measurer) {
+      measurer.style.fontSize = `${size}px`
+      measurer.style.fontWeight = bold ? '700' : ''
+      measurer.textContent = text
+      width = measurer.getComputedTextLength()
+    }
+    if (!width) width = 0.55 * size * text.length
+    textWidths.set(key, width)
+    return width
+  }
+
+  // Half-width and half-height of a shape's box (text is measured).
   function extents(shape) {
     switch (shape.type) {
       case 'circle': return { hw: shape.r, hh: shape.r, round: true }
       case 'text': {
         const size = FONT * shape.font
-        return { hw: Math.max(0.3 * size, 0.3 * size * shape.label.length), hh: 0.6 * size }
+        return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold) / 2), hh: 0.6 * size }
       }
       default: return { hw: shape.w / 2, hh: shape.h / 2 }
     }
@@ -1684,7 +1710,7 @@
     // A speech bubble beside bounds `b`, with a tail pointing at it.
     function drawBubble(node, callout, b) {
       const size = FONT * 0.75
-      const w = Math.max(CELL, callout.text.length * 0.55 * size + size * 1.4)
+      const w = Math.max(CELL, textWidth(callout.text, size) + size * 1.4)
       const h = size * 2
       const tail = 0.3 * CELL
       const cx0 = (b.x0 + b.x1) / 2
