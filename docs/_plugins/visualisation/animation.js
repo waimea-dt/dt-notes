@@ -708,7 +708,7 @@
       // pulse / shake: one-off effects this beat, on an existing shape (and a group's members)
       if (props.emphasis) {
         if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
-        else for (const target of [shape, ...groupMembers(shape)]) meta.oneoff.set(target.uid, props.emphasis)
+        else for (const target of [shape, ...groupMembers(shape)]) tween(meta, target.uid).effect = props.emphasis
       }
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
 
@@ -884,7 +884,8 @@
     function setDelay(meta, uid, props) {
       if (!props.delay) return
       if (props.delay.v < 0) throw new Error('"delay" must be zero or more seconds')
-      meta.delay.set(uid, Math.max(meta.delay.get(uid) || 0, props.delay.v * 1000))
+      const record = tween(meta, uid)
+      record.delay = Math.max(record.delay, props.delay.v * 1000)
     }
 
     function speedOf(props) {
@@ -932,8 +933,8 @@
           leaveGroup(target)
           freezeEndsAttachedTo(target.id)
           shapes.delete(target.id)
-          meta.exit.set(target.uid, props.effect || defaults.effect || 'fade')
-          meta.dur.set(target.uid, speedOf(props))
+          tween(meta, target.uid).exit = props.effect || defaults.effect || 'fade'
+          tween(meta, target.uid).dur = speedOf(props)
           setDelay(meta, target.uid, props)
         }
         removeOne(existing)
@@ -951,17 +952,17 @@
         const props = parseProps(tokens, 2, 'change', shapes)
         const fresh = { attach: null, hl: null, callout: null }
         const shape = { ...structuredClone(src), ...fresh, id, uid: ++uid }
-        meta.from.set(shape.uid, { ...structuredClone(src), ...fresh, uid: shape.uid })
+        tween(meta, shape.uid).from = { ...structuredClone(src), ...fresh, uid: shape.uid }
         const path = applyProps(shape, props, false, warn, meta)
-        if (path) meta.path.set(shape.uid, path)
+        if (path) tween(meta, shape.uid).path = path
         if (existing) {
           warn(`"${id}" already exists, so it is replaced`)
-          meta.exit.set(existing.uid, 'fade')
-          meta.dur.set(existing.uid, speedOf(props))
+          tween(meta, existing.uid).exit = 'fade'
+          tween(meta, existing.uid).dur = speedOf(props)
         }
         shapes.set(id, shape)
-        meta.enter.set(shape.uid, 'copy')
-        meta.dur.set(shape.uid, speedOf(props))
+        tween(meta, shape.uid).enter = 'copy'
+        tween(meta, shape.uid).dur = speedOf(props)
         setDelay(meta, shape.uid, props)
         return
       }
@@ -986,8 +987,8 @@
         }
         applyProps(group, props, false, warn, meta)
         shapes.set(id, group)
-        meta.enter.set(group.uid, 'fade')
-        meta.dur.set(group.uid, speedOf(props))
+        tween(meta, group.uid).enter = 'fade'
+        tween(meta, group.uid).dur = speedOf(props)
         return
       }
       if (firstWord === 'ungroup') {
@@ -996,7 +997,7 @@
         if (tokens.length > 1) throw new Error('"ungroup" takes nothing after it')
         for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
         shapes.delete(id)
-        meta.exit.set(existing.uid, 'fade')
+        tween(meta, existing.uid).exit = 'fade'
         return
       }
 
@@ -1018,13 +1019,13 @@
         if (existing) {
           // Lines attached to the old shape attach to its replacement (same id).
           warn(`"${id}" already exists, so it is replaced`)
-          meta.exit.set(existing.uid, 'fade')
-          meta.dur.set(existing.uid, speedOf(props))
+          tween(meta, existing.uid).exit = 'fade'
+          tween(meta, existing.uid).dur = speedOf(props)
           setDelay(meta, existing.uid, props)
         }
         shapes.set(id, shape)
-        meta.enter.set(shape.uid, props.effect || defaults.effect || 'fade')
-        meta.dur.set(shape.uid, speedOf(props))
+        tween(meta, shape.uid).enter = props.effect || defaults.effect || 'fade'
+        tween(meta, shape.uid).dur = speedOf(props)
         setDelay(meta, shape.uid, props)
         return
       }
@@ -1038,14 +1039,22 @@
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or removed`)
       const shape = structuredClone(existing)
       const path = applyProps(shape, props, false, warn, meta)
-      if (path) meta.path.set(shape.uid, path)
-      else if (props.at || props.x || props.y) meta.path.delete(shape.uid) // a later straight move wins
+      if (path) tween(meta, shape.uid).path = path
+      else if (props.at || props.x || props.y) tween(meta, shape.uid).path = null // a later straight move wins
       shapes.set(id, shape)
-      meta.dur.set(shape.uid, Math.max(meta.dur.get(shape.uid) || 0, speedOf(props)))
+      tween(meta, shape.uid).dur = Math.max(tween(meta, shape.uid).dur, speedOf(props))
       setDelay(meta, shape.uid, props)
     }
 
     return { shapes, runLine, settle }
+  }
+
+  // One record per shape per beat: how its change animates (duration and delay in ms, the route
+  // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect).
+  function tween(meta, uid) {
+    let record = meta.tweens.get(uid)
+    if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))
+    return record
   }
 
   // Timing lines (no id): `pause` waits for a click while playing, `pause n` holds n seconds,
@@ -1074,7 +1083,7 @@
 
     steps.forEach((step, si) => {
       step.beats.forEach((beat, bi) => {
-        const meta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map(), from: new Map(), oneoff: new Map(), pause: null, auto: false }
+        const meta = { tweens: new Map(), pause: null, auto: false }
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
         beat.scene.split('\n').forEach((raw, li) => {
           const text = raw.trim()
@@ -1506,7 +1515,8 @@
 
       for (const uid of uids) {
         // A copy starts as its original, so it animates away from it
-        const a = aByUid.get(uid) || (bByUid.has(uid) ? meta.from?.get(uid) : undefined)
+        const tw = meta.tweens.get(uid)
+        const a = aByUid.get(uid) || (bByUid.has(uid) ? tw?.from : undefined)
         const b = bByUid.get(uid)
         const raw = clamp01(progress(uid))
         const t = ease(raw)
@@ -1514,21 +1524,21 @@
         let v
         if (a && b) {
           shape = interpolate(a, b, t)
-          if (meta.path.has(uid)) Object.assign(shape, pointOnPath(meta.path.get(uid), t))
+          if (tw?.path) Object.assign(shape, pointOnPath(tw.path, t))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           v.label = swap && t < 0.5 ? a.label : b.label
           v.labelOpacity = swap ? Math.abs(2 * t - 1) : 1
           // One-off effects, forwards only (going back doesn't replay them)
-          const oneoff = extra.forward && meta.oneoff?.get(uid)
+          const oneoff = extra.forward && tw?.effect
           if (oneoff === 'pulse') v.scale = 1 + 0.25 * Math.sin(Math.PI * raw)
           if (oneoff === 'shake') v.dx = 0.15 * CELL * Math.sin(8 * Math.PI * raw) * (1 - raw)
         } else if (b) {
           shape = b
-          v = appear(meta.enter.get(uid) || 'fade', t, b)
+          v = appear(tw?.enter || 'fade', t, b)
         } else {
           shape = a
-          v = appear(meta.exit.get(uid) || 'fade', 1 - t, a)
+          v = appear(tw?.exit || 'fade', 1 - t, a)
         }
         v.label ??= shape.label
         v.labelOpacity ??= 1
@@ -1920,7 +1930,7 @@
 
     const renderer = createRenderer(svg, viewBox, debug)
     const empty = new Map()
-    const emptyMeta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map(), from: new Map(), oneoff: new Map() }
+    const emptyMeta = { tweens: new Map() }
     const last = beats.length - 1
     let current = 0
     let running = null // { finish }
@@ -2012,9 +2022,9 @@
       const forward = to > from
       const final = forward ? B : A
       // Each shape's change runs from its delay to delay + duration; backwards is the exact reverse.
-      const durOf = (uid) => (meta.dur.get(uid) ?? 0) / speed
-      const delayOf = (uid) => (meta.delay.get(uid) ?? 0) / speed
-      const uids = new Set([...meta.dur.keys(), ...meta.delay.keys()])
+      const durOf = (uid) => (meta.tweens.get(uid)?.dur ?? 0) / speed
+      const delayOf = (uid) => (meta.tweens.get(uid)?.delay ?? 0) / speed
+      const uids = meta.tweens.keys()
       const total = Math.max(0, ...[...uids].map((uid) => delayOf(uid) + durOf(uid)))
       const forwardT = (uid, time) => {
         const d = durOf(uid)
