@@ -164,7 +164,7 @@ Every line in a `scene` block has the form:
 | `a: move 5,3 fill red` | No type word: **changes** an existing shape (animated). |
 | `a: circle at 5,3` | A type word on an id that **already exists**: **replaces** that shape (cross-fade). `debug` warns, because this is often a mistake. |
 | `a: remove [effect] [speed]` | **Removes** the shape (default: `fade`). |
-| `defaults: …` | Sets defaults for shapes created after it (§7). |
+| `defaults …` | No id or colon: sets defaults for shapes created after it (§7). |
 | `pause` / `pause n` | No id: while playing, wait after this beat for a click on Next, or for `n` seconds (§2, Playback). |
 | `auto` | No id: when this beat finishes, go straight on to the next one, whether playing or not (§2, Playback). |
 | `b: copy a …` | **Copies** shape `a` as `b`, starting on top of it (§6.7). |
@@ -430,7 +430,7 @@ a: move 6,4 via above b          through the spot above b
 - `via` takes the same values as `at`: `x y`, a shape id, or a placement and shape id. It can be repeated.
 - The curve is made of circular arcs, so it stays rounded: with **one** via point it is the exact arc of the circle through the start, the via point and the end (a via point centred between them, half their distance away, gives a semicircle); with **several**, each section blends the circles through neighbouring points, so zig-zag via points give a sine-like wave.
 - The shape moves along the curve at an **even speed** (the usual easing applies to the whole journey).
-- Only on a line that **moves an existing shape** (`at` / `move` / `goto`, or `x` / `y`). It's an error when creating a shape, on a line without a position change, on lines and arrows, and in `defaults:`.
+- Only on a line that **moves an existing shape** (`at` / `move` / `goto`, or `x` / `y`). It's an error when creating a shape, on a line without a position change, on lines and arrows, and in `defaults`.
 - Going back retraces the same curve. Line ends attached to the shape follow it along the curve.
 
 ### 6.6 Layering
@@ -441,7 +441,7 @@ Shapes are drawn in three layers, from bottom to top: `back`, normal, `front`.
 - `front` / `back` put a shape in that layer, either when creating it or on a change (`a: front`). `normal` returns it to the default layer.
 - Within a layer, creation order is kept: ten roads created with `back` stay in the order they were written.
 - Changing layer is instant (no transition).
-- `defaults: back` puts every shape created after it in the back layer.
+- `defaults back` puts every shape created after it in the back layer.
 
 ```
 a: circle "A" at 3,6
@@ -491,11 +491,11 @@ b: callout clear            removes it
 ## 7. Defaults
 
 ```
-defaults: stroke red fill white font 1.5 bold slow
+defaults stroke red fill white font 1.5 bold slow
 ```
 
-- Applies to every shape **created after it**, including in later steps, until the next `defaults:` line.
-- Each `defaults:` line **merges** with the current defaults. `defaults: clear` clears them all.
+- Applies to every shape **created after it**, including in later steps, until the next `defaults` line.
+- Each `defaults` line **merges** with the current defaults. `defaults clear` clears them all.
 - Never changes shapes that already exist.
 - Properties on a shape's own line always win.
 - Transition words (§8) are allowed and set the default speed and effect.
@@ -538,7 +538,7 @@ r1: arrow from a to b draw slow
 
 - Works on any line: creating (the shape appears after the delay), changing, and `remove`.
 - If several lines change the same shape in one beat, the longest delay is used.
-- A delay is never a default (`defaults: delay 1` is an error), and it is ignored when stepping instantly (progress bar, Home / End, reduced motion).
+- A delay is never a default (`defaults delay 1` is an error), and it is ignored when stepping instantly (progress bar, Home / End, reduced motion).
 
 ---
 
@@ -547,7 +547,7 @@ r1: arrow from a to b draw slow
 - **State model:** each beat's state is the previous state plus that beat's changes. The plugin works out every beat's state up front, so going back or jumping (progress bar, Home / End) just rebuilds that state, with no undo logic.
 - Going **back** plays the beat exactly in reverse at the same speed, delays included: the last change to start is the first to be undone.
 - **Errors** (unknown keyword, wrong value type, unknown id, invalid form) appear as a small inline message giving the step and line. The bad line is skipped and the rest of the scene still draws.
-- **Warnings** (only with `debug`): replacing an existing id with a new type word; positions outside the grid; a `defaults:` line that changes nothing.
+- **Warnings** (only with `debug`): replacing an existing id with a new type word; positions outside the grid; a `defaults` line that changes nothing.
 
 ---
 
@@ -567,7 +567,7 @@ r1: arrow from a to b draw slow
 - **Text colour:** a `text` shape's colour is its `stroke` (text has no outline, so the stroke is its ink): `t: text "Hi" at 2,2 stroke blue`. Labels inside other shapes use the text colour.
 - **Bare placement:** `t: text "i" below a` is short for `at below a`, as in the examples above.
 - **Comments:** a scene line starting with `//` is ignored.
-- **Default speed:** a `defaults:` speed applies to every line after it (changes as well as creations), so `defaults: slow` slows a whole sequence.
+- **Default speed:** a `defaults` speed applies to every line after it (changes as well as creations), so `defaults slow` slows a whole sequence.
 - **Replacing a shape** keeps lines attached to its id: they attach to the replacement.
 - **Line ends** can't be attached to another line.
 - **Teacher notes** are shown under the caption with `S` (only when the animation has notes).
@@ -584,7 +584,7 @@ r1: arrow from a to b draw slow
 We start with an unsorted array.
 
 ```scene
-defaults: fill none fast
+defaults fill none fast
 a0: rect "5" at 5,3
 a1: rect "3" at 6,3
 a2: rect "8" at 7,3

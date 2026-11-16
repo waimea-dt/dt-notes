@@ -884,12 +884,15 @@
     }
 
     function runLine(text, meta, warn) {
-      const match = text.match(/^([^:\s]+)\s*:\s*(.*)$/)
-      if (!match) throw new Error('expected "id: …"')
+      // `defaults …` has no id (and no colon), like pause and auto
+      const defaultsLine = text.match(/^defaults(\s*:)?(?:\s+(.*))?$/i)
+      if (defaultsLine?.[1]) throw new Error('"defaults" takes no colon, e.g. "defaults fill blue"')
+      const match = defaultsLine ? ['', 'defaults', defaultsLine[2] || ''] : text.match(/^([^:\s]+)\s*:\s*(.*)$/)
+      if (!match) throw new Error('expected "id: …" (or defaults, pause, auto)')
       const id = match[1]
       const tokens = tokenize(match[2])
 
-      if (id === 'defaults') {
+      if (defaultsLine) {
         const props = parseProps(tokens, 0, 'defaults', shapes)
         for (const key of ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via']) {
           if (key in props) throw new Error(`"${key === 'label' ? 'quoted text' : key}" can't be a default`)

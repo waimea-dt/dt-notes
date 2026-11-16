@@ -13,7 +13,7 @@ Click an animation to give it focus, then use ← / → to step and `F` for full
 We start with an unsorted array.
 
 ```scene
-defaults: fill blue
+defaults fill blue
 a5: rect "5" at 5,3 size 0.9
 a3: rect "3" at 6,3 size 0.9
 a8: rect "8" at 7,3 size 0.9
@@ -77,14 +77,14 @@ Ask the class to predict the next comparison before advancing.
 Five cities, with a road between every pair. The salesperson starts at **A**.
 
 ```scene
-defaults: fill bg stroke fg
+defaults fill bg stroke fg
 a: circle "A" at 3,6
 b: circle "B" at 6,2
 c: circle "C" at 11,3
 d: circle "D" at 13,6
 e: circle "E" at 7,7
 
-defaults: stroke muted back
+defaults stroke muted back
 ab: line from a to b
 ac: line from a to c
 ad: line from a to d
@@ -96,7 +96,7 @@ cd: line from c to d
 ce: line from c to e
 de: line from d to e
 
-defaults: clear
+defaults clear
 s: icon(user) left-of a gap 0.1 pop front
 a: fill blue
 ```
@@ -108,7 +108,7 @@ a: fill blue
 The first leg of the route.
 
 ```scene
-defaults: stroke blue weight 2 slow
+defaults stroke blue weight 2 slow
 r1: arrow from a to b draw
 s: move above b gap 0.1
 b: fill blue delay 0.25 highlight pulse
@@ -851,13 +851,13 @@ r1: circle "R1" at 4.5,1.5 radius 0.45
 r2: circle "R2" at 7.5,3.5 radius 0.45
 r3: circle "R3" at 10.5,1.5 radius 0.45
 srv: icon(server) "Server" at 13,2.5
-defaults: stroke muted back
+defaults stroke muted back
 l1: line from pc to r1
 l2: line from r1 to r2
 l3: line from r2 to r3
 l4: line from r3 to srv
 l5: line from r1 to r3 dashed
-defaults: clear
+defaults clear
 pkt: rect at 1.5,2.5 size 0.5x0.35 fill amber front
 ```
 
@@ -1051,7 +1051,7 @@ a: rect at 2,1
 b: rect at 4,1 via 5,2
 a: fill blue via 3,2
 l: line from a to 6,1 via 3,2
-defaults: via 2,2
+defaults via 2,2
 a: move 6,1 via zz
 ```
 
@@ -1210,6 +1210,7 @@ Bad lines are listed under the animation and skipped; the rest still draws.
 ```scene
 pause -1
 auto now
+defaults: fill red
 cp: copy zz
 hl: rect at 3,1 highlight sparkle
 a: rect "A" at 2,2
@@ -1223,8 +1224,8 @@ g: rect at 6,2 x 3
 h: rect at 7,2
 h: size +1x0
 k: circle at 1,1 width 2
-defaults: fill none
-defaults: fill none
+defaults fill none
+defaults fill none
 remove: rect at 1,1
 ```
 
