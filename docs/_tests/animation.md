@@ -703,9 +703,9 @@ dot: fill green
 
 ### Loop-bounce, speed and no controls
 
-`autoplay loop-bounce speed="2" hold="0.5" controls="none"`: no buttons or progress bar, backwards and forwards for ever. The pink ball moves `vslow` (4 s), the blue one `vfast` (0.25 s).
+`autoplay loop-bounce hold="0.5" controls="none"`: no buttons or progress bar, backwards and forwards for ever. The pink ball moves `vslow` (4 s), the blue one `vfast` (0.25 s).
 
-<animation autoplay loop-bounce speed="2" hold="0.5" controls="none" grid="12x3">
+<animation autoplay loop-bounce hold="0.5" controls="none" grid="12x3">
 
 ```scene
 ball1: circle at 2,2  size 1 fill pink
@@ -903,12 +903,20 @@ c: rect "C" at 10,2
 
 ---
 
-## pulse, shake and box
+## pulse, shake, box and wobble
 
 ```scene
 a: pulse
 b: shake
 c: highlight box
+```
+
++++
+
+`c: wobble`
+
+```scene
+c: wobble
 ```
 
 ---
@@ -1140,7 +1148,7 @@ s: remove slide
 ## Instant and slow
 
 ```scene
-d: remove speed 0
+d: remove speed instant
 sl: rect "slow" at 2,2
 ```
 

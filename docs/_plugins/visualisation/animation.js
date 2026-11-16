@@ -44,7 +44,7 @@
   const PLAY_PAUSE = 1500          // pause between beats while playing
 
   // speed <word | seconds>: how long a line's change takes
-  const SPEEDS = { vfast: 250, fast: 500, normal: 1000, slow: 2000, vslow: 4000 }
+  const SPEEDS = { instant: 0, vfast: 250, fast: 500, normal: 1000, slow: 2000, vslow: 4000 }
   const NORMAL_MS = SPEEDS.normal
   const EFFECTS = ['fade', 'pop', 'draw', 'slide']
   const LAYERS = { back: 0, normal: 1, front: 2 }
@@ -153,12 +153,12 @@
     ...words(Object.keys(FLOWS), 'flow', 'flow'),
     ...words(Object.keys(LAYERS), 'layer', 'layer'),
     // timing and effects
-    speed: { key: 'speed', sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast or a number of seconds' },
+    speed: { key: 'speed', sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast, instant or a number of seconds' },
     delay: number('delay', 'a number of seconds'),
     ...words(EFFECTS, 'effect', 'effect'),
     ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
     // emphasis, highlights and callouts
-    ...words(['pulse', 'shake'], 'emphasis', 'pulse / shake'),
+    ...words(['pulse', 'shake', 'wobble'], 'emphasis', 'pulse / shake / wobble'),
     highlight: { key: 'highlight', list: [['highlight']], help: 'box, spotlight or clear (pulse and shake go on their own)' },
     callout: {
       key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],
@@ -241,7 +241,7 @@
   const attr = (value) => encodeURIComponent(value)
 
   // Tag attributes: bare flags (debug, autoplay, loop, loop-bounce) and name="value" pairs
-  // (grid, hold, speed, controls).
+  // (grid, hold, controls).
   function parseAttrs(attrs) {
     const out = {}
     for (const m of attrs.matchAll(/([\w-]+)(?:\s*=\s*["']([^"']*)["'])?/g)) out[m[1].toLowerCase()] = m[2] ?? true
@@ -256,7 +256,6 @@
       autoplay: 'autoplay' in opts,
       loop: 'loop-bounce' in opts ? 'bounce' : 'loop' in opts ? 'loop' : null,
       hold: opts.hold ?? null,
-      speed: opts.speed ?? null,
       controls: opts.controls ?? null,
     }
     const images = new Set()
@@ -1353,13 +1352,13 @@
         node.label.setAttribute('x', mx); node.label.setAttribute('y', my)
         node.label.setAttribute('text-anchor', 'middle')
         node.label.classList.add('anim-halo')
-        g.setAttribute('transform', v.scale === 1 ? '' : `translate(${mx} ${my}) scale(${v.scale}) translate(${-mx} ${-my})`)
+        g.setAttribute('transform', v.scale === 1 && !v.rot ? '' : `translate(${mx} ${my}) rotate(${v.rot || 0}) scale(${v.scale}) translate(${-mx} ${-my})`)
         if (node.debugId) { node.debugId.setAttribute('x', from.x); node.debugId.setAttribute('y', from.y); node.debugId.textContent = s.id }
         return
       }
 
       const c = boxCentre(s)
-      g.setAttribute('transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle}) scale(${v.scale * s.scale})`)
+      g.setAttribute('transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle + (v.rot || 0)}) scale(${v.scale * s.scale})`)
       const { hw, hh } = extents(s)
 
       if (node.type === 'rect') {
@@ -1515,6 +1514,8 @@
           const oneoff = extra.forward && tw?.effect
           if (oneoff === 'pulse') v.scale = 1 + 0.25 * Math.sin(Math.PI * raw)
           if (oneoff === 'shake') v.dx = 0.15 * CELL * Math.sin(8 * Math.PI * raw) * (1 - raw)
+          // wobble: turns left and right twice, easing in and out
+          if (oneoff === 'wobble') v.rot = 14 * Math.sin(4 * Math.PI * raw) * Math.sin(Math.PI * raw)
         } else if (b) {
           shape = b
           v = appear(tw?.enter || 'fade', t, b)
@@ -1801,7 +1802,7 @@
     const viewBox = viewBoxFor(source.dataset.grid, beats, warnings)
     if (debug) warnOutsideGrid(beats, viewBox, warnings)
 
-    // Playback options from the tag: autoplay, loop / loop-bounce, hold="s", speed="x", controls="none"
+    // Playback options from the tag: autoplay, loop / loop-bounce, hold="s", controls="none"
     const opts = JSON.parse(decodeURIComponent(source.dataset.playback || '%7B%7D'))
     const positive = (value, name, fallback) => {
       if (value == null || value === true) return fallback
@@ -1810,7 +1811,6 @@
       warnings.push(`${name}="${value}" isn't a positive number, so ${fallback} is used`)
       return fallback
     }
-    const speed = positive(opts.speed, 'speed', 1)
     const holdMs = (opts.hold === '0' ? 0 : positive(opts.hold, 'hold', PLAY_PAUSE / 1000)) * 1000
     if (opts.controls != null && opts.controls !== 'none') warnings.push(`controls="${opts.controls}" isn't "none", so the controls are shown`)
 
@@ -1939,7 +1939,7 @@
       const a = beats[from] || beats[0]
       const b = beats[to] || beats[0]
       if (!a || !b) return
-      const ms = animate && !reducedMotion() ? CAPTION_MS / speed : 0
+      const ms = animate && !reducedMotion() ? CAPTION_MS : 0
       const forward = to > from
       const pageA = pages[a.step]
       const pageB = pages[b.step]
@@ -1996,8 +1996,8 @@
       const forward = to > from
       const final = forward ? B : A
       // Each shape's change runs from its delay to delay + duration; backwards is the exact reverse.
-      const durOf = (uid) => (meta.tweens.get(uid)?.dur ?? 0) / speed
-      const delayOf = (uid) => (meta.tweens.get(uid)?.delay ?? 0) / speed
+      const durOf = (uid) => meta.tweens.get(uid)?.dur ?? 0
+      const delayOf = (uid) => meta.tweens.get(uid)?.delay ?? 0
       const uids = meta.tweens.keys()
       const total = Math.max(0, ...[...uids].map((uid) => delayOf(uid) + durOf(uid)))
       const forwardT = (uid, time) => {
@@ -2035,10 +2035,10 @@
     }
 
     // How long to wait after arriving at a beat while playing: its `pause` (Infinity = until Next),
-    // or the hold. Holds and pauses scale with speed, like transitions.
+    // or the hold.
     const holdAfter = (index) => {
       const pause = beats[index]?.meta.pause
-      return pause === 'click' ? Infinity : (pause ?? holdMs) / speed
+      return pause === 'click' ? Infinity : pause ?? holdMs
     }
     const atEnd = (dir) => (dir > 0 ? current >= last : current <= 0)
 

@@ -64,7 +64,6 @@ Within one beat, all changes play **at the same time**.
 | `loop` | off | When playing reaches the end, jump back to the start and play again. |
 | `loop-bounce` | off | When playing reaches the end, play backwards to the start, then forwards again. |
 | `hold="s"` | `1.5` | Seconds to wait between beats while playing. |
-| `speed="x"` | `1` | Tempo for the whole animation: `speed="2"` makes every transition, delay and hold twice as fast. |
 | `controls="none"` | shown | Hides the buttons and progress bar (the keys still work), e.g. for a looping decorative diagram. |
 
 ---
@@ -135,7 +134,7 @@ pause                 wait for a click before going on
 - **`auto`** in a beat's scene goes straight on to the next beat when this one finishes, **whether playing or not**: one click plays a chain of beats in turn. Going back through a chain undoes the whole chain in one go too. Jumps (rewind, `Home` / `End`, the progress bar) don't follow chains.
 - **`loop`** jumps back to the start after holding on the last beat; **`loop-bounce`** plays backwards (the reverse transitions, with the same holds and pauses) to the start, then forwards again. Without either, playing stops at the end.
 - **`autoplay`** starts playing (after one hold on the current beat) when at least half the animation is on screen, pauses when it scrolls away or the browser tab is hidden, and resumes where it left off. It never starts for viewers who prefer reduced motion. Once someone navigates (back, next, rewind, the progress bar, Play or `A`), autoplay is off for good; Play or `A` still plays by hand. A non-looping autoplay stops at the end and stays there.
-- `speed` scales transitions, delays, holds and pauses alike; `hold="0"` goes straight on between beats.
+- `hold="0"` goes straight on between beats.
 
 ---
 
@@ -189,7 +188,7 @@ The parser reads the words after the colon from left to right. Properties may co
 ### Ids
 
 - Letters, digits, `_`, `-` and `.`, starting with a letter: `a`, `box1`, `arr.0`.
-- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), line styles and flow words, the action words (`pulse`, `shake`, `copy`, `attach`, `detach`, `group`, `ungroup`, `travel`, `follow`, `follow-reverse`, `highlight`, `callout`), `pause`, `auto`, `remove` and `defaults`.
+- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), line styles and flow words, the action words (`pulse`, `shake`, `wobble`, `copy`, `attach`, `detach`, `group`, `ungroup`, `travel`, `follow`, `follow-reverse`, `highlight`, `callout`), `pause`, `auto`, `remove` and `defaults`.
 
 ### Value types
 
@@ -459,6 +458,7 @@ ack: follow-reverse l5 speed slow               along a line, from its end (foll
 ```
 a: pulse                    a one-off pulse as the beat plays
 b: shake                    a one-off shake (e.g. a key that doesn't fit)
+c: wobble                   a one-off wobble: turns left and right twice
 c: highlight box            a rounded box in the highlight colour, until cleared
 a: highlight spotlight      dims everything that isn't spotlit (several shapes can be)
 a: highlight clear          removes box and spotlight
@@ -466,7 +466,7 @@ b: callout "Look at this!"  a speech bubble pointing at the shape (above, below,
 b: callout clear            removes it
 ```
 
-- **`pulse`** and **`shake`** are words on their own (not part of `highlight`). They play only going forwards, over the line's speed; they don't change the state, so going back doesn't undo them.
+- **`pulse`**, **`shake`** and **`wobble`** are words on their own (not part of `highlight`). They play only going forwards, over the line's speed; they don't change the state, so going back doesn't undo them.
 - `box` and `spotlight` stay until `highlight clear`, fade in and out at the line's speed, and can be combined (`highlight box spotlight`). A spotlit group lights its members, and a line is lit when both shapes it joins are.
 - Boxes and callouts work on every shape, lines and groups included, and follow the shape as it moves. Callouts sit above everything and are kept inside the drawing; a new callout text cross-fades from the old.
 
@@ -492,20 +492,20 @@ Every line can set how long its change takes, and how a shape appears or disappe
 
 | What | Words | Applies to |
 |---|---|---|
-| **Speed** | `speed vslow`, `speed slow`, `speed normal`, `speed fast`, `speed vfast`, or `speed <seconds>` | Every change |
+| **Speed** | `speed instant`, `speed vfast`, `speed fast`, `speed normal`, `speed slow`, `speed vslow`, or `speed <seconds>` | Every change |
 | **Effect** | `fade`, `pop`, `draw`, `slide` | Creating and removing only |
 
 ```
 a: rect at 2,3 pop          scales up from nothing
 l: arrow from a to b draw   draws itself from start to end
-a: move 7,6 speed 0         jumps
+a: move 7,6 speed instant   jumps
 a: move 1,2 speed slow
 a: move 4,2 speed 1.5       one and a half seconds
 a: remove fade
-a: remove speed 0
+a: remove speed instant
 ```
 
-- Speeds: `vfast` 0.25 s, `fast` 0.5 s, `normal` 1 s (the default), `slow` 2 s, `vslow` 4 s, or a number of seconds (`speed 0` is instant). `speed` on the tag scales them all: with `speed="2"`, `speed vslow` takes 2 s.
+- Speeds: `instant` 0, `vfast` 0.25 s, `fast` 0.5 s, `normal` 1 s (the default), `slow` 2 s, `vslow` 4 s, or a number of seconds (`speed 1.5`).
 - `delay` takes only seconds (below).
 - Default effect: `fade` for creating and removing.
 - Moves, resizes and colour changes always tween; only their speed can be set.
@@ -542,7 +542,7 @@ r1: arrow from a to b draw speed slow
 - One inline SVG per animation, with `viewBox` set by the grid. No external animation library: every frame is drawn in JavaScript (`requestAnimationFrame`), positions, sizes and colours alike. Flowing dashes and the caption slide use the Web Animations API.
 - Colours come from the site's CSS custom properties: each is resolved to RGBA once (through a hidden probe element) and blended in JavaScript; switching theme clears the cache and redraws.
 - `doneEach` must not process the same widget twice: mark each processed widget. Timers, key listeners and play loops stop when the widget leaves the page (see `PLUGIN_GUIDE.md`).
-- Respect `prefers-reduced-motion`: treat every transition as instant (`speed 0`), while still changing the caption.
+- Respect `prefers-reduced-motion`: treat every transition as instant, while still changing the caption.
 
 ---
 
