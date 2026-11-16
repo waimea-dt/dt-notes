@@ -856,6 +856,94 @@ Back from here returns to the end of the chain; Back again undoes the whole chai
 
 </animation>
 
+### Camera
+
+<animation grid="12x6">
+
+## The whole drawing
+
+```anim
+a: rect "a" at 2,2 fill red
+b: circle "b" at 10,5 fill blue
+l: arrow from a to b "Zoom!" stroke yellow
+```
+
+---
+
+## Zoom in on a
+
+```anim
+camera at a zoom 3
+```
+
+---
+
+## Pan along the arrow
+
+```anim
+camera at 6,3.5 zoom 2 speed slow
+```
+
+---
+
+## Close up on b, then it changes
+
+```anim
+camera at b zoom 3
+```
+
++++
+
+```anim
+b: fill green pulse
+```
+
+---
+
+## Back out
+
+```anim
+camera reset speed slow
+```
+
+---
+
+## Zoomed out and nudged
+
+```anim
+camera zoom 0.8 move +1,+0
+```
+
++++
+
+```anim
+camera reset speed fast
+```
+
+---
+
+## Panning
+
+```anim
+camera goto a zoom 3
+```
+
++++
+
+```anim
+camera goto b speed vslow
+auto
+```
+
++++
+
+```anim
+camera zoom 1 speed slow
+auto
+```
+
+</animation>
+
 ### Copy, attach and group
 
 <animation grid="14x5">
@@ -1343,6 +1431,13 @@ Bad lines are listed under the animation and skipped; the rest still draws.
 pause -1
 auto now
 defaults: fill red
+camera: at 2,2
+camera
+camera at below dw
+camera fill red
+camera reset zoom 2
+camera zoom 0
+camera zoom 1
 sp: rect at 1,2 slow
 sq: rect at 2,2 speed -1
 st: text "x" at 3,2 stroke red

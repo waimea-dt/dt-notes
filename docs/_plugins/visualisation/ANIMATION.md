@@ -227,6 +227,21 @@ auto                             # go straight on to the next beat (one click pl
 - `defaults` has no colon. No `at` / `via` / `delay` / labels in defaults.
 - `pause` / `auto` describe what happens *after* their beat.
 
+## Camera (beat line, no id)
+
+```anim
+camera at 4,3 zoom 2             # centre on 4,3, twice as close (goto / move = at)
+camera at a zoom 3 speed slow    # centre on where a is now (doesn't follow it)
+camera zoom 1.5                  # zoom about the current centre
+camera move +2,0                 # pan 2 cells right (relative, like shapes)
+camera zoom +1                   # one step closer
+camera reset                     # back to the whole drawing
+```
+
+- Takes `at` / `x` / `y`, `zoom`, `reset`, `speed` and `delay`. No colon.
+- Stays until changed (later steps keep it). Going back plays it in reverse; jumps cut.
+- Zoomed in (`zoom` ≥ 1), the view stays inside the drawing; `zoom 0.5` zooms out.
+
 ## Switching things off
 
 ```anim
@@ -238,4 +253,5 @@ l: solid               # no dashes or dots
 a: highlight clear
 a: callout clear
 defaults clear
+camera reset
 ```

@@ -170,6 +170,9 @@
     },
     // defaults only
     clear: fixed('reset', true, { modes: ['defaults'] }),
+    // camera only
+    zoom: { ...number('zoom', 'a number (2 = twice as close)'), modes: ['camera'] },
+    reset: fixed('reset', true, { modes: ['camera'] }),
   }
   for (const entry of Object.values(KEYWORDS)) for (const list of [entry.sigs, entry.list]) list?.sort((a, b) => b.length - a.length)
 
@@ -177,7 +180,7 @@
   const LINE_STARTS = ['copy', 'group', 'ungroup', 'remove']
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, 'pause', 'auto', 'defaults',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, 'pause', 'auto', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -654,6 +657,7 @@
   function createCompiler(context) {
     const shapes = new Map() // id -> current shape
     let defaults = {}
+    let camera = { x: null, y: null, zoom: 1 } // centre in px (null: the drawing's centre)
     let uid = 0
 
     const check = (shape, key, word = key) => {
@@ -907,12 +911,53 @@
       return props.speed ?? defaults.speed ?? NORMAL_MS
     }
 
+    // `camera at 4,3 zoom 2` pans and zooms the view; `camera reset` goes back to the whole drawing.
+    // A shape id centres on where the shape is now (the camera doesn't follow it).
+    function runCameraLine([, colon, rest = ''], meta, warn) {
+      if (colon) throw new Error('"camera" takes no colon, e.g. "camera at 4,3 zoom 2"')
+      const props = parseProps(tokenize(rest), 0, 'camera', shapes)
+      const extra = Object.keys(props).find((key) => !['at', 'x', 'y', 'zoom', 'reset', 'speed', 'delay'].includes(key))
+      if (extra) throw new Error(`"camera" takes at / x / y, zoom, reset, speed and delay, not "${extra === 'label' ? 'quoted text' : extra}"`)
+      if (props.at?.kind === 'place') throw new Error('"camera at" takes "x,y" or a shape id')
+      if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects at, zoom or reset, e.g. "camera at 4,3 zoom 2"')
+      if (props.reset && (props.at || props.x || props.y || props.zoom)) throw new Error('"camera reset" takes only a speed and a delay')
+
+      const before = JSON.stringify(camera)
+      const next = props.reset ? { x: null, y: null, zoom: 1 } : { ...camera }
+      const centre = context.centre // the drawing's centre, when the grid is fixed
+      const axis = (n, key) => {
+        const current = camera[key] ?? centre?.[key]
+        if (n.rel && current == null) throw new Error('a relative camera move needs a fixed grid, or an absolute "camera at" first')
+        return numberValue(n, current, { unit: CELL, coord: true })
+      }
+      if (props.at?.kind === 'ref') {
+        const b = bounds(shapes.get(props.at.ref), shapes)
+        next.x = (b.x0 + b.x1) / 2
+        next.y = (b.y0 + b.y1) / 2
+      } else if (props.at) {
+        next.x = axis(props.at.x, 'x')
+        next.y = axis(props.at.y, 'y')
+      }
+      if (props.x) next.x = axis(props.x, 'x')
+      if (props.y) next.y = axis(props.y, 'y')
+      if (props.zoom) {
+        next.zoom = numberValue(props.zoom, camera.zoom)
+        if (!(next.zoom > 0)) throw new Error('"zoom" must be more than 0')
+      }
+      camera = next
+      if (JSON.stringify(camera) === before) warn('this camera line changes nothing')
+      tween(meta, 'camera').dur = speedOf(props)
+      setDelay(meta, 'camera', props)
+    }
+
     function runLine(text, meta, warn) {
       // `defaults …` has no id (and no colon), like pause and auto
+      const cameraLine = text.match(/^camera(\s*:)?(?:\s+(.*))?$/i)
+      if (cameraLine) return runCameraLine(cameraLine, meta, warn)
       const defaultsLine = text.match(/^defaults(\s*:)?(?:\s+(.*))?$/i)
       if (defaultsLine?.[1]) throw new Error('"defaults" takes no colon, e.g. "defaults fill blue"')
       const match = defaultsLine ? ['', 'defaults', defaultsLine[2] || ''] : text.match(/^([^:\s]+)\s*:\s*(.*)$/)
-      if (!match) throw new Error('expected "id: …" (or defaults, pause, auto)')
+      if (!match) throw new Error('expected "id: …" (or defaults, camera, pause, auto)')
       const id = match[1]
       const tokens = tokenize(match[2])
 
@@ -1063,7 +1108,7 @@
       setDelay(meta, shape.uid, props)
     }
 
-    return { shapes, runLine, settle }
+    return { shapes, runLine, settle, camera: () => ({ ...camera }) }
   }
 
   // A comment starts at "#" followed by a space (or the end of the line), outside quotes, so hex
@@ -1142,7 +1187,7 @@
           }
         })
         const state = new Map([...compiler.shapes].map(([id, shape]) => [id, structuredClone(shape)]))
-        beats.push({ step: si, beat: bi, state, meta })
+        beats.push({ step: si, beat: bi, state, meta, camera: compiler.camera() })
       })
     })
 
@@ -1856,7 +1901,10 @@
   function buildWidget(source) {
     const { steps, title, assets } = readSource(source)
     const debug = source.hasAttribute('data-debug')
-    const { beats, errors, warnings } = compile(steps, { assets })
+    const grid = source.dataset.grid
+    const fixedGrid = grid !== 'fit' && viewBoxFor(grid, [], [])
+    const centre = fixedGrid && { x: fixedGrid.w / 2, y: fixedGrid.h / 2 }
+    const { beats, errors, warnings } = compile(steps, { assets, centre })
     const viewBox = viewBoxFor(source.dataset.grid, beats, warnings)
     if (debug) warnOutsideGrid(beats, viewBox, warnings)
 
@@ -1960,7 +2008,29 @@
     // Playback
     // -------------------------------------------------------------------------
 
-    const renderer = createRenderer(svg, viewBox, debug)
+    // The camera's view: the part of the drawing the SVG shows. Callouts and slides use it, so it is
+    // one object, updated in place.
+    const view = { ...viewBox }
+    const renderer = createRenderer(svg, view, debug)
+
+    // A beat's camera as a viewBox: zoomed about its centre, and kept inside the drawing when zoomed in.
+    function cameraView(camera) {
+      const zoom = camera?.zoom || 1
+      const w = viewBox.w / zoom
+      const h = viewBox.h / zoom
+      let cx = camera?.x ?? viewBox.x + viewBox.w / 2
+      let cy = camera?.y ?? viewBox.y + viewBox.h / 2
+      if (zoom >= 1) {
+        cx = Math.min(viewBox.x + viewBox.w - w / 2, Math.max(viewBox.x + w / 2, cx))
+        cy = Math.min(viewBox.y + viewBox.h - h / 2, Math.max(viewBox.y + h / 2, cy))
+      }
+      return { x: cx - w / 2, y: cy - h / 2, w, h }
+    }
+
+    function setView(v) {
+      Object.assign(view, v)
+      svg.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`)
+    }
     const empty = new Map()
     const emptyMeta = { tweens: new Map() }
     const last = beats.length - 1
@@ -1974,6 +2044,7 @@
 
     function showStatic(index) {
       const state = beats[index]?.state || empty
+      setView(cameraView(beats[index]?.camera))
       renderer.render(state, state, emptyMeta, () => 1, state)
     }
 
@@ -2064,6 +2135,8 @@
         return d ? Math.min(1, Math.max(0, after / d)) : after >= 0 ? 1 : 0
       }
       const start = performance.now()
+      const viewA = cameraView(beats[k - 1].camera)
+      const viewB = cameraView(beats[k].camera)
 
       return new Promise((resolve) => {
         let frame = 0
@@ -2071,6 +2144,8 @@
           const progress = (uid) => (forward ? forwardT(uid, elapsed) : forwardT(uid, total - elapsed))
           const done = total ? Math.min(1, elapsed / total) : 1
           const beatT = ease(forward ? done : 1 - done)
+          const t = ease(progress('camera'))
+          setView({ x: lerp(viewA.x, viewB.x, t), y: lerp(viewA.y, viewB.y, t), w: lerp(viewA.w, viewB.w, t), h: lerp(viewA.h, viewB.h, t) })
           renderer.render(A, B, meta, progress, final, { forward, beatT })
         }
         const finish = () => {

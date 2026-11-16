@@ -77,7 +77,7 @@
     },
     "beat-line": {
       "$comment": "lines with no id",
-      "match": "^\\s*(defaults|pause|auto)(?![\\w-])",
+      "match": "^\\s*(defaults|camera|pause|auto)(?![\\w-])",
       "captures": {
         "1": {
           "name": "keyword.control.anim"
@@ -112,7 +112,7 @@
     },
     "property": {
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|align|speed|delay|highlight|callout)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|align|speed|delay|highlight|callout|zoom)(?![\\w-])"
     },
     "emphasis": {
       "name": "keyword.other.emphasis.anim",
@@ -120,7 +120,7 @@
     },
     "value": {
       "name": "support.constant.property-value.anim",
-      "match": "(?<![\\w-])(bold|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|box|spotlight|clear|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right)(?![\\w-])"
+      "match": "(?<![\\w-])(bold|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|box|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right)(?![\\w-])"
     },
     "colour": {
       "patterns": [
