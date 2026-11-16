@@ -11,9 +11,9 @@
 #### Menu
 
 - [<i data-lucide="graduation-cap"></i> DT Courses](/courses/)
-    - [<i data-lucide="footprints"></i> 9DTF](/courses/9dtf/)
+    - [<i data-lucide="footprints"></i> 9DTF](/courses/9dt/)
     - [<i data-lucide="scooter"></i> 9DTA](/courses/9dta/)
-    - [<i data-lucide="bike"></i> 10DTA](/courses/10dta/)
+    - [<i data-lucide="bike"></i> 10DTA](/courses/10dt/)
     - [<i data-lucide="car"></i> 100DTD](/courses/100dtd/)
     - [<i data-lucide="plane"></i> 200DTD](/courses/200dtd/)
     - [<i data-lucide="rocket"></i> 300DTD](/courses/300dtd/)

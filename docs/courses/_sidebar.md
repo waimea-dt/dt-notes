@@ -8,13 +8,13 @@
 
 #### Menu
 
-- [<i data-lucide="footprints"></i> Year 9 DT Foundation](/courses/9dtf/)
-    - A foundation skills course
+- [<i data-lucide="footprints"></i> Year 9 DT](/courses/9dt/)
+    - A foundation course
 
 - [<i data-lucide="scooter"></i> Year 9 DT Advanced](/courses/9dta/)
-    - First steps in programming
+    - Creative game programming
 
-- [<i data-lucide="bike"></i> Year 10 DT Advanced](/courses/10dta/)
+- [<i data-lucide="bike"></i> Year 10 DT](/courses/10dt/)
     - Design, web, animation, coding
 
 - [<i data-lucide="car"></i> Level 1 DT Dev & Coding](/courses/100dtd/)

@@ -4,13 +4,13 @@
 
 <menu>
 
-### 9DTF
+### 9DT
 
 <i data-lucide="footprints"></i>
 
-[Link](/courses/9dtf/)
+[Link](/courses/9dt/)
 
-A foundation skills course covering design, digital media and some simple coding
+A foundation course covering CS, design, digital media and simple coding
 
 ---
 
@@ -20,17 +20,17 @@ A foundation skills course covering design, digital media and some simple coding
 
 [Link](/courses/9dta/)
 
-A foundation skills course covering design, digital media and some simple coding
+A course to learn a bit more programming with a focus on coding games
 
 ---
 
-### 10DTA
+### 10DT
 
 <i data-lucide="bike"></i>
 
-[Link](/courses/10dta/)
+[Link](/courses/10dt/)
 
-Desc
+Learn more about design, digital media, web development, animation, and coding
 
 ---
 
