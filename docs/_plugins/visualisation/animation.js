@@ -43,8 +43,9 @@
   const CAPTION_MS = 500           // caption transition (kept snappy, whatever the shapes' speed)
   const PLAY_PAUSE = 1500          // pause between beats while playing
 
-  const SPEEDS = { instant: 0, vfast: 250, fast: 500, slow: 2000, vslow: 4000 }
-  const NORMAL_MS = 1000
+  // speed <word | seconds>: how long a line's change takes
+  const SPEEDS = { vfast: 250, fast: 500, normal: 1000, slow: 2000, vslow: 4000 }
+  const NORMAL_MS = SPEEDS.normal
   const EFFECTS = ['fade', 'pop', 'draw', 'slide']
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
@@ -123,6 +124,7 @@
     radius: { sigs: [['num']], help: 'a number' },
     gap: { sigs: [['num']], help: 'a number' },
     delay: { sigs: [['num']], help: 'a number of seconds' },
+    speed: { sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast or a number of seconds', build: (v) => v[0] },
     via: {
       sigs: [['num', 'num'], ['placement', 'id'], ['id']],
       help: '"x,y", a shape id, or a placement and a shape id (e.g. "via above b")',
@@ -317,6 +319,7 @@
       case 'placement': return PLACEMENTS.includes(word) ? word : undefined
       case 'align': return ALIGNS[word]
       case 'colour': return COLOURS[word] !== undefined || HEX.test(word) ? word : undefined
+      case 'speed': return word in SPEEDS ? SPEEDS[word] : NUMBER.test(word) && !/^[+-]/.test(word) ? parseFloat(word) * 1000 : undefined
     }
     return undefined
   }
@@ -426,7 +429,7 @@
         i += 2
         continue
       }
-      if (word in SPEEDS) set('speed', word)
+      if (word in SPEEDS) throw new Error(`"${word}" goes after speed, e.g. "speed ${word}"`)
       else if (EFFECTS.includes(word)) set('effect', word)
       else if (word in LAYERS) set('layer', word)
       else if (FLAGS.includes(word)) set(word, true)
@@ -885,8 +888,7 @@
     }
 
     function speedOf(props) {
-      const speed = props.speed || defaults.speed
-      return speed ? SPEEDS[speed] : NORMAL_MS
+      return props.speed ?? defaults.speed ?? NORMAL_MS
     }
 
     function runLine(text, meta, warn) {

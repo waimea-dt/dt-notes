@@ -116,14 +116,14 @@ p: rect "packet" at 2,4
 ---
 
 ```scene
-p: move 8,4 slow
+p: move 8,4 speed slow
 auto                  straight on to the next beat
 ```
 
 +++
 
 ```scene
-p: move 14,4 slow
+p: move 14,4 speed slow
 pause                 wait for a click before going on
 ```
 
@@ -302,7 +302,7 @@ r1: weight +1
 ```
 l: line from a to b dotted
 r: rect at 4,2 dashed weight 2
-l: solid slow                 the dots fade into a solid line
+l: solid speed slow                 the dots fade into a solid line
 ```
 
 ### Flow
@@ -332,7 +332,7 @@ link: static
 ```
 cog: icon(cog) at 4,3 angle 45 scale 1.5
 t: text "Rotated" at 8,2 angle -30
-cog: angle +360 slow          a full clockwise spin
+cog: angle +360 speed slow          a full clockwise spin
 ```
 
 ### 5.1 Labels
@@ -460,9 +460,9 @@ The placement words are used the same way everywhere, side first: `below a`, `mo
 key2: copy key move 8,1.5 via 5.5,0.7     a copy flies off from the original
 lock: icon(lock) attach right-of msg         rides beside msg wherever it goes
 pkt: group msg lock                       an invisible group of both
-pkt: move 11,2.5 slow                     ...moves them together
-pkt: travel r1 r2 r3 srv slow             hop by hop through shapes and/or x,y points
-ack: follow-reverse l5 slow               along a line, from its end (follow: from its start)
+pkt: move 11,2.5 speed slow                     ...moves them together
+pkt: travel r1 r2 r3 srv speed slow             hop by hop through shapes and/or x,y points
+ack: follow-reverse l5 speed slow               along a line, from its end (follow: from its start)
 ```
 
 - **`b: copy a`** makes `b` an identical copy of `a`'s current state, starting on top of it, so changes on the same line (a move, a via, a colour) animate *away from the original*. The copy doesn't inherit `a`'s attachment, group, highlight or callout. Groups can't be copied.
@@ -491,7 +491,7 @@ b: callout clear            removes it
 ## 7. Defaults
 
 ```
-defaults stroke red fill white font 1.5 bold slow
+defaults stroke red fill white font 1.5 bold speed slow
 ```
 
 - Applies to every shape **created after it**, including in later steps, until the next `defaults` line.
@@ -504,23 +504,25 @@ defaults stroke red fill white font 1.5 bold slow
 
 ## 8. Transitions
 
-Transition words are flags and may go on any line:
+Every line can set how long its change takes, and how a shape appears or disappears:
 
-| Group | Words | Applies to |
+| What | Words | Applies to |
 |---|---|---|
-| **Speed** | `instant`, `vfast`, `fast`, *(normal)*, `slow`, `vslow` | Every change |
+| **Speed** | `speed vslow`, `speed slow`, `speed normal`, `speed fast`, `speed vfast`, or `speed <seconds>` | Every change |
 | **Effect** | `fade`, `pop`, `draw`, `slide` | Creating and removing only |
 
 ```
 a: rect at 2,3 pop          scales up from nothing
 l: arrow from a to b draw   draws itself from start to end
-a: move 7,6 instant
-a: move 1,2 slow
+a: move 7,6 speed 0         jumps
+a: move 1,2 speed slow
+a: move 4,2 speed 1.5       one and a half seconds
 a: remove fade
-a: remove instant
+a: remove speed 0
 ```
 
-- Durations: `instant` 0, `vfast` 0.25 s, `fast` 0.5 s, normal 1 s, `slow` 2 s, `vslow` 4 s. (`speed` on the tag scales them all: with `speed="2"`, `vslow` takes 2 s.)
+- Speeds: `vfast` 0.25 s, `fast` 0.5 s, `normal` 1 s (the default), `slow` 2 s, `vslow` 4 s, or a number of seconds (`speed 0` is instant). `speed` on the tag scales them all: with `speed="2"`, `speed vslow` takes 2 s.
+- `delay` takes only seconds (below).
 - Default effect: `fade` for creating and removing.
 - Moves, resizes and colour changes always tween; only their speed can be set.
 - `slide` brings a shape in from, or sends it out to, the nearest edge of the canvas.
@@ -531,9 +533,9 @@ a: remove instant
 `delay <seconds>` waits before a line's change starts, so changes within one beat can happen one after another without an extra click:
 
 ```
-s: move above b slow           the person travels for 1 second...
+s: move above b speed slow           the person travels for 1 second...
 b: fill green delay 1          ...and the city turns green when they arrive
-r1: arrow from a to b draw slow
+r1: arrow from a to b draw speed slow
 ```
 
 - Works on any line: creating (the shape appears after the delay), changing, and `remove`.
@@ -556,7 +558,7 @@ r1: arrow from a to b draw slow
 - One inline SVG per animation, with `viewBox` set by the grid. No external animation library: CSS transitions and the Web Animations API.
 - Colours come from CSS custom properties, so the theme toggle works without re-rendering.
 - `doneEach` must not process the same widget twice: mark each processed widget. Timers, key listeners and play loops stop when the widget leaves the page (see `PLUGIN_GUIDE.md`).
-- Respect `prefers-reduced-motion`: treat every transition as `instant`, while still changing the caption.
+- Respect `prefers-reduced-motion`: treat every transition as instant (`speed 0`), while still changing the caption.
 
 ---
 
@@ -567,7 +569,7 @@ r1: arrow from a to b draw slow
 - **Text colour:** a `text` shape's colour is its `stroke` (text has no outline, so the stroke is its ink): `t: text "Hi" at 2,2 stroke blue`. Labels inside other shapes use the text colour.
 - **Bare placement:** `t: text "i" below a` is short for `at below a`, as in the examples above.
 - **Comments:** a scene line starting with `//` is ignored.
-- **Default speed:** a `defaults` speed applies to every line after it (changes as well as creations), so `defaults slow` slows a whole sequence.
+- **Default speed:** a `defaults` speed applies to every line after it (changes as well as creations), so `defaults speed slow` slows a whole sequence.
 - **Replacing a shape** keeps lines attached to its id: they attach to the replacement.
 - **Line ends** can't be attached to another line.
 - **Teacher notes** are shown under the caption with `S` (only when the animation has notes).
@@ -584,7 +586,7 @@ r1: arrow from a to b draw slow
 We start with an unsorted array.
 
 ```scene
-defaults fill none fast
+defaults fill none speed fast
 a0: rect "5" at 5,3
 a1: rect "3" at 6,3
 a2: rect "8" at 7,3

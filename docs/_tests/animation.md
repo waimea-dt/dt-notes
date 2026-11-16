@@ -108,7 +108,7 @@ a: fill blue
 The first leg of the route.
 
 ```scene
-defaults stroke blue weight 2 slow
+defaults stroke blue weight 2 speed slow
 r1: arrow from a to b draw
 s: move above b gap 0.1
 b: fill blue delay 0.25 pulse
@@ -207,7 +207,7 @@ priv: icon(key-round) "Private" at 15.2,1.5 stroke red pop
 The private key never leaves Bob.
 
 ```scene
-priv: weight 1.5 fast
+priv: weight 1.5 speed fast
 ```
 
 ---
@@ -217,8 +217,8 @@ priv: weight 1.5 fast
 It's public, so Bob gives a copy to anyone who asks: Alice, and Eve too.
 
 ```scene
-pubA: copy pub move 4,2 via 8,1.3 slow
-pubE: copy pub move 9.5,7 via 11,4.5 slow
+pubA: copy pub move 4,2 via 8,1.3 speed slow
+pubE: copy pub move 9.5,7 via 11,4.5 speed slow
 ```
 
 ---
@@ -228,7 +228,7 @@ pubE: copy pub move 9.5,7 via 11,4.5 slow
 Alice locks her message with **Bob's public key**. It's now scrambled.
 
 ```scene
-pubA: move above msg slow
+pubA: move above msg speed slow
 msg: "x7#q!" fill amber delay 1
 lock: icon(lock) attach right-of msg stroke amber pop delay 1
 ```
@@ -248,7 +248,7 @@ pubA: move 4,2
 The scrambled message travels across the internet (the lock is attached, so it goes too).
 
 ```scene
-msg: move +8,+0 slow
+msg: move +8,+0 speed slow
 ```
 
 +++
@@ -268,7 +268,7 @@ Only **Bob's private key** can unlock the message.
 
 ```scene
 eve: callout clear
-priv: move lock slow front
+priv: move lock speed slow front
 lock: remove pop delay 1
 msg: "Hi Bob" fill green delay 1 pulse
 ```
@@ -278,7 +278,7 @@ msg: "Hi Bob" fill green delay 1 pulse
 His private key goes straight back where it was. It never travelled across the internet.
 
 ```scene
-priv: move 15.2,1.5 slow
+priv: move 15.2,1.5 speed slow
 ```
 
 ---
@@ -324,7 +324,7 @@ m1: rect "Hello + options" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 It's sent in the open. Eve can read it, but there's nothing secret in it.
 
 ```scene
-m1: move +7,+0 slow
+m1: move +7,+0 speed slow
 ```
 
 ---
@@ -346,7 +346,7 @@ pubB: icon(key-round) attach above m2 stroke green scale 0.8 pop
 The public key is attached to the certificate, so it travels with it.
 
 ```scene
-m2: move -7,+0 slow
+m2: move -7,+0 speed slow
 ```
 
 ---
@@ -377,7 +377,7 @@ sess: icon(key-round) "Session key" at 4.5,2 stroke amber pop
 It locks a copy with the **server's public key**...
 
 ```scene
-pubB: move 4.5,4.3 slow
+pubB: move 4.5,4.3 speed slow
 m3: rect "session key" at 4.5,5.5 size 3x0.8 font 0.8 fill amber pop delay 1
 lock3: icon(lock) attach right-of m3 stroke amber pop delay 1
 ```
@@ -388,7 +388,7 @@ lock3: icon(lock) attach right-of m3 stroke amber pop delay 1
 
 ```scene
 pubB: remove
-m3: move +7,+0 slow
+m3: move +7,+0 speed slow
 ```
 
 ---
@@ -398,7 +398,7 @@ m3: move +7,+0 slow
 The server unlocks it with its private key. Now both sides have the same session key, and Eve doesn't.
 
 ```scene
-priv: move lock3 slow front
+priv: move lock3 speed slow front
 lock3: remove pop delay 1
 m3: remove delay 1
 ssk: icon(key-round) "Session key" at 10,2 stroke amber pop delay 1.2
@@ -409,8 +409,8 @@ ssk: icon(key-round) "Session key" at 10,2 stroke amber pop delay 1.2
 The public and private keys have done their job. From here on, everything is locked and unlocked with the session key. This is **symmetric encryption**: much faster than public and private keys.
 
 ```scene
-pub: remove slow
-priv: remove slow
+pub: remove speed slow
+priv: remove speed slow
 sess: weight 1.5
 ssk: weight 1.5
 ```
@@ -439,7 +439,7 @@ lk4: icon(lock) attach right-of req stroke amber pop
 ...and sends it. Eve only sees scrambled data.
 
 ```scene
-req: move +7,+0 slow
+req: move +7,+0 speed slow
 eve: callout "k#2@Lp ???" left-of
 ```
 
@@ -468,7 +468,7 @@ lk5: icon(lock) attach left-of res stroke amber pop
 +++
 
 ```scene
-res: move -7,+0 slow
+res: move -7,+0 speed slow
 ```
 
 +++
@@ -559,8 +559,8 @@ ring: circle at 6,3.3 radius 0.6 weight 1.5 stroke teal
 The solid line fades into a dashed one.
 
 ```scene
-l: dashed slow
-ring: dashed slow
+l: dashed speed slow
+ring: dashed speed slow
 ```
 
 ---
@@ -570,7 +570,7 @@ ring: dashed slow
 The dashes fade into dots.
 
 ```scene
-l: dotted slow
+l: dotted speed slow
 ```
 
 ---
@@ -598,11 +598,11 @@ l: flow-reverse
 
 ## Back to solid
 
-`l: solid static slow`: the dots fade back into a solid line.
+`l: solid static speed slow`: the dots fade back into a solid line.
 
 ```scene
-l: solid static slow
-ring: solid static slow
+l: solid static speed slow
+ring: solid static speed slow
 ```
 
 </animation>
@@ -676,7 +676,7 @@ dot: circle at 2,2 radius 0.4 fill blue
 It holds here for 2 seconds (instead of the 1 second `hold`).
 
 ```scene
-dot: move 6,2 slow
+dot: move 6,2 speed slow
 pause 2
 ```
 
@@ -687,7 +687,7 @@ pause 2
 Now it waits until you click Next (which nudges).
 
 ```scene
-dot: move 10,2 slow
+dot: move 10,2 speed slow
 pause
 ```
 
@@ -715,15 +715,15 @@ ball2: circle at 11,2 size 1 fill blue
 ---
 
 ```scene
-ball1: goto 11,2 via 5,1.5 via 8,2.5 vslow
-ball2: goto 2,2  via 8,1.5 via 5,2.5 vfast
+ball1: goto 11,2 via 5,1.5 via 8,2.5 speed vslow
+ball2: goto 2,2  via 8,1.5 via 5,2.5 speed vfast
 ```
 
 ---
 
 ```scene
-ball1: fill teal   scale 1.3 slow
-ball2: fill yellow scale 1.3 fast
+ball1: fill teal   scale 1.3 speed slow
+ball2: fill yellow scale 1.3 speed fast
 ```
 
 </animation>
@@ -791,10 +791,10 @@ msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
 
 ## copy
 
-`key2: copy key move 8,1.5 via 5.5,0.7 slow`: the copy flies off from the original.
+`key2: copy key move 8,1.5 via 5.5,0.7 speed slow`: the copy flies off from the original.
 
 ```scene
-key2: copy key move 8,1.5 via 5.5,0.7 slow
+key2: copy key move 8,1.5 via 5.5,0.7 speed slow
 ```
 
 ---
@@ -810,7 +810,7 @@ lock: icon(lock) attach right-of msg stroke amber pop
 +++
 
 ```scene
-msg: move 9,4 via 6,2.8 slow
+msg: move 9,4 via 6,2.8 speed slow
 ```
 
 ---
@@ -826,7 +826,7 @@ pkt: group msg lock highlight box
 +++
 
 ```scene
-pkt: move 11,2.5 slow
+pkt: move 11,2.5 speed slow
 ```
 
 +++
@@ -865,10 +865,10 @@ pkt: rect at 1.5,2.5 size 0.5x0.35 fill amber front
 
 ## travel
 
-`pkt: travel r1 r2 r3 srv slow`: hop by hop through the routers.
+`pkt: travel r1 r2 r3 srv speed slow`: hop by hop through the routers.
 
 ```scene
-pkt: travel r1 r2 r3 srv slow
+pkt: travel r1 r2 r3 srv speed slow
 ```
 
 ---
@@ -884,7 +884,7 @@ ack: rect "ack" at 10.5,1.5 size 0.8x0.4 fill green font 0.7 front
 +++
 
 ```scene
-ack: follow-reverse l5 slow
+ack: follow-reverse l5 speed slow
 ```
 
 </animation>
@@ -976,9 +976,9 @@ l: arrow from r to box "edge"
 The cog spins, the Mac turns upright and grows, and the arrow stays on the rotating rect's edge.
 
 ```scene
-cog: angle +360 slow
-mac: angle 0 scale 1.3 slow
-r: angle +90 slow
+cog: angle +360 speed slow
+mac: angle 0 scale 1.3 speed slow
+r: angle +90 speed slow
 t: angle 0 scale 1.3
 ```
 
@@ -991,7 +991,7 @@ t: angle 0 scale 1.3
 ```scene
 r: angle -90
 c: scale 0.5
-cog: angle -360 slow
+cog: angle -360 speed slow
 ```
 
 </animation>
@@ -1016,7 +1016,7 @@ l: line from a to c dashed
 `a: move 8,4 via 5,1` — a semicircle over `b` (the via point is centred, half the distance away).
 
 ```scene
-a: move 8,4 via 5,1 slow
+a: move 8,4 via 5,1 speed slow
 ```
 
 ---
@@ -1026,7 +1026,7 @@ a: move 8,4 via 5,1 slow
 `c: move 10,2.5 via 4,4 via 6,2.5 via 8,1` — zig-zag via points give a sine-like wave, at an even speed. The dashed line follows both ends.
 
 ```scene
-c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 slow
+c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
 ```
 
 ---
@@ -1036,8 +1036,8 @@ c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 slow
 `a` loops through the spot below `b`; `c` goes `via -2,+2` (relative to where it starts).
 
 ```scene
-a: move 2,4 via below b slow
-c: move 2,2.5 via -2,+2 slow
+a: move 2,4 via below b speed slow
+c: move 2,2.5 via -2,+2 speed slow
 ```
 
 </animation>
@@ -1121,7 +1121,7 @@ f: rect "fade" at 2,2
 
 ```scene
 p: rect "pop" at 5,2 pop
-d: arrow from 1,3 to 11,3 draw slow
+d: arrow from 1,3 to 11,3 draw speed slow
 s: circle "slide" at 9,2 slide
 ```
 
@@ -1131,7 +1131,7 @@ Second beat: removal effects.
 
 ```scene
 f: remove pop
-p: remove fast
+p: remove speed fast
 s: remove slide
 ```
 
@@ -1140,14 +1140,14 @@ s: remove slide
 ## Instant and slow
 
 ```scene
-d: remove instant
+d: remove speed 0
 sl: rect "slow" at 2,2
 ```
 
 +++
 
 ```scene
-sl: move 11,2 slow
+sl: move 11,2 speed slow
 ```
 
 </animation>
@@ -1211,6 +1211,8 @@ Bad lines are listed under the animation and skipped; the rest still draws.
 pause -1
 auto now
 defaults: fill red
+sp: rect at 1,2 slow
+sq: rect at 2,2 speed -1
 cp: copy zz
 hl: rect at 3,1 highlight sparkle
 a: rect "A" at 2,2
