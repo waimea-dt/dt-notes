@@ -173,6 +173,19 @@ Every line in a `scene` block has the form:
 
 The parser reads the words after the colon from left to right. Properties may come in any order.
 
+**Switching things off** uses one word per feature, describing the state you want:
+
+| Off | What it turns off |
+|---|---|
+| `a: remove` | the shape |
+| `g: ungroup` | a group (its members stay) |
+| `a: detach` | an attachment, or group membership |
+| `l: static` | flowing dashes (`flow`) |
+| `l: solid` | dashes or dots |
+| `a: highlight clear` | a highlight box or spotlight |
+| `a: callout clear` | a callout |
+| `defaults clear` | all defaults |
+
 ### Ids
 
 - Letters, digits, `_`, `-` and `.`, starting with a letter: `a`, `box1`, `arr.0`.
@@ -221,7 +234,7 @@ const PROPS = {
   align:  [['word']],                    // left | centre | right (`center` also accepted)
   bold:   [[]],
   solid / dashed / dotted: [[]],         // line style flags (solid is the default)
-  flow / flow-reverse / flow-off: [[]],  // march the dashes along the stroke
+  flow / flow-reverse / static: [[]],  // march the dashes along the stroke
 }
 ```
 
@@ -294,12 +307,12 @@ l: solid slow                 the dots fade into a solid line
 
 ### Flow
 
-`flow` makes a dashed or dotted stroke's pattern march along it, from the `from` end to the `to` end (round an outline, clockwise from its start); `flow-reverse` marches the other way; `flow-off` stops it.
+`flow` makes a dashed or dotted stroke's pattern march along it, from the `from` end to the `to` end (round an outline, clockwise from its start); `flow-reverse` marches the other way; `static` stops it.
 
 ```
 link: line from browser to server dotted flow      data travelling to the server
 link: flow-reverse                                  ...and back
-link: flow-off
+link: static
 ```
 
 - It moves at a steady speed (two cells a second), keeps going between steps until changed, and loops seamlessly.
@@ -464,13 +477,13 @@ a: highlight pulse          a one-off pulse as the beat plays
 b: highlight shake          a one-off shake (e.g. a key that doesn't fit)
 c: highlight box            a rounded box in the highlight colour, until cleared
 a: highlight spotlight      dims everything that isn't spotlit (several shapes can be)
-a: highlight clear          removes box and spotlight (none does the same)
+a: highlight clear          removes box and spotlight
 b: callout "Look at this!"  a speech bubble pointing at the shape (above, below, left-of, right-of)
-b: callout clear            removes it (none does the same)
+b: callout clear            removes it
 ```
 
 - `pulse` and `shake` play only going forwards, over the line's speed; they don't change the state, so going back doesn't undo them.
-- `box` and `spotlight` stay until `clear`, fade in and out at the line's speed, and can be combined (`highlight box spotlight`). A spotlit group lights its members, and a line is lit when both shapes it joins are.
+- `box` and `spotlight` stay until `highlight clear`, fade in and out at the line's speed, and can be combined (`highlight box spotlight`). A spotlit group lights its members, and a line is lit when both shapes it joins are.
 - Boxes and callouts work on every shape, lines and groups included, and follow the shape as it moves. Callouts sit above everything and are kept inside the drawing; a new callout text cross-fades from the old.
 
 ---
@@ -482,7 +495,7 @@ defaults: stroke red fill white font 1.5 bold slow
 ```
 
 - Applies to every shape **created after it**, including in later steps, until the next `defaults:` line.
-- Each `defaults:` line **merges** with the current defaults. `defaults: reset` clears them all.
+- Each `defaults:` line **merges** with the current defaults. `defaults: clear` clears them all.
 - Never changes shapes that already exist.
 - Properties on a shape's own line always win.
 - Transition words (§8) are allowed and set the default speed and effect.

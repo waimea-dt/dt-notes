@@ -54,10 +54,10 @@
   // Each pattern as a visible mark and gap, in multiples of the line's thickness (w):
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
   const PATTERNS = { dashed: { d: 3, g: 3 }, dotted: { d: 1, g: 1 } }
-  const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', 'flow-off': 'none' }
+  const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
-  const HIGHLIGHTS = ['pulse', 'shake', 'box', 'spotlight', 'clear', 'none']
+  const HIGHLIGHTS = ['pulse', 'shake', 'box', 'spotlight', 'clear']
   const ACTIONS = ['copy', 'attach', 'detach', 'group', 'ungroup', 'travel', 'follow', 'follow-reverse', 'highlight', 'callout']
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
   const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
@@ -146,7 +146,7 @@
 
   const RESERVED = new Set([
     ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(PROPS), ...Object.keys(ALIASES), ...Object.keys(SPEEDS),
-    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), ...ACTIONS, 'pause', 'auto', 'remove', 'defaults', 'reset',
+    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), ...ACTIONS, 'pause', 'auto', 'remove', 'defaults', 'clear',
   ])
 
   // ---------------------------------------------------------------------------
@@ -383,8 +383,7 @@
       }
       case 'callout': {
         const next = tokens[i + 1]
-        // clear removes it (none does the same, as with highlight)
-        if (next?.kind === 'word' && ['clear', 'none'].includes(next.lower)) { set('callout', { none: true }); return i + 2 }
+        if (next?.kind === 'word' && next.lower === 'clear') { set('callout', { none: true }); return i + 2 }
         if (next?.kind !== 'str') throw new Error('"callout" expects quoted text (e.g. callout "Look!") or clear')
         const side = CALLOUT_SIDES[wordAt(i + 2)]
         set('callout', { text: next.value, side: side || 'above' })
@@ -432,7 +431,7 @@
       else if (FLAGS.includes(word)) set(word, true)
       else if (LINE_STYLES.includes(word)) set('linestyle', word, 'line style')
       else if (word in FLOWS) set('flow', word, 'flow')
-      else if (word === 'reset' && mode === 'defaults') set('reset', true)
+      else if (word === 'clear' && mode === 'defaults') set('reset', true)
       else if (SHAPE_TYPES.includes(word) || word === 'remove') throw new Error(`"${word}" must come straight after the id`)
       else throw new Error(`unknown word "${token.value}"`)
       i++
@@ -696,7 +695,7 @@
       if (props.highlight) {
         const hl = { box: false, spotlight: false, ...shape.hl }
         for (const word of props.highlight) {
-          if (word === 'clear' || word === 'none') { hl.box = false; hl.spotlight = false }
+          if (word === 'clear') { hl.box = false; hl.spotlight = false }
           else if (word === 'box' || word === 'spotlight') hl[word] = true
           else for (const target of [shape, ...groupMembers(shape)]) meta.oneoff.set(target.uid, word)
         }
@@ -898,7 +897,7 @@
         if (props.reset) { defaults = {}; delete props.reset }
         const before = JSON.stringify(defaults)
         defaults = { ...defaults, ...props }
-        if (JSON.stringify(defaults) === before && !tokens.some((t) => t.lower === 'reset')) warn('this defaults line changes nothing')
+        if (JSON.stringify(defaults) === before && !tokens.some((t) => t.lower === 'clear')) warn('this defaults line changes nothing')
         return
       }
 

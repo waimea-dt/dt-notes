@@ -96,7 +96,7 @@ cd: line from c to d
 ce: line from c to e
 de: line from d to e
 
-defaults: reset
+defaults: clear
 s: icon(user) left-of a gap 0.1 pop front
 a: fill blue
 ```
@@ -598,11 +598,11 @@ l: flow-reverse
 
 ## Back to solid
 
-`l: solid flow-off slow`: the dots fade back into a solid line.
+`l: solid static slow`: the dots fade back into a solid line.
 
 ```scene
-l: solid flow-off slow
-ring: solid flow-off slow
+l: solid static slow
+ring: solid static slow
 ```
 
 </animation>
@@ -857,7 +857,7 @@ l2: line from r1 to r2
 l3: line from r2 to r3
 l4: line from r3 to srv
 l5: line from r1 to r3 dashed
-defaults: reset
+defaults: clear
 pkt: rect at 1.5,2.5 size 0.5x0.35 fill amber front
 ```
 
