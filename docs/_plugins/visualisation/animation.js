@@ -2,19 +2,19 @@
  * docsify-animation.js - Renders <animation>...</animation> blocks as step-by-step animated SVG
  * explanations: a drawing that changes between steps, with a Markdown caption for each step.
  *
- * Full syntax and design: docs/_plugins/visualisation/ANIMATION.md
+ * Syntax cheat-sheet: docs/_plugins/visualisation/ANIMATION.md
  *
  * Usage in markdown (markers must be alone on their line; ignored inside code fences):
  *   <animation grid="16x9" debug>
  *   # Title               the first heading of step 1 stays fixed for the whole animation
  *   Caption text.
- *   ```scene
- *   a: rect "A" at 2 3    id: type, label and properties - creates a shape
+ *   ```anim
+ *   a: rect "A" at 2,3    id: type, label and properties - creates a shape
  *   ```
  *   ---                   start a new step
  *   ## Step heading
- *   ```scene
- *   a: move 5 3 slow      id: properties - changes a shape (animated); `delay 1` waits a second first
+ *   ```anim
+ *   a: move 5,3 speed slow  id: properties - changes a shape (animated); `delay 1` waits a second first
  *   ```
  *   +++                   start a new beat (caption text and scene play one after another)
  *   Note:                 teacher notes, to the end of the step
@@ -40,21 +40,24 @@
   const PLACE_GAP = 0.25 * CELL    // default gap for above / below / left-of / right-of
   const EDGE_GAP = 0.06 * CELL     // gap between a line end and the edge of its shape
   const HEAD = 0.2 * CELL          // arrowhead length at normal weight
-  const CAPTION_MS = 500           // caption transition (the normal speed)
+  const CAPTION_MS = 500           // caption transition (kept snappy, whatever the shapes' speed)
   const PLAY_PAUSE = 1500          // pause between beats while playing
 
-  const SPEEDS = { instant: 0, fast: 250, slow: 1000 }
-  const NORMAL_MS = 500
+  // speed <word | seconds>: how long a line's change takes
+  const SPEEDS = { instant: 0, vfast: 250, fast: 500, normal: 1000, slow: 2000, vslow: 4000 }
+  const NORMAL_MS = SPEEDS.normal
   const EFFECTS = ['fade', 'pop', 'draw', 'slide']
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
   const ALIGNS = { left: 'left', centre: 'centre', center: 'centre', right: 'right' }
-  const FLAGS = ['bold']
   const LINE_STYLES = ['solid', 'dashed', 'dotted']
   // Each pattern as a visible mark and gap, in multiples of the line's thickness (w):
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
   const PATTERNS = { dashed: { d: 3, g: 3 }, dotted: { d: 1, g: 1 } }
-  const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', 'flow-off': 'none' }
+  const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
+  // Callout sides use the placement words (the bubble's side of the shape)
+  const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
+  const HIGHLIGHTS = ['box', 'spotlight', 'clear']
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
   const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
   const RESOURCE_TYPES = ['image', 'icon']
@@ -91,9 +94,10 @@
     at: BOXED, x: BOXED, y: BOXED,
     from: LINE_TYPES, to: LINE_TYPES,
     size: ['rect', 'circle', 'image', 'icon'],
-    radius: ['circle', 'rect'], // a rect's radius rounds its corners
+    radius: ['circle'],
+    corner: ['rect'], // corner radius
     fill: ['rect', 'circle'],
-    stroke: ALL, weight: ALL, font: ALL, bold: ALL,
+    stroke: ['rect', 'circle', 'line', 'arrow', 'image', 'icon'], colour: ALL, weight: ALL, font: ALL, bold: ALL,
     width: ['rect', 'image', 'icon'], height: ['rect', 'image', 'icon'],
     angle: BOXED, scale: BOXED,
     align: ['text'],
@@ -101,48 +105,82 @@
     flow: ['rect', 'circle', 'line', 'arrow', 'image'], // dashes/dots march along the stroke
   }
 
-  const point = (types) => [[...types, 'num', 'num'], [...types, 'id']]
-  // Each keyword's signatures, tried longest first; `build` turns the matched values into a prop.
-  const PROPS = {
-    at: {
-      sigs: [['num', 'num'], ['placement', 'id'], ['id']],
-      help: '"x,y", a shape id, or a placement and a shape id (e.g. "below a")',
-      build: (v, sig) => sig.length === 2 && sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
-        : sig.length === 2 ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] },
-    },
-    x: { sigs: [['num']], help: 'a number' },
-    y: { sigs: [['num']], help: 'a number' },
-    from: { sigs: point([]), help: '"x,y" or a shape id', build: buildEnd },
-    to: { sigs: point([]), help: '"x,y" or a shape id', build: buildEnd },
-    size: { sigs: [['num', 'num'], ['num']], help: '"w,h", "wxh" or one number', build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }) },
-    radius: { sigs: [['num']], help: 'a number' },
-    gap: { sigs: [['num']], help: 'a number' },
-    delay: { sigs: [['num']], help: 'a number of seconds' },
-    via: {
-      sigs: [['num', 'num'], ['placement', 'id'], ['id']],
-      help: '"x,y", a shape id, or a placement and a shape id (e.g. "via above b")',
-      build: (v, sig) => PROPS.at.build(v, sig),
-    },
-    fill: { sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' },
-    stroke: { sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' },
-    weight: { sigs: [['num']], help: 'a number (a multiple of the normal stroke thickness)' },
-    width: { sigs: [['num']], help: 'a number of cells' },
-    height: { sigs: [['num']], help: 'a number of cells' },
-    font: { sigs: [['num']], help: 'a number (a multiple of the normal size)' },
-    angle: { sigs: [['num']], help: 'a number of degrees (clockwise, 0 = upright)' },
-    scale: { sigs: [['num']], help: 'a number (a multiple of the normal size)' },
-    align: { sigs: [['align']], help: 'left, centre or right' },
-  }
-  const ALIASES = { move: 'at', goto: 'at' }
-  Object.values(PROPS).forEach((prop) => prop.sigs.sort((a, b) => b.length - a.length))
+  // Every word that can follow "id:" (or "defaults"), in one table. Each entry gives the prop it
+  // sets (key) and the values that follow it:
+  //   sigs   alternative value lists, tried longest first (sigs [[]]: a flag with no values)
+  //   list   value lists repeated one after another, at least once (travel, highlight)
+  //   build  turns the matched values into the prop (default: the first value)
+  //   repeat the word can be given more than once, collecting an array (via)
+  //   modes  only allowed in these line kinds (clear: in defaults)
+  //   error  the word isn't allowed here, with a hint
+  const POINT = [['num', 'num'], ['placement', 'id'], ['id']]
+  const buildPoint = (v, sig) => (sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
+    : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] })
+  const at = { key: 'at', sigs: POINT, build: buildPoint, help: '"x,y", a shape id, or a placement and a shape id (e.g. "below a")' }
+  const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
+  const colour = (key) => ({ key, sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' })
+  const fixed = (key, value, extra = {}) => ({ key, sigs: [[]], build: () => value, ...extra })
+  const words = (list, key, what) => Object.fromEntries(list.map((w) => [w, fixed(key, w, { what })]))
 
-  function buildEnd(v, sig) {
-    return sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] } : { kind: 'ref', ref: v[0] }
+  const KEYWORDS = {
+    // position
+    at, move: at, goto: at,
+    ...Object.fromEntries(PLACEMENTS.map((place) => [place, { key: 'at', sigs: [['id']], build: (v) => ({ kind: 'place', place, ref: v[0] }), help: 'a shape id' }])),
+    x: number('x'),
+    y: number('y'),
+    from: { key: 'from', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id' },
+    to: { key: 'to', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id' },
+    via: { ...at, key: 'via', repeat: true, help: '"x,y", a shape id, or a placement and a shape id (e.g. "via above b")' },
+    gap: number('gap'),
+    travel: { key: 'travel', list: [['num', 'num'], ['id']], build: buildPoint, help: 'shape ids and/or x,y points, e.g. "travel r1 r2 b"' },
+    follow: { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: false }), help: 'a line or arrow id' },
+    'follow-reverse': { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: true }), help: 'a line or arrow id', what: 'follow' },
+    attach: { key: 'attach', sigs: [['placement', 'id'], ['id']], build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : { side: 'centre', ref: v[0] }), help: 'a shape id, optionally after a side (e.g. "attach right-of a")' },
+    detach: fixed('detach', true),
+    // size and look
+    size: { key: 'size', sigs: [['num', 'num'], ['num']], build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }), help: '"w,h", "wxh" or one number' },
+    width: number('width', 'a number of cells'),
+    height: number('height', 'a number of cells'),
+    radius: number('radius'),
+    corner: number('corner', 'a number of cells'),
+    fill: colour('fill'),
+    stroke: colour('stroke'),
+    colour: colour('colour'),
+    weight: number('weight', 'a number (a multiple of the normal stroke thickness)'),
+    font: number('font', 'a number (a multiple of the normal size)'),
+    angle: number('angle', 'a number of degrees (clockwise, 0 = upright)'),
+    scale: number('scale', 'a number (a multiple of the normal size)'),
+    align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
+    bold: fixed('bold', true),
+    ...words(LINE_STYLES, 'linestyle', 'line style'),
+    ...words(Object.keys(FLOWS), 'flow', 'flow'),
+    ...words(Object.keys(LAYERS), 'layer', 'layer'),
+    // timing and effects
+    speed: { key: 'speed', sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast, instant or a number of seconds' },
+    delay: number('delay', 'a number of seconds'),
+    ...words(EFFECTS, 'effect', 'effect'),
+    ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
+    // emphasis, highlights and callouts
+    ...words(['pulse', 'shake', 'wobble'], 'emphasis', 'pulse / shake / wobble'),
+    highlight: { key: 'highlight', list: [['highlight']], help: 'box, spotlight or clear (pulse and shake go on their own)' },
+    callout: {
+      key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],
+      build: (v, sig) => (sig[0] === 'clear' ? { none: true } : { text: v[0], side: v[1] || 'above' }),
+      help: 'quoted text (e.g. callout "Look!"), optionally then a side, or clear',
+    },
+    // defaults only
+    clear: fixed('reset', true, { modes: ['defaults'] }),
+    // camera only
+    zoom: { ...number('zoom', 'a number (2 = twice as close)'), modes: ['camera'] },
+    reset: fixed('reset', true, { modes: ['camera'] }),
   }
+  for (const entry of Object.values(KEYWORDS)) for (const list of [entry.sigs, entry.list]) list?.sort((a, b) => b.length - a.length)
+
+  // Words that start a line (after "id:") rather than describe it
+  const LINE_STARTS = ['copy', 'group', 'ungroup', 'remove']
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(PROPS), ...Object.keys(ALIASES), ...Object.keys(SPEEDS),
-    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), 'pause', 'auto', 'remove', 'defaults', 'reset',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, 'pause', 'auto', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -182,13 +220,13 @@
     return chunks
   }
 
-  // Removes ```scene fences from a beat, returning the caption lines and the scene text.
+  // Removes ```anim fences from a beat, returning the caption lines and the scene text.
   function extractScene(lines) {
     const caption = []
     const scene = []
     let inScene = false
     scanLines(lines, (line, _inCode, fence) => {
-      if (fence.opening && fence.info === 'scene') { inScene = true; return }
+      if (fence.opening && fence.info === 'anim') { inScene = true; return }
       if (inScene && fence.closing) { inScene = false; return }
       if (inScene) scene.push(line)
       else caption.push(line)
@@ -209,7 +247,7 @@
   const attr = (value) => encodeURIComponent(value)
 
   // Tag attributes: bare flags (debug, autoplay, loop, loop-bounce) and name="value" pairs
-  // (grid, hold, speed, controls).
+  // (grid, hold, controls).
   function parseAttrs(attrs) {
     const out = {}
     for (const m of attrs.matchAll(/([\w-]+)(?:\s*=\s*["']([^"']*)["'])?/g)) out[m[1].toLowerCase()] = m[2] ?? true
@@ -224,7 +262,6 @@
       autoplay: 'autoplay' in opts,
       loop: 'loop-bounce' in opts ? 'bounce' : 'loop' in opts ? 'loop' : null,
       hold: opts.hold ?? null,
-      speed: opts.speed ?? null,
       controls: opts.controls ?? null,
     }
     const images = new Set()
@@ -304,30 +341,47 @@
   }
 
   function parseAs(type, token, shapes) {
+    if (type === 'str') return token?.kind === 'str' ? token.value : undefined
     if (!token || token.kind !== 'word') return undefined
     const word = token.lower
     switch (type) {
+      case 'highlight': return HIGHLIGHTS.includes(word) ? word : undefined
+      case 'side': return CALLOUT_SIDES[word]
+      case 'clear': return word === 'clear' ? word : undefined
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined
       case 'id': return shapes.has(token.value) ? token.value : undefined
       case 'placement': return PLACEMENTS.includes(word) ? word : undefined
       case 'align': return ALIGNS[word]
       case 'colour': return COLOURS[word] !== undefined || HEX.test(word) ? word : undefined
+      case 'speed': return word in SPEEDS ? SPEEDS[word] : NUMBER.test(word) && !/^[+-]/.test(word) ? parseFloat(word) * 1000 : undefined
     }
     return undefined
   }
 
-  function matchProp(name, tokens, i, shapes) {
-    const prop = PROPS[name]
-    for (const sig of prop.sigs) {
+  // Tries each value list in turn (longest first) at tokens[i]; returns the first that fits.
+  function matchSigs(sigs, tokens, i, shapes) {
+    for (const sig of sigs) {
       const values = sig.map((type, k) => parseAs(type, tokens[i + k], shapes))
-      if (values.every((v) => v !== undefined)) {
-        return { value: prop.build ? prop.build(values, sig) : values[0], next: i + sig.length }
-      }
+      if (values.every((v) => v !== undefined)) return { values, sig, next: i + sig.length }
+    }
+    return null
+  }
+
+  // The values after a keyword: one match of its sigs, or one or more of its list.
+  function matchKeyword(entry, word, tokens, i, shapes) {
+    const build = (m) => (entry.build ? entry.build(m.values, m.sig) : m.values[0])
+    if (entry.list) {
+      const items = []
+      for (let m; (m = matchSigs(entry.list, tokens, i, shapes)); i = m.next) items.push(build(m))
+      if (items.length) return { value: items, next: i }
+    } else {
+      const m = matchSigs(entry.sigs, tokens, i, shapes)
+      if (m) return { value: build(m), next: m.next }
     }
     const next = tokens[i]
-    const missing = next && next.kind === 'word' && ID.test(next.value) && !RESERVED.has(next.lower) && !COLOURS[next.lower]
-      && prop.sigs.some((sig) => sig.includes('id'))
-    throw new Error(`"${name}" expects ${prop.help}${missing ? `: no shape called "${next.value}"` : ''}`)
+    const missing = next?.kind === 'word' && ID.test(next.value) && !RESERVED.has(next.lower) && !COLOURS[next.lower]
+      && [...(entry.sigs || []), ...(entry.list || [])].some((sig) => sig.includes('id'))
+    throw new Error(`"${word}" expects ${entry.help}${missing ? `: no shape called "${next.value}"` : ''}`)
   }
 
   // Reads the properties and flags of one line (everything after the id and any type word).
@@ -342,37 +396,20 @@
       const token = tokens[i]
       if (token.kind === 'str') { set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
-
       const word = token.lower
-      const name = ALIASES[word] || word
-      if (PROPS[name]) {
-        const { value, next } = matchProp(name, tokens, i + 1, shapes)
-        if (name === 'via') props.via = [...(props.via || []), value] // repeatable
-        else set(name, value, word)
-        i = next
-        continue
+      const entry = KEYWORDS[word]
+      if (!entry || (entry.modes && !entry.modes.includes(mode))) {
+        if (SHAPE_TYPES.includes(word) || LINE_STARTS.includes(word)) throw new Error(`"${word}" must come straight after the id`)
+        throw new Error(`unknown word "${token.value}"`)
       }
-      if (PLACEMENTS.includes(word)) {
-        // A bare placement is short for "at <placement> <id>", e.g. `t: text "i" below a`
-        const ref = parseAs('id', tokens[i + 1], shapes)
-        if (!ref) throw new Error(`"${word}" expects a shape id${tokens[i + 1] ? `: no shape called "${tokens[i + 1].value}"` : ''}`)
-        set('at', { kind: 'place', place: word, ref }, word)
-        i += 2
-        continue
-      }
-      if (word in SPEEDS) set('speed', word)
-      else if (EFFECTS.includes(word)) set('effect', word)
-      else if (word in LAYERS) set('layer', word)
-      else if (FLAGS.includes(word)) set(word, true)
-      else if (LINE_STYLES.includes(word)) set('linestyle', word, 'line style')
-      else if (word in FLOWS) set('flow', word, 'flow')
-      else if (word === 'reset' && mode === 'defaults') set('reset', true)
-      else if (SHAPE_TYPES.includes(word) || word === 'remove') throw new Error(`"${word}" must come straight after the id`)
-      else throw new Error(`unknown word "${token.value}"`)
-      i++
+      if (entry.error) throw new Error(entry.error)
+      const { value, next } = matchKeyword(entry, word, tokens, i + 1, shapes)
+      if (entry.repeat) props[entry.key] = [...(props[entry.key] || []), value]
+      else set(entry.key, value, entry.what || word)
+      i = next
     }
 
-    if (props.gap && props.at?.kind !== 'place') throw new Error('"gap" only works with above / below / left-of / right-of')
+    if (props.gap && props.at?.kind !== 'place' && !props.attach) throw new Error('"gap" only works with above / below / left-of / right-of, or attach')
     if (props.at && (props.x || props.y)) throw new Error('the position is given twice (at/move and x/y)')
     return props
   }
@@ -383,13 +420,39 @@
 
   const cellToPx = (c) => (c - 0.5) * CELL
 
-  // Half-width and half-height of a shape's box (text is estimated from its label).
+  // The width of some text in the site's font, measured once with a hidden SVG <text> and cached
+  // (falls back to an estimate when it can't be measured, e.g. before the page has a body).
+  const textWidths = new Map()
+  let measurer = null
+  function textWidth(text, size, bold = false) {
+    const key = `${size}|${bold ? 'b' : ''}|${text}`
+    if (textWidths.has(key)) return textWidths.get(key)
+    if (!measurer && document.body) {
+      const holder = svgEl('svg', { width: 0, height: 0, 'aria-hidden': 'true' })
+      holder.style.cssText = 'position: absolute; left: -9999px; top: 0; visibility: hidden'
+      measurer = holder.appendChild(svgEl('text'))
+      measurer.style.fontFamily = 'var(--font-family)'
+      document.body.appendChild(holder)
+    }
+    let width = 0
+    if (measurer) {
+      measurer.style.fontSize = `${size}px`
+      measurer.style.fontWeight = bold ? '700' : ''
+      measurer.textContent = text
+      width = measurer.getComputedTextLength()
+    }
+    if (!width) width = 0.55 * size * text.length
+    textWidths.set(key, width)
+    return width
+  }
+
+  // Half-width and half-height of a shape's box (text is measured).
   function extents(shape) {
     switch (shape.type) {
       case 'circle': return { hw: shape.r, hh: shape.r, round: true }
       case 'text': {
         const size = FONT * shape.font
-        return { hw: Math.max(0.3 * size, 0.3 * size * shape.label.length), hh: 0.6 * size }
+        return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold) / 2), hh: 0.6 * size }
       }
       default: return { hw: shape.w / 2, hh: shape.h / 2 }
     }
@@ -432,6 +495,31 @@
       case 'left-of': return { x: c.x - b.hw - gap - a.hw, y: c.y }
       default: return { x: c.x + b.hw + gap + a.hw, y: c.y }
     }
+  }
+
+  // Where an attached shape sits: beside its ref (attach), or at a fixed offset (group member).
+  function attachPos(shape, ref, spec) {
+    if (spec.dx !== undefined) return { x: ref.x + spec.dx, y: ref.y + spec.dy }
+    if (spec.side === 'centre') return boxCentre(ref)
+    return placeNextTo(shape, ref, spec.side, spec.gap ?? PLACE_GAP)
+  }
+
+  // The one constraint resolver: places every attached shape and group member from its ref, refs
+  // first (depth-first, so chains and nested groups need no repeated passes). Used when compiling
+  // a scene and on every frame. specOf(shape) gives the shape's attachment (or null to leave it),
+  // place(shape, pos) applies the position; line ends are resolved separately by resolveEnds.
+  function resolveAttachments(byId, specOf = (shape) => shape.attach, place = (shape, pos) => Object.assign(shape, pos)) {
+    const done = new Set()
+    const visit = (shape, depth) => {
+      if (!shape || done.has(shape.id) || depth > 16) return
+      done.add(shape.id)
+      const spec = specOf(shape)
+      const ref = spec && byId.get(spec.ref)
+      if (!ref) return
+      visit(ref, depth + 1)
+      place(shape, attachPos(shape, byId.get(spec.ref), spec))
+    }
+    for (const shape of [...byId.values()]) visit(shape, 0)
   }
 
   // The point where a line from `shape`'s centre towards `toward` leaves the shape.
@@ -514,6 +602,18 @@
     return samples
   }
 
+  // A route of straight hops (travel, follow), as path samples for pointOnPath.
+  function buildPolyline(points) {
+    const samples = [{ ...points[0], at: 0 }]
+    for (const pt of points.slice(1)) {
+      const last = samples[samples.length - 1]
+      const d = Math.hypot(pt.x - last.x, pt.y - last.y)
+      if (d > 1e-6) samples.push({ x: pt.x, y: pt.y, at: last.at + d })
+    }
+    if (samples.length === 1) samples.push({ ...samples[0], at: 0 })
+    return samples
+  }
+
   // The point a fraction t (0-1) of the way along a path, by distance.
   function pointOnPath(samples, t) {
     const total = samples[samples.length - 1].at
@@ -531,8 +631,8 @@
   // ---------------------------------------------------------------------------
 
   function baseShape(type) {
-    const shape = { type, label: '', stroke: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
-    if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, r: 0, fill: 'bg' }) // r: corner radius
+    const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
+    if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, corner: 0, fill: 'bg' })
     if (type === 'circle') Object.assign(shape, { r: CELL / 2, fill: 'bg' })
     if (type === 'image') Object.assign(shape, { w: CELL, h: CELL, stroke: 'none' })
     if (type === 'icon') Object.assign(shape, { w: CELL, h: CELL })
@@ -540,7 +640,14 @@
     return shape
   }
 
-  const rel = (value, current, scale, creating) => (creating || !value.rel ? null : current + value.v * scale)
+  // The one rule for numbers. The parser keeps a number's sign as `rel`; here a signed number is
+  // relative to `current` (when there is one: changing a shape, the stop before, a line's end), and
+  // anything else is absolute. `unit` scales cells (CELL) or leaves multipliers (1); `coord` makes
+  // an absolute value a grid coordinate (the centre of that cell).
+  function numberValue(n, current, { unit = 1, coord = false } = {}) {
+    if (n.rel && current !== undefined && current !== null) return current + n.v * unit
+    return coord ? cellToPx(n.v) : n.v * unit
+  }
 
   function lucideIcon(name) {
     const pascal = name.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join('')
@@ -550,26 +657,31 @@
   function createCompiler(context) {
     const shapes = new Map() // id -> current shape
     let defaults = {}
+    let camera = { x: null, y: null, zoom: 1 } // centre in px (null: the drawing's centre)
     let uid = 0
 
     const check = (shape, key, word = key) => {
+      if (key === 'stroke' && shape.type === 'text') throw new Error('"stroke" doesn\'t apply to text: use colour')
+      if (key === 'radius' && shape.type === 'rect') throw new Error('"radius" is for circles: use corner for a rect\'s corners')
       if (!APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${shape.type === 'arrow' || shape.type === 'icon' || shape.type === 'image' ? 'an' : 'a'} ${shape.type}`)
     }
 
     // Applies parsed props to a shape (a fresh one when creating, a copy when changing).
     // Returns the curve's points (start, vias, end) when the line has `via`, otherwise null.
-    function applyProps(shape, props, creating, warn) {
+    function applyProps(shape, props, creating, warn, meta) {
       const isLine = LINE_TYPES.includes(shape.type)
-      for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, ...(props.via || []).map((v) => v.ref)]) {
+      for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, ...(props.via || []).map((v) => v.ref),
+        ...(props.travel || []).map((v) => v.ref)]) {
         if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
-      const num = (value, current, scale) => {
-        const relative = rel(value, current, scale, creating)
-        return relative ?? value.v * scale
-      }
+      // Relative values need something to be relative to: never when creating
+      const now = (value) => (creating ? undefined : value)
+      const cells = (n, current) => numberValue(n, now(current), { unit: CELL })
+      const times = (n, current) => numberValue(n, now(current))
+      const coord = (n, current) => numberValue(n, current, { unit: CELL, coord: true })
 
       if (props.label !== undefined) shape.label = props.label
-      if (props.font) { check(shape, 'font'); shape.font = Math.max(0.1, num(props.font, shape.font, 1)) }
+      if (props.font) { check(shape, 'font'); shape.font = Math.max(0.1, times(props.font, shape.font)) }
       // size: absolute, or one signed number on a change (both sides by that amount). A relative
       // pair (size +1x+0) isn't allowed: width / height change one side.
       if (props.size) {
@@ -578,27 +690,33 @@
         if (relative && !props.size.one) throw new Error('a relative size takes one number (e.g. "size +1"): use "width +1" / "height +1" to change one side')
         if (shape.type === 'circle') {
           if (!props.size.one) throw new Error('a circle takes one size (or use radius)')
-          shape.r = Math.max(0, relative ? shape.r + (props.size.w.v * CELL) / 2 : (props.size.w.v * CELL) / 2)
+          shape.r = Math.max(0, cells(props.size.w, shape.r * 2) / 2)
         } else {
-          shape.w = Math.max(0, relative ? shape.w + props.size.w.v * CELL : props.size.w.v * CELL)
-          shape.h = Math.max(0, relative ? shape.h + props.size.h.v * CELL : props.size.h.v * CELL)
+          shape.w = Math.max(0, cells(props.size.w, shape.w))
+          shape.h = Math.max(0, cells(props.size.h, shape.h))
         }
       }
       if (props.size && (props.width || props.height)) throw new Error('give either "size" or "width" / "height", not both')
-      if (props.width) { check(shape, 'width'); shape.w = Math.max(0, num(props.width, shape.w, CELL)) }
-      if (props.height) { check(shape, 'height'); shape.h = Math.max(0, num(props.height, shape.h, CELL)) }
-      if (props.radius) { check(shape, 'radius'); shape.r = Math.max(0, num(props.radius, shape.r, CELL)) }
+      if (props.width) { check(shape, 'width'); shape.w = Math.max(0, cells(props.width, shape.w)) }
+      if (props.height) { check(shape, 'height'); shape.h = Math.max(0, cells(props.height, shape.h)) }
+      if (props.radius) { check(shape, 'radius'); shape.r = Math.max(0, cells(props.radius, shape.r)) }
+      if (props.corner) { check(shape, 'corner'); shape.corner = Math.max(0, cells(props.corner, shape.corner)) }
       if (props.fill) { check(shape, 'fill'); shape.fill = props.fill }
-      if (props.stroke) shape.stroke = props.stroke
+      if (props.stroke) { check(shape, 'stroke'); shape.stroke = props.stroke }
+      if (props.colour) shape.colour = props.colour
       if (props.weight) {
         if (shape.type === 'text') warn('"weight" has no effect on text')
-        shape.weight = Math.max(0, num(props.weight, shape.weight, 1))
+        shape.weight = Math.max(0, times(props.weight, shape.weight))
       }
       if (props.align) { check(shape, 'align'); shape.align = props.align }
-      if (props.angle) { check(shape, 'angle'); shape.angle = num(props.angle, shape.angle, 1) }
-      if (props.scale) { check(shape, 'scale'); shape.scale = Math.max(0, num(props.scale, shape.scale, 1)) }
+      if (props.angle) { check(shape, 'angle'); shape.angle = times(props.angle, shape.angle) }
+      if (props.scale) { check(shape, 'scale'); shape.scale = Math.max(0, times(props.scale, shape.scale)) }
       if (props.bold) shape.bold = true
-      if (props.linestyle) { check(shape, 'linestyle', props.linestyle); shape.linestyle = props.linestyle }
+      if (props.linestyle) {
+        check(shape, 'linestyle', props.linestyle)
+        shape.linestyle = props.linestyle
+        if (shape.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
+      }
       if (props.flow) {
         check(shape, 'flow', props.flow)
         shape.flow = FLOWS[props.flow]
@@ -606,54 +724,115 @@
       }
       if (props.layer) shape.layer = props.layer
 
+      // highlight: box / spotlight stay until clear
+      if (props.highlight) {
+        const hl = { box: false, spotlight: false, ...shape.hl }
+        for (const word of props.highlight) {
+          if (word === 'clear') { hl.box = false; hl.spotlight = false }
+          else hl[word] = true
+        }
+        shape.hl = hl
+      }
+      // pulse / shake: one-off effects this beat, on an existing shape (and a group's members)
+      if (props.emphasis) {
+        if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
+        else for (const target of [shape, ...groupMembers(shape)]) tween(meta, target.uid).effect = props.emphasis
+      }
+      if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
+
+      if (isLine && (props.travel || props.follow || props.attach)) throw new Error('a line has no single position, so it can\'t travel, follow or attach (its ends can follow shapes)')
       if (isLine) {
         if (props.x || props.y || props.at?.kind === 'ref' || props.at?.kind === 'place') throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
         if (props.at) {
           if (!props.at.x.rel || !props.at.y.rel || creating) throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
           const ends = resolveEnds(shape, shapes)
-          shape.from = { x: ends.from.x + props.at.x.v * CELL, y: ends.from.y + props.at.y.v * CELL }
-          shape.to = { x: ends.to.x + props.at.x.v * CELL, y: ends.to.y + props.at.y.v * CELL }
+          shape.from = { x: coord(props.at.x, ends.from.x), y: coord(props.at.y, ends.from.y) }
+          shape.to = { x: coord(props.at.x, ends.to.x), y: coord(props.at.y, ends.to.y) }
         }
         for (const key of ['from', 'to']) {
           const end = props[key]
           if (!end) continue
           if (end.kind === 'ref') { shape[key] = { ref: end.ref }; continue }
-          const current = creating ? null : resolveEnds(shape, shapes)[key]
-          shape[key] = {
-            x: (current && rel(end.x, current.x, CELL, false)) ?? cellToPx(end.x.v),
-            y: (current && rel(end.y, current.y, CELL, false)) ?? cellToPx(end.y.v),
-          }
+          const current = creating ? undefined : resolveEnds(shape, shapes)[key]
+          shape[key] = { x: coord(end.x, current?.x), y: coord(end.y, current?.y) }
         }
         if (creating && (!shape.from || !shape.to)) throw new Error('a line needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"')
         if (props.via) throw new Error('"via" moves a shape along a curve, so it can\'t be used on a line')
         return null
       }
 
+      const positioned = props.at || props.x || props.y
+      if (props.travel && props.follow) throw new Error('give either "travel" or "follow", not both')
+      if ((props.travel || props.follow) && (positioned || props.via)) throw new Error('"travel" and "follow" set the route, so they can\'t go with at / move / x / y / via')
+      if ((props.travel || props.follow) && creating) throw new Error('"travel" and "follow" only work when moving an existing shape')
+      if (props.attach && (positioned || props.via || props.travel || props.follow)) throw new Error('"attach" sets the position, so it can\'t go with a move')
       if (props.via && creating) throw new Error('"via" only works when moving an existing shape')
       if (props.via && !props.at && !props.x && !props.y) throw new Error('"via" needs a move too, e.g. "move 9,3 via 5,1"')
       const start = { x: shape.x, y: shape.y }
 
-      const pos = (value, current) => rel(value, current, CELL, creating) ?? cellToPx(value.v)
       const at = props.at
-      if (at?.kind === 'abs') { shape.x = pos(at.x, shape.x); shape.y = pos(at.y, shape.y) }
+      if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
       if (at?.kind === 'ref') Object.assign(shape, boxCentre(shapes.get(at.ref)))
       if (at?.kind === 'place') {
         const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
         Object.assign(shape, placeNextTo(shape, shapes.get(at.ref), at.place, gap))
       }
-      if (props.x) shape.x = pos(props.x, shape.x)
-      if (props.y) shape.y = pos(props.y, shape.y)
+      if (props.x) shape.x = coord(props.x, now(shape.x))
+      if (props.y) shape.y = coord(props.y, now(shape.y))
+
+      if (props.attach) {
+        if (props.attach.ref === shape.id) throw new Error('a shape can\'t attach to itself')
+        leaveGroup(shape)
+        if (props.gap && props.attach.side === 'centre') warn('"gap" does nothing when attaching on top of a shape (give a side, e.g. attach right-of a)')
+        shape.attach = { ref: props.attach.ref, side: props.attach.side, gap: props.gap ? props.gap.v * CELL : PLACE_GAP }
+        Object.assign(shape, attachPos(shape, shapes.get(props.attach.ref), shape.attach))
+      }
+      if (props.detach) {
+        if (!shape.attach) warn('this shape isn\'t attached or in a group, so "detach" does nothing')
+        leaveGroup(shape)
+        shape.attach = null
+      }
       if (creating && (shape.x === undefined || shape.y === undefined)) throw new Error('needs a position, e.g. "at 3,2"')
+
+      // Moving an attached shape releases it; moving a group member keeps it in the group
+      // (at its new place in it).
+      const moved = positioned || props.via || props.travel || props.follow
+      const keepOffset = () => {
+        if (!moved || !shape.attach || props.attach) return
+        if (shape.attach.dx === undefined) { shape.attach = null; return }
+        const parent = shapes.get(shape.attach.ref)
+        shape.attach.dx = shape.x - parent.x
+        shape.attach.dy = shape.y - parent.y
+      }
+
+      if (props.travel) {
+        // hop by hop through the stops; a signed stop is relative to the one before
+        const points = [start]
+        for (const stop of props.travel) {
+          const prev = points[points.length - 1]
+          points.push(stop.kind === 'ref' ? boxCentre(shapes.get(stop.ref)) : { x: coord(stop.x, prev.x), y: coord(stop.y, prev.y) })
+        }
+        Object.assign(shape, points[points.length - 1])
+        keepOffset()
+        return buildPolyline(points)
+      }
+      if (props.follow) {
+        const line = shapes.get(props.follow.ref)
+        if (!LINE_TYPES.includes(line.type)) throw new Error(`"${props.follow.ref}" isn't a line or arrow, so it can't be followed`)
+        const ends = resolveEnds(line, shapes)
+        const [a, b] = props.follow.reverse ? [ends.to, ends.from] : [ends.from, ends.to]
+        Object.assign(shape, b)
+        keepOffset()
+        return buildPolyline([start, a, b])
+      }
+      keepOffset()
       if (!props.via) return null
 
       // Via points: signed numbers are relative to where the shape starts.
       const vias = props.via.map((via) => {
         if (via.kind === 'ref') return boxCentre(shapes.get(via.ref))
         if (via.kind === 'place') return placeNextTo(shape, shapes.get(via.ref), via.place, PLACE_GAP)
-        return {
-          x: rel(via.x, start.x, CELL, false) ?? cellToPx(via.x.v),
-          y: rel(via.y, start.y, CELL, false) ?? cellToPx(via.y.v),
-        }
+        return { x: coord(via.x, start.x), y: coord(via.y, start.y) }
       })
       return buildPath([start, ...vias, { x: shape.x, y: shape.y }])
     }
@@ -663,13 +842,42 @@
       for (const [key, value] of Object.entries(defaults)) {
         if (['speed', 'effect'].includes(key)) continue
         if (APPLIES[key] && !APPLIES[key].includes(shape.type)) continue
-        if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = (value.w.v * CELL) / 2; continue }
-        if (key === 'size') { shape.w = value.w.v * CELL; shape.h = value.h.v * CELL; continue }
-        if (key === 'radius') { shape.r = value.v * CELL; continue }
-        if (key === 'width') { shape.w = value.v * CELL; continue }
-        if (key === 'height') { shape.h = value.v * CELL; continue }
-        if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = value.v; continue }
+        const cells = (n) => numberValue(n, undefined, { unit: CELL })
+        if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = cells(value.w) / 2; continue }
+        if (key === 'size') { shape.w = cells(value.w); shape.h = cells(value.h); continue }
+        if (key === 'radius') { shape.r = cells(value); continue }
+        if (key === 'corner') { shape.corner = cells(value); continue }
+        if (key === 'width') { shape.w = cells(value); continue }
+        if (key === 'height') { shape.h = cells(value); continue }
+        if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = numberValue(value); continue }
         shape[key] = value
+      }
+    }
+
+    // A group's members (recursively), as shapes.
+    function groupMembers(shape) {
+      if (shape.type !== 'group') return []
+      return shape.members.flatMap((id) => { const m = shapes.get(id); return m ? [m, ...groupMembers(m)] : [] })
+    }
+
+    // Takes a shape out of the group it's in (if any).
+    function leaveGroup(shape) {
+      if (shape.attach?.dx === undefined) return
+      const parent = shapes.get(shape.attach.ref)
+      if (parent?.members) parent.members = parent.members.filter((id) => id !== shape.id)
+      shape.attach = null
+    }
+
+    // After every line: put attached shapes and group members where their refs now are
+    // (several passes, for chains), and fit each group's box round its members.
+    function settle() {
+      for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
+      resolveAttachments(shapes)
+      for (const group of shapes.values()) {
+        if (group.type !== 'group' || !group.members.length) continue
+        const b = unionBounds(group.members.map((id) => shapes.get(id)).filter(Boolean), shapes)
+        group.w = 2 * Math.max(group.x - b.x0, b.x1 - group.x)
+        group.h = 2 * Math.max(group.y - b.y0, b.y1 - group.y)
       }
     }
 
@@ -684,25 +892,76 @@
       }
     }
 
+    // draw only applies to lines and arrows, slide only to shapes; otherwise they fade
+    function warnEffect(shape, effect, warn) {
+      const line = LINE_TYPES.includes(shape.type)
+      if (effect === 'draw' && !line) warn(`"draw" only draws lines and arrows, so this ${shape.type} fades instead`)
+      if (effect === 'slide' && line) warn(`"slide" doesn't move lines, so this ${shape.type} fades instead`)
+    }
+
     // Seconds before a line's change starts (the longest delay wins if a shape changes twice in a beat).
     function setDelay(meta, uid, props) {
       if (!props.delay) return
       if (props.delay.v < 0) throw new Error('"delay" must be zero or more seconds')
-      meta.delay.set(uid, Math.max(meta.delay.get(uid) || 0, props.delay.v * 1000))
+      const record = tween(meta, uid)
+      record.delay = Math.max(record.delay, props.delay.v * 1000)
     }
 
     function speedOf(props) {
-      const speed = props.speed || defaults.speed
-      return speed ? SPEEDS[speed] : NORMAL_MS
+      return props.speed ?? defaults.speed ?? NORMAL_MS
+    }
+
+    // `camera at 4,3 zoom 2` pans and zooms the view; `camera reset` goes back to the whole drawing.
+    // A shape id centres on where the shape is now (the camera doesn't follow it).
+    function runCameraLine([, colon, rest = ''], meta, warn) {
+      if (colon) throw new Error('"camera" takes no colon, e.g. "camera at 4,3 zoom 2"')
+      const props = parseProps(tokenize(rest), 0, 'camera', shapes)
+      const extra = Object.keys(props).find((key) => !['at', 'x', 'y', 'zoom', 'reset', 'speed', 'delay'].includes(key))
+      if (extra) throw new Error(`"camera" takes at / x / y, zoom, reset, speed and delay, not "${extra === 'label' ? 'quoted text' : extra}"`)
+      if (props.at?.kind === 'place') throw new Error('"camera at" takes "x,y" or a shape id')
+      if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects at, zoom or reset, e.g. "camera at 4,3 zoom 2"')
+      if (props.reset && (props.at || props.x || props.y || props.zoom)) throw new Error('"camera reset" takes only a speed and a delay')
+
+      const before = JSON.stringify(camera)
+      const next = props.reset ? { x: null, y: null, zoom: 1 } : { ...camera }
+      const centre = context.centre // the drawing's centre, when the grid is fixed
+      const axis = (n, key) => {
+        const current = camera[key] ?? centre?.[key]
+        if (n.rel && current == null) throw new Error('a relative camera move needs a fixed grid, or an absolute "camera at" first')
+        return numberValue(n, current, { unit: CELL, coord: true })
+      }
+      if (props.at?.kind === 'ref') {
+        const b = bounds(shapes.get(props.at.ref), shapes)
+        next.x = (b.x0 + b.x1) / 2
+        next.y = (b.y0 + b.y1) / 2
+      } else if (props.at) {
+        next.x = axis(props.at.x, 'x')
+        next.y = axis(props.at.y, 'y')
+      }
+      if (props.x) next.x = axis(props.x, 'x')
+      if (props.y) next.y = axis(props.y, 'y')
+      if (props.zoom) {
+        next.zoom = numberValue(props.zoom, camera.zoom)
+        if (!(next.zoom > 0)) throw new Error('"zoom" must be more than 0')
+      }
+      camera = next
+      if (JSON.stringify(camera) === before) warn('this camera line changes nothing')
+      tween(meta, 'camera').dur = speedOf(props)
+      setDelay(meta, 'camera', props)
     }
 
     function runLine(text, meta, warn) {
-      const match = text.match(/^([^:\s]+)\s*:\s*(.*)$/)
-      if (!match) throw new Error('expected "id: …"')
+      // `defaults …` has no id (and no colon), like pause and auto
+      const cameraLine = text.match(/^camera(\s*:)?(?:\s+(.*))?$/i)
+      if (cameraLine) return runCameraLine(cameraLine, meta, warn)
+      const defaultsLine = text.match(/^defaults(\s*:)?(?:\s+(.*))?$/i)
+      if (defaultsLine?.[1]) throw new Error('"defaults" takes no colon, e.g. "defaults fill blue"')
+      const match = defaultsLine ? ['', 'defaults', defaultsLine[2] || ''] : text.match(/^([^:\s]+)\s*:\s*(.*)$/)
+      if (!match) throw new Error('expected "id: …" (or defaults, camera, pause, auto)')
       const id = match[1]
       const tokens = tokenize(match[2])
 
-      if (id === 'defaults') {
+      if (defaultsLine) {
         const props = parseProps(tokens, 0, 'defaults', shapes)
         for (const key of ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via']) {
           if (key in props) throw new Error(`"${key === 'label' ? 'quoted text' : key}" can't be a default`)
@@ -710,7 +969,7 @@
         if (props.reset) { defaults = {}; delete props.reset }
         const before = JSON.stringify(defaults)
         defaults = { ...defaults, ...props }
-        if (JSON.stringify(defaults) === before && !tokens.some((t) => t.lower === 'reset')) warn('this defaults line changes nothing')
+        if (JSON.stringify(defaults) === before && !tokens.some((t) => t.lower === 'clear')) warn('this defaults line changes nothing')
         return
       }
 
@@ -727,11 +986,79 @@
         const props = parseProps(tokens, 1, 'remove', shapes)
         const extra = Object.keys(props).filter((key) => !['speed', 'effect', 'delay'].includes(key))
         if (extra.length) throw new Error(`"remove" only takes a speed, an effect and a delay, not "${extra[0]}"`)
-        freezeEndsAttachedTo(id)
+        // Removing a group removes its members too
+        const removeOne = (target) => {
+          if (!target) return
+          if (target.type === 'group') target.members.forEach((m) => removeOne(shapes.get(m)))
+          leaveGroup(target)
+          freezeEndsAttachedTo(target.id)
+          shapes.delete(target.id)
+          tween(meta, target.uid).exit = props.effect || defaults.effect || 'fade'
+          if (props.effect) warnEffect(target, props.effect, warn)
+          tween(meta, target.uid).dur = speedOf(props)
+          setDelay(meta, target.uid, props)
+        }
+        removeOne(existing)
+        return
+      }
+
+      const firstWord = first?.kind === 'word' ? first.lower : ''
+      if (firstWord === 'copy') {
+        // An identical copy that starts on the original, so a move on the same line animates
+        // away from it
+        const srcId = parseAs('id', tokens[1], shapes)
+        if (!srcId) throw new Error(`"copy" expects a shape id${tokens[1] ? `: no shape called "${tokens[1].value}"` : ''}`)
+        const src = shapes.get(srcId)
+        if (src.type === 'group') throw new Error('a group can\'t be copied: copy its shapes instead')
+        const props = parseProps(tokens, 2, 'change', shapes)
+        const fresh = { attach: null, hl: null, callout: null }
+        const shape = { ...structuredClone(src), ...fresh, id, uid: ++uid }
+        tween(meta, shape.uid).from = { ...structuredClone(src), ...fresh, uid: shape.uid }
+        const path = applyProps(shape, props, false, warn, meta)
+        if (path) tween(meta, shape.uid).path = path
+        if (existing) {
+          warn(`"${id}" already exists, so it is replaced`)
+          tween(meta, existing.uid).exit = 'fade'
+          tween(meta, existing.uid).dur = speedOf(props)
+        }
+        shapes.set(id, shape)
+        tween(meta, shape.uid).enter = 'copy'
+        tween(meta, shape.uid).dur = speedOf(props)
+        setDelay(meta, shape.uid, props)
+        return
+      }
+      if (firstWord === 'group') {
+        if (existing) throw new Error(`"${id}" already exists`)
+        const members = []
+        let j = 1
+        for (let ref; (ref = parseAs('id', tokens[j], shapes)); j++) members.push(ref)
+        if (!members.length) throw new Error('"group" expects the ids of the shapes to group, e.g. "g: group a b c"')
+        const props = parseProps(tokens, j, 'change', shapes)
+        if (props.at || props.x || props.y || props.via || props.travel || props.follow || props.attach) throw new Error('create the group first, then move it on the next line')
+        const list = members.map((m) => shapes.get(m))
+        for (const m of list) {
+          if (LINE_TYPES.includes(m.type) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
+        }
+        const b = unionBounds(list, shapes)
+        const group = { ...baseShape('group'), id, uid: ++uid, members, x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0 }
+        for (const m of list) {
+          if (LINE_TYPES.includes(m.type)) continue // follows the shapes its ends are attached to
+          leaveGroup(m)
+          m.attach = { ref: id, dx: m.x - group.x, dy: m.y - group.y }
+        }
+        applyProps(group, props, false, warn, meta)
+        shapes.set(id, group)
+        tween(meta, group.uid).enter = 'fade'
+        tween(meta, group.uid).dur = speedOf(props)
+        return
+      }
+      if (firstWord === 'ungroup') {
+        if (!existing) throw new Error(`no shape called "${id}"`)
+        if (existing.type !== 'group') throw new Error(`"${id}" isn't a group`)
+        if (tokens.length > 1) throw new Error('"ungroup" takes nothing after it')
+        for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
         shapes.delete(id)
-        meta.exit.set(existing.uid, props.effect || defaults.effect || 'fade')
-        meta.dur.set(existing.uid, speedOf(props))
-        setDelay(meta, existing.uid, props)
+        tween(meta, existing.uid).exit = 'fade'
         return
       }
 
@@ -748,39 +1075,77 @@
           if (!lucideIcon(first.arg)) throw new Error(`no Lucide icon called "${first.arg}"`)
           shape.icon = first.arg
         }
-        applyProps(shape, props, true, warn)
+        applyProps(shape, props, true, warn, meta)
         shape.layer = props.layer || defaults.layer || 'normal'
         if (existing) {
           // Lines attached to the old shape attach to its replacement (same id).
           warn(`"${id}" already exists, so it is replaced`)
-          meta.exit.set(existing.uid, 'fade')
-          meta.dur.set(existing.uid, speedOf(props))
+          tween(meta, existing.uid).exit = 'fade'
+          tween(meta, existing.uid).dur = speedOf(props)
           setDelay(meta, existing.uid, props)
         }
         shapes.set(id, shape)
-        meta.enter.set(shape.uid, props.effect || defaults.effect || 'fade')
-        meta.dur.set(shape.uid, speedOf(props))
+        tween(meta, shape.uid).enter = props.effect || defaults.effect || 'fade'
+        if (props.effect) warnEffect(shape, props.effect, warn)
+        tween(meta, shape.uid).dur = speedOf(props)
         setDelay(meta, shape.uid, props)
         return
       }
 
       if (!existing) {
         const word = first?.kind === 'word' ? first.lower : ''
-        const known = !word || PROPS[ALIASES[word] || word] || RESERVED.has(word)
+        const known = !word || KEYWORDS[word] || RESERVED.has(word)
         throw new Error(known ? `no shape called "${id}" (to create one, put a type after the colon, e.g. "${id}: rect")` : `unknown shape type "${first.value}"`)
       }
       const props = parseProps(tokens, 0, 'change', shapes)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or removed`)
       const shape = structuredClone(existing)
-      const path = applyProps(shape, props, false, warn)
-      if (path) meta.path.set(shape.uid, path)
-      else if (props.at || props.x || props.y) meta.path.delete(shape.uid) // a later straight move wins
+      const path = applyProps(shape, props, false, warn, meta)
+      if (path) tween(meta, shape.uid).path = path
+      else if (props.at || props.x || props.y) tween(meta, shape.uid).path = null // a later straight move wins
       shapes.set(id, shape)
-      meta.dur.set(shape.uid, Math.max(meta.dur.get(shape.uid) || 0, speedOf(props)))
+      tween(meta, shape.uid).dur = Math.max(tween(meta, shape.uid).dur, speedOf(props))
       setDelay(meta, shape.uid, props)
     }
 
-    return { shapes, runLine }
+    return { shapes, runLine, settle, camera: () => ({ ...camera }) }
+  }
+
+  // A comment starts at "#" followed by a space (or the end of the line), outside quotes, so hex
+  // colours (#f80) and a "#" in a label are left alone. Whole-line or after a command.
+  function stripComment(line) {
+    let quoted = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (ch === '"' && line[i - 1] !== '\\') quoted = !quoted
+      else if (ch === '#' && !quoted && (i + 1 === line.length || /\s/.test(line[i + 1]))) return line.slice(0, i)
+    }
+    return line
+  }
+
+  // Joins a scene's lines into commands: a line indented more than the line that started the
+  // current command continues it (as if joined with a space), so a long command can be laid out
+  // one property per line. Comments are removed and blank lines skipped first; `li` is the line
+  // the command starts on (for error messages).
+  function logicalLines(scene) {
+    const out = []
+    let current = null
+    scene.split('\n').forEach((raw, li) => {
+      const text = stripComment(raw).trimEnd()
+      if (!text.trim()) return
+      const indent = text.length - text.trimStart().length
+      if (current && indent > current.indent) current.text += ` ${text.trim()}`
+      else out.push((current = { text: text.trim(), li, indent }))
+    })
+    return out
+  }
+
+  // One record per shape per beat: how its change animates (duration and delay in ms, the route
+  // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect).
+  function tween(meta, uid) {
+    let record = meta.tweens.get(uid)
+    if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))
+    return record
   }
 
   // Timing lines (no id): `pause` waits for a click while playing, `pause n` holds n seconds,
@@ -809,21 +1174,20 @@
 
     steps.forEach((step, si) => {
       step.beats.forEach((beat, bi) => {
-        const meta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map(), pause: null, auto: false }
+        const meta = { tweens: new Map(), pause: null, auto: false }
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
-        beat.scene.split('\n').forEach((raw, li) => {
-          const text = raw.trim()
-          if (!text || text.startsWith('//')) return
+        logicalLines(beat.scene).forEach(({ text, li }) => {
           const warn = (message) => warnings.push(`${where(li)}: ${message}`)
           try {
             if (runTimingLine(text, meta)) return
             compiler.runLine(text, meta, warn)
+            compiler.settle()
           } catch (error) {
             errors.push(`${where(li)}: ${error.message} — "${text}"`)
           }
         })
         const state = new Map([...compiler.shapes].map(([id, shape]) => [id, structuredClone(shape)]))
-        beats.push({ step: si, beat: bi, state, meta })
+        beats.push({ step: si, beat: bi, state, meta, camera: compiler.camera() })
       })
     })
 
@@ -834,14 +1198,31 @@
   // Grid and bounds
   // ---------------------------------------------------------------------------
 
-  function shapeBounds(shape, byId) {
+  // The one bounds function: a shape's world-space box (its rotated, scaled outline, plus the
+  // label under an image or icon), a line's ends, or the union of a group's members. Used when
+  // compiling and on every frame: `ends` gives a line's ends mid-blend, `dx` a shake offset.
+  function bounds(shape, byId, { ends, dx = 0 } = {}, depth = 0) {
     if (LINE_TYPES.includes(shape.type)) {
-      const { from, to } = resolveEnds(shape, byId)
+      const { from, to } = ends || resolveEnds(shape, byId)
       return { x0: Math.min(from.x, to.x), y0: Math.min(from.y, to.y), x1: Math.max(from.x, to.x), y1: Math.max(from.y, to.y) }
+    }
+    if (shape.type === 'group' && depth < 8) {
+      const members = (shape.members || []).map((id) => byId.get(id)).filter(Boolean)
+      if (members.length) return unionBounds(members, byId, depth + 1)
     }
     const c = boxCentre(shape)
     const { hw, hh } = outline(shape)
-    return { x0: c.x - hw, y0: c.y - hh, x1: c.x + hw, y1: c.y + hh + labelBelow(shape) }
+    return { x0: c.x - hw + dx, y0: c.y - hh, x1: c.x + hw + dx, y1: c.y + hh + labelBelow(shape) }
+  }
+
+  function unionBounds(list, byId, depth = 0) {
+    const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
+    for (const shape of list) {
+      const b = bounds(shape, byId, {}, depth)
+      box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
+      box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
+    }
+    return box
   }
 
   function viewBoxFor(gridAttr, beats, warnings) {
@@ -854,7 +1235,7 @@
     }
     const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
     beats.forEach(({ state }) => state.forEach((shape) => {
-      const b = shapeBounds(shape, state)
+      const b = bounds(shape, state)
       box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
       box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
     }))
@@ -893,6 +1274,28 @@
   const clamp01 = (t) => Math.min(1, Math.max(0, t))
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
+  // Parses a computed colour to [r, g, b, a] (0-255, alpha 0-1). rgb() and color(srgb …) are read
+  // directly; anything else (the theme's oklch palette, lab, …) is converted by painting one pixel
+  // on a canvas and reading it back as sRGB.
+  let pixel = null
+  function parseColour(text) {
+    if (!text || text === 'none') return null
+    const srgb = text.match(/^color\(srgb\s+([\d.e-]+)\s+([\d.e-]+)\s+([\d.e-]+)(?:\s*\/\s*([\d.e-]+))?\)$/)
+    if (srgb) return [srgb[1] * 255, srgb[2] * 255, srgb[3] * 255, srgb[4] === undefined ? 1 : +srgb[4]]
+    const rgb = text.match(/^rgba?\(([^)]+)\)$/)
+    if (rgb) {
+      const [r, g, b, a = 1] = rgb[1].split(/[\s,/]+/).filter(Boolean).map(Number)
+      return [r, g, b, a]
+    }
+    pixel ??= document.createElement('canvas').getContext('2d', { willReadFrequently: true })
+    if (!pixel) return null
+    pixel.clearRect(0, 0, 1, 1)
+    pixel.fillStyle = text
+    pixel.fillRect(0, 0, 1, 1)
+    const [r, g, b, a] = pixel.getImageData(0, 0, 1, 1).data
+    return [r, g, b, a / 255]
+  }
+
   function colourCss(name, role) {
     if (!name) return 'none'
     if (HEX.test(name)) return name
@@ -903,13 +1306,15 @@
 
   function createRenderer(svg, viewBox, debug) {
     const layers = [0, 1, 2].map(() => svg.appendChild(svgEl('g')))
+    const highlightLayer = svg.appendChild(svgEl('g', { class: 'anim-highlights' }))
+    const calloutLayer = svg.appendChild(svgEl('g', { class: 'anim-callouts' }))
     const nodes = new Map() // uid -> node
 
     if (debug) drawDebugGrid(svg, viewBox)
 
     function makeNode(shape) {
       const g = svgEl('g', { class: `anim-shape anim-${shape.type}` })
-      const node = { g, type: shape.type, uid: shape.uid, colours: new Map(), colourAnims: new Map() }
+      const node = { g, type: shape.type, uid: shape.uid }
       if (shape.type === 'rect') node.body = g.appendChild(svgEl('rect'))
       if (shape.type === 'circle') node.body = g.appendChild(svgEl('circle'))
       if (LINE_TYPES.includes(shape.type)) {
@@ -935,33 +1340,38 @@
       return node
     }
 
-    // Sets a colour, animating from the old one with the Web Animations API when `timing` has a
-    // duration or delay (backwards fill holds the old colour during the delay). `timing` is null on
-    // later frames of a transition (nothing to change) and { ms: 0, delay: 0 } for static renders,
-    // which cancel any colour animation still running.
-    function setColour(node, el, prop, value, timing) {
-      const set = node.colours.get(el) || {}
-      const running = node.colourAnims.get(el) || []
-      if (timing && !timing.ms && !timing.delay && running.length) {
-        running.forEach((anim) => anim.cancel())
-        node.colourAnims.delete(el)
+    // Colours are blended in JavaScript every frame, like positions: each CSS colour (theme
+    // variables, color-mix tints) is resolved to RGBA once through a hidden probe and cached; the
+    // cache is cleared when the theme changes.
+    const probe = svg.appendChild(svgEl('rect', { width: 0, height: 0 }))
+    probe.style.display = 'none'
+    const colourCache = new Map()
+    function rgba(css) {
+      if (!css || css === 'none') return null
+      if (!colourCache.has(css)) {
+        probe.style.fill = css
+        colourCache.set(css, parseColour(getComputedStyle(probe).fill))
       }
-      const old = set[prop]
-      if (old === value) return
-      set[prop] = value
-      node.colours.set(el, set)
-      el.style[prop] = value
-      if (timing && (timing.ms || timing.delay) && old !== undefined && el.animate) {
-        const anim = el.animate([{ [prop]: old }, { [prop]: value }], {
-          duration: Math.max(1, timing.ms), delay: timing.delay, easing: 'ease-in-out', fill: 'backwards',
-        })
-        node.colourAnims.set(el, [...(node.colourAnims.get(el) || []), anim])
-      }
+      return colourCache.get(css)
     }
+    // A colour part-way from a to b (either may be null = none: it fades in or out)
+    function mixColour(a, b, t) {
+      if (!a && !b) return 'none'
+      const from = a || [...b.slice(0, 3), 0]
+      const to = b || [...a.slice(0, 3), 0]
+      const [r, g, bl, al] = from.map((v, i) => lerp(v, to[i], t))
+      return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(bl)}, ${al.toFixed(3)})`
+    }
+    const paint = (el, prop, value) => { if (el.style[prop] !== value) el.style[prop] = value }
 
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
-    function drawNode(node, s, v, colours, ms, byId) {
+    function drawNode(node, s, v, colours, byId) {
       const { g } = node
+      if (node.type === 'group') {
+        // A group is invisible (its highlight box is drawn in drawOverlays)
+        if (node.debugId) { node.debugId.setAttribute('x', s.x); node.debugId.setAttribute('y', s.y); node.debugId.textContent = s.id }
+        return
+      }
       const strokeWidth = STROKE * s.weight
       // Dash patterns use round caps, so each drawn dash is shortened (and gap lengthened) by the
       // stroke width to keep the visible lengths; a dash of 0 is a round dot. Scales with the weight.
@@ -1021,6 +1431,7 @@
       node.label.style.fontSize = `${fontSize}px`
       node.label.style.fontWeight = s.bold ? '700' : ''
       node.label.style.opacity = v.labelOpacity
+      paint(node.label, 'fill', colours.colour) // a text shape's colour, or any shape's label
       if (node.label.textContent !== v.label) node.label.textContent = v.label
 
       if (LINE_TYPES.includes(node.type)) {
@@ -1042,8 +1453,8 @@
           node.head.setAttribute('points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
           node.head.style.opacity = clamp01(v.draw * 4 - 0.2)
           node.head.style.strokeWidth = strokeWidth
-          setColour(node, node.head, 'fill', colours.stroke, ms)
-          setColour(node, node.head, 'stroke', colours.stroke, ms)
+          paint(node.head, 'fill', colours.stroke)
+          paint(node.head, 'stroke', colours.stroke)
           end = back
         }
         node.body.setAttribute('x1', from.x); node.body.setAttribute('y1', from.y)
@@ -1063,31 +1474,31 @@
           setFlow(node.body)
           syncGhost(node.body)
         }
-        setColour(node, node.body, 'stroke', colours.stroke, ms)
+        paint(node.body, 'stroke', colours.stroke)
         const mx = (from.x + to.x) / 2
         const my = (from.y + to.y) / 2
         node.label.setAttribute('x', mx); node.label.setAttribute('y', my)
         node.label.setAttribute('text-anchor', 'middle')
         node.label.classList.add('anim-halo')
-        g.setAttribute('transform', v.scale === 1 ? '' : `translate(${mx} ${my}) scale(${v.scale}) translate(${-mx} ${-my})`)
+        g.setAttribute('transform', v.scale === 1 && !v.rot ? '' : `translate(${mx} ${my}) rotate(${v.rot || 0}) scale(${v.scale}) translate(${-mx} ${-my})`)
         if (node.debugId) { node.debugId.setAttribute('x', from.x); node.debugId.setAttribute('y', from.y); node.debugId.textContent = s.id }
         return
       }
 
       const c = boxCentre(s)
-      g.setAttribute('transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle}) scale(${v.scale * s.scale})`)
+      g.setAttribute('transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle + (v.rot || 0)}) scale(${v.scale * s.scale})`)
       const { hw, hh } = extents(s)
 
       if (node.type === 'rect') {
         node.body.setAttribute('x', -hw); node.body.setAttribute('y', -hh)
         node.body.setAttribute('width', 2 * hw); node.body.setAttribute('height', 2 * hh)
-        const corner = Math.max(0, Math.min(s.r || 0, hw, hh))
+        const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
         node.body.setAttribute('rx', corner); node.body.setAttribute('ry', corner)
       }
       if (node.type === 'circle') node.body.setAttribute('r', s.r)
       if (['rect', 'circle'].includes(node.type)) {
-        setColour(node, node.body, 'fill', colours.fill, ms)
-        setColour(node, node.body, 'stroke', s.weight ? colours.stroke : 'none', ms)
+        paint(node.body, 'fill', colours.fill)
+        paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
         node.body.style.strokeLinecap = cap
@@ -1099,7 +1510,7 @@
           el.setAttribute('x', -hw); el.setAttribute('y', -hh)
           el.setAttribute('width', 2 * hw); el.setAttribute('height', 2 * hh)
         }
-        setColour(node, node.body, 'stroke', s.weight ? colours.stroke : 'none', ms)
+        paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
         node.body.style.strokeLinecap = cap
@@ -1110,7 +1521,7 @@
         node.icon.setAttribute('x', -hw); node.icon.setAttribute('y', -hh)
         node.icon.setAttribute('width', 2 * hw); node.icon.setAttribute('height', 2 * hh)
         node.icon.setAttribute('stroke-width', 2 * s.weight)
-        setColour(node, node.icon, 'stroke', colours.stroke, ms)
+        paint(node.icon, 'stroke', colours.stroke)
       }
       if (node.title && node.title.textContent !== s.label) node.title.textContent = s.label
 
@@ -1123,7 +1534,6 @@
         label.setAttribute('text-anchor', anchor)
         label.setAttribute('x', anchor === 'start' ? -hw : anchor === 'end' ? hw : 0)
         label.setAttribute('y', 0)
-        setColour(node, label, 'fill', colours.stroke, ms)
       } else if (['image', 'icon'].includes(node.type)) {
         label.setAttribute('y', hh + fontSize * 0.75)
       } else {
@@ -1139,7 +1549,7 @@
     }
 
     function offscreenOffset(shape) {
-      const c = shapeBounds(shape, new Map())
+      const c = bounds(shape, new Map())
       const cx = (c.x0 + c.x1) / 2
       const cy = (c.y0 + c.y1) / 2
       const options = [
@@ -1166,7 +1576,7 @@
 
     function interpolate(a, b, t) {
       const s = { ...b }
-      for (const key of ['x', 'y', 'w', 'h', 'r', 'weight', 'font', 'angle', 'scale']) {
+      for (const key of ['x', 'y', 'w', 'h', 'r', 'corner', 'weight', 'font', 'angle', 'scale']) {
         if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], t)
       }
       // A line style change cross-fades from the old style to the new (see syncGhost)
@@ -1177,37 +1587,68 @@
       return s
     }
 
+    // Shapes lit by a spotlight in a state (by id): spotlit shapes, the members of spotlit groups,
+    // and lines whose ends are both on lit shapes. Null when nothing is spotlit.
+    function litIds(state) {
+      if (![...state.values()].some((s) => s.hl?.spotlight)) return null
+      const lit = new Set()
+      const isLit = (shape, depth = 0) => {
+        if (!shape || depth > 8) return false
+        if (shape.hl?.spotlight) return true
+        if (shape.attach?.dx !== undefined) return isLit(state.get(shape.attach.ref), depth + 1)
+        return false
+      }
+      for (const shape of state.values()) if (isLit(shape)) lit.add(shape.id)
+      for (const shape of state.values()) {
+        if (LINE_TYPES.includes(shape.type) && shape.from.ref && shape.to.ref && lit.has(shape.from.ref) && lit.has(shape.to.ref)) lit.add(shape.id)
+      }
+      return lit
+    }
+
+    const DIM = 0.2 // opacity of shapes outside the spotlight
+
     /**
      * Renders the transition between two consecutive states. progress(uid) gives each shape's
      * position from A (0) to B (1); `final` is the state the transition ends on (it supplies
-     * the colours, which CSS transitions animate) and `ms(uid)` the colour transition time.
+     * the colours) and `ms(uid)` the colour transition time. `extra.beatT` is the whole beat's
+     * progress from A to B (for the spotlight) and `extra.forward` its direction (one-off
+     * highlight effects only play forwards).
      */
-    function render(A, B, meta, progress, final, ms) {
+    function render(A, B, meta, progress, final, extra = { forward: true, beatT: 1 }) {
       const aByUid = new Map([...A.values()].map((s) => [s.uid, s]))
       const bByUid = new Map([...B.values()].map((s) => [s.uid, s]))
       const uids = new Set([...aByUid.keys(), ...bByUid.keys()])
       const items = []
-      const now = new Map() // id -> interpolated shape, for attached line ends
+      const now = new Map() // id -> interpolated shape, for attached line ends and shapes
 
       for (const uid of uids) {
-        const a = aByUid.get(uid)
+        // A copy starts as its original, so it animates away from it
+        const tw = meta.tweens.get(uid)
+        const a = aByUid.get(uid) || (bByUid.has(uid) ? tw?.from : undefined)
         const b = bByUid.get(uid)
-        const t = ease(clamp01(progress(uid)))
+        const raw = clamp01(progress(uid))
+        const t = ease(raw)
         let shape
         let v
         if (a && b) {
           shape = interpolate(a, b, t)
-          if (meta.path.has(uid)) Object.assign(shape, pointOnPath(meta.path.get(uid), t))
+          if (tw?.path) Object.assign(shape, pointOnPath(tw.path, t))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           v.label = swap && t < 0.5 ? a.label : b.label
           v.labelOpacity = swap ? Math.abs(2 * t - 1) : 1
+          // One-off effects, forwards only (going back doesn't replay them)
+          const oneoff = extra.forward && tw?.effect
+          if (oneoff === 'pulse') v.scale = 1 + 0.25 * Math.sin(Math.PI * raw)
+          if (oneoff === 'shake') v.dx = 0.15 * CELL * Math.sin(8 * Math.PI * raw) * (1 - raw)
+          // wobble: turns left and right twice, easing in and out
+          if (oneoff === 'wobble') v.rot = 14 * Math.sin(4 * Math.PI * raw) * Math.sin(Math.PI * raw)
         } else if (b) {
           shape = b
-          v = appear(meta.enter.get(uid) || 'fade', t, b)
+          v = appear(tw?.enter || 'fade', t, b)
         } else {
           shape = a
-          v = appear(meta.exit.get(uid) || 'fade', 1 - t, a)
+          v = appear(tw?.exit || 'fade', 1 - t, a)
         }
         v.label ??= shape.label
         v.labelOpacity ??= 1
@@ -1215,6 +1656,24 @@
         items.push({ uid, shape, v, node, a, b, t })
         if (!LINE_TYPES.includes(shape.type) && (!now.has(shape.id) || b)) now.set(shape.id, { ...shape, x: shape.x + v.dx, y: shape.y + v.dy })
       }
+
+      // Attached shapes and group members follow their ref's current (interpolated) place, so they
+      // stay together along curves and routes. A shape whose attachment changes this beat keeps its
+      // own interpolated path; a group member moved within its group glides to its new offset.
+      const byItem = new Map(items.map((item) => [item.shape.id, item]))
+      resolveAttachments(now, (shape) => {
+        const item = byItem.get(shape.id)
+        const spec = item && !LINE_TYPES.includes(item.shape.type) && (item.b || item.a).attach
+        if (!spec) return null
+        const before = item.a?.attach
+        if (item.a && item.b && !(before && before.ref === spec.ref && before.side === spec.side)) return null
+        if (spec.dx === undefined || before?.dx === undefined) return spec
+        return { ...spec, dx: lerp(before.dx, spec.dx, item.t), dy: lerp(before.dy, spec.dy, item.t) }
+      }, (shape, p) => {
+        const item = byItem.get(shape.id)
+        item.shape = { ...item.shape, x: p.x, y: p.y }
+        Object.assign(shape, { x: p.x + item.v.dx, y: p.y + item.v.dy }) // `now` keeps the drawn place
+      })
 
       // Lines whose ends move between A and B (or swap between a shape and a point) blend the two.
       for (const item of items) {
@@ -1227,20 +1686,114 @@
         }
       }
       for (const [uid, node] of nodes) {
-        if (!uids.has(uid)) { node.g.remove(); nodes.delete(uid) }
+        if (!uids.has(uid)) { node.g.remove(); node.box?.remove(); node.bubble?.remove(); nodes.delete(uid) }
+      }
+
+      // Spotlight: shapes outside it fade to DIM over the beat
+      const litA = litIds(A)
+      const litB = litIds(B)
+      for (const item of items) {
+        const dimA = litA && !litA.has(item.shape.id) ? 1 : 0
+        const dimB = litB && !litB.has(item.shape.id) ? 1 : 0
+        const dim = lerp(dimA, dimB, extra.beatT)
+        if (dim) item.v.opacity *= 1 - (1 - DIM) * dim
       }
 
       const finalByUid = new Map([...final.values()].map((s) => [s.uid, s]))
       order(items.map(({ node, shape, uid }) => ({ node, shape: finalByUid.get(uid) || shape })))
 
       for (const item of items) {
-        const finalShape = finalByUid.get(item.uid) || item.shape
-        const colours = { fill: colourCss(finalShape.fill, 'fill'), stroke: colourCss(finalShape.stroke, 'stroke') }
-        drawNode(item.node, item.shape, item.v, colours, ms(item.uid), now)
+        // colours: blended from A's to B's over the shape's progress (entering / leaving: their own)
+        const from = item.a || item.b
+        const to = item.b || item.a
+        const t = item.a && item.b ? item.t : 1
+        const colours = {
+          fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
+          stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),
+          colour: mixColour(rgba(colourCss(from.colour, 'stroke')), rgba(colourCss(to.colour, 'stroke')), t),
+        }
+        drawNode(item.node, item.shape, item.v, colours, now)
+        drawOverlays(item, now)
       }
     }
 
-    return { render }
+    // How much of a two-state feature shows: from A's value to B's over the shape's progress,
+    // times the shape's own visibility (entering / leaving).
+    const blend = (item, has) => lerp(item.a && has(item.a) ? 1 : 0, item.b && has(item.b) ? 1 : 0, item.a && item.b ? item.t : 1) * (item.a && item.b ? 1 : item.v.opacity)
+
+    // The highlight box and the callout bubble, drawn above everything in world space.
+    function drawOverlays(item, now) {
+      const node = item.node
+      const boxOpacity = blend(item, (s) => s.hl?.box) * Math.min(1, item.v.opacity / 1)
+      const bubbleOpacity = blend(item, (s) => s.callout)
+      if (!boxOpacity && !node.box && !bubbleOpacity && !node.bubble) return
+      const b = bounds(item.shape, now, { ends: item.v.ends, dx: item.v.dx })
+
+      if (boxOpacity || node.box) {
+        if (!node.box) node.box = highlightLayer.appendChild(svgEl('rect', { class: 'anim-highlight-box' }))
+        const pad = 0.15 * CELL
+        Object.entries({ x: b.x0 - pad, y: b.y0 - pad, width: b.x1 - b.x0 + 2 * pad, height: b.y1 - b.y0 + 2 * pad, rx: 0.12 * CELL })
+          .forEach(([k, val]) => node.box.setAttribute(k, val))
+        node.box.style.opacity = boxOpacity
+        if (!boxOpacity) { node.box.remove(); node.box = null }
+      }
+
+      if (bubbleOpacity || node.bubble) {
+        // The text being shown: B's, or A's while A's callout fades out
+        const callout = (item.b?.callout && (item.t >= 0.5 || !item.a?.callout)) ? item.b.callout : (item.a?.callout || item.b?.callout)
+        if (!node.bubble) {
+          node.bubble = calloutLayer.appendChild(svgEl('g', { class: 'anim-callout' }))
+          node.bubblePath = node.bubble.appendChild(svgEl('path'))
+          node.bubbleText = node.bubble.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' }))
+        }
+        if (callout) drawBubble(node, callout, b)
+        node.bubble.style.opacity = bubbleOpacity
+        if (!bubbleOpacity) { node.bubble.remove(); node.bubble = null }
+      }
+    }
+
+    // A speech bubble beside bounds `b`, with a tail pointing at it.
+    function drawBubble(node, callout, b) {
+      const size = FONT * 0.75
+      const w = Math.max(CELL, textWidth(callout.text, size) + size * 1.4)
+      const h = size * 2
+      const tail = 0.3 * CELL
+      const cx0 = (b.x0 + b.x1) / 2
+      const cy0 = (b.y0 + b.y1) / 2
+      let cx = cx0, cy = cy0, tip
+      if (callout.side === 'below') { tip = { x: cx0, y: b.y1 + 4 }; cy = b.y1 + tail + h / 2 }
+      else if (callout.side === 'left') { tip = { x: b.x0 - 4, y: cy0 }; cx = b.x0 - tail - w / 2 }
+      else if (callout.side === 'right') { tip = { x: b.x1 + 4, y: cy0 }; cx = b.x1 + tail + w / 2 }
+      else { tip = { x: cx0, y: b.y0 - 4 }; cy = b.y0 - tail - h / 2 }
+      // Keep the bubble inside the drawing (the tail still points at the shape)
+      const m = 4
+      cx = Math.min(viewBox.x + viewBox.w - w / 2 - m, Math.max(viewBox.x + w / 2 + m, cx))
+      cy = Math.min(viewBox.y + viewBox.h - h / 2 - m, Math.max(viewBox.y + h / 2 + m, cy))
+      node.bubblePath.setAttribute('d', bubblePath(cx, cy, w, h, Math.min(10, h / 3), callout.side, tip))
+      node.bubbleText.setAttribute('x', cx)
+      node.bubbleText.setAttribute('y', cy)
+      node.bubbleText.style.fontSize = `${size}px`
+      if (node.bubbleText.textContent !== callout.text) node.bubbleText.textContent = callout.text
+    }
+
+    // A rounded rectangle with a tail on the side facing the shape.
+    function bubblePath(cx, cy, w, h, r, side, tip) {
+      const x0 = cx - w / 2, x1 = cx + w / 2, y0 = cy - h / 2, y1 = cy + h / 2
+      const half = Math.min(10, w / 4, h / 3)
+      const tx = Math.min(x1 - r - half, Math.max(x0 + r + half, tip.x))
+      const ty = Math.min(y1 - r - half, Math.max(y0 + r + half, tip.y))
+      let d = `M ${x0 + r} ${y0}`
+      if (side === 'below') d += ` L ${tx - half} ${y0} L ${tip.x} ${tip.y} L ${tx + half} ${y0}`
+      d += ` L ${x1 - r} ${y0} Q ${x1} ${y0} ${x1} ${y0 + r}`
+      if (side === 'left') d += ` L ${x1} ${ty - half} L ${tip.x} ${tip.y} L ${x1} ${ty + half}`
+      d += ` L ${x1} ${y1 - r} Q ${x1} ${y1} ${x1 - r} ${y1}`
+      if (side === 'above') d += ` L ${tx + half} ${y1} L ${tip.x} ${tip.y} L ${tx - half} ${y1}`
+      d += ` L ${x0 + r} ${y1} Q ${x0} ${y1} ${x0} ${y1 - r}`
+      if (side === 'right') d += ` L ${x0} ${ty + half} L ${tip.x} ${tip.y} L ${x0} ${ty - half}`
+      return `${d} L ${x0} ${y0 + r} Q ${x0} ${y0} ${x0 + r} ${y0} Z`
+    }
+
+    return { render, clearColours: () => colourCache.clear() }
   }
 
   function drawDebugGrid(svg, vb) {
@@ -1348,11 +1901,14 @@
   function buildWidget(source) {
     const { steps, title, assets } = readSource(source)
     const debug = source.hasAttribute('data-debug')
-    const { beats, errors, warnings } = compile(steps, { assets })
+    const grid = source.dataset.grid
+    const fixedGrid = grid !== 'fit' && viewBoxFor(grid, [], [])
+    const centre = fixedGrid && { x: fixedGrid.w / 2, y: fixedGrid.h / 2 }
+    const { beats, errors, warnings } = compile(steps, { assets, centre })
     const viewBox = viewBoxFor(source.dataset.grid, beats, warnings)
     if (debug) warnOutsideGrid(beats, viewBox, warnings)
 
-    // Playback options from the tag: autoplay, loop / loop-bounce, hold="s", speed="x", controls="none"
+    // Playback options from the tag: autoplay, loop / loop-bounce, hold="s", controls="none"
     const opts = JSON.parse(decodeURIComponent(source.dataset.playback || '%7B%7D'))
     const positive = (value, name, fallback) => {
       if (value == null || value === true) return fallback
@@ -1361,7 +1917,6 @@
       warnings.push(`${name}="${value}" isn't a positive number, so ${fallback} is used`)
       return fallback
     }
-    const speed = positive(opts.speed, 'speed', 1)
     const holdMs = (opts.hold === '0' ? 0 : positive(opts.hold, 'hold', PLAY_PAUSE / 1000)) * 1000
     if (opts.controls != null && opts.controls !== 'none') warnings.push(`controls="${opts.controls}" isn't "none", so the controls are shown`)
 
@@ -1453,9 +2008,31 @@
     // Playback
     // -------------------------------------------------------------------------
 
-    const renderer = createRenderer(svg, viewBox, debug)
+    // The camera's view: the part of the drawing the SVG shows. Callouts and slides use it, so it is
+    // one object, updated in place.
+    const view = { ...viewBox }
+    const renderer = createRenderer(svg, view, debug)
+
+    // A beat's camera as a viewBox: zoomed about its centre, and kept inside the drawing when zoomed in.
+    function cameraView(camera) {
+      const zoom = camera?.zoom || 1
+      const w = viewBox.w / zoom
+      const h = viewBox.h / zoom
+      let cx = camera?.x ?? viewBox.x + viewBox.w / 2
+      let cy = camera?.y ?? viewBox.y + viewBox.h / 2
+      if (zoom >= 1) {
+        cx = Math.min(viewBox.x + viewBox.w - w / 2, Math.max(viewBox.x + w / 2, cx))
+        cy = Math.min(viewBox.y + viewBox.h - h / 2, Math.max(viewBox.y + h / 2, cy))
+      }
+      return { x: cx - w / 2, y: cy - h / 2, w, h }
+    }
+
+    function setView(v) {
+      Object.assign(view, v)
+      svg.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`)
+    }
     const empty = new Map()
-    const emptyMeta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map() }
+    const emptyMeta = { tweens: new Map() }
     const last = beats.length - 1
     let current = 0
     let running = null // { finish }
@@ -1467,7 +2044,8 @@
 
     function showStatic(index) {
       const state = beats[index]?.state || empty
-      renderer.render(state, state, emptyMeta, () => 1, state, () => ({ ms: 0, delay: 0 }))
+      setView(cameraView(beats[index]?.camera))
+      renderer.render(state, state, emptyMeta, () => 1, state)
     }
 
     function updateControls() {
@@ -1490,7 +2068,7 @@
       const a = beats[from] || beats[0]
       const b = beats[to] || beats[0]
       if (!a || !b) return
-      const ms = animate && !reducedMotion() ? CAPTION_MS / speed : 0
+      const ms = animate && !reducedMotion() ? CAPTION_MS : 0
       const forward = to > from
       const pageA = pages[a.step]
       const pageB = pages[b.step]
@@ -1547,28 +2125,28 @@
       const forward = to > from
       const final = forward ? B : A
       // Each shape's change runs from its delay to delay + duration; backwards is the exact reverse.
-      const durOf = (uid) => (meta.dur.get(uid) ?? 0) / speed
-      const delayOf = (uid) => (meta.delay.get(uid) ?? 0) / speed
-      const uids = new Set([...meta.dur.keys(), ...meta.delay.keys()])
+      const durOf = (uid) => meta.tweens.get(uid)?.dur ?? 0
+      const delayOf = (uid) => meta.tweens.get(uid)?.delay ?? 0
+      const uids = meta.tweens.keys()
       const total = Math.max(0, ...[...uids].map((uid) => delayOf(uid) + durOf(uid)))
       const forwardT = (uid, time) => {
         const d = durOf(uid)
         const after = time - delayOf(uid)
         return d ? Math.min(1, Math.max(0, after / d)) : after >= 0 ? 1 : 0
       }
-      const colourTiming = (uid) => ({
-        ms: durOf(uid),
-        delay: forward ? delayOf(uid) : Math.max(0, total - delayOf(uid) - durOf(uid)),
-      })
       const start = performance.now()
+      const viewA = cameraView(beats[k - 1].camera)
+      const viewB = cameraView(beats[k].camera)
 
       return new Promise((resolve) => {
         let frame = 0
-        let colourSet = false
         const draw = (elapsed) => {
           const progress = (uid) => (forward ? forwardT(uid, elapsed) : forwardT(uid, total - elapsed))
-          renderer.render(A, B, meta, progress, final, (uid) => (colourSet ? null : colourTiming(uid)))
-          colourSet = true
+          const done = total ? Math.min(1, elapsed / total) : 1
+          const beatT = ease(forward ? done : 1 - done)
+          const t = ease(progress('camera'))
+          setView({ x: lerp(viewA.x, viewB.x, t), y: lerp(viewA.y, viewB.y, t), w: lerp(viewA.w, viewB.w, t), h: lerp(viewA.h, viewB.h, t) })
+          renderer.render(A, B, meta, progress, final, { forward, beatT })
         }
         const finish = () => {
           cancelAnimationFrame(frame)
@@ -1590,10 +2168,10 @@
     }
 
     // How long to wait after arriving at a beat while playing: its `pause` (Infinity = until Next),
-    // or the hold. Holds and pauses scale with speed, like transitions.
+    // or the hold.
     const holdAfter = (index) => {
       const pause = beats[index]?.meta.pause
-      return pause === 'click' ? Infinity : (pause ?? holdMs) / speed
+      return pause === 'click' ? Infinity : pause ?? holdMs
     }
     const atEnd = (dir) => (dir > 0 ? current >= last : current <= 0)
 
@@ -1762,6 +2340,14 @@
       else return
       event.preventDefault()
     })
+
+    // A theme change re-resolves the colours (theme variables) and redraws
+    const onThemeChange = () => {
+      if (!widget.isConnected) return window.removeEventListener('docsify-theme-change', onThemeChange)
+      renderer.clearColours()
+      if (!running) showStatic(current)
+    }
+    window.addEventListener('docsify-theme-change', onThemeChange)
 
     showStatic(0)
     showCaption(0, 0, false)

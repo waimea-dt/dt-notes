@@ -1,0 +1,152 @@
+{
+  "$comment": "Scene lines for <animation> blocks: see docs/_plugins/visualisation/ANIMATION.md",
+  "name": "Anim",
+  "scopeName": "source.anim",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#line-head"
+    },
+    {
+      "include": "#beat-line"
+    },
+    {
+      "include": "#resource"
+    },
+    {
+      "include": "#action"
+    },
+    {
+      "include": "#shape-type"
+    },
+    {
+      "include": "#property"
+    },
+    {
+      "include": "#emphasis"
+    },
+    {
+      "include": "#value"
+    },
+    {
+      "include": "#colour"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#shape-ref"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "$comment": "# followed by a space (or the end of the line) starts a comment; #f80 is a colour",
+      "name": "comment.line.number-sign.anim",
+      "match": "(?:^|(?<=\\s))#(?=\\s|$).*$"
+    },
+    "string": {
+      "name": "string.quoted.double.anim",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.anim",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "line-head": {
+      "$comment": "id: at the start of a line",
+      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.anim"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.anim"
+        }
+      }
+    },
+    "beat-line": {
+      "$comment": "lines with no id",
+      "match": "^\\s*(defaults|camera|pause|auto)(?![\\w-])",
+      "captures": {
+        "1": {
+          "name": "keyword.control.anim"
+        }
+      }
+    },
+    "resource": {
+      "match": "(?<![\\w-])(image|icon)(\\()([^)]*)(\\))",
+      "captures": {
+        "1": {
+          "name": "storage.type.anim"
+        },
+        "2": {
+          "name": "punctuation.definition.arguments.begin.anim"
+        },
+        "3": {
+          "name": "string.unquoted.anim"
+        },
+        "4": {
+          "name": "punctuation.definition.arguments.end.anim"
+        }
+      }
+    },
+    "action": {
+      "$comment": "words that start a line's command",
+      "name": "keyword.control.anim",
+      "match": "(?<![\\w-])(copy|group|ungroup|remove)(?![\\w-])"
+    },
+    "shape-type": {
+      "name": "storage.type.anim",
+      "match": "(?<![\\w-])(rect|circle|text|line|arrow)(?![\\w-])"
+    },
+    "property": {
+      "name": "support.type.property-name.anim",
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|align|speed|delay|highlight|callout|zoom)(?![\\w-])"
+    },
+    "emphasis": {
+      "name": "keyword.other.emphasis.anim",
+      "match": "(?<![\\w-])(pulse|shake|wobble)(?![\\w-])"
+    },
+    "value": {
+      "name": "support.constant.property-value.anim",
+      "match": "(?<![\\w-])(bold|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|box|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right)(?![\\w-])"
+    },
+    "colour": {
+      "patterns": [
+        {
+          "name": "constant.other.color.anim",
+          "match": "#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?![\\w])"
+        },
+        {
+          "name": "support.constant.color.anim",
+          "match": "(?<![\\w-])(red|orange|amber|yellow|green|teal|cyan|blue|purple|pink|magenta|theme|muted|fg|bg|black|white|none)(?![\\w-])"
+        }
+      ]
+    },
+    "number": {
+      "$comment": "numbers, signed (relative) numbers, and sizes like 2x1",
+      "name": "constant.numeric.anim",
+      "match": "(?<![\\w.])[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[xX\u00d7][+-]?(?:\\d+\\.?\\d*|\\.\\d+))?(?![\\w.])"
+    },
+    "punctuation": {
+      "name": "punctuation.separator.anim",
+      "match": ","
+    },
+    "shape-ref": {
+      "$comment": "any other word is a shape id used as a value (from a to b, attach right-of msg, travel r1 r2); keep this last",
+      "name": "variable.parameter.anim",
+      "match": "(?<![\\w#.-])[A-Za-z][\\w.-]*(?![\\w-])"
+    }
+  }
+}

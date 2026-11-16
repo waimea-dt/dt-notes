@@ -1,595 +1,257 @@
-# Animation Plugin Spec
+# Animation Cheat-Sheet
 
-Status: **first version built.** Plugin: `docs/_plugins/visualisation/animation.js`, CSS: `docs/_css/visualisation/animation.css`, test page: `docs/_tests/animation.md`.
+`<animation>` blocks: a step-by-step animated SVG drawing with a caption per step.
+Plugin `animation.js` · CSS `_css/visualisation/animation.css` · examples `_tests/animation.md` · VS Code highlighting: `vscode/anim-syntax/` in the repo root (see its README).
 
-`<animation>` turns Markdown into a step-by-step animated explanation: an SVG drawing that changes between steps, with a caption for each step. It is drawn in the browser, so no video is exported. Its layout follows `<slides>`, so the two feel alike to write.
-
----
-
-## 1. Block structure
+## Block
 
 ````markdown
-<animation grid="16x9">
+<animation grid="16x9" autoplay loop>
 
-# Title (stays fixed for the whole animation)
+# Title (fixed for the whole animation)
 
-Caption for step 1.
+Caption for step 1 (any Markdown).
 
-```scene
+```anim
 a: rect "A" at 2,3
 ```
 
 ---
 
-## Step heading
+## Step 2 heading
 
-Caption text for this step (any Markdown).
-
-```scene
+```anim
 a: move 5,3
 ```
 
 +++
 
-More caption text, shown with the second beat.
+Caption text added when this beat plays.
 
-```scene
+```anim
 a: fill green
 ```
 
 Note:
-Teacher notes (Markdown), to the end of the step.
+Teacher notes (to the end of the step; S shows them).
 
 </animation>
 ````
 
 | Marker | Meaning |
 |---|---|
-| `---` | Starts a new **step**. |
-| `+++` | Splits a step into **beats** that play one after another. Splits the caption and the scene together: caption text after `+++` appears when that beat plays. |
-| ` ```scene ` | The scene commands for a step (or beat). A step may have none, which means a caption-only step. |
-| `Note:` | Teacher notes, to the end of the step. |
+| `---` | New step |
+| `+++` | New beat within a step (caption and scene split together) |
+| ` ```anim ` | Scene lines for the step / beat (optional) |
+| `Note:` | Teacher notes for the step |
 
-Marker rules are the same as in `slides.js`: they must be alone on their line, and they are ignored inside code fences (other than the `scene` fence itself).
+Markers must be alone on their line. Everything in one beat plays at the same time.
 
-Within one beat, all changes play **at the same time**.
-
-### Attributes
-
-| Attribute | Default | Meaning |
+| Tag attribute | Default | |
 |---|---|---|
-| `grid="CxR"` | `16x9` | Grid size in columns × rows. `grid="fit"` sizes the grid to the area every shape covers across all steps, plus a margin. |
-| `debug` | off | Draws numbered rows and columns and each shape's id, and shows warnings (see §9). |
-| `autoplay` | off | Plays without a click, once the animation is on screen (see Playback below). |
-| `loop` | off | When playing reaches the end, jump back to the start and play again. |
-| `loop-bounce` | off | When playing reaches the end, play backwards to the start, then forwards again. |
-| `hold="s"` | `1.5` | Seconds to wait between beats while playing. |
-| `speed="x"` | `1` | Tempo for the whole animation: `speed="2"` makes every transition, delay and hold twice as fast. |
-| `controls="none"` | shown | Hides the buttons and progress bar (the keys still work), e.g. for a looping decorative diagram. |
+| `grid="CxR"` | `16x9` | Grid size; `grid="fit"` fits the content |
+| `debug` | off | Grid numbers, shape ids, warnings |
+| `autoplay` | off | Plays once on screen (not for reduced motion; stops for good when someone navigates) |
+| `loop` / `loop-bounce` | off | At the end: jump to the start / play backwards to the start |
+| `hold="s"` | `1.5` | Wait between beats while playing |
+| `controls="none"` | shown | Hide buttons and progress bar (keys still work) |
 
----
+**Keys** (click the animation first): → `N` `Space` next · ← `P` `Shift+Space` back · `Home` / `End` · `A` play/pause · `F` full screen · `S` notes · `?` shortcuts · `Esc`.
 
-## 2. Layout and captions
+## Grid
 
-```
-┌───────────────────────────────────────┐
-│  Title                                │  the step 1 `#`, fixed
-├───────────────────────────────────────┤
-│              SVG drawing              │  scaled to the panel width
-├───────────────────────────────────────┤
-│  Step heading                         │  caption: `##` and text
-│  Caption text                         │
-│  Caption text                |‹ ‹ ▷ › │  controls
-└━━━━━━━━━━━━───────────────────────────┘  progress bar
-```
+- Cells numbered from 1, top-left, y down. `at 3,2` = centre of column 3, row 2. Fractions OK.
+- Sizes are in cells. One cell = 80px at full width (same size as a slide).
+- Points use a comma (`at 5,4`), sizes an `x` (`size 2x1`). Spaces also work.
 
-- **The drawing is the same size as a slide deck:** the full content width, 16:9 for the default grid, with the same border, corner radius and shadow as `<slides>`. Another grid changes the drawing's shape, not its width.
-- **Full screen:** `F` (when the widget has focus) shows the widget full-screen, with the drawing scaled to fit the screen and the caption and controls below it. `Esc` exits.
+## Lines
 
-- **Captions are HTML, not SVG.** They never use grid coordinates. Text that must point at a shape is a `text` shape in the scene.
-- **The caption panel has a fixed height**, set by the tallest caption (measured once on render), so the controls never jump.
-- The drawing and the caption share one width and left edge.
-- **Caption transitions run at the same time and speed as the drawing's.** Going forward, the old text fades out and drifts left while the new text comes in from the right; going back reverses it.
-- **An unchanged heading stays put.** If the next step has the same `##`, or none, only the body text changes.
-- Step headings are kept out of the page's table of contents, as slide headings are.
-
-### Controls
-
-- **Rewind** (or `Home`) goes straight back to the start, and `End` to the last step (no transition).
-- **Back** / **Next** go back and forward one beat. The keys are the same as on slides: → / `N` / `Space` for next, ← / `P` / `Shift+Space` for back.
-- The **progress bar** along the bottom edge counts every step and beat, and eases to each new position. Clicking it jumps to that point **instantly**, with no transition.
-- **Play** (or `A`, reveal.js's auto-slide key) plays through the remaining beats automatically; it becomes a pause sign while playing. From the last step it starts again from the beginning.
-- `F` toggles full screen, and `S` shows or hides the teacher notes (as on slides). Only rewind, back, play and next have buttons.
-- `?` shows a **Keyboard Shortcuts** table over the animation, like reveal.js's; `Esc` or its close button hides it.
-- The controls copy reveal.js's (`<slides>`): transparent, in the link colour. Rewind, back, play and next are drawn from the same rounded bars as reveal.js's chevrons, floating in the bottom-right corner over the content (taking no space of their own). Rewind, back and play are faded until hovered; rewind, back and next are hidden when unavailable.
-- Until the first interaction, **Next** gives a small nudge every 2 seconds, as reveal.js's next arrow does.
-
-### Playback
-
-````markdown
-<animation autoplay loop hold="2">
-
-```scene
-p: rect "packet" at 2,4
+```anim
+a: rect "A" at 2,3          # create: id, type, label, properties
+a: move 5,3 fill red        # change an existing shape
+a: remove                   # remove (optionally with an effect and speed)
+# a comment line
 ```
 
----
+A long command can be laid out one property per line: a line indented more than the line that started the command continues it.
 
-```scene
-p: move 8,4 slow
-auto                  straight on to the next beat
+```anim
+m1:
+    rect "Hello + options"
+    at 4.5,5.5
+    size 3x0.8
+    fill blue      # comments and blank lines are fine inside
+    pop
 ```
 
-+++
+- `#` followed by a space starts a comment, on its own line or after a command (`#f80` is still a colour).
+- Properties go in any order. One quoted string per command = the label.
+- A type word on an existing id replaces the shape (`debug` warns).
+- Ids: letters, digits, `_ - .`, starting with a letter. Keywords can't be ids.
+- Bad lines show an inline error (step + line) and are skipped.
 
-```scene
-p: move 14,4 slow
-pause                 wait for a click before going on
-```
+## Shapes
 
-</animation>
-````
-
-- **Play** (or `A`) steps through the beats on its own, waiting `hold` seconds after each (default 1.5).
-- **`pause n`** in a beat's scene makes playback wait `n` seconds after that beat instead of the hold. **`pause`** on its own waits until Next is clicked (Next gives its nudge while waiting); Next then carries on playing.
-- **`auto`** in a beat's scene goes straight on to the next beat when this one finishes, **whether playing or not**: one click plays a chain of beats in turn. Going back through a chain undoes the whole chain in one go too. Jumps (rewind, `Home` / `End`, the progress bar) don't follow chains.
-- **`loop`** jumps back to the start after holding on the last beat; **`loop-bounce`** plays backwards (the reverse transitions, with the same holds and pauses) to the start, then forwards again. Without either, playing stops at the end.
-- **`autoplay`** starts playing (after one hold on the current beat) when at least half the animation is on screen, pauses when it scrolls away or the browser tab is hidden, and resumes where it left off. It never starts for viewers who prefer reduced motion. Once someone navigates (back, next, rewind, the progress bar, Play or `A`), autoplay is off for good; Play or `A` still plays by hand. A non-looping autoplay stops at the end and stays there.
-- `speed` scales transitions, delays, holds and pauses alike; `hold="0"` goes straight on between beats.
-
----
-
-## 3. Grid and coordinates
-
-- Cells are numbered **from 1, starting top-left**, and **y goes down**.
-- `at 3,2` means **the centre of column 3, row 2**. Fractions are allowed: `at 3.5,2` sits on the line between columns 3 and 4.
-- One cell is 80px at the full 1280px width of a 16×9 grid (the same size as a slide). The drawing scales to its panel.
-- Changing the grid changes the canvas shape, not the cell size, so shapes look the same size in every animation.
-- **Sizes are in cells**, e.g. `size 2x1` or `radius 2`. A radius-2 circle is 4 cells across.
-- Positions outside the grid are allowed, e.g. off-screen starts like `at -1,3` (see §6). In `debug` mode they give a warning.
-
----
-
-## 4. Line syntax
-
-Every line in a `scene` block has the form:
-
-```
-<id>: <command and properties>
-```
-
-| Form | Meaning |
-|---|---|
-| `a: rect "A" at 2,3` | A **type word** after the colon **creates** a shape. |
-| `a: move 5,3 fill red` | No type word: **changes** an existing shape (animated). |
-| `a: circle at 5,3` | A type word on an id that **already exists**: **replaces** that shape (cross-fade). `debug` warns, because this is often a mistake. |
-| `a: remove [effect] [speed]` | **Removes** the shape (default: `fade`). |
-| `defaults: …` | Sets defaults for shapes created after it (§7). |
-| `pause` / `pause n` | No id: while playing, wait after this beat for a click on Next, or for `n` seconds (§2, Playback). |
-| `auto` | No id: when this beat finishes, go straight on to the next one, whether playing or not (§2, Playback). |
-
-The parser reads the words after the colon from left to right. Properties may come in any order.
-
-### Ids
-
-- Letters, digits, `_`, `-` and `.`, starting with a letter: `a`, `box1`, `arr.0`.
-- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), line styles and flow words, `pause`, `auto`, `remove` and `defaults`.
-
-### Value types
-
-Each token's type can be told from the token itself:
-
-| Type | Examples | Notes |
+| Type | Example | Default size |
 |---|---|---|
-| `num` | `3`, `2.5`, `+1`, `-2` | Signed numbers mean something on a change (§6). |
-| `str` | `"Hello world"` | Always the **label** (§5.1). |
-| `id` | `a`, `arr.0` | Must be an existing shape. A misspelt id is an error, not a silent no-op. |
-| `colour` | `red`, `muted`, `#f80`, `none` | Named colours map to the site's theme variables, so light and dark themes work. |
-| `word` | `left`, `centre` | One of a fixed set for that property. |
-| resource | `image(_assets/goat.svg)`, `icon(laptop)` | Parentheses: something the shape loads. |
-| flag | `bold`, `dashed`, `dotted` | A keyword with no value. |
-
-**Points and sizes are written as pairs:** a point with a comma (`at 5,4`, `from 2,3 to 7,8`, `via 4,4`, `move +2,-1`) and a size with an `x` (`size 2x1`), so each pair reads as one unit. Spaces still work (`at 5 4`, `size 2 1`), as do spaces after the comma (`at 5, 4`); the examples use the pair forms.
-
-### Property signatures (overloading)
-
-Each keyword has one or more **signatures**, tried **longest first**, and the first one that matches is used. Overloads must differ in the type of their first value or in how many values they take.
-
-```js
-const PROPS = {
-  at:     [['num', 'num'], ['placement', 'id'], ['id']],   // `move` and `goto` are aliases
-  x:      [['num']],
-  y:      [['num']],
-  from:   [['num', 'num'], ['id']],
-  to:     [['num', 'num'], ['id']],
-  size:   [['num', 'num'], ['num']],     // `size 2x1`, or `size 2` = 2 × 2; relative: one number only
-  width:  [['num']],                     // horizontal size in cells
-  height: [['num']],                     // vertical size in cells
-  radius: [['num']],                     // circle radius, or a rect's corner radius
-  gap:    [['num']],                     // only after a placement
-  via:    [['num', 'num'], ['placement', 'id'], ['id']],   // repeatable: curve through these points
-  delay:  [['num']],                     // seconds to wait before this line's change starts
-  fill:   [['colour']],
-  stroke: [['colour']],
-  weight: [['num']],                     // stroke thickness, × normal
-  font:   [['num']],
-  angle:  [['num']],                     // degrees clockwise, 0 = upright
-  scale:  [['num']],                     // size multiplier about the centre
-  align:  [['word']],                    // left | centre | right (`center` also accepted)
-  bold:   [[]],
-  solid / dashed / dotted: [[]],         // line style flags (solid is the default)
-  flow / flow-reverse / flow-off: [[]],  // march the dashes along the stroke
-}
-```
-
-If nothing matches, the error names the expected forms, e.g. *`from` expects `x y` or a shape id: no shape called `ab`*.
-
----
-
-## 5. Shapes
-
-| Type | Example | Default size | Notes |
-|---|---|---|---|
-| `rect` | `a: rect "A" at 2,3 size 2x1 radius 0.1` | 1 × 1 | `radius` rounds the corners, in grid cells (`radius 0.1` is a tenth of a cell; at most half the shorter side, which gives a pill). Default 0 (square corners). |
-| `circle` | `c: circle "C" at 4,8 radius 2` | radius 0.5 | |
-| `text` | `t: text "Jim" at 7,1 align left` | n/a | A shape with no outline. `align` sets which side of the cell the text is anchored to. |
-| `line` | `l: line from a to c "Yes"` | n/a | No single position (§6.3). |
-| `arrow` | `p: arrow from 3,5 to 9,3` | n/a | A line with an arrowhead at its `to` end. |
-| `image(path)` | `p: image(_assets/goat.svg) at 3,4 size 2 "Goat"` | 1 × 1 | Fits **inside** its box with its proportions kept. Works for SVG, PNG, WebP and other image types. |
-| `icon(name)` | `i: icon(laptop) at 10,2` | 1 × 1 | A Lucide icon, in the current text colour. |
-
-- **Image paths** resolve the same way as Markdown images (`![](…)`) on the same page.
-- **Line and arrow ends** given as ids attach to that shape and **follow it** when it moves. Lines start and stop at the shape's edge, not its centre.
-- Creation can use `x` / `y` instead of `at`: `a: rect x 2 y 3`.
-
-### Size, width and height
-
-`size` sets a shape's size in cells: `size 2x1` (or `size 2,1`, `size 2 1`), or `size 2` for 2 × 2. On a circle, `size 2` sets its diameter (`radius 1`). On a change, **one** signed number grows or shrinks both sides by that amount (`size +1`, `size -0.5`); a signed pair (`size +1x+0`) is an error.
-
-`width` and `height` set one dimension each of a `rect`, `image` or `icon`. They can be absolute (`width 5 height 3`) or, on a change, **relative** with a sign (`width +1`, `height -0.5`), so they're the way to change one side by an amount.
-
-```
-r: rect "R" at 3,2 size 2x1
-r: size 3x2                    absolute
-r: size +1                     one cell bigger each way
-r: width +1                    one cell wider
-r: height 0.5                  half a cell tall
-```
-
-- One line can't give both `size` and `width` / `height`.
-- `width` and `height` tween like any other number.
-
-### Stroke weight
-
-`weight` sets the thickness of a shape's outline or line, as a **multiple of the normal thickness**: `weight 2` is twice as thick and `weight 0.5` is half.
-
-- Valid on every shape. For `line` / `arrow` it is the line itself (the arrowhead scales with it). For `rect` / `circle` it is the outline. For `icon` it is the icon's stroke. For `image` it is a border, drawn only when the image has a `stroke` colour.
-- `weight 0` hides the outline but keeps the shape.
-- On `text` it has no effect (`debug` warns).
-- It tweens on a change, and follows the signed-number rule: `weight +1`.
-
-```
-r1: arrow from a to b weight 2 stroke blue
-a: circle "A" at 3,6 weight 0.5
-r1: weight +1
-```
-
-### Line style
-
-`solid` (the default), `dashed` and `dotted` set how a line, arrow, rect or circle outline, or image border is drawn. They are flags, so a later step can switch between them, e.g. `l: dotted` then `l: solid`.
-
-- Patterns are measured in line thicknesses (w), so they scale with `weight`: **dashed** is a 3w mark and a 3w gap; **dotted** is a 1w round dot and a 1w gap.
-- Only one style per line: `dashed dotted` together is an error.
-- Not for `text` or `icon`.
-- **Changing style animates:** the old style cross-fades into the new one, at the line's speed and delay (backwards in reverse).
-
-```
-l: line from a to b dotted
-r: rect at 4,2 dashed weight 2
-l: solid slow                 the dots fade into a solid line
-```
-
-### Flow
-
-`flow` makes a dashed or dotted stroke's pattern march along it, from the `from` end to the `to` end (round an outline, clockwise from its start); `flow-reverse` marches the other way; `flow-off` stops it.
-
-```
-link: line from browser to server dotted flow      data travelling to the server
-link: flow-reverse                                  ...and back
-link: flow-off
-```
-
-- It moves at a steady speed (two cells a second), keeps going between steps until changed, and loops seamlessly.
-- It shows only on a `dashed` or `dotted` stroke (`debug` warns on a solid one); it pauses while a line is drawing in (`draw`), and is off when the viewer prefers reduced motion.
-- Valid wherever a line style is (lines, arrows, rect and circle outlines, image borders).
-
-### Angle and scale
-
-`angle <degrees>` rotates a shape about its centre: **0 is upright and positive angles turn clockwise**, so `angle 90` is a quarter turn to the right. `scale <n>` resizes it about its centre: `scale 2` is twice as big, `scale 0.5` half.
-
-- Valid on every shape **except `line` and `arrow`** (their ends set their direction and length).
-- The shape's label turns and scales with it.
-- Both tween on a change and follow the signed-number rule: `angle +90` turns a further quarter clockwise, `scale +0.5` grows by half.
-- An angle tweens the way the numbers go: `angle 270` from 0 turns three-quarters clockwise; `angle -90` (relative) turns a quarter anticlockwise. `angle +360` makes a full spin.
-- Line ends attached to the shape meet its real (rotated, scaled) edge, and `above` / `below` / `left-of` / `right-of` use the rotated outline.
-
-```
-cog: icon(cog) at 4,3 angle 45 scale 1.5
-t: text "Rotated" at 8,2 angle -30
-cog: angle +360 slow          a full clockwise spin
-```
-
-### 5.1 Labels
-
-- **A bare quoted string is always the label.** There is no `label` keyword.
-- **Only one bare string per line.** Any other text-like value uses a keyword or a resource, never quotes.
-- The label is centred inside a `rect` or `circle`, is the content of a `text`, sits at the midpoint of a `line` or `arrow`, and goes under an `image` or `icon`.
-- For `image` and `icon`, the label is also the **alt text**.
-- Changing the label cross-fades it: `a: "Done"`.
-
----
-
-## 6. Positioning and changes
-
-### 6.1 Absolute and relative values
-
-**When a shape is created**, all numbers are absolute: there is no earlier position to be relative to.
-
-**On a change**, a number **with a sign** (`+` or `-`) is **relative**, and one without is **absolute**:
-
-```
-a: move 1,3          absolute
-a: move +2,-1        relative: 2 right, 1 up
-a: move +2,3         mixed: 2 right, to row 3
-a: x 7               column 7, row unchanged
-a: x +3              3 right
-a: y -2              2 up
-a: width +1          1 wider
-a: radius +1
-a: font +0.5
-```
-
-- The rule applies to **every** numeric property on a change, not just positions, except that a relative `size` takes one number (`size +1`, both sides); use `width` / `height` to change one side.
-- `+0` means "this axis stays the same".
-- One line cannot set the same axis twice (e.g. `move 1,3 x 4`): that is an error.
-- A change cannot move a shape to an absolute negative position, because `-1` would be read as relative. `0` is available as "just off the left/top edge". For an off-screen entrance, create the shape off-screen and then move it.
-
-### 6.2 `at`, `move` and `goto`
-
-- `at`, `move` and `goto` are **interchangeable** and accepted anywhere, both when creating and on a change. By convention the examples use `at` when creating and `move` on a change, because that reads naturally.
-- The signed-number rule (§6.1) still applies: on creation all numbers are absolute, whichever word is used.
-
-```
-a: move 1,3            absolute
-a: move b              to the same position as b
-a: move below b        relative placement
-a: move 1              invalid: needs x and y, or a shape
-```
-
-### 6.3 Relative placement
-
-```
-<placement> <id> [gap n]
-```
-
-Placements: `above`, `below`, `left-of`, `right-of`. The shape is put next to the other shape's edge, centred on it, with a default gap of 0.25 cells.
-
-```
-t: text "i" below arr.0
-b: rect "tmp" below a gap 1
-a: move right-of b
-```
-
-The position is worked out **once**, when the line runs. The shape does not follow `b` afterwards. (Only line ends follow shapes.)
-
-### 6.4 Lines
-
-A line has no single position:
-
-```
-l: line from 2,3 to 7,8
-l: to 6,5              move just one end
-l: to +1,+0            move one end, relatively
-l: from 1,1 to 9,9     move both ends
-l: move +1,+0          shift the whole line (relative values only)
-l: move 1,3            invalid
-```
-
-- `at`, `x`, `y` and absolute `move` are errors on a line.
-- If an end is attached to a shape, setting it to a position **detaches** it. It stays at that position from then on.
-
-### 6.5 Curved moves (`via`)
-
-`via` makes a move follow a smooth curve that passes **through** one or more points on the way:
-
-```
-a: move 9,3 via 5,1              one curve through (5, 1)
-a: move 9,3 via 3,1 via 6,5      repeat via for more points, in order
-s: move above c via 9,1          round a lake on the way to c
-a: move 1,3 via +2,-2            on a change, a signed via is relative to where the shape starts
-a: move 6,4 via b                through b's centre
-a: move 6,4 via above b          through the spot above b
-```
-
-- `via` takes the same values as `at`: `x y`, a shape id, or a placement and shape id. It can be repeated.
-- The curve is made of circular arcs, so it stays rounded: with **one** via point it is the exact arc of the circle through the start, the via point and the end (a via point centred between them, half their distance away, gives a semicircle); with **several**, each section blends the circles through neighbouring points, so zig-zag via points give a sine-like wave.
-- The shape moves along the curve at an **even speed** (the usual easing applies to the whole journey).
-- Only on a line that **moves an existing shape** (`at` / `move` / `goto`, or `x` / `y`). It's an error when creating a shape, on a line without a position change, on lines and arrows, and in `defaults:`.
-- Going back retraces the same curve. Line ends attached to the shape follow it along the curve.
-
-### 6.6 Layering
-
-Shapes are drawn in three layers, from bottom to top: `back`, normal, `front`.
-
-- **By default every shape is in the normal layer**, and shapes in the same layer are drawn in the order they are **created**. A later shape covers an earlier one.
-- `front` / `back` put a shape in that layer, either when creating it or on a change (`a: front`). `normal` returns it to the default layer.
-- Within a layer, creation order is kept: ten roads created with `back` stay in the order they were written.
-- Changing layer is instant (no transition).
-- `defaults: back` puts every shape created after it in the back layer.
-
-```
-a: circle "A" at 3,6
-b: circle "B" at 6,2
-ab: line from a to b back      drawn under the cities, even though it was created after them
-r: arrow from a to b front     drawn over everything in the normal layer
-```
-
-`above` / `below` are placement words (§6.3), not layering words.
-
----
-
-## 7. Defaults
-
-```
-defaults: stroke red fill white font 1.5 bold slow
-```
-
-- Applies to every shape **created after it**, including in later steps, until the next `defaults:` line.
-- Each `defaults:` line **merges** with the current defaults. `defaults: reset` clears them all.
-- Never changes shapes that already exist.
-- Properties on a shape's own line always win.
-- Transition words (§8) are allowed and set the default speed and effect.
-
----
-
-## 8. Transitions
-
-Transition words are flags and may go on any line:
-
-| Group | Words | Applies to |
+| `rect` | `a: rect "A" at 2,3 size 2x1 corner 0.1` | 1×1 |
+| `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
+| `text` | `t: text "Hi" at 7,1 align left colour blue` | — |
+| `line` / `arrow` | `l: arrow from a to 9,3 "yes"` | — |
+| `image(path)` | `p: image(../_assets/x.svg) at 3,4 size 2 "Alt"` | 1×1, fits inside, keeps proportions |
+| `icon(name)` | `i: icon(laptop) at 10,2` | 1×1, a Lucide icon |
+
+- Labels: centred in rect / circle, on a line's midpoint, under an image / icon (also its alt text).
+- Image paths resolve like `![](…)` on the same page.
+
+## Properties
+
+| Property | Syntax | Notes |
 |---|---|---|
-| **Speed** | `instant`, `fast`, *(normal)*, `slow` | Every change |
-| **Effect** | `fade`, `pop`, `draw`, `slide` | Creating and removing only |
+| position | `at 3,2` · `at b` · `at below b` | `move` / `goto` = `at`. Also `x 3`, `y 2` |
+| placement | `below b` · `above` · `left-of` · `right-of` | Next to b's edge, once (doesn't follow). `gap 1` |
+| line ends | `from 2,3 to b` | An end on a shape follows it (stops at its edge) |
+| size | `size 2x1` · `size 2` | Circle: `size` = diameter |
+| width / height | `width 3` · `height 0.5` | Rect, image, icon |
+| radius | `radius 0.5` | Circles |
+| corner | `corner 0.2` | Rect corner radius, in cells (up to half the shorter side: a pill) |
+| fill / stroke | `fill blue` · `stroke #f80` · `none` | See colours. No `stroke` on text |
+| colour | `colour amber` | A text shape's colour, or any shape's label |
+| weight | `weight 2` | Stroke thickness × normal; `0` hides it |
+| line style | `solid` · `dashed` · `dotted` | Dashed 3w:3w, dotted 1w:1w. Changes cross-fade |
+| flow | `flow` · `flow-reverse` · `static` | Dashes march along (dashed / dotted only) |
+| angle | `angle 45` | Degrees clockwise, 0 = upright. Not lines |
+| scale | `scale 1.5` | About the centre. Not lines |
+| font | `font 1.5` · `bold` | × normal size |
+| align | `align left` · `centre` · `right` | Text only |
+| layer | `back` · `normal` · `front` | Within a layer: creation order |
 
-```
-a: rect at 2,3 pop          scales up from nothing
-l: arrow from a to b draw   draws itself from start to end
-a: move 7,6 instant
-a: move 1,2 slow
-a: remove fade
-a: remove instant
-```
+**Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg black white none` or `#hex`. Defaults: rect/circle fill `bg` stroke `fg`; everything else `fg`; text and labels `colour fg`. Fills of named colours are tinted; strokes and `colour` are full strength.
 
-- Suggested durations: `fast` 250 ms, normal 500 ms, `slow` 1000 ms, `instant` 0.
-- Default effect: `fade` for creating and removing.
-- Moves, resizes and colour changes always tween; only their speed can be set.
-- `slide` brings a shape in from, or sends it out to, the nearest edge of the canvas.
-- A beat lasts until its last change finishes (delay + duration). The caption transition (§2) uses the beat's normal speed.
+## Relative values
 
-### Delays
+On a change, a signed number is relative; unsigned is absolute. When creating, everything is absolute.
 
-`delay <seconds>` waits before a line's change starts, so changes within one beat can happen one after another without an extra click:
-
-```
-s: move above b slow           the person travels for 1 second...
-b: fill green delay 1          ...and the city turns green when they arrive
-r1: arrow from a to b draw slow
-```
-
-- Works on any line: creating (the shape appears after the delay), changing, and `remove`.
-- If several lines change the same shape in one beat, the longest delay is used.
-- A delay is never a default (`defaults: delay 1` is an error), and it is ignored when stepping instantly (progress bar, Home / End, reduced motion).
-
----
-
-## 9. State, navigation and errors
-
-- **State model:** each beat's state is the previous state plus that beat's changes. The plugin works out every beat's state up front, so going back or jumping (progress bar, Home / End) just rebuilds that state, with no undo logic.
-- Going **back** plays the beat exactly in reverse at the same speed, delays included: the last change to start is the first to be undone.
-- **Errors** (unknown keyword, wrong value type, unknown id, invalid form) appear as a small inline message giving the step and line. The bad line is skipped and the rest of the scene still draws.
-- **Warnings** (only with `debug`): replacing an existing id with a new type word; positions outside the grid; a `defaults:` line that changes nothing.
-
----
-
-## 10. Rendering
-
-- One inline SVG per animation, with `viewBox` set by the grid. No external animation library: CSS transitions and the Web Animations API.
-- Colours come from CSS custom properties, so the theme toggle works without re-rendering.
-- `doneEach` must not process the same widget twice: mark each processed widget. Timers, key listeners and play loops stop when the widget leaves the page (see `PLUGIN_GUIDE.md`).
-- Respect `prefers-reduced-motion`: treat every transition as `instant`, while still changing the caption.
-
----
-
-## 10a. Details settled while building
-
-- **Colour names:** `red`, `orange`, `amber`, `yellow`, `green`, `teal`, `cyan`, `blue`, `purple`, `pink`, `magenta`, `theme`, `muted`, `fg` (text colour), `bg` (background), `black`, `white`, `none`, or a hex colour. Named colours used as a **fill** are tinted towards the background, so labels on them stay readable in both themes.
-- **Default colours:** `rect` and `circle` have fill `bg` (so they cover lines behind them) and stroke `fg`; lines, arrows, text and icons use `fg`; images have no border.
-- **Text colour:** a `text` shape's colour is its `stroke` (text has no outline, so the stroke is its ink): `t: text "Hi" at 2,2 stroke blue`. Labels inside other shapes use the text colour.
-- **Bare placement:** `t: text "i" below a` is short for `at below a`, as in the examples above.
-- **Comments:** a scene line starting with `//` is ignored.
-- **Default speed:** a `defaults:` speed applies to every line after it (changes as well as creations), so `defaults: slow` slows a whole sequence.
-- **Replacing a shape** keeps lines attached to its id: they attach to the replacement.
-- **Line ends** can't be attached to another line.
-- **Teacher notes** are shown under the caption with `S` (only when the animation has notes).
-
----
-
-## 11. Worked example
-
-````markdown
-<animation grid="12x5">
-
-# Bubble Sort: One Pass
-
-We start with an unsorted array.
-
-```scene
-defaults: fill none fast
-a0: rect "5" at 5,3
-a1: rect "3" at 6,3
-a2: rect "8" at 7,3
-a3: rect "1" at 8,3
-i: text "i" below a0
+```anim
+a: move +2,-1        # 2 right, 1 up
+a: move +2,3         # 2 right, to row 3
+a: x +3              # 3 right
+a: width +1          # 1 cell wider
+a: size +1           # 1 cell bigger each way
+a: angle +90         # a further quarter turn
 ```
 
----
+- Watch out: `size +1x0` is an error (use `width` / `height`). A signed `move` on a change is always relative, so to start off-screen, create the shape there.
+- One line can't set the same axis twice (`move 1,3 x 4`).
 
-## Compare the first pair
+## Moving lines
 
-Is `5` bigger than `3`?
-
-```scene
-a0: fill amber
-a1: fill amber
+```anim
+l: to 6,5            # move one end
+l: to +1,+0          # one end, relatively
+l: from a to 9,9     # both ends
+l: move +1,+0        # shift the whole line
 ```
 
----
+No `at`, `x`, `y`, angle, scale or absolute `move` on a line.
 
-## Swap
+## Movement
 
-Yes, so they swap places...
-
-```scene
-a0: move 6,3
-a1: move 5,3
+```anim
+a: move 9,3 via 5,1              # curve through a point (a circular arc)
+a: move 9,3 via 3,1 via 6,5      # more points: smooth, sine-like
+a: travel r1 r2 4,3 srv          # straight hops through shapes / points
+a: follow l                      # along line l, from its start
+a: follow-reverse l              # along line l, from its end
 ```
 
-+++
+- `via` / `travel` / `follow` only on an existing shape (not when creating, not on lines).
+- Signed `via` points are relative to the start; signed `travel` stops to the stop before.
 
-...and `i` moves on.
+## Copies, attachments, groups
 
-```scene
-a0: fill none
-a1: fill none
-i: move below a0
+```anim
+k2: copy key move 8,1 via 5,0.5        # the copy starts on the original and moves off
+lock: icon(lock) attach right-of msg   # rides beside msg wherever it goes
+lock: attach msg                       # on top of msg
+lock: detach                           # let go
+pkt: group msg lock                    # move / travel / highlight / remove act on all
+pkt: ungroup                           # members stay where they are
 ```
 
-Note:
-Ask the class to predict the next comparison before advancing.
+- Moving an attached shape releases it; moving a group member keeps it in the group.
+- Removing a group removes its members. Groups can't be copied.
+- A line can join a group only if both ends are on shapes.
 
-</animation>
-````
+## Emphasis, highlights, callouts
 
----
+```anim
+a: pulse                       # one-off, forwards only
+a: shake
+a: wobble
+a: highlight box               # stays until cleared
+a: highlight spotlight         # dims everything not spotlit (several shapes can be)
+a: highlight clear
+a: callout "Look!"             # speech bubble above the shape
+a: callout "Look!" below       # or left-of / right-of
+a: callout clear
+```
 
-## 12. Later (not in the first version)
+Callouts stay inside the drawing.
 
-- **Bracket shorthand** for common shapes, e.g. `a: ["Hello"] at 2,3` for a rect and `b: ("Goat")` for a circle. Not a copy of Mermaid.
-- **Edge anchors:** `from a.right to b.left`.
-- **Group helpers:** `row` / `column` to lay out a list of boxes (`arr.0`, `arr.1`, …) from one anchor, plus `swap a b`.
-- **Emphasis:** `a: pulse`, which draws attention without changing state.
-- **Caption-to-shape links:** a word in the caption that highlights a shape on hover or tap.
-- **Side captions:** `caption="right"` on wide screens.
-- **Slides integration:** an `<animation>` inside `<slides>`, stepped through by reveal.js fragments.
-- **More shapes:** rounded rect, diamond.
-- **Inline SVG** so that `fill` / `stroke` can recolour suitable images.
+## Timing and effects
+
+```anim
+a: move 4,2 speed slow         # instant | vfast | fast | normal | slow | vslow
+a: move 4,2 speed 1.5          # or seconds
+a: fill red delay 1            # wait 1 s before starting
+a: rect at 2,3 pop             # entrance: fade (default) | pop | slide
+l: arrow from a to b draw      # a line draws itself in
+a: remove pop                  # exits take the same effects
+```
+
+- Speeds: instant 0 · vfast 0.25 · fast 0.5 · **normal 1** · slow 2 · vslow 4 s.
+- A bare speed word is an error: write `speed slow`.
+- A beat lasts until its last change ends. Going back plays it exactly in reverse.
+
+## Beat lines (no id)
+
+```anim
+defaults fill blue speed fast    # applies to lines after it (merges)
+defaults clear
+pause                            # while playing, wait here for Next
+pause 2                          # while playing, hold 2 s here
+auto                             # go straight on to the next beat (one click plays a chain)
+```
+
+- `defaults` has no colon. No `at` / `via` / `delay` / labels in defaults.
+- `pause` / `auto` describe what happens *after* their beat.
+
+## Camera (beat line, no id)
+
+```anim
+camera at 4,3 zoom 2             # centre on 4,3, twice as close (goto / move = at)
+camera at a zoom 3 speed slow    # centre on where a is now (doesn't follow it)
+camera zoom 1.5                  # zoom about the current centre
+camera move +2,0                 # pan 2 cells right (relative, like shapes)
+camera zoom +1                   # one step closer
+camera reset                     # back to the whole drawing
+```
+
+- Takes `at` / `x` / `y`, `zoom`, `reset`, `speed` and `delay`. No colon.
+- Stays until changed (later steps keep it). Going back plays it in reverse; jumps cut.
+- Zoomed in (`zoom` ≥ 1), the view stays inside the drawing; `zoom 0.5` zooms out.
+
+## Switching things off
+
+```anim
+a: remove
+g: ungroup
+a: detach
+l: static              # stop flowing
+l: solid               # no dashes or dots
+a: highlight clear
+a: callout clear
+defaults clear
+camera reset
+```
