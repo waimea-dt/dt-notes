@@ -189,7 +189,7 @@ The first leg of the route.
 defaults stroke blue weight 2 speed slow
 r1: arrow from a to b draw
 s: move above b gap 0.1
-b: fill blue delay 0.25 pulse
+b: fill blue delay 0.5
 ```
 
 ---
@@ -199,7 +199,7 @@ b: fill blue delay 0.25 pulse
 ```anim
 r2: arrow from b to c draw
 s: move above c gap 0.1
-c: fill blue delay 0.25 pulse
+c: fill blue delay 0.5
 ```
 
 ---
@@ -209,7 +209,7 @@ c: fill blue delay 0.25 pulse
 ```anim
 r3: arrow from c to d draw
 s: move right-of d gap 0.1
-d: fill blue delay 0.25 pulse
+d: fill blue delay 0.5
 ```
 
 ---
@@ -221,7 +221,7 @@ Every city has now been visited.
 ```anim
 r4: arrow from d to e draw
 s: move below e gap 0.1
-e: fill blue delay 0.25 pulse
+e: fill blue delay 0.5
 ```
 
 ---
@@ -233,12 +233,10 @@ The salesperson returns home to finish the tour.
 ```anim
 r5: arrow from e to a draw
 s: move left-of a gap 0.1
-a: fill green delay 0.25 pulse
+a: fill green delay 0.5
 ```
 
 +++
-
-The route is **A → B → C → D → E → A**. Is it the shortest one?
 
 ```anim
 ac: remove
@@ -246,6 +244,29 @@ ad: remove
 bd: remove
 be: remove
 ce: remove
+auto
+```
+
+---
+
+The route is **A → B → C → D → E → A**. Is it the shortest one?
+
+```anim
+camera goto a zoom 1.5
+auto
+```
+
++++
+
+```anim
+camera travel b c d e a delay 0.5
+auto
+```
+
++++
+
+```anim
+camera reset delay 0.5
 ```
 
 Note:
@@ -1033,10 +1054,10 @@ pkt: rect at 1.5,2.5 size 0.5x0.35 fill amber front
 
 ## travel
 
-`pkt: travel r1 r2 r3 srv speed slow`: hop by hop through the routers.
+`pkt: travel r1 r2 r3 srv`: hop by hop through the routers, each hop taking the speed.
 
 ```anim
-pkt: travel r1 r2 r3 srv speed slow
+pkt: travel r1 r2 r3 srv
 ```
 
 ---

@@ -167,6 +167,7 @@ a: follow-reverse l              # along line l, from its end
 
 - `via` / `travel` / `follow` only on an existing shape (not when creating, not on lines).
 - Signed `via` points are relative to the start; signed `travel` stops to the stop before.
+- `travel` eases hop by hop, each hop taking `speed` (4 stops = 4 × speed). `via` and `follow` are one ease.
 
 ## Copies, attachments, groups
 
@@ -235,10 +236,12 @@ camera at a zoom 3 speed slow    # centre on where a is now (doesn't follow it)
 camera zoom 1.5                  # zoom about the current centre
 camera move +2,0                 # pan 2 cells right (relative, like shapes)
 camera zoom +1                   # one step closer
+camera travel b c d              # pan hop by hop through the stops (ids and/or x,y)
 camera reset                     # back to the whole drawing
 ```
 
-- Takes `at` / `x` / `y`, `zoom`, `reset`, `speed` and `delay`. No colon.
+- Takes `at` / `x` / `y`, `travel`, `zoom`, `reset`, `speed` and `delay`. No colon.
+- `travel` can't go with `at` / `x` / `y`. Each hop eases on its own and takes `speed`, so 3 stops take 3 × speed.
 - Stays until changed (later steps keep it). Going back plays it in reverse; jumps cut.
 - Zoomed in (`zoom` ≥ 1), the view stays inside the drawing; `zoom 0.5` zooms out.
 

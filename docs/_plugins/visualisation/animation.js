@@ -614,6 +614,16 @@
     return samples
   }
 
+  // A route that eases from stop to stop (travel), each hop an equal share of the time: the point
+  // a fraction `raw` (0-1, un-eased) of the way through it.
+  function pointOnHops(stops, raw) {
+    const hops = stops.length - 1
+    if (hops < 1) return { ...stops[0] }
+    const i = Math.min(hops - 1, Math.floor(raw * hops))
+    const k = ease(raw * hops - i)
+    return { x: lerp(stops[i].x, stops[i + 1].x, k), y: lerp(stops[i].y, stops[i + 1].y, k) }
+  }
+
   // The point a fraction t (0-1) of the way along a path, by distance.
   function pointOnPath(samples, t) {
     const total = samples[samples.length - 1].at
@@ -814,7 +824,9 @@
         }
         Object.assign(shape, points[points.length - 1])
         keepOffset()
-        return buildPolyline(points)
+        const path = buildPolyline(points)
+        path.hops = points // eased hop by hop at playback (pointOnHops)
+        return path
       }
       if (props.follow) {
         const line = shapes.get(props.follow.ref)
@@ -913,27 +925,31 @@
 
     // `camera at 4,3 zoom 2` pans and zooms the view; `camera reset` goes back to the whole drawing.
     // A shape id centres on where the shape is now (the camera doesn't follow it).
+    // `camera travel b c d` pans hop by hop through the stops, like a shape's travel.
     function runCameraLine([, colon, rest = ''], meta, warn) {
       if (colon) throw new Error('"camera" takes no colon, e.g. "camera at 4,3 zoom 2"')
       const props = parseProps(tokenize(rest), 0, 'camera', shapes)
-      const extra = Object.keys(props).find((key) => !['at', 'x', 'y', 'zoom', 'reset', 'speed', 'delay'].includes(key))
-      if (extra) throw new Error(`"camera" takes at / x / y, zoom, reset, speed and delay, not "${extra === 'label' ? 'quoted text' : extra}"`)
+      const extra = Object.keys(props).find((key) => !['at', 'x', 'y', 'travel', 'zoom', 'reset', 'speed', 'delay'].includes(key))
+      if (extra) throw new Error(`"camera" takes at / x / y, travel, zoom, reset, speed and delay, not "${extra === 'label' ? 'quoted text' : extra}"`)
       if (props.at?.kind === 'place') throw new Error('"camera at" takes "x,y" or a shape id')
-      if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects at, zoom or reset, e.g. "camera at 4,3 zoom 2"')
-      if (props.reset && (props.at || props.x || props.y || props.zoom)) throw new Error('"camera reset" takes only a speed and a delay')
+      if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'travel', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects at, travel, zoom or reset, e.g. "camera at 4,3 zoom 2"')
+      if (props.reset && (props.at || props.x || props.y || props.travel || props.zoom)) throw new Error('"camera reset" takes only a speed and a delay')
+      if (props.travel && (props.at || props.x || props.y)) throw new Error('"camera travel" sets the route, so it can\'t go with at / x / y')
 
       const before = JSON.stringify(camera)
       const next = props.reset ? { x: null, y: null, zoom: 1 } : { ...camera }
       const centre = context.centre // the drawing's centre, when the grid is fixed
-      const axis = (n, key) => {
-        const current = camera[key] ?? centre?.[key]
+      const axis = (n, key, from = camera) => {
+        const current = from[key] ?? centre?.[key]
         if (n.rel && current == null) throw new Error('a relative camera move needs a fixed grid, or an absolute "camera at" first')
         return numberValue(n, current, { unit: CELL, coord: true })
       }
+      const refCentre = (ref) => {
+        const b = bounds(shapes.get(ref), shapes)
+        return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }
+      }
       if (props.at?.kind === 'ref') {
-        const b = bounds(shapes.get(props.at.ref), shapes)
-        next.x = (b.x0 + b.x1) / 2
-        next.y = (b.y0 + b.y1) / 2
+        Object.assign(next, refCentre(props.at.ref))
       } else if (props.at) {
         next.x = axis(props.at.x, 'x')
         next.y = axis(props.at.y, 'y')
@@ -944,9 +960,23 @@
         next.zoom = numberValue(props.zoom, camera.zoom)
         if (!(next.zoom > 0)) throw new Error('"zoom" must be more than 0')
       }
+      // A route: the camera states it passes through (a signed stop is relative to the one before).
+      // The views are worked out at playback, where the drawing's size is known.
+      let route = null
+      if (props.travel) {
+        route = [{ ...camera }]
+        for (const stop of props.travel) {
+          const prev = route[route.length - 1]
+          const pt = stop.kind === 'ref' ? refCentre(stop.ref) : { x: axis(stop.x, 'x', prev), y: axis(stop.y, 'y', prev) }
+          route.push({ ...pt, zoom: next.zoom })
+        }
+        Object.assign(next, route[route.length - 1])
+      }
       camera = next
-      if (JSON.stringify(camera) === before) warn('this camera line changes nothing')
-      tween(meta, 'camera').dur = speedOf(props)
+      if (JSON.stringify(camera) === before && !route) warn('this camera line changes nothing')
+      const record = tween(meta, 'camera')
+      record.dur = speedOf(props) * (route ? route.length - 1 : 1) // a route takes `speed` per hop
+      record.path = route
       setDelay(meta, 'camera', props)
     }
 
@@ -1023,7 +1053,7 @@
         }
         shapes.set(id, shape)
         tween(meta, shape.uid).enter = 'copy'
-        tween(meta, shape.uid).dur = speedOf(props)
+        tween(meta, shape.uid).dur = speedOf(props) * (props.travel?.length || 1) // travel: speed per hop
         setDelay(meta, shape.uid, props)
         return
       }
@@ -1104,7 +1134,7 @@
       if (path) tween(meta, shape.uid).path = path
       else if (props.at || props.x || props.y) tween(meta, shape.uid).path = null // a later straight move wins
       shapes.set(id, shape)
-      tween(meta, shape.uid).dur = Math.max(tween(meta, shape.uid).dur, speedOf(props))
+      tween(meta, shape.uid).dur = Math.max(tween(meta, shape.uid).dur, speedOf(props) * (props.travel?.length || 1)) // travel: speed per hop
       setDelay(meta, shape.uid, props)
     }
 
@@ -1632,7 +1662,7 @@
         let v
         if (a && b) {
           shape = interpolate(a, b, t)
-          if (tw?.path) Object.assign(shape, pointOnPath(tw.path, t))
+          if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw) : pointOnPath(tw.path, t))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           v.label = swap && t < 0.5 ? a.label : b.label
@@ -2137,6 +2167,19 @@
       const start = performance.now()
       const viewA = cameraView(beats[k - 1].camera)
       const viewB = cameraView(beats[k].camera)
+      // `camera travel`: the view's centre eases from stop to stop, an equal share of the time each
+      // (stops the edge of the drawing holds back are where the view really goes); its size eases
+      // over the whole route. `raw` is the camera's un-eased progress.
+      const route = meta.tweens.get('camera')?.path
+      const stops = route?.map(cameraView).map((v) => ({ x: v.x + v.w / 2, y: v.y + v.h / 2 }))
+      const viewAt = (raw) => {
+        const t = ease(raw)
+        const w = lerp(viewA.w, viewB.w, t)
+        const h = lerp(viewA.h, viewB.h, t)
+        if (!stops) return { x: lerp(viewA.x, viewB.x, t), y: lerp(viewA.y, viewB.y, t), w, h }
+        const c = pointOnHops(stops, raw)
+        return { x: c.x - w / 2, y: c.y - h / 2, w, h }
+      }
 
       return new Promise((resolve) => {
         let frame = 0
@@ -2144,8 +2187,7 @@
           const progress = (uid) => (forward ? forwardT(uid, elapsed) : forwardT(uid, total - elapsed))
           const done = total ? Math.min(1, elapsed / total) : 1
           const beatT = ease(forward ? done : 1 - done)
-          const t = ease(progress('camera'))
-          setView({ x: lerp(viewA.x, viewB.x, t), y: lerp(viewA.y, viewB.y, t), w: lerp(viewA.w, viewB.w, t), h: lerp(viewA.h, viewB.h, t) })
+          setView(viewAt(clamp01(progress('camera'))))
           renderer.render(A, B, meta, progress, final, { forward, beatT })
         }
         const finish = () => {
