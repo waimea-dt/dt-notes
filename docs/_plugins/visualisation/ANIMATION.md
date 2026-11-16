@@ -66,7 +66,7 @@ Markers must be alone on their line. Everything in one beat plays at the same ti
 
 ## Lines
 
-```
+```anim
 a: rect "A" at 2,3          # create: id, type, label, properties
 a: move 5,3 fill red        # change an existing shape
 a: remove                   # remove (optionally with an effect and speed)
@@ -119,7 +119,7 @@ a: remove                   # remove (optionally with an effect and speed)
 
 On a change, a signed number is relative; unsigned is absolute. When creating, everything is absolute.
 
-```
+```anim
 a: move +2,-1        # 2 right, 1 up
 a: move +2,3         # 2 right, to row 3
 a: x +3              # 3 right
@@ -133,7 +133,7 @@ a: angle +90         # a further quarter turn
 
 ## Moving lines
 
-```
+```anim
 l: to 6,5            # move one end
 l: to +1,+0          # one end, relatively
 l: from a to 9,9     # both ends
@@ -144,7 +144,7 @@ No `at`, `x`, `y`, angle, scale or absolute `move` on a line.
 
 ## Movement
 
-```
+```anim
 a: move 9,3 via 5,1              # curve through a point (a circular arc)
 a: move 9,3 via 3,1 via 6,5      # more points: smooth, sine-like
 a: travel r1 r2 4,3 srv          # straight hops through shapes / points
@@ -157,7 +157,7 @@ a: follow-reverse l              # along line l, from its end
 
 ## Copies, attachments, groups
 
-```
+```anim
 k2: copy key move 8,1 via 5,0.5        # the copy starts on the original and moves off
 lock: icon(lock) attach right-of msg   # rides beside msg wherever it goes
 lock: attach msg                       # on top of msg
@@ -172,7 +172,7 @@ pkt: ungroup                           # members stay where they are
 
 ## Emphasis, highlights, callouts
 
-```
+```anim
 a: pulse                       # one-off, forwards only
 a: shake
 a: wobble
@@ -188,7 +188,7 @@ Callouts stay inside the drawing.
 
 ## Timing and effects
 
-```
+```anim
 a: move 4,2 speed slow         # instant | vfast | fast | normal | slow | vslow
 a: move 4,2 speed 1.5          # or seconds
 a: fill red delay 1            # wait 1 s before starting
@@ -203,7 +203,7 @@ a: remove pop                  # exits take the same effects
 
 ## Beat lines (no id)
 
-```
+```anim
 defaults fill blue speed fast    # applies to lines after it (merges)
 defaults clear
 pause                            # while playing, wait here for Next
@@ -216,7 +216,7 @@ auto                             # go straight on to the next beat (one click pl
 
 ## Switching things off
 
-```
+```anim
 a: remove
 g: ungroup
 a: detach
