@@ -609,7 +609,14 @@
     return shape
   }
 
-  const rel = (value, current, scale, creating) => (creating || !value.rel ? null : current + value.v * scale)
+  // The one rule for numbers. The parser keeps a number's sign as `rel`; here a signed number is
+  // relative to `current` (when there is one: changing a shape, the stop before, a line's end), and
+  // anything else is absolute. `unit` scales cells (CELL) or leaves multipliers (1); `coord` makes
+  // an absolute value a grid coordinate (the centre of that cell).
+  function numberValue(n, current, { unit = 1, coord = false } = {}) {
+    if (n.rel && current !== undefined && current !== null) return current + n.v * unit
+    return coord ? cellToPx(n.v) : n.v * unit
+  }
 
   function lucideIcon(name) {
     const pascal = name.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join('')
@@ -633,13 +640,14 @@
         ...(props.travel || []).map((v) => v.ref)]) {
         if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
-      const num = (value, current, scale) => {
-        const relative = rel(value, current, scale, creating)
-        return relative ?? value.v * scale
-      }
+      // Relative values need something to be relative to: never when creating
+      const now = (value) => (creating ? undefined : value)
+      const cells = (n, current) => numberValue(n, now(current), { unit: CELL })
+      const times = (n, current) => numberValue(n, now(current))
+      const coord = (n, current) => numberValue(n, current, { unit: CELL, coord: true })
 
       if (props.label !== undefined) shape.label = props.label
-      if (props.font) { check(shape, 'font'); shape.font = Math.max(0.1, num(props.font, shape.font, 1)) }
+      if (props.font) { check(shape, 'font'); shape.font = Math.max(0.1, times(props.font, shape.font)) }
       // size: absolute, or one signed number on a change (both sides by that amount). A relative
       // pair (size +1x+0) isn't allowed: width / height change one side.
       if (props.size) {
@@ -648,25 +656,25 @@
         if (relative && !props.size.one) throw new Error('a relative size takes one number (e.g. "size +1"): use "width +1" / "height +1" to change one side')
         if (shape.type === 'circle') {
           if (!props.size.one) throw new Error('a circle takes one size (or use radius)')
-          shape.r = Math.max(0, relative ? shape.r + (props.size.w.v * CELL) / 2 : (props.size.w.v * CELL) / 2)
+          shape.r = Math.max(0, cells(props.size.w, shape.r * 2) / 2)
         } else {
-          shape.w = Math.max(0, relative ? shape.w + props.size.w.v * CELL : props.size.w.v * CELL)
-          shape.h = Math.max(0, relative ? shape.h + props.size.h.v * CELL : props.size.h.v * CELL)
+          shape.w = Math.max(0, cells(props.size.w, shape.w))
+          shape.h = Math.max(0, cells(props.size.h, shape.h))
         }
       }
       if (props.size && (props.width || props.height)) throw new Error('give either "size" or "width" / "height", not both')
-      if (props.width) { check(shape, 'width'); shape.w = Math.max(0, num(props.width, shape.w, CELL)) }
-      if (props.height) { check(shape, 'height'); shape.h = Math.max(0, num(props.height, shape.h, CELL)) }
-      if (props.radius) { check(shape, 'radius'); shape.r = Math.max(0, num(props.radius, shape.r, CELL)) }
+      if (props.width) { check(shape, 'width'); shape.w = Math.max(0, cells(props.width, shape.w)) }
+      if (props.height) { check(shape, 'height'); shape.h = Math.max(0, cells(props.height, shape.h)) }
+      if (props.radius) { check(shape, 'radius'); shape.r = Math.max(0, cells(props.radius, shape.r)) }
       if (props.fill) { check(shape, 'fill'); shape.fill = props.fill }
       if (props.stroke) shape.stroke = props.stroke
       if (props.weight) {
         if (shape.type === 'text') warn('"weight" has no effect on text')
-        shape.weight = Math.max(0, num(props.weight, shape.weight, 1))
+        shape.weight = Math.max(0, times(props.weight, shape.weight))
       }
       if (props.align) { check(shape, 'align'); shape.align = props.align }
-      if (props.angle) { check(shape, 'angle'); shape.angle = num(props.angle, shape.angle, 1) }
-      if (props.scale) { check(shape, 'scale'); shape.scale = Math.max(0, num(props.scale, shape.scale, 1)) }
+      if (props.angle) { check(shape, 'angle'); shape.angle = times(props.angle, shape.angle) }
+      if (props.scale) { check(shape, 'scale'); shape.scale = Math.max(0, times(props.scale, shape.scale)) }
       if (props.bold) shape.bold = true
       if (props.linestyle) { check(shape, 'linestyle', props.linestyle); shape.linestyle = props.linestyle }
       if (props.flow) {
@@ -698,18 +706,15 @@
         if (props.at) {
           if (!props.at.x.rel || !props.at.y.rel || creating) throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
           const ends = resolveEnds(shape, shapes)
-          shape.from = { x: ends.from.x + props.at.x.v * CELL, y: ends.from.y + props.at.y.v * CELL }
-          shape.to = { x: ends.to.x + props.at.x.v * CELL, y: ends.to.y + props.at.y.v * CELL }
+          shape.from = { x: coord(props.at.x, ends.from.x), y: coord(props.at.y, ends.from.y) }
+          shape.to = { x: coord(props.at.x, ends.to.x), y: coord(props.at.y, ends.to.y) }
         }
         for (const key of ['from', 'to']) {
           const end = props[key]
           if (!end) continue
           if (end.kind === 'ref') { shape[key] = { ref: end.ref }; continue }
-          const current = creating ? null : resolveEnds(shape, shapes)[key]
-          shape[key] = {
-            x: (current && rel(end.x, current.x, CELL, false)) ?? cellToPx(end.x.v),
-            y: (current && rel(end.y, current.y, CELL, false)) ?? cellToPx(end.y.v),
-          }
+          const current = creating ? undefined : resolveEnds(shape, shapes)[key]
+          shape[key] = { x: coord(end.x, current?.x), y: coord(end.y, current?.y) }
         }
         if (creating && (!shape.from || !shape.to)) throw new Error('a line needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"')
         if (props.via) throw new Error('"via" moves a shape along a curve, so it can\'t be used on a line')
@@ -725,16 +730,15 @@
       if (props.via && !props.at && !props.x && !props.y) throw new Error('"via" needs a move too, e.g. "move 9,3 via 5,1"')
       const start = { x: shape.x, y: shape.y }
 
-      const pos = (value, current) => rel(value, current, CELL, creating) ?? cellToPx(value.v)
       const at = props.at
-      if (at?.kind === 'abs') { shape.x = pos(at.x, shape.x); shape.y = pos(at.y, shape.y) }
+      if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
       if (at?.kind === 'ref') Object.assign(shape, boxCentre(shapes.get(at.ref)))
       if (at?.kind === 'place') {
         const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
         Object.assign(shape, placeNextTo(shape, shapes.get(at.ref), at.place, gap))
       }
-      if (props.x) shape.x = pos(props.x, shape.x)
-      if (props.y) shape.y = pos(props.y, shape.y)
+      if (props.x) shape.x = coord(props.x, now(shape.x))
+      if (props.y) shape.y = coord(props.y, now(shape.y))
 
       if (props.attach) {
         if (props.attach.ref === shape.id) throw new Error('a shape can\'t attach to itself')
@@ -765,10 +769,7 @@
         const points = [start]
         for (const stop of props.travel) {
           const prev = points[points.length - 1]
-          points.push(stop.kind === 'ref' ? boxCentre(shapes.get(stop.ref)) : {
-            x: rel(stop.x, prev.x, CELL, false) ?? cellToPx(stop.x.v),
-            y: rel(stop.y, prev.y, CELL, false) ?? cellToPx(stop.y.v),
-          })
+          points.push(stop.kind === 'ref' ? boxCentre(shapes.get(stop.ref)) : { x: coord(stop.x, prev.x), y: coord(stop.y, prev.y) })
         }
         Object.assign(shape, points[points.length - 1])
         keepOffset()
@@ -790,10 +791,7 @@
       const vias = props.via.map((via) => {
         if (via.kind === 'ref') return boxCentre(shapes.get(via.ref))
         if (via.kind === 'place') return placeNextTo(shape, shapes.get(via.ref), via.place, PLACE_GAP)
-        return {
-          x: rel(via.x, start.x, CELL, false) ?? cellToPx(via.x.v),
-          y: rel(via.y, start.y, CELL, false) ?? cellToPx(via.y.v),
-        }
+        return { x: coord(via.x, start.x), y: coord(via.y, start.y) }
       })
       return buildPath([start, ...vias, { x: shape.x, y: shape.y }])
     }
@@ -803,12 +801,13 @@
       for (const [key, value] of Object.entries(defaults)) {
         if (['speed', 'effect'].includes(key)) continue
         if (APPLIES[key] && !APPLIES[key].includes(shape.type)) continue
-        if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = (value.w.v * CELL) / 2; continue }
-        if (key === 'size') { shape.w = value.w.v * CELL; shape.h = value.h.v * CELL; continue }
-        if (key === 'radius') { shape.r = value.v * CELL; continue }
-        if (key === 'width') { shape.w = value.v * CELL; continue }
-        if (key === 'height') { shape.h = value.v * CELL; continue }
-        if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = value.v; continue }
+        const cells = (n) => numberValue(n, undefined, { unit: CELL })
+        if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = cells(value.w) / 2; continue }
+        if (key === 'size') { shape.w = cells(value.w); shape.h = cells(value.h); continue }
+        if (key === 'radius') { shape.r = cells(value); continue }
+        if (key === 'width') { shape.w = cells(value); continue }
+        if (key === 'height') { shape.h = cells(value); continue }
+        if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = numberValue(value); continue }
         shape[key] = value
       }
     }
