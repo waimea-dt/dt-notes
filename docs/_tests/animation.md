@@ -506,11 +506,13 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 <animation grid="12x4">
 
 ```scene
-r: rect "rect" at 2,2 size 2x1 radius 0.15 dotted
+# a whole-line comment
+r: rect "rect" at 2,2 size 2x1 radius 0.15 dotted   # a comment after a command
 c: circle "circle" at 5,2 radius 0.8 fill blue
 t: text "text, left" at 8,1 align left stroke theme
 b: text "bold, 1.5x" at 8,3 font 1.5 bold
 i: icon(laptop) "icon" at 11,2
+hx: text "C# code" at 3,4 stroke #f80   # a hex colour and a "# " in a label are kept
 ```
 
 ---

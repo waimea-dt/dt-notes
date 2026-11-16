@@ -2,19 +2,19 @@
  * docsify-animation.js - Renders <animation>...</animation> blocks as step-by-step animated SVG
  * explanations: a drawing that changes between steps, with a Markdown caption for each step.
  *
- * Full syntax and design: docs/_plugins/visualisation/ANIMATION.md
+ * Syntax cheat-sheet: docs/_plugins/visualisation/ANIMATION.md
  *
  * Usage in markdown (markers must be alone on their line; ignored inside code fences):
  *   <animation grid="16x9" debug>
  *   # Title               the first heading of step 1 stays fixed for the whole animation
  *   Caption text.
  *   ```scene
- *   a: rect "A" at 2 3    id: type, label and properties - creates a shape
+ *   a: rect "A" at 2,3    id: type, label and properties - creates a shape
  *   ```
  *   ---                   start a new step
  *   ## Step heading
  *   ```scene
- *   a: move 5 3 slow      id: properties - changes a shape (animated); `delay 1` waits a second first
+ *   a: move 5,3 speed slow  id: properties - changes a shape (animated); `delay 1` waits a second first
  *   ```
  *   +++                   start a new beat (caption text and scene play one after another)
  *   Note:                 teacher notes, to the end of the step
@@ -1018,6 +1018,18 @@
     return { shapes, runLine, settle }
   }
 
+  // A comment starts at "#" followed by a space (or the end of the line), outside quotes, so hex
+  // colours (#f80) and a "#" in a label are left alone. Whole-line or after a command.
+  function stripComment(line) {
+    let quoted = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (ch === '"' && line[i - 1] !== '\\') quoted = !quoted
+      else if (ch === '#' && !quoted && (i + 1 === line.length || /\s/.test(line[i + 1]))) return line.slice(0, i)
+    }
+    return line
+  }
+
   // One record per shape per beat: how its change animates (duration and delay in ms, the route
   // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect).
   function tween(meta, uid) {
@@ -1055,8 +1067,8 @@
         const meta = { tweens: new Map(), pause: null, auto: false }
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
         beat.scene.split('\n').forEach((raw, li) => {
-          const text = raw.trim()
-          if (!text || text.startsWith('//')) return
+          const text = stripComment(raw).trim()
+          if (!text) return
           const warn = (message) => warnings.push(`${where(li)}: ${message}`)
           try {
             if (runTimingLine(text, meta)) return
