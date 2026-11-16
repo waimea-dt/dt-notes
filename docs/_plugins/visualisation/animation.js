@@ -50,7 +50,6 @@
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
   const ALIGNS = { left: 'left', centre: 'centre', center: 'centre', right: 'right' }
-  const FLAGS = ['bold']
   const LINE_STYLES = ['solid', 'dashed', 'dotted']
   // Each pattern as a visible mark and gap, in multiples of the line's thickness (w):
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
@@ -59,8 +58,6 @@
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   const HIGHLIGHTS = ['box', 'spotlight', 'clear']
-  const EMPHASES = ['pulse', 'shake'] // one-off effects on an existing shape
-  const ACTIONS = ['copy', 'attach', 'detach', 'group', 'ungroup', 'travel', 'follow', 'follow-reverse', 'highlight', 'callout']
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
   const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
   const RESOURCE_TYPES = ['image', 'icon']
@@ -107,49 +104,77 @@
     flow: ['rect', 'circle', 'line', 'arrow', 'image'], // dashes/dots march along the stroke
   }
 
-  const point = (types) => [[...types, 'num', 'num'], [...types, 'id']]
-  // Each keyword's signatures, tried longest first; `build` turns the matched values into a prop.
-  const PROPS = {
-    at: {
-      sigs: [['num', 'num'], ['placement', 'id'], ['id']],
-      help: '"x,y", a shape id, or a placement and a shape id (e.g. "below a")',
-      build: (v, sig) => sig.length === 2 && sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
-        : sig.length === 2 ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] },
-    },
-    x: { sigs: [['num']], help: 'a number' },
-    y: { sigs: [['num']], help: 'a number' },
-    from: { sigs: point([]), help: '"x,y" or a shape id', build: buildEnd },
-    to: { sigs: point([]), help: '"x,y" or a shape id', build: buildEnd },
-    size: { sigs: [['num', 'num'], ['num']], help: '"w,h", "wxh" or one number', build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }) },
-    radius: { sigs: [['num']], help: 'a number' },
-    gap: { sigs: [['num']], help: 'a number' },
-    delay: { sigs: [['num']], help: 'a number of seconds' },
-    speed: { sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast or a number of seconds', build: (v) => v[0] },
-    via: {
-      sigs: [['num', 'num'], ['placement', 'id'], ['id']],
-      help: '"x,y", a shape id, or a placement and a shape id (e.g. "via above b")',
-      build: (v, sig) => PROPS.at.build(v, sig),
-    },
-    fill: { sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' },
-    stroke: { sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' },
-    weight: { sigs: [['num']], help: 'a number (a multiple of the normal stroke thickness)' },
-    width: { sigs: [['num']], help: 'a number of cells' },
-    height: { sigs: [['num']], help: 'a number of cells' },
-    font: { sigs: [['num']], help: 'a number (a multiple of the normal size)' },
-    angle: { sigs: [['num']], help: 'a number of degrees (clockwise, 0 = upright)' },
-    scale: { sigs: [['num']], help: 'a number (a multiple of the normal size)' },
-    align: { sigs: [['align']], help: 'left, centre or right' },
-  }
-  const ALIASES = { move: 'at', goto: 'at' }
-  Object.values(PROPS).forEach((prop) => prop.sigs.sort((a, b) => b.length - a.length))
+  // Every word that can follow "id:" (or "defaults"), in one table. Each entry gives the prop it
+  // sets (key) and the values that follow it:
+  //   sigs   alternative value lists, tried longest first (sigs [[]]: a flag with no values)
+  //   list   value lists repeated one after another, at least once (travel, highlight)
+  //   build  turns the matched values into the prop (default: the first value)
+  //   repeat the word can be given more than once, collecting an array (via)
+  //   modes  only allowed in these line kinds (clear: in defaults)
+  //   error  the word isn't allowed here, with a hint
+  const POINT = [['num', 'num'], ['placement', 'id'], ['id']]
+  const buildPoint = (v, sig) => (sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
+    : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] })
+  const at = { key: 'at', sigs: POINT, build: buildPoint, help: '"x,y", a shape id, or a placement and a shape id (e.g. "below a")' }
+  const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
+  const colour = (key) => ({ key, sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' })
+  const fixed = (key, value, extra = {}) => ({ key, sigs: [[]], build: () => value, ...extra })
+  const words = (list, key, what) => Object.fromEntries(list.map((w) => [w, fixed(key, w, { what })]))
 
-  function buildEnd(v, sig) {
-    return sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] } : { kind: 'ref', ref: v[0] }
+  const KEYWORDS = {
+    // position
+    at, move: at, goto: at,
+    ...Object.fromEntries(PLACEMENTS.map((place) => [place, { key: 'at', sigs: [['id']], build: (v) => ({ kind: 'place', place, ref: v[0] }), help: 'a shape id' }])),
+    x: number('x'),
+    y: number('y'),
+    from: { key: 'from', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id' },
+    to: { key: 'to', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id' },
+    via: { ...at, key: 'via', repeat: true, help: '"x,y", a shape id, or a placement and a shape id (e.g. "via above b")' },
+    gap: number('gap'),
+    travel: { key: 'travel', list: [['num', 'num'], ['id']], build: buildPoint, help: 'shape ids and/or x,y points, e.g. "travel r1 r2 b"' },
+    follow: { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: false }), help: 'a line or arrow id' },
+    'follow-reverse': { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: true }), help: 'a line or arrow id', what: 'follow' },
+    attach: { key: 'attach', sigs: [['placement', 'id'], ['id']], build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : { side: 'centre', ref: v[0] }), help: 'a shape id, optionally after a side (e.g. "attach right-of a")' },
+    detach: fixed('detach', true),
+    // size and look
+    size: { key: 'size', sigs: [['num', 'num'], ['num']], build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }), help: '"w,h", "wxh" or one number' },
+    width: number('width', 'a number of cells'),
+    height: number('height', 'a number of cells'),
+    radius: number('radius'),
+    fill: colour('fill'),
+    stroke: colour('stroke'),
+    weight: number('weight', 'a number (a multiple of the normal stroke thickness)'),
+    font: number('font', 'a number (a multiple of the normal size)'),
+    angle: number('angle', 'a number of degrees (clockwise, 0 = upright)'),
+    scale: number('scale', 'a number (a multiple of the normal size)'),
+    align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
+    bold: fixed('bold', true),
+    ...words(LINE_STYLES, 'linestyle', 'line style'),
+    ...words(Object.keys(FLOWS), 'flow', 'flow'),
+    ...words(Object.keys(LAYERS), 'layer', 'layer'),
+    // timing and effects
+    speed: { key: 'speed', sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast or a number of seconds' },
+    delay: number('delay', 'a number of seconds'),
+    ...words(EFFECTS, 'effect', 'effect'),
+    ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
+    // emphasis, highlights and callouts
+    ...words(['pulse', 'shake'], 'emphasis', 'pulse / shake'),
+    highlight: { key: 'highlight', list: [['highlight']], help: 'box, spotlight or clear (pulse and shake go on their own)' },
+    callout: {
+      key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],
+      build: (v, sig) => (sig[0] === 'clear' ? { none: true } : { text: v[0], side: v[1] || 'above' }),
+      help: 'quoted text (e.g. callout "Look!"), optionally then a side, or clear',
+    },
+    // defaults only
+    clear: fixed('reset', true, { modes: ['defaults'] }),
   }
+  for (const entry of Object.values(KEYWORDS)) for (const list of [entry.sigs, entry.list]) list?.sort((a, b) => b.length - a.length)
+
+  // Words that start a line (after "id:") rather than describe it
+  const LINE_STARTS = ['copy', 'group', 'ungroup', 'remove']
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(PROPS), ...Object.keys(ALIASES), ...Object.keys(SPEEDS),
-    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), ...ACTIONS, ...EMPHASES, 'pause', 'auto', 'remove', 'defaults', 'clear',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, 'pause', 'auto', 'defaults',
   ])
 
   // ---------------------------------------------------------------------------
@@ -311,9 +336,13 @@
   }
 
   function parseAs(type, token, shapes) {
+    if (type === 'str') return token?.kind === 'str' ? token.value : undefined
     if (!token || token.kind !== 'word') return undefined
     const word = token.lower
     switch (type) {
+      case 'highlight': return HIGHLIGHTS.includes(word) ? word : undefined
+      case 'side': return CALLOUT_SIDES[word]
+      case 'clear': return word === 'clear' ? word : undefined
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined
       case 'id': return shapes.has(token.value) ? token.value : undefined
       case 'placement': return PLACEMENTS.includes(word) ? word : undefined
@@ -324,77 +353,30 @@
     return undefined
   }
 
-  function matchProp(name, tokens, i, shapes) {
-    const prop = PROPS[name]
-    for (const sig of prop.sigs) {
+  // Tries each value list in turn (longest first) at tokens[i]; returns the first that fits.
+  function matchSigs(sigs, tokens, i, shapes) {
+    for (const sig of sigs) {
       const values = sig.map((type, k) => parseAs(type, tokens[i + k], shapes))
-      if (values.every((v) => v !== undefined)) {
-        return { value: prop.build ? prop.build(values, sig) : values[0], next: i + sig.length }
-      }
+      if (values.every((v) => v !== undefined)) return { values, sig, next: i + sig.length }
     }
-    const next = tokens[i]
-    const missing = next && next.kind === 'word' && ID.test(next.value) && !RESERVED.has(next.lower) && !COLOURS[next.lower]
-      && prop.sigs.some((sig) => sig.includes('id'))
-    throw new Error(`"${name}" expects ${prop.help}${missing ? `: no shape called "${next.value}"` : ''}`)
+    return null
   }
 
-  // The action keywords, each with its own values. Returns the index after them, or 0 if `word`
-  // isn't one of them.
-  function parseAction(word, tokens, i, shapes, set) {
-    const idAt = (j, what) => {
-      const ref = parseAs('id', tokens[j], shapes)
-      if (!ref) throw new Error(`"${what}" expects a shape id${tokens[j] ? `: no shape called "${tokens[j].value}"` : ''}`)
-      return ref
+  // The values after a keyword: one match of its sigs, or one or more of its list.
+  function matchKeyword(entry, word, tokens, i, shapes) {
+    const build = (m) => (entry.build ? entry.build(m.values, m.sig) : m.values[0])
+    if (entry.list) {
+      const items = []
+      for (let m; (m = matchSigs(entry.list, tokens, i, shapes)); i = m.next) items.push(build(m))
+      if (items.length) return { value: items, next: i }
+    } else {
+      const m = matchSigs(entry.sigs, tokens, i, shapes)
+      if (m) return { value: build(m), next: m.next }
     }
-    const wordAt = (j) => (tokens[j]?.kind === 'word' ? tokens[j].lower : '')
-    switch (word) {
-      case 'attach': {
-        // attach [above | below | left-of | right-of] <id>; with no side, on top of it
-        const side = PLACEMENTS.includes(wordAt(i + 1)) ? wordAt(i + 1) : null
-        set('attach', { ref: idAt(i + (side ? 2 : 1), 'attach'), side: side || 'centre' })
-        return i + (side ? 3 : 2)
-      }
-      case 'detach': set('detach', true); return i + 1
-      case 'travel': {
-        // a list of stops: shape ids and/or x,y points
-        const stops = []
-        let j = i + 1
-        while (j < tokens.length) {
-          const ref = parseAs('id', tokens[j], shapes)
-          if (ref) { stops.push({ kind: 'ref', ref }); j++; continue }
-          const x = parseAs('num', tokens[j], shapes)
-          const y = parseAs('num', tokens[j + 1], shapes)
-          if (x && y) { stops.push({ kind: 'abs', x, y }); j += 2; continue }
-          break
-        }
-        if (!stops.length) throw new Error('"travel" expects shape ids and/or x,y points, e.g. "travel r1 r2 b"')
-        set('travel', stops)
-        return j
-      }
-      case 'follow':
-      case 'follow-reverse': {
-        // follow l: from the line's start to its end; follow-reverse l: from its end to its start
-        set('follow', { ref: idAt(i + 1, word), reverse: word === 'follow-reverse' }, word)
-        return i + 2
-      }
-      case 'highlight': {
-        const words = []
-        let j = i + 1
-        while (HIGHLIGHTS.includes(wordAt(j))) words.push(wordAt(j++))
-        if (!words.length) throw new Error('"highlight" expects box, spotlight or clear (pulse and shake go on their own)')
-        set('highlight', words)
-        return j
-      }
-      case 'callout': {
-        const next = tokens[i + 1]
-        if (next?.kind === 'word' && next.lower === 'clear') { set('callout', { none: true }); return i + 2 }
-        if (next?.kind !== 'str') throw new Error('"callout" expects quoted text (e.g. callout "Look!") or clear')
-        const side = CALLOUT_SIDES[wordAt(i + 2)]
-        set('callout', { text: next.value, side: side || 'above' })
-        return i + (side ? 3 : 2)
-      }
-    }
-    return 0
+    const next = tokens[i]
+    const missing = next?.kind === 'word' && ID.test(next.value) && !RESERVED.has(next.lower) && !COLOURS[next.lower]
+      && [...(entry.sigs || []), ...(entry.list || [])].some((sig) => sig.includes('id'))
+    throw new Error(`"${word}" expects ${entry.help}${missing ? `: no shape called "${next.value}"` : ''}`)
   }
 
   // Reads the properties and flags of one line (everything after the id and any type word).
@@ -409,37 +391,17 @@
       const token = tokens[i]
       if (token.kind === 'str') { set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
-
       const word = token.lower
-      const name = ALIASES[word] || word
-      const special = parseAction(word, tokens, i, shapes, set)
-      if (special) { i = special; continue }
-      if (PROPS[name]) {
-        const { value, next } = matchProp(name, tokens, i + 1, shapes)
-        if (name === 'via') props.via = [...(props.via || []), value] // repeatable
-        else set(name, value, word)
-        i = next
-        continue
+      const entry = KEYWORDS[word]
+      if (!entry || (entry.modes && !entry.modes.includes(mode))) {
+        if (SHAPE_TYPES.includes(word) || LINE_STARTS.includes(word)) throw new Error(`"${word}" must come straight after the id`)
+        throw new Error(`unknown word "${token.value}"`)
       }
-      if (PLACEMENTS.includes(word)) {
-        // A bare placement is short for "at <placement> <id>", e.g. `t: text "i" below a`
-        const ref = parseAs('id', tokens[i + 1], shapes)
-        if (!ref) throw new Error(`"${word}" expects a shape id${tokens[i + 1] ? `: no shape called "${tokens[i + 1].value}"` : ''}`)
-        set('at', { kind: 'place', place: word, ref }, word)
-        i += 2
-        continue
-      }
-      if (word in SPEEDS) throw new Error(`"${word}" goes after speed, e.g. "speed ${word}"`)
-      else if (EFFECTS.includes(word)) set('effect', word)
-      else if (word in LAYERS) set('layer', word)
-      else if (FLAGS.includes(word)) set(word, true)
-      else if (LINE_STYLES.includes(word)) set('linestyle', word, 'line style')
-      else if (word in FLOWS) set('flow', word, 'flow')
-      else if (EMPHASES.includes(word)) set('emphasis', word)
-      else if (word === 'clear' && mode === 'defaults') set('reset', true)
-      else if (SHAPE_TYPES.includes(word) || word === 'remove') throw new Error(`"${word}" must come straight after the id`)
-      else throw new Error(`unknown word "${token.value}"`)
-      i++
+      if (entry.error) throw new Error(entry.error)
+      const { value, next } = matchKeyword(entry, word, tokens, i + 1, shapes)
+      if (entry.repeat) props[entry.key] = [...(props[entry.key] || []), value]
+      else set(entry.key, value, entry.what || word)
+      i = next
     }
 
     if (props.gap && props.at?.kind !== 'place' && !props.attach) throw new Error('"gap" only works with above / below / left-of / right-of, or attach')
@@ -1032,7 +994,7 @@
 
       if (!existing) {
         const word = first?.kind === 'word' ? first.lower : ''
-        const known = !word || PROPS[ALIASES[word] || word] || RESERVED.has(word)
+        const known = !word || KEYWORDS[word] || RESERVED.has(word)
         throw new Error(known ? `no shape called "${id}" (to create one, put a type after the colon, e.g. "${id}: rect")` : `unknown shape type "${first.value}"`)
       }
       const props = parseProps(tokens, 0, 'change', shapes)

@@ -207,38 +207,22 @@ Each token's type can be told from the token itself:
 
 **Points and sizes are written as pairs:** a point with a comma (`at 5,4`, `from 2,3 to 7,8`, `via 4,4`, `move +2,-1`) and a size with an `x` (`size 2x1`), so each pair reads as one unit. Spaces still work (`at 5 4`, `size 2 1`), as do spaces after the comma (`at 5, 4`); the examples use the pair forms.
 
-### Property signatures (overloading)
+### The keyword table
 
-Each keyword has one or more **signatures**, tried **longest first**, and the first one that matches is used. Overloads must differ in the type of their first value or in how many values they take.
+Every word that can follow `id:` (or `defaults`) is one entry in a single table, `KEYWORDS`, in the plugin. An entry gives the prop it sets and the values that follow it:
 
-```js
-const PROPS = {
-  at:     [['num', 'num'], ['placement', 'id'], ['id']],   // `move` and `goto` are aliases
-  x:      [['num']],
-  y:      [['num']],
-  from:   [['num', 'num'], ['id']],
-  to:     [['num', 'num'], ['id']],
-  size:   [['num', 'num'], ['num']],     // `size 2x1`, or `size 2` = 2 × 2; relative: one number only
-  width:  [['num']],                     // horizontal size in cells
-  height: [['num']],                     // vertical size in cells
-  radius: [['num']],                     // circle radius, or a rect's corner radius
-  gap:    [['num']],                     // only after a placement
-  via:    [['num', 'num'], ['placement', 'id'], ['id']],   // repeatable: curve through these points
-  delay:  [['num']],                     // seconds to wait before this line's change starts
-  fill:   [['colour']],
-  stroke: [['colour']],
-  weight: [['num']],                     // stroke thickness, × normal
-  font:   [['num']],
-  angle:  [['num']],                     // degrees clockwise, 0 = upright
-  scale:  [['num']],                     // size multiplier about the centre
-  align:  [['word']],                    // left | centre | right (`center` also accepted)
-  bold:   [[]],
-  solid / dashed / dotted: [[]],         // line style flags (solid is the default)
-  flow / flow-reverse / static: [[]],  // march the dashes along the stroke
-}
-```
+| Field | Meaning | Examples |
+|---|---|---|
+| `sigs` | alternative value lists, tried **longest first**; `[[]]` is a flag with no values | `at`: `x,y` · `<placement> <id>` · `<id>`; `bold` |
+| `list` | value lists repeated one after another, at least once | `travel r1 r2 4,3`, `highlight box spotlight` |
+| `build` | turns the matched values into the prop | `move 3,2` → `{ kind: 'abs', … }` |
+| `repeat` | the word can be given more than once | `via` |
+| `modes` | only allowed in some lines | `clear` (in `defaults`) |
+| `error` | the word isn't allowed, with a hint | a bare `slow` → *"slow" goes after speed* |
 
-If nothing matches, the error names the expected forms, e.g. *`from` expects `x y` or a shape id: no shape called `ab`*.
+Value types: `num`, `id` (an existing shape), `placement`, `colour`, `align`, `speed` (a speed word or seconds), `str` (quoted text), `side` (a callout side), `highlight`, `clear`. Overloads must differ in the type of their first value or in how many values they take.
+
+Reserved words come from the table (plus the type words and the line-start words `copy`, `group`, `ungroup`, `remove`, `pause`, `auto`, `defaults`). If nothing matches, the error names the expected forms, e.g. *`from` expects `"x,y"` or a shape id: no shape called `ab`*.
 
 ---
 
