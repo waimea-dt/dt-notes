@@ -40,11 +40,11 @@
   const PLACE_GAP = 0.25 * CELL    // default gap for above / below / left-of / right-of
   const EDGE_GAP = 0.06 * CELL     // gap between a line end and the edge of its shape
   const HEAD = 0.2 * CELL          // arrowhead length at normal weight
-  const CAPTION_MS = 500           // caption transition (the normal speed)
+  const CAPTION_MS = 500           // caption transition (kept snappy, whatever the shapes' speed)
   const PLAY_PAUSE = 1500          // pause between beats while playing
 
-  const SPEEDS = { instant: 0, fast: 250, slow: 1000 }
-  const NORMAL_MS = 500
+  const SPEEDS = { instant: 0, vfast: 250, fast: 500, slow: 2000, vslow: 4000 }
+  const NORMAL_MS = 1000
   const EFFECTS = ['fade', 'pop', 'draw', 'slide']
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']

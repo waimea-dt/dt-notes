@@ -458,7 +458,7 @@ Transition words are flags and may go on any line:
 
 | Group | Words | Applies to |
 |---|---|---|
-| **Speed** | `instant`, `fast`, *(normal)*, `slow` | Every change |
+| **Speed** | `instant`, `vfast`, `fast`, *(normal)*, `slow`, `vslow` | Every change |
 | **Effect** | `fade`, `pop`, `draw`, `slide` | Creating and removing only |
 
 ```
@@ -470,11 +470,11 @@ a: remove fade
 a: remove instant
 ```
 
-- Suggested durations: `fast` 250 ms, normal 500 ms, `slow` 1000 ms, `instant` 0.
+- Durations: `instant` 0, `vfast` 0.25 s, `fast` 0.5 s, normal 1 s, `slow` 2 s, `vslow` 4 s. (`speed` on the tag scales them all: with `speed="2"`, `vslow` takes 2 s.)
 - Default effect: `fade` for creating and removing.
 - Moves, resizes and colour changes always tween; only their speed can be set.
 - `slide` brings a shape in from, or sends it out to, the nearest edge of the canvas.
-- A beat lasts until its last change finishes (delay + duration). The caption transition (§2) uses the beat's normal speed.
+- A beat lasts until its last change finishes (delay + duration). The caption transition (§2) always takes 0.5 s.
 
 ### Delays
 

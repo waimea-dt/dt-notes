@@ -704,24 +704,27 @@ dot: fill green
 
 ### Loop-bounce, speed and no controls
 
-`autoplay loop-bounce speed="2" hold="0.5" controls="none"`: no buttons or progress bar, double speed, backwards and forwards for ever.
+`autoplay loop-bounce speed="2" hold="0.5" controls="none"`: no buttons or progress bar, backwards and forwards for ever. The pink ball moves `vslow` (4 s), the blue one `vfast` (0.25 s).
 
-<animation autoplay loop-bounce speed="2" hold="0.5" controls="none" grid="12x2">
+<animation autoplay loop-bounce speed="2" hold="0.5" controls="none" grid="12x3">
 
 ```scene
-ball: circle at 1.5,1.5 radius 0.4 fill pink
+ball1: circle at 2,2  size 1 fill pink
+ball2: circle at 11,2 size 1 fill blue
 ```
 
 ---
 
 ```scene
-ball: move 10.5,1.5 via 6,0.5 slow
+ball1: goto 11,2 via 5,1.5 via 8,2.5 vslow
+ball2: goto 2,2  via 8,1.5 via 5,2.5 vfast
 ```
 
 ---
 
 ```scene
-ball: fill teal scale 1.3
+ball1: fill teal   scale 1.3 slow
+ball2: fill yellow scale 1.3 fast
 ```
 
 </animation>
