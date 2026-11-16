@@ -1169,6 +1169,16 @@
   const clamp01 = (t) => Math.min(1, Math.max(0, t))
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
+  // Parses a computed colour (rgb(), rgba() or color(srgb …)) to [r, g, b, a] (0-255, alpha 0-1).
+  function parseColour(text) {
+    const srgb = text.match(/color\(srgb\s+([\d.e-]+)\s+([\d.e-]+)\s+([\d.e-]+)(?:\s*\/\s*([\d.e-]+))?\)/)
+    if (srgb) return [srgb[1] * 255, srgb[2] * 255, srgb[3] * 255, srgb[4] === undefined ? 1 : +srgb[4]]
+    const rgb = text.match(/rgba?\(([^)]+)\)/)
+    if (!rgb) return null
+    const [r, g, b, a = 1] = rgb[1].split(/[\s,/]+/).filter(Boolean).map(Number)
+    return [r, g, b, a]
+  }
+
   function colourCss(name, role) {
     if (!name) return 'none'
     if (HEX.test(name)) return name
@@ -1187,7 +1197,7 @@
 
     function makeNode(shape) {
       const g = svgEl('g', { class: `anim-shape anim-${shape.type}` })
-      const node = { g, type: shape.type, uid: shape.uid, colours: new Map(), colourAnims: new Map() }
+      const node = { g, type: shape.type, uid: shape.uid }
       if (shape.type === 'rect') node.body = g.appendChild(svgEl('rect'))
       if (shape.type === 'circle') node.body = g.appendChild(svgEl('circle'))
       if (LINE_TYPES.includes(shape.type)) {
@@ -1213,32 +1223,32 @@
       return node
     }
 
-    // Sets a colour, animating from the old one with the Web Animations API when `timing` has a
-    // duration or delay (backwards fill holds the old colour during the delay). `timing` is null on
-    // later frames of a transition (nothing to change) and { ms: 0, delay: 0 } for static renders,
-    // which cancel any colour animation still running.
-    function setColour(node, el, prop, value, timing) {
-      const set = node.colours.get(el) || {}
-      const running = node.colourAnims.get(el) || []
-      if (timing && !timing.ms && !timing.delay && running.length) {
-        running.forEach((anim) => anim.cancel())
-        node.colourAnims.delete(el)
+    // Colours are blended in JavaScript every frame, like positions: each CSS colour (theme
+    // variables, color-mix tints) is resolved to RGBA once through a hidden probe and cached; the
+    // cache is cleared when the theme changes.
+    const probe = svg.appendChild(svgEl('rect', { width: 0, height: 0 }))
+    probe.style.display = 'none'
+    const colourCache = new Map()
+    function rgba(css) {
+      if (!css || css === 'none') return null
+      if (!colourCache.has(css)) {
+        probe.style.fill = css
+        colourCache.set(css, parseColour(getComputedStyle(probe).fill))
       }
-      const old = set[prop]
-      if (old === value) return
-      set[prop] = value
-      node.colours.set(el, set)
-      el.style[prop] = value
-      if (timing && (timing.ms || timing.delay) && old !== undefined && el.animate) {
-        const anim = el.animate([{ [prop]: old }, { [prop]: value }], {
-          duration: Math.max(1, timing.ms), delay: timing.delay, easing: 'ease-in-out', fill: 'backwards',
-        })
-        node.colourAnims.set(el, [...(node.colourAnims.get(el) || []), anim])
-      }
+      return colourCache.get(css)
     }
+    // A colour part-way from a to b (either may be null = none: it fades in or out)
+    function mixColour(a, b, t) {
+      if (!a && !b) return 'none'
+      const from = a || [...b.slice(0, 3), 0]
+      const to = b || [...a.slice(0, 3), 0]
+      const [r, g, bl, al] = from.map((v, i) => lerp(v, to[i], t))
+      return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(bl)}, ${al.toFixed(3)})`
+    }
+    const paint = (el, prop, value) => { if (el.style[prop] !== value) el.style[prop] = value }
 
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
-    function drawNode(node, s, v, colours, ms, byId) {
+    function drawNode(node, s, v, colours, byId) {
       const { g } = node
       if (node.type === 'group') {
         // A group is invisible (its highlight box is drawn in drawOverlays)
@@ -1325,8 +1335,8 @@
           node.head.setAttribute('points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
           node.head.style.opacity = clamp01(v.draw * 4 - 0.2)
           node.head.style.strokeWidth = strokeWidth
-          setColour(node, node.head, 'fill', colours.stroke, ms)
-          setColour(node, node.head, 'stroke', colours.stroke, ms)
+          paint(node.head, 'fill', colours.stroke)
+          paint(node.head, 'stroke', colours.stroke)
           end = back
         }
         node.body.setAttribute('x1', from.x); node.body.setAttribute('y1', from.y)
@@ -1346,7 +1356,7 @@
           setFlow(node.body)
           syncGhost(node.body)
         }
-        setColour(node, node.body, 'stroke', colours.stroke, ms)
+        paint(node.body, 'stroke', colours.stroke)
         const mx = (from.x + to.x) / 2
         const my = (from.y + to.y) / 2
         node.label.setAttribute('x', mx); node.label.setAttribute('y', my)
@@ -1369,8 +1379,8 @@
       }
       if (node.type === 'circle') node.body.setAttribute('r', s.r)
       if (['rect', 'circle'].includes(node.type)) {
-        setColour(node, node.body, 'fill', colours.fill, ms)
-        setColour(node, node.body, 'stroke', s.weight ? colours.stroke : 'none', ms)
+        paint(node.body, 'fill', colours.fill)
+        paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
         node.body.style.strokeLinecap = cap
@@ -1382,7 +1392,7 @@
           el.setAttribute('x', -hw); el.setAttribute('y', -hh)
           el.setAttribute('width', 2 * hw); el.setAttribute('height', 2 * hh)
         }
-        setColour(node, node.body, 'stroke', s.weight ? colours.stroke : 'none', ms)
+        paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
         node.body.style.strokeLinecap = cap
@@ -1393,7 +1403,7 @@
         node.icon.setAttribute('x', -hw); node.icon.setAttribute('y', -hh)
         node.icon.setAttribute('width', 2 * hw); node.icon.setAttribute('height', 2 * hh)
         node.icon.setAttribute('stroke-width', 2 * s.weight)
-        setColour(node, node.icon, 'stroke', colours.stroke, ms)
+        paint(node.icon, 'stroke', colours.stroke)
       }
       if (node.title && node.title.textContent !== s.label) node.title.textContent = s.label
 
@@ -1406,7 +1416,7 @@
         label.setAttribute('text-anchor', anchor)
         label.setAttribute('x', anchor === 'start' ? -hw : anchor === 'end' ? hw : 0)
         label.setAttribute('y', 0)
-        setColour(node, label, 'fill', colours.stroke, ms)
+        paint(label, 'fill', colours.stroke)
       } else if (['image', 'icon'].includes(node.type)) {
         label.setAttribute('y', hh + fontSize * 0.75)
       } else {
@@ -1487,7 +1497,7 @@
      * progress from A to B (for the spotlight) and `extra.forward` its direction (one-off
      * highlight effects only play forwards).
      */
-    function render(A, B, meta, progress, final, ms, extra = { forward: true, beatT: 1 }) {
+    function render(A, B, meta, progress, final, extra = { forward: true, beatT: 1 }) {
       const aByUid = new Map([...A.values()].map((s) => [s.uid, s]))
       const bByUid = new Map([...B.values()].map((s) => [s.uid, s]))
       const uids = new Set([...aByUid.keys(), ...bByUid.keys()])
@@ -1581,9 +1591,15 @@
       order(items.map(({ node, shape, uid }) => ({ node, shape: finalByUid.get(uid) || shape })))
 
       for (const item of items) {
-        const finalShape = finalByUid.get(item.uid) || item.shape
-        const colours = { fill: colourCss(finalShape.fill, 'fill'), stroke: colourCss(finalShape.stroke, 'stroke') }
-        drawNode(item.node, item.shape, item.v, colours, ms(item.uid), now)
+        // colours: blended from A's to B's over the shape's progress (entering / leaving: their own)
+        const from = item.a || item.b
+        const to = item.b || item.a
+        const t = item.a && item.b ? item.t : 1
+        const colours = {
+          fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
+          stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),
+        }
+        drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
       }
     }
@@ -1689,7 +1705,7 @@
       return `${d} L ${x0} ${y0 + r} Q ${x0} ${y0} ${x0 + r} ${y0} Z`
     }
 
-    return { render }
+    return { render, clearColours: () => colourCache.clear() }
   }
 
   function drawDebugGrid(svg, vb) {
@@ -1916,7 +1932,7 @@
 
     function showStatic(index) {
       const state = beats[index]?.state || empty
-      renderer.render(state, state, emptyMeta, () => 1, state, () => ({ ms: 0, delay: 0 }))
+      renderer.render(state, state, emptyMeta, () => 1, state)
     }
 
     function updateControls() {
@@ -2005,21 +2021,15 @@
         const after = time - delayOf(uid)
         return d ? Math.min(1, Math.max(0, after / d)) : after >= 0 ? 1 : 0
       }
-      const colourTiming = (uid) => ({
-        ms: durOf(uid),
-        delay: forward ? delayOf(uid) : Math.max(0, total - delayOf(uid) - durOf(uid)),
-      })
       const start = performance.now()
 
       return new Promise((resolve) => {
         let frame = 0
-        let colourSet = false
         const draw = (elapsed) => {
           const progress = (uid) => (forward ? forwardT(uid, elapsed) : forwardT(uid, total - elapsed))
           const done = total ? Math.min(1, elapsed / total) : 1
           const beatT = ease(forward ? done : 1 - done)
-          renderer.render(A, B, meta, progress, final, (uid) => (colourSet ? null : colourTiming(uid)), { forward, beatT })
-          colourSet = true
+          renderer.render(A, B, meta, progress, final, { forward, beatT })
         }
         const finish = () => {
           cancelAnimationFrame(frame)
@@ -2213,6 +2223,14 @@
       else return
       event.preventDefault()
     })
+
+    // A theme change re-resolves the colours (theme variables) and redraws
+    const onThemeChange = () => {
+      if (!widget.isConnected) return window.removeEventListener('docsify-theme-change', onThemeChange)
+      renderer.clearColours()
+      if (!running) showStatic(current)
+    }
+    window.addEventListener('docsify-theme-change', onThemeChange)
 
     showStatic(0)
     showCaption(0, 0, false)

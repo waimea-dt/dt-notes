@@ -555,8 +555,8 @@ r1: arrow from a to b draw speed slow
 
 ## 10. Rendering
 
-- One inline SVG per animation, with `viewBox` set by the grid. No external animation library: CSS transitions and the Web Animations API.
-- Colours come from CSS custom properties, so the theme toggle works without re-rendering.
+- One inline SVG per animation, with `viewBox` set by the grid. No external animation library: every frame is drawn in JavaScript (`requestAnimationFrame`), positions, sizes and colours alike. Flowing dashes and the caption slide use the Web Animations API.
+- Colours come from the site's CSS custom properties: each is resolved to RGBA once (through a hidden probe element) and blended in JavaScript; switching theme clears the cache and redraws.
 - `doneEach` must not process the same widget twice: mark each processed widget. Timers, key listeners and play loops stop when the widget leaves the page (see `PLUGIN_GUIDE.md`).
 - Respect `prefers-reduced-motion`: treat every transition as instant (`speed 0`), while still changing the caption.
 
