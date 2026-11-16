@@ -55,6 +55,14 @@
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
   const PATTERNS = { dashed: { d: 3, g: 3 }, dotted: { d: 1, g: 1 } }
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', 'flow-off': 'none' }
+  // attach <id> [side]: where the attached shape sits (placement words, or centre = on top)
+  const ATTACH_SIDES = {
+    left: 'left-of', 'left-of': 'left-of', right: 'right-of', 'right-of': 'right-of', above: 'above', top: 'above',
+    below: 'below', bottom: 'below', centre: 'centre', center: 'centre', on: 'centre',
+  }
+  const CALLOUT_SIDES = { above: 'above', top: 'above', below: 'below', bottom: 'below', left: 'left', right: 'right' }
+  const HIGHLIGHTS = ['pulse', 'shake', 'box', 'spotlight', 'clear', 'none']
+  const ACTIONS = ['copy', 'attach', 'detach', 'group', 'ungroup', 'travel', 'follow', 'follow-reverse', 'highlight', 'callout']
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
   const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
   const RESOURCE_TYPES = ['image', 'icon']
@@ -142,7 +150,7 @@
 
   const RESERVED = new Set([
     ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(PROPS), ...Object.keys(ALIASES), ...Object.keys(SPEEDS),
-    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), 'pause', 'auto', 'remove', 'defaults', 'reset',
+    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), ...ACTIONS, 'pause', 'auto', 'remove', 'defaults', 'reset',
   ])
 
   // ---------------------------------------------------------------------------
@@ -330,6 +338,66 @@
     throw new Error(`"${name}" expects ${prop.help}${missing ? `: no shape called "${next.value}"` : ''}`)
   }
 
+  // The action keywords, each with its own values. Returns the index after them, or 0 if `word`
+  // isn't one of them.
+  function parseAction(word, tokens, i, shapes, set) {
+    const idAt = (j, what) => {
+      const ref = parseAs('id', tokens[j], shapes)
+      if (!ref) throw new Error(`"${what}" expects a shape id${tokens[j] ? `: no shape called "${tokens[j].value}"` : ''}`)
+      return ref
+    }
+    const wordAt = (j) => (tokens[j]?.kind === 'word' ? tokens[j].lower : '')
+    switch (word) {
+      case 'attach': {
+        const ref = idAt(i + 1, 'attach')
+        const side = ATTACH_SIDES[wordAt(i + 2)]
+        set('attach', { ref, side: side || 'centre' })
+        return i + (side ? 3 : 2)
+      }
+      case 'detach': set('detach', true); return i + 1
+      case 'travel': {
+        // a list of stops: shape ids and/or x,y points
+        const stops = []
+        let j = i + 1
+        while (j < tokens.length) {
+          const ref = parseAs('id', tokens[j], shapes)
+          if (ref) { stops.push({ kind: 'ref', ref }); j++; continue }
+          const x = parseAs('num', tokens[j], shapes)
+          const y = parseAs('num', tokens[j + 1], shapes)
+          if (x && y) { stops.push({ kind: 'abs', x, y }); j += 2; continue }
+          break
+        }
+        if (!stops.length) throw new Error('"travel" expects shape ids and/or x,y points, e.g. "travel r1 r2 b"')
+        set('travel', stops)
+        return j
+      }
+      case 'follow':
+      case 'follow-reverse': {
+        // follow l: from the line's start to its end; follow-reverse l: from its end to its start
+        set('follow', { ref: idAt(i + 1, word), reverse: word === 'follow-reverse' }, word)
+        return i + 2
+      }
+      case 'highlight': {
+        const words = []
+        let j = i + 1
+        while (HIGHLIGHTS.includes(wordAt(j))) words.push(wordAt(j++))
+        if (!words.length) throw new Error('"highlight" expects pulse, shake, box, spotlight or clear')
+        set('highlight', words)
+        return j
+      }
+      case 'callout': {
+        const next = tokens[i + 1]
+        // clear removes it (none does the same, as with highlight)
+        if (next?.kind === 'word' && ['clear', 'none'].includes(next.lower)) { set('callout', { none: true }); return i + 2 }
+        if (next?.kind !== 'str') throw new Error('"callout" expects quoted text (e.g. callout "Look!") or clear')
+        const side = CALLOUT_SIDES[wordAt(i + 2)]
+        set('callout', { text: next.value, side: side || 'above' })
+        return i + (side ? 3 : 2)
+      }
+    }
+    return 0
+  }
+
   // Reads the properties and flags of one line (everything after the id and any type word).
   function parseProps(tokens, i, mode, shapes) {
     const props = {}
@@ -345,6 +413,8 @@
 
       const word = token.lower
       const name = ALIASES[word] || word
+      const special = parseAction(word, tokens, i, shapes, set)
+      if (special) { i = special; continue }
       if (PROPS[name]) {
         const { value, next } = matchProp(name, tokens, i + 1, shapes)
         if (name === 'via') props.via = [...(props.via || []), value] // repeatable
@@ -372,7 +442,7 @@
       i++
     }
 
-    if (props.gap && props.at?.kind !== 'place') throw new Error('"gap" only works with above / below / left-of / right-of')
+    if (props.gap && props.at?.kind !== 'place' && !props.attach) throw new Error('"gap" only works with above / below / left-of / right-of, or attach')
     if (props.at && (props.x || props.y)) throw new Error('the position is given twice (at/move and x/y)')
     return props
   }
@@ -432,6 +502,13 @@
       case 'left-of': return { x: c.x - b.hw - gap - a.hw, y: c.y }
       default: return { x: c.x + b.hw + gap + a.hw, y: c.y }
     }
+  }
+
+  // Where an attached shape sits: beside its ref (attach), or at a fixed offset (group member).
+  function attachPos(shape, ref, spec) {
+    if (spec.dx !== undefined) return { x: ref.x + spec.dx, y: ref.y + spec.dy }
+    if (spec.side === 'centre') return boxCentre(ref)
+    return placeNextTo(shape, ref, spec.side, spec.gap ?? PLACE_GAP)
   }
 
   // The point where a line from `shape`'s centre towards `toward` leaves the shape.
@@ -514,6 +591,18 @@
     return samples
   }
 
+  // A route of straight hops (travel, follow), as path samples for pointOnPath.
+  function buildPolyline(points) {
+    const samples = [{ ...points[0], at: 0 }]
+    for (const pt of points.slice(1)) {
+      const last = samples[samples.length - 1]
+      const d = Math.hypot(pt.x - last.x, pt.y - last.y)
+      if (d > 1e-6) samples.push({ x: pt.x, y: pt.y, at: last.at + d })
+    }
+    if (samples.length === 1) samples.push({ ...samples[0], at: 0 })
+    return samples
+  }
+
   // The point a fraction t (0-1) of the way along a path, by distance.
   function pointOnPath(samples, t) {
     const total = samples[samples.length - 1].at
@@ -558,9 +647,10 @@
 
     // Applies parsed props to a shape (a fresh one when creating, a copy when changing).
     // Returns the curve's points (start, vias, end) when the line has `via`, otherwise null.
-    function applyProps(shape, props, creating, warn) {
+    function applyProps(shape, props, creating, warn, meta) {
       const isLine = LINE_TYPES.includes(shape.type)
-      for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, ...(props.via || []).map((v) => v.ref)]) {
+      for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, ...(props.via || []).map((v) => v.ref),
+        ...(props.travel || []).map((v) => v.ref)]) {
         if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
       const num = (value, current, scale) => {
@@ -606,6 +696,19 @@
       }
       if (props.layer) shape.layer = props.layer
 
+      // highlight: box / spotlight stay until clear; pulse / shake are one-off effects this beat
+      if (props.highlight) {
+        const hl = { box: false, spotlight: false, ...shape.hl }
+        for (const word of props.highlight) {
+          if (word === 'clear' || word === 'none') { hl.box = false; hl.spotlight = false }
+          else if (word === 'box' || word === 'spotlight') hl[word] = true
+          else for (const target of [shape, ...groupMembers(shape)]) meta.oneoff.set(target.uid, word)
+        }
+        shape.hl = hl
+      }
+      if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
+
+      if (isLine && (props.travel || props.follow || props.attach)) throw new Error('a line has no single position, so it can\'t travel, follow or attach (its ends can follow shapes)')
       if (isLine) {
         if (props.x || props.y || props.at?.kind === 'ref' || props.at?.kind === 'place') throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
         if (props.at) {
@@ -629,6 +732,11 @@
         return null
       }
 
+      const positioned = props.at || props.x || props.y
+      if (props.travel && props.follow) throw new Error('give either "travel" or "follow", not both')
+      if ((props.travel || props.follow) && (positioned || props.via)) throw new Error('"travel" and "follow" set the route, so they can\'t go with at / move / x / y / via')
+      if ((props.travel || props.follow) && creating) throw new Error('"travel" and "follow" only work when moving an existing shape')
+      if (props.attach && (positioned || props.via || props.travel || props.follow)) throw new Error('"attach" sets the position, so it can\'t go with a move')
       if (props.via && creating) throw new Error('"via" only works when moving an existing shape')
       if (props.via && !props.at && !props.x && !props.y) throw new Error('"via" needs a move too, e.g. "move 9,3 via 5,1"')
       const start = { x: shape.x, y: shape.y }
@@ -643,7 +751,55 @@
       }
       if (props.x) shape.x = pos(props.x, shape.x)
       if (props.y) shape.y = pos(props.y, shape.y)
+
+      if (props.attach) {
+        if (props.attach.ref === shape.id) throw new Error('a shape can\'t attach to itself')
+        leaveGroup(shape)
+        shape.attach = { ref: props.attach.ref, side: props.attach.side, gap: props.gap ? props.gap.v * CELL : PLACE_GAP }
+        Object.assign(shape, attachPos(shape, shapes.get(props.attach.ref), shape.attach))
+      }
+      if (props.detach) {
+        if (!shape.attach) warn('this shape isn\'t attached or in a group, so "detach" does nothing')
+        leaveGroup(shape)
+        shape.attach = null
+      }
       if (creating && (shape.x === undefined || shape.y === undefined)) throw new Error('needs a position, e.g. "at 3,2"')
+
+      // Moving an attached shape releases it; moving a group member keeps it in the group
+      // (at its new place in it).
+      const moved = positioned || props.via || props.travel || props.follow
+      const keepOffset = () => {
+        if (!moved || !shape.attach || props.attach) return
+        if (shape.attach.dx === undefined) { shape.attach = null; return }
+        const parent = shapes.get(shape.attach.ref)
+        shape.attach.dx = shape.x - parent.x
+        shape.attach.dy = shape.y - parent.y
+      }
+
+      if (props.travel) {
+        // hop by hop through the stops; a signed stop is relative to the one before
+        const points = [start]
+        for (const stop of props.travel) {
+          const prev = points[points.length - 1]
+          points.push(stop.kind === 'ref' ? boxCentre(shapes.get(stop.ref)) : {
+            x: rel(stop.x, prev.x, CELL, false) ?? cellToPx(stop.x.v),
+            y: rel(stop.y, prev.y, CELL, false) ?? cellToPx(stop.y.v),
+          })
+        }
+        Object.assign(shape, points[points.length - 1])
+        keepOffset()
+        return buildPolyline(points)
+      }
+      if (props.follow) {
+        const line = shapes.get(props.follow.ref)
+        if (!LINE_TYPES.includes(line.type)) throw new Error(`"${props.follow.ref}" isn't a line or arrow, so it can't be followed`)
+        const ends = resolveEnds(line, shapes)
+        const [a, b] = props.follow.reverse ? [ends.to, ends.from] : [ends.from, ends.to]
+        Object.assign(shape, b)
+        keepOffset()
+        return buildPolyline([start, a, b])
+      }
+      keepOffset()
       if (!props.via) return null
 
       // Via points: signed numbers are relative to where the shape starts.
@@ -670,6 +826,42 @@
         if (key === 'height') { shape.h = value.v * CELL; continue }
         if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = value.v; continue }
         shape[key] = value
+      }
+    }
+
+    // A group's members (recursively), as shapes.
+    function groupMembers(shape) {
+      if (shape.type !== 'group') return []
+      return shape.members.flatMap((id) => { const m = shapes.get(id); return m ? [m, ...groupMembers(m)] : [] })
+    }
+
+    // Takes a shape out of the group it's in (if any).
+    function leaveGroup(shape) {
+      if (shape.attach?.dx === undefined) return
+      const parent = shapes.get(shape.attach.ref)
+      if (parent?.members) parent.members = parent.members.filter((id) => id !== shape.id)
+      shape.attach = null
+    }
+
+    // After every line: put attached shapes and group members where their refs now are
+    // (several passes, for chains), and fit each group's box round its members.
+    function settle() {
+      for (let pass = 0; pass < 8; pass++) {
+        let changed = false
+        for (const shape of shapes.values()) {
+          if (!shape.attach) continue
+          const ref = shapes.get(shape.attach.ref)
+          if (!ref) { shape.attach = null; continue }
+          const p = attachPos(shape, ref, shape.attach)
+          if (Math.abs(p.x - shape.x) > 1e-6 || Math.abs(p.y - shape.y) > 1e-6) { Object.assign(shape, p); changed = true }
+        }
+        if (!changed) break
+      }
+      for (const group of shapes.values()) {
+        if (group.type !== 'group' || !group.members.length) continue
+        const b = unionBounds(group.members.map((id) => shapes.get(id)).filter(Boolean), shapes)
+        group.w = 2 * Math.max(group.x - b.x0, b.x1 - group.x)
+        group.h = 2 * Math.max(group.y - b.y0, b.y1 - group.y)
       }
     }
 
@@ -727,11 +919,78 @@
         const props = parseProps(tokens, 1, 'remove', shapes)
         const extra = Object.keys(props).filter((key) => !['speed', 'effect', 'delay'].includes(key))
         if (extra.length) throw new Error(`"remove" only takes a speed, an effect and a delay, not "${extra[0]}"`)
-        freezeEndsAttachedTo(id)
+        // Removing a group removes its members too
+        const removeOne = (target) => {
+          if (!target) return
+          if (target.type === 'group') target.members.forEach((m) => removeOne(shapes.get(m)))
+          leaveGroup(target)
+          freezeEndsAttachedTo(target.id)
+          shapes.delete(target.id)
+          meta.exit.set(target.uid, props.effect || defaults.effect || 'fade')
+          meta.dur.set(target.uid, speedOf(props))
+          setDelay(meta, target.uid, props)
+        }
+        removeOne(existing)
+        return
+      }
+
+      const firstWord = first?.kind === 'word' ? first.lower : ''
+      if (firstWord === 'copy') {
+        // An identical copy that starts on the original, so a move on the same line animates
+        // away from it
+        const srcId = parseAs('id', tokens[1], shapes)
+        if (!srcId) throw new Error(`"copy" expects a shape id${tokens[1] ? `: no shape called "${tokens[1].value}"` : ''}`)
+        const src = shapes.get(srcId)
+        if (src.type === 'group') throw new Error('a group can\'t be copied: copy its shapes instead')
+        const props = parseProps(tokens, 2, 'change', shapes)
+        const fresh = { attach: null, hl: null, callout: null }
+        const shape = { ...structuredClone(src), ...fresh, id, uid: ++uid }
+        meta.from.set(shape.uid, { ...structuredClone(src), ...fresh, uid: shape.uid })
+        const path = applyProps(shape, props, false, warn, meta)
+        if (path) meta.path.set(shape.uid, path)
+        if (existing) {
+          warn(`"${id}" already exists, so it is replaced`)
+          meta.exit.set(existing.uid, 'fade')
+          meta.dur.set(existing.uid, speedOf(props))
+        }
+        shapes.set(id, shape)
+        meta.enter.set(shape.uid, 'copy')
+        meta.dur.set(shape.uid, speedOf(props))
+        setDelay(meta, shape.uid, props)
+        return
+      }
+      if (firstWord === 'group') {
+        if (existing) throw new Error(`"${id}" already exists`)
+        const members = []
+        let j = 1
+        for (let ref; (ref = parseAs('id', tokens[j], shapes)); j++) members.push(ref)
+        if (!members.length) throw new Error('"group" expects the ids of the shapes to group, e.g. "g: group a b c"')
+        const props = parseProps(tokens, j, 'change', shapes)
+        if (props.at || props.x || props.y || props.via || props.travel || props.follow || props.attach) throw new Error('create the group first, then move it on the next line')
+        const list = members.map((m) => shapes.get(m))
+        for (const m of list) {
+          if (LINE_TYPES.includes(m.type) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
+        }
+        const b = unionBounds(list, shapes)
+        const group = { ...baseShape('group'), id, uid: ++uid, members, x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0 }
+        for (const m of list) {
+          if (LINE_TYPES.includes(m.type)) continue // follows the shapes its ends are attached to
+          leaveGroup(m)
+          m.attach = { ref: id, dx: m.x - group.x, dy: m.y - group.y }
+        }
+        applyProps(group, props, false, warn, meta)
+        shapes.set(id, group)
+        meta.enter.set(group.uid, 'fade')
+        meta.dur.set(group.uid, speedOf(props))
+        return
+      }
+      if (firstWord === 'ungroup') {
+        if (!existing) throw new Error(`no shape called "${id}"`)
+        if (existing.type !== 'group') throw new Error(`"${id}" isn't a group`)
+        if (tokens.length > 1) throw new Error('"ungroup" takes nothing after it')
+        for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
         shapes.delete(id)
-        meta.exit.set(existing.uid, props.effect || defaults.effect || 'fade')
-        meta.dur.set(existing.uid, speedOf(props))
-        setDelay(meta, existing.uid, props)
+        meta.exit.set(existing.uid, 'fade')
         return
       }
 
@@ -748,7 +1007,7 @@
           if (!lucideIcon(first.arg)) throw new Error(`no Lucide icon called "${first.arg}"`)
           shape.icon = first.arg
         }
-        applyProps(shape, props, true, warn)
+        applyProps(shape, props, true, warn, meta)
         shape.layer = props.layer || defaults.layer || 'normal'
         if (existing) {
           // Lines attached to the old shape attach to its replacement (same id).
@@ -772,7 +1031,7 @@
       const props = parseProps(tokens, 0, 'change', shapes)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or removed`)
       const shape = structuredClone(existing)
-      const path = applyProps(shape, props, false, warn)
+      const path = applyProps(shape, props, false, warn, meta)
       if (path) meta.path.set(shape.uid, path)
       else if (props.at || props.x || props.y) meta.path.delete(shape.uid) // a later straight move wins
       shapes.set(id, shape)
@@ -780,7 +1039,7 @@
       setDelay(meta, shape.uid, props)
     }
 
-    return { shapes, runLine }
+    return { shapes, runLine, settle }
   }
 
   // Timing lines (no id): `pause` waits for a click while playing, `pause n` holds n seconds,
@@ -809,7 +1068,7 @@
 
     steps.forEach((step, si) => {
       step.beats.forEach((beat, bi) => {
-        const meta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map(), pause: null, auto: false }
+        const meta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map(), from: new Map(), oneoff: new Map(), pause: null, auto: false }
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
         beat.scene.split('\n').forEach((raw, li) => {
           const text = raw.trim()
@@ -818,6 +1077,7 @@
           try {
             if (runTimingLine(text, meta)) return
             compiler.runLine(text, meta, warn)
+            compiler.settle()
           } catch (error) {
             errors.push(`${where(li)}: ${error.message} — "${text}"`)
           }
@@ -842,6 +1102,16 @@
     const c = boxCentre(shape)
     const { hw, hh } = outline(shape)
     return { x0: c.x - hw, y0: c.y - hh, x1: c.x + hw, y1: c.y + hh + labelBelow(shape) }
+  }
+
+  function unionBounds(list, byId) {
+    const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
+    for (const shape of list) {
+      const b = shapeBounds(shape, byId)
+      box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
+      box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
+    }
+    return box
   }
 
   function viewBoxFor(gridAttr, beats, warnings) {
@@ -903,6 +1173,8 @@
 
   function createRenderer(svg, viewBox, debug) {
     const layers = [0, 1, 2].map(() => svg.appendChild(svgEl('g')))
+    const highlightLayer = svg.appendChild(svgEl('g', { class: 'anim-highlights' }))
+    const calloutLayer = svg.appendChild(svgEl('g', { class: 'anim-callouts' }))
     const nodes = new Map() // uid -> node
 
     if (debug) drawDebugGrid(svg, viewBox)
@@ -962,6 +1234,11 @@
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
     function drawNode(node, s, v, colours, ms, byId) {
       const { g } = node
+      if (node.type === 'group') {
+        // A group is invisible (its highlight box is drawn in drawOverlays)
+        if (node.debugId) { node.debugId.setAttribute('x', s.x); node.debugId.setAttribute('y', s.y); node.debugId.textContent = s.id }
+        return
+      }
       const strokeWidth = STROKE * s.weight
       // Dash patterns use round caps, so each drawn dash is shortened (and gap lengthened) by the
       // stroke width to keep the visible lengths; a dash of 0 is a round dot. Scales with the weight.
@@ -1177,22 +1454,46 @@
       return s
     }
 
+    // Shapes lit by a spotlight in a state (by id): spotlit shapes, the members of spotlit groups,
+    // and lines whose ends are both on lit shapes. Null when nothing is spotlit.
+    function litIds(state) {
+      if (![...state.values()].some((s) => s.hl?.spotlight)) return null
+      const lit = new Set()
+      const isLit = (shape, depth = 0) => {
+        if (!shape || depth > 8) return false
+        if (shape.hl?.spotlight) return true
+        if (shape.attach?.dx !== undefined) return isLit(state.get(shape.attach.ref), depth + 1)
+        return false
+      }
+      for (const shape of state.values()) if (isLit(shape)) lit.add(shape.id)
+      for (const shape of state.values()) {
+        if (LINE_TYPES.includes(shape.type) && shape.from.ref && shape.to.ref && lit.has(shape.from.ref) && lit.has(shape.to.ref)) lit.add(shape.id)
+      }
+      return lit
+    }
+
+    const DIM = 0.2 // opacity of shapes outside the spotlight
+
     /**
      * Renders the transition between two consecutive states. progress(uid) gives each shape's
      * position from A (0) to B (1); `final` is the state the transition ends on (it supplies
-     * the colours, which CSS transitions animate) and `ms(uid)` the colour transition time.
+     * the colours) and `ms(uid)` the colour transition time. `extra.beatT` is the whole beat's
+     * progress from A to B (for the spotlight) and `extra.forward` its direction (one-off
+     * highlight effects only play forwards).
      */
-    function render(A, B, meta, progress, final, ms) {
+    function render(A, B, meta, progress, final, ms, extra = { forward: true, beatT: 1 }) {
       const aByUid = new Map([...A.values()].map((s) => [s.uid, s]))
       const bByUid = new Map([...B.values()].map((s) => [s.uid, s]))
       const uids = new Set([...aByUid.keys(), ...bByUid.keys()])
       const items = []
-      const now = new Map() // id -> interpolated shape, for attached line ends
+      const now = new Map() // id -> interpolated shape, for attached line ends and shapes
 
       for (const uid of uids) {
-        const a = aByUid.get(uid)
+        // A copy starts as its original, so it animates away from it
+        const a = aByUid.get(uid) || (bByUid.has(uid) ? meta.from?.get(uid) : undefined)
         const b = bByUid.get(uid)
-        const t = ease(clamp01(progress(uid)))
+        const raw = clamp01(progress(uid))
+        const t = ease(raw)
         let shape
         let v
         if (a && b) {
@@ -1202,6 +1503,10 @@
           const swap = a.label !== b.label
           v.label = swap && t < 0.5 ? a.label : b.label
           v.labelOpacity = swap ? Math.abs(2 * t - 1) : 1
+          // One-off effects, forwards only (going back doesn't replay them)
+          const oneoff = extra.forward && meta.oneoff?.get(uid)
+          if (oneoff === 'pulse') v.scale = 1 + 0.25 * Math.sin(Math.PI * raw)
+          if (oneoff === 'shake') v.dx = 0.15 * CELL * Math.sin(8 * Math.PI * raw) * (1 - raw)
         } else if (b) {
           shape = b
           v = appear(meta.enter.get(uid) || 'fade', t, b)
@@ -1216,6 +1521,32 @@
         if (!LINE_TYPES.includes(shape.type) && (!now.has(shape.id) || b)) now.set(shape.id, { ...shape, x: shape.x + v.dx, y: shape.y + v.dy })
       }
 
+      // Attached shapes and group members follow their ref's current (interpolated) place, so
+      // they stay together along curves and routes. Several passes, for chains.
+      for (let pass = 0; pass < 8; pass++) {
+        let changed = false
+        for (const item of items) {
+          const spec = (item.b || item.a).attach
+          if (!spec || LINE_TYPES.includes(item.shape.type)) continue
+          const before = item.a?.attach
+          const same = !item.a || !item.b || (before && before.ref === spec.ref && before.side === spec.side)
+          const ref = now.get(spec.ref)
+          if (!same || !ref) continue
+          // a group member moved within its group glides to its new offset
+          const offset = spec.dx !== undefined && before?.dx !== undefined
+            ? { dx: lerp(before.dx, spec.dx, item.t), dy: lerp(before.dy, spec.dy, item.t) } : spec
+          const p = attachPos(item.shape, ref, { ...spec, ...(spec.dx !== undefined ? offset : {}) })
+          const x = p.x + item.v.dx
+          const y = p.y + item.v.dy
+          if (Math.abs(x - item.shape.x) > 1e-6 || Math.abs(y - item.shape.y) > 1e-6) {
+            item.shape = { ...item.shape, x: p.x, y: p.y }
+            now.set(item.shape.id, { ...item.shape, x, y })
+            changed = true
+          }
+        }
+        if (!changed) break
+      }
+
       // Lines whose ends move between A and B (or swap between a shape and a point) blend the two.
       for (const item of items) {
         if (!LINE_TYPES.includes(item.shape.type) || !item.a || !item.b) continue
@@ -1227,7 +1558,17 @@
         }
       }
       for (const [uid, node] of nodes) {
-        if (!uids.has(uid)) { node.g.remove(); nodes.delete(uid) }
+        if (!uids.has(uid)) { node.g.remove(); node.box?.remove(); node.bubble?.remove(); nodes.delete(uid) }
+      }
+
+      // Spotlight: shapes outside it fade to DIM over the beat
+      const litA = litIds(A)
+      const litB = litIds(B)
+      for (const item of items) {
+        const dimA = litA && !litA.has(item.shape.id) ? 1 : 0
+        const dimB = litB && !litB.has(item.shape.id) ? 1 : 0
+        const dim = lerp(dimA, dimB, extra.beatT)
+        if (dim) item.v.opacity *= 1 - (1 - DIM) * dim
       }
 
       const finalByUid = new Map([...final.values()].map((s) => [s.uid, s]))
@@ -1237,7 +1578,109 @@
         const finalShape = finalByUid.get(item.uid) || item.shape
         const colours = { fill: colourCss(finalShape.fill, 'fill'), stroke: colourCss(finalShape.stroke, 'stroke') }
         drawNode(item.node, item.shape, item.v, colours, ms(item.uid), now)
+        drawOverlays(item, now)
       }
+    }
+
+    // World-space bounds of a shape as drawn now: outline (rotated, scaled), a line's ends, or a
+    // group's members.
+    function liveBounds(item, now, depth = 0) {
+      const s = item.shape
+      if (LINE_TYPES.includes(s.type)) {
+        const { from, to } = item.v.ends || resolveEnds(s, now)
+        return { x0: Math.min(from.x, to.x), y0: Math.min(from.y, to.y), x1: Math.max(from.x, to.x), y1: Math.max(from.y, to.y) }
+      }
+      if (s.type === 'group' && depth < 8) {
+        const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
+        for (const id of s.members || []) {
+          const m = now.get(id)
+          if (!m) continue
+          const b = liveBounds({ shape: m, v: {} }, now, depth + 1)
+          box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
+          box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
+        }
+        if (Number.isFinite(box.x0)) return box
+      }
+      const c = boxCentre(s)
+      const dx = item.v.dx || 0
+      const { hw, hh } = outline(s)
+      return { x0: c.x - hw + dx, y0: c.y - hh, x1: c.x + hw + dx, y1: c.y + hh + labelBelow(s) }
+    }
+
+    // How much of a two-state feature shows: from A's value to B's over the shape's progress,
+    // times the shape's own visibility (entering / leaving).
+    const blend = (item, has) => lerp(item.a && has(item.a) ? 1 : 0, item.b && has(item.b) ? 1 : 0, item.a && item.b ? item.t : 1) * (item.a && item.b ? 1 : item.v.opacity)
+
+    // The highlight box and the callout bubble, drawn above everything in world space.
+    function drawOverlays(item, now) {
+      const node = item.node
+      const boxOpacity = blend(item, (s) => s.hl?.box) * Math.min(1, item.v.opacity / 1)
+      const bubbleOpacity = blend(item, (s) => s.callout)
+      if (!boxOpacity && !node.box && !bubbleOpacity && !node.bubble) return
+      const b = liveBounds(item, now)
+
+      if (boxOpacity || node.box) {
+        if (!node.box) node.box = highlightLayer.appendChild(svgEl('rect', { class: 'anim-highlight-box' }))
+        const pad = 0.15 * CELL
+        Object.entries({ x: b.x0 - pad, y: b.y0 - pad, width: b.x1 - b.x0 + 2 * pad, height: b.y1 - b.y0 + 2 * pad, rx: 0.12 * CELL })
+          .forEach(([k, val]) => node.box.setAttribute(k, val))
+        node.box.style.opacity = boxOpacity
+        if (!boxOpacity) { node.box.remove(); node.box = null }
+      }
+
+      if (bubbleOpacity || node.bubble) {
+        // The text being shown: B's, or A's while A's callout fades out
+        const callout = (item.b?.callout && (item.t >= 0.5 || !item.a?.callout)) ? item.b.callout : (item.a?.callout || item.b?.callout)
+        if (!node.bubble) {
+          node.bubble = calloutLayer.appendChild(svgEl('g', { class: 'anim-callout' }))
+          node.bubblePath = node.bubble.appendChild(svgEl('path'))
+          node.bubbleText = node.bubble.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' }))
+        }
+        if (callout) drawBubble(node, callout, b)
+        node.bubble.style.opacity = bubbleOpacity
+        if (!bubbleOpacity) { node.bubble.remove(); node.bubble = null }
+      }
+    }
+
+    // A speech bubble beside bounds `b`, with a tail pointing at it.
+    function drawBubble(node, callout, b) {
+      const size = FONT * 0.75
+      const w = Math.max(CELL, callout.text.length * 0.55 * size + size * 1.4)
+      const h = size * 2
+      const tail = 0.3 * CELL
+      const cx0 = (b.x0 + b.x1) / 2
+      const cy0 = (b.y0 + b.y1) / 2
+      let cx = cx0, cy = cy0, tip
+      if (callout.side === 'below') { tip = { x: cx0, y: b.y1 + 4 }; cy = b.y1 + tail + h / 2 }
+      else if (callout.side === 'left') { tip = { x: b.x0 - 4, y: cy0 }; cx = b.x0 - tail - w / 2 }
+      else if (callout.side === 'right') { tip = { x: b.x1 + 4, y: cy0 }; cx = b.x1 + tail + w / 2 }
+      else { tip = { x: cx0, y: b.y0 - 4 }; cy = b.y0 - tail - h / 2 }
+      // Keep the bubble inside the drawing (the tail still points at the shape)
+      const m = 4
+      cx = Math.min(viewBox.x + viewBox.w - w / 2 - m, Math.max(viewBox.x + w / 2 + m, cx))
+      cy = Math.min(viewBox.y + viewBox.h - h / 2 - m, Math.max(viewBox.y + h / 2 + m, cy))
+      node.bubblePath.setAttribute('d', bubblePath(cx, cy, w, h, Math.min(10, h / 3), callout.side, tip))
+      node.bubbleText.setAttribute('x', cx)
+      node.bubbleText.setAttribute('y', cy)
+      node.bubbleText.style.fontSize = `${size}px`
+      if (node.bubbleText.textContent !== callout.text) node.bubbleText.textContent = callout.text
+    }
+
+    // A rounded rectangle with a tail on the side facing the shape.
+    function bubblePath(cx, cy, w, h, r, side, tip) {
+      const x0 = cx - w / 2, x1 = cx + w / 2, y0 = cy - h / 2, y1 = cy + h / 2
+      const half = Math.min(10, w / 4, h / 3)
+      const tx = Math.min(x1 - r - half, Math.max(x0 + r + half, tip.x))
+      const ty = Math.min(y1 - r - half, Math.max(y0 + r + half, tip.y))
+      let d = `M ${x0 + r} ${y0}`
+      if (side === 'below') d += ` L ${tx - half} ${y0} L ${tip.x} ${tip.y} L ${tx + half} ${y0}`
+      d += ` L ${x1 - r} ${y0} Q ${x1} ${y0} ${x1} ${y0 + r}`
+      if (side === 'left') d += ` L ${x1} ${ty - half} L ${tip.x} ${tip.y} L ${x1} ${ty + half}`
+      d += ` L ${x1} ${y1 - r} Q ${x1} ${y1} ${x1 - r} ${y1}`
+      if (side === 'above') d += ` L ${tx + half} ${y1} L ${tip.x} ${tip.y} L ${tx - half} ${y1}`
+      d += ` L ${x0 + r} ${y1} Q ${x0} ${y1} ${x0} ${y1 - r}`
+      if (side === 'right') d += ` L ${x0} ${ty + half} L ${tip.x} ${tip.y} L ${x0} ${ty - half}`
+      return `${d} L ${x0} ${y0 + r} Q ${x0} ${y0} ${x0 + r} ${y0} Z`
     }
 
     return { render }
@@ -1455,7 +1898,7 @@
 
     const renderer = createRenderer(svg, viewBox, debug)
     const empty = new Map()
-    const emptyMeta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map() }
+    const emptyMeta = { dur: new Map(), delay: new Map(), path: new Map(), enter: new Map(), exit: new Map(), from: new Map(), oneoff: new Map() }
     const last = beats.length - 1
     let current = 0
     let running = null // { finish }
@@ -1567,7 +2010,9 @@
         let colourSet = false
         const draw = (elapsed) => {
           const progress = (uid) => (forward ? forwardT(uid, elapsed) : forwardT(uid, total - elapsed))
-          renderer.render(A, B, meta, progress, final, (uid) => (colourSet ? null : colourTiming(uid)))
+          const done = total ? Math.min(1, elapsed / total) : 1
+          const beatT = ease(forward ? done : 1 - done)
+          renderer.render(A, B, meta, progress, final, (uid) => (colourSet ? null : colourTiming(uid)), { forward, beatT })
           colourSet = true
         }
         const finish = () => {

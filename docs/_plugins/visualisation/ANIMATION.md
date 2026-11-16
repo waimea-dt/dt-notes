@@ -167,13 +167,16 @@ Every line in a `scene` block has the form:
 | `defaults: …` | Sets defaults for shapes created after it (§7). |
 | `pause` / `pause n` | No id: while playing, wait after this beat for a click on Next, or for `n` seconds (§2, Playback). |
 | `auto` | No id: when this beat finishes, go straight on to the next one, whether playing or not (§2, Playback). |
+| `b: copy a …` | **Copies** shape `a` as `b`, starting on top of it (§6.7). |
+| `d: group a b …` | Makes an invisible **group** of shapes that move together (§6.7). |
+| `d: ungroup` | Dissolves a group, leaving its members where they are (§6.7). |
 
 The parser reads the words after the colon from left to right. Properties may come in any order.
 
 ### Ids
 
 - Letters, digits, `_`, `-` and `.`, starting with a letter: `a`, `box1`, `arr.0`.
-- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), line styles and flow words, `pause`, `auto`, `remove` and `defaults`.
+- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), line styles and flow words, the action words (`copy`, `attach`, `detach`, `group`, `ungroup`, `travel`, `follow`, `follow-reverse`, `highlight`, `callout`), `pause`, `auto`, `remove` and `defaults`.
 
 ### Value types
 
@@ -435,6 +438,38 @@ r: arrow from a to b front     drawn over everything in the normal layer
 ```
 
 `above` / `below` are placement words (§6.3), not layering words.
+
+### 6.7 Copies, attachments, groups and routes
+
+```
+key2: copy key move 8,1.5 via 5.5,0.7     a copy flies off from the original
+lock: icon(lock) attach msg right         rides beside msg wherever it goes
+pkt: group msg lock                       an invisible group of both
+pkt: move 11,2.5 slow                     ...moves them together
+pkt: travel r1 r2 r3 srv slow             hop by hop through shapes and/or x,y points
+ack: follow-reverse l5 slow               along a line, from its end (follow: from its start)
+```
+
+- **`b: copy a`** makes `b` an identical copy of `a`'s current state, starting on top of it, so changes on the same line (a move, a via, a colour) animate *away from the original*. The copy doesn't inherit `a`'s attachment, group, highlight or callout. Groups can't be copied.
+- **`attach <id> [side]`** keeps the shape beside another (`left`, `right`, `above`, `below`, or `centre` on top; default `centre`; `gap n` sets the space) wherever it goes, along curves and routes too. It works when creating (`lock: icon(lock) attach msg right`) or changing. Moving the shape itself, or `detach`, releases it; removing the one it's attached to leaves it where it is.
+- **`d: group a b …`** makes an invisible group centred on its members. Moving, `via`, `travel`, `follow`, `highlight` and `remove` on the group act on all of them (removing a group removes its members). Moving a member within the group keeps it in the group at its new place; `detach` takes it out; `d: ungroup` dissolves the group. A line can join a group only if both its ends are attached to shapes (it follows them anyway). Groups can be nested.
+- **`travel <stops…>`** moves through each stop in turn, in straight hops, at an even speed, ending on the last: stops are shape ids (their centres) or `x,y` points (a signed point is relative to the stop before). **`follow <line>`** moves to the line's start and along it to its end; **`follow-reverse <line>`** goes from its end to its start. Both work on any shape or group that already exists, but not with `at` / `move` / `via` on the same line, and not on lines.
+
+### 6.8 Highlights and callouts
+
+```
+a: highlight pulse          a one-off pulse as the beat plays
+b: highlight shake          a one-off shake (e.g. a key that doesn't fit)
+c: highlight box            a rounded box in the highlight colour, until cleared
+a: highlight spotlight      dims everything that isn't spotlit (several shapes can be)
+a: highlight clear          removes box and spotlight (none does the same)
+b: callout "Look at this!"  a speech bubble pointing at the shape (above, below, left, right)
+b: callout clear            removes it (none does the same)
+```
+
+- `pulse` and `shake` play only going forwards, over the line's speed; they don't change the state, so going back doesn't undo them.
+- `box` and `spotlight` stay until `clear`, fade in and out at the line's speed, and can be combined (`highlight box spotlight`). A spotlit group lights its members, and a line is lit when both shapes it joins are.
+- Boxes and callouts work on every shape, lines and groups included, and follow the shape as it moves. Callouts sit above everything and are kept inside the drawing; a new callout text cross-fades from the old.
 
 ---
 

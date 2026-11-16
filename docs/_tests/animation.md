@@ -30,6 +30,7 @@ Is `5` bigger than `3`?
 ```scene
 a5: fill amber
 a3: fill amber
+pair: group a5 a3 highlight spotlight
 ```
 
 +++
@@ -37,7 +38,7 @@ a3: fill amber
 Yes it is!
 
 ```scene
-a5: fill green
+a5: fill green highlight pulse
 ```
 
 ---
@@ -58,6 +59,7 @@ a3: move 5,3 via -0.5,+0.5
 ```scene
 a5: fill blue
 a3: fill none
+pair: ungroup
 i: move below a5
 ```
 
@@ -109,7 +111,7 @@ The first leg of the route.
 defaults: stroke blue weight 2 slow
 r1: arrow from a to b draw
 s: move above b gap 0.1
-b: fill blue delay 0.25
+b: fill blue delay 0.25 highlight pulse
 ```
 
 ---
@@ -119,7 +121,7 @@ b: fill blue delay 0.25
 ```scene
 r2: arrow from b to c draw
 s: move above c gap 0.1
-c: fill blue delay 0.25
+c: fill blue delay 0.25 highlight pulse
 ```
 
 ---
@@ -129,7 +131,7 @@ c: fill blue delay 0.25
 ```scene
 r3: arrow from c to d draw
 s: move right-of d gap 0.1
-d: fill blue delay 0.25
+d: fill blue delay 0.25 highlight pulse
 ```
 
 ---
@@ -141,7 +143,7 @@ Every city has now been visited.
 ```scene
 r4: arrow from d to e draw
 s: move below e gap 0.1
-e: fill blue delay 0.25
+e: fill blue delay 0.25 highlight pulse
 ```
 
 ---
@@ -153,7 +155,7 @@ The salesperson returns home to finish the tour.
 ```scene
 r5: arrow from e to a draw
 s: move left-of a gap 0.1
-a: fill green delay 0.25
+a: fill green delay 0.25 highlight pulse
 ```
 
 +++
@@ -206,9 +208,6 @@ The private key never leaves Bob.
 
 ```scene
 priv: weight 1.5 fast
-// copies of the public key, hidden under the original until Bob shares them
-pubA: icon(key-round) at 12,1.5 stroke green instant
-pubE: icon(key-round) at 12,1.5 stroke green instant
 ```
 
 ---
@@ -218,8 +217,8 @@ pubE: icon(key-round) at 12,1.5 stroke green instant
 It's public, so Bob gives a copy to anyone who asks: Alice, and Eve too.
 
 ```scene
-pubA: move 4,2 via 8,1.3 slow
-pubE: move 9.5,7 via 11,4.5 slow
+pubA: copy pub move 4,2 via 8,1.3 slow
+pubE: copy pub move 9.5,7 via 11,4.5 slow
 ```
 
 ---
@@ -231,7 +230,7 @@ Alice locks her message with **Bob's public key**. It's now scrambled.
 ```scene
 pubA: move above msg slow
 msg: "x7#q!" fill amber delay 1
-lock: icon(lock) right-of msg stroke amber pop delay 1
+lock: icon(lock) attach msg right stroke amber pop delay 1
 ```
 
 +++
@@ -246,11 +245,10 @@ pubA: move 4,2
 
 ## Sending it
 
-The scrambled message travels across the internet.
+The scrambled message travels across the internet (the lock is attached, so it goes too).
 
 ```scene
 msg: move +8,+0 slow
-lock: move +8,+0 slow
 ```
 
 +++
@@ -258,8 +256,8 @@ lock: move +8,+0 slow
 Eve copies it as it passes, but her public key can't unlock it. All she sees is `x7#q!`.
 
 ```scene
-eve: stroke red
-pubE: angle 20 fast
+eve: stroke red callout "x7#q! ???" left
+pubE: highlight shake
 ```
 
 ---
@@ -269,9 +267,10 @@ pubE: angle 20 fast
 Only **Bob's private key** can unlock the message.
 
 ```scene
+eve: callout clear
 priv: move lock slow front
 lock: remove pop delay 1
-msg: "Hi Bob" fill green delay 1
+msg: "Hi Bob" fill green delay 1 highlight pulse
 ```
 
 +++
@@ -339,14 +338,15 @@ m1: remove
 pub: icon(key-round) "Public" at 12.3,0.9 stroke green pop
 priv: icon(key-round) "Private" at 15.3,0.9 stroke red pop
 m2: rect "Certificate" at 11.5,5.5 size 3x0.8 font 0.8 fill teal pop
-pubB: icon(key-round) above m2 stroke green scale 0.8 pop
+pubB: icon(key-round) attach m2 above stroke green scale 0.8 pop
 ```
 
 +++
 
+The public key is attached to the certificate, so it travels with it.
+
 ```scene
 m2: move -7,+0 slow
-pubB: move -7,+0 slow
 ```
 
 ---
@@ -356,8 +356,8 @@ pubB: move -7,+0 slow
 It checks the CA's signature, the name **bank.example** and the dates. A fake certificate fails here, so Eve can't pretend to be the bank.
 
 ```scene
-m2: fill green delay 0.25
-check: icon(badge-check) left-of m2 stroke green pop
+m2: fill green delay 0.25 highlight box
+check: icon(badge-check) attach m2 left stroke green pop
 ```
 
 ---
@@ -379,7 +379,7 @@ It locks a copy with the **server's public key**...
 ```scene
 pubB: move 4.5,4.3 slow
 m3: rect "session key" at 4.5,5.5 size 3x0.8 font 0.8 fill amber pop delay 1
-lock3: icon(lock) right-of m3 stroke amber pop delay 1
+lock3: icon(lock) attach m3 right stroke amber pop delay 1
 ```
 
 +++
@@ -389,7 +389,6 @@ lock3: icon(lock) right-of m3 stroke amber pop delay 1
 ```scene
 pubB: remove
 m3: move +7,+0 slow
-lock3: move +7,+0 slow
 ```
 
 ---
@@ -432,7 +431,7 @@ req: rect "GET /balance" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 
 ```scene
 req: "k#2@Lp" fill amber
-lk4: icon(lock) right-of req stroke amber pop
+lk4: icon(lock) attach req right stroke amber pop
 ```
 
 +++
@@ -441,7 +440,7 @@ lk4: icon(lock) right-of req stroke amber pop
 
 ```scene
 req: move +7,+0 slow
-lk4: move +7,+0 slow
+eve: callout "k#2@Lp ???" left
 ```
 
 ---
@@ -451,6 +450,7 @@ lk4: move +7,+0 slow
 The server unlocks the request with its copy of the session key...
 
 ```scene
+eve: callout clear
 lk4: remove pop
 req: "GET /balance" fill blue
 ```
@@ -462,14 +462,13 @@ req: "GET /balance" fill blue
 ```scene
 req: remove
 res: rect "Zq!7x" at 11.5,5.5 size 3x0.8 font 0.8 fill amber pop
-lk5: icon(lock) left-of res stroke amber pop
+lk5: icon(lock) attach res left stroke amber pop
 ```
 
 +++
 
 ```scene
 res: move -7,+0 slow
-lk5: move -7,+0 slow
 ```
 
 +++
@@ -478,7 +477,7 @@ The browser unlocks it and shows the page.
 
 ```scene
 lk5: remove pop
-res: "Balance: $42" fill green
+res: "Balance: $42" fill green highlight pulse
 ```
 
 ---
@@ -777,6 +776,181 @@ Back from here returns to the end of the chain; Back again undoes the whole chai
 
 </animation>
 
+### Copy, attach and group
+
+<animation grid="14x5">
+
+## Start
+
+```scene
+key: icon(key-round) "Public key" at 3,1.5 stroke green
+msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
+```
+
+---
+
+## copy
+
+`key2: copy key move 8,1.5 via 5.5,0.7 slow`: the copy flies off from the original.
+
+```scene
+key2: copy key move 8,1.5 via 5.5,0.7 slow
+```
+
+---
+
+## attach
+
+`lock: icon(lock) attach msg right`: the lock rides on the message, even round a curve.
+
+```scene
+lock: icon(lock) attach msg right stroke amber pop
+```
+
++++
+
+```scene
+msg: move 9,4 via 6,2.8 slow
+```
+
+---
+
+## group
+
+`pkt: group msg lock`, then moving the group moves both.
+
+```scene
+pkt: group msg lock highlight box
+```
+
++++
+
+```scene
+pkt: move 11,2.5 slow
+```
+
++++
+
+`pkt: remove pop` removes the group and its members.
+
+```scene
+pkt: remove pop
+```
+
+</animation>
+
+### Travel and follow
+
+<animation grid="14x5">
+
+## A small network
+
+```scene
+pc: icon(laptop) "PC" at 1.5,2.5
+r1: circle "R1" at 4.5,1.5 radius 0.45
+r2: circle "R2" at 7.5,3.5 radius 0.45
+r3: circle "R3" at 10.5,1.5 radius 0.45
+srv: icon(server) "Server" at 13,2.5
+defaults: stroke muted back
+l1: line from pc to r1
+l2: line from r1 to r2
+l3: line from r2 to r3
+l4: line from r3 to srv
+l5: line from r1 to r3 dashed
+defaults: reset
+pkt: rect at 1.5,2.5 size 0.5x0.35 fill amber front
+```
+
+---
+
+## travel
+
+`pkt: travel r1 r2 r3 srv slow`: hop by hop through the routers.
+
+```scene
+pkt: travel r1 r2 r3 srv slow
+```
+
+---
+
+## follow
+
+`ack: follow-reverse l5`: back along the dashed shortcut from R3 to R1.
+
+```scene
+ack: rect "ack" at 10.5,1.5 size 0.8x0.4 fill green font 0.7 front
+```
+
++++
+
+```scene
+ack: follow-reverse l5 slow
+```
+
+</animation>
+
+### Highlights and callouts
+
+<animation grid="12x4">
+
+## Start
+
+```scene
+a: rect "A" at 4,2
+b: circle "B" at 7,2 radius 0.5
+c: rect "C" at 10,2
+```
+
+---
+
+## pulse, shake and box
+
+```scene
+a: highlight pulse
+b: highlight shake
+c: highlight box
+```
+
+---
+
+## spotlight (two shapes)
+
+Everything else dims.
+
+```scene
+a: highlight spotlight
+c: highlight spotlight
+```
+
+---
+
+## callout
+
+```scene
+b: callout "Look at this!"
+a: callout "Left side" left
+```
+
++++
+
+```scene
+b: callout "Now below" below
+```
+
+---
+
+## clear
+
+`highlight clear` and `callout clear` put everything back.
+
+```scene
+a: highlight clear callout clear
+b: callout clear
+c: highlight clear
+```
+
+</animation>
+
 ### Angle and scale
 
 <animation grid="12x5">
@@ -1036,6 +1210,8 @@ Bad lines are listed under the animation and skipped; the rest still draws.
 ```scene
 pause -1
 auto now
+cp: copy zz
+hl: rect at 3,1 highlight sparkle
 a: rect "A" at 2,2
 b: rect at 9,9
 c: blob at 3,3

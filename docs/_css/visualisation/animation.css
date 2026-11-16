@@ -437,3 +437,28 @@
 .markdown-section .animation.is-waiting button.anim-next:not(:disabled) {
     animation: anim-bounce-next 2s ease-out infinite both;
 }
+
+/* highlight box: a rounded box in the highlight colour round a shape */
+.markdown-section .animation .anim-highlight-box {
+    fill: none;
+    stroke: var(--color-important);
+    stroke-width: 3px;
+}
+
+/* callout: a speech bubble pointing at a shape */
+.markdown-section .animation .anim-callout {
+    path {
+        fill: color-mix(in srgb, var(--color-important) 16%, var(--anim-bg));
+        stroke: var(--color-important);
+        stroke-width: 2px;
+        stroke-linejoin: round;
+    }
+
+    text {
+        fill: var(--anim-fg);
+    }
+}
+
+.markdown-section .animation :is(.anim-highlights, .anim-callouts) {
+    pointer-events: none;
+}
