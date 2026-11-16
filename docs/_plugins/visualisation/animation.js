@@ -682,7 +682,11 @@
       if (props.angle) { check(shape, 'angle'); shape.angle = times(props.angle, shape.angle) }
       if (props.scale) { check(shape, 'scale'); shape.scale = Math.max(0, times(props.scale, shape.scale)) }
       if (props.bold) shape.bold = true
-      if (props.linestyle) { check(shape, 'linestyle', props.linestyle); shape.linestyle = props.linestyle }
+      if (props.linestyle) {
+        check(shape, 'linestyle', props.linestyle)
+        shape.linestyle = props.linestyle
+        if (shape.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
+      }
       if (props.flow) {
         check(shape, 'flow', props.flow)
         shape.flow = FLOWS[props.flow]
@@ -749,6 +753,7 @@
       if (props.attach) {
         if (props.attach.ref === shape.id) throw new Error('a shape can\'t attach to itself')
         leaveGroup(shape)
+        if (props.gap && props.attach.side === 'centre') warn('"gap" does nothing when attaching on top of a shape (give a side, e.g. attach right-of a)')
         shape.attach = { ref: props.attach.ref, side: props.attach.side, gap: props.gap ? props.gap.v * CELL : PLACE_GAP }
         Object.assign(shape, attachPos(shape, shapes.get(props.attach.ref), shape.attach))
       }
@@ -857,6 +862,13 @@
       }
     }
 
+    // draw only applies to lines and arrows, slide only to shapes; otherwise they fade
+    function warnEffect(shape, effect, warn) {
+      const line = LINE_TYPES.includes(shape.type)
+      if (effect === 'draw' && !line) warn(`"draw" only draws lines and arrows, so this ${shape.type} fades instead`)
+      if (effect === 'slide' && line) warn(`"slide" doesn't move lines, so this ${shape.type} fades instead`)
+    }
+
     // Seconds before a line's change starts (the longest delay wins if a shape changes twice in a beat).
     function setDelay(meta, uid, props) {
       if (!props.delay) return
@@ -911,6 +923,7 @@
           freezeEndsAttachedTo(target.id)
           shapes.delete(target.id)
           tween(meta, target.uid).exit = props.effect || defaults.effect || 'fade'
+          if (props.effect) warnEffect(target, props.effect, warn)
           tween(meta, target.uid).dur = speedOf(props)
           setDelay(meta, target.uid, props)
         }
@@ -1002,6 +1015,7 @@
         }
         shapes.set(id, shape)
         tween(meta, shape.uid).enter = props.effect || defaults.effect || 'fade'
+        if (props.effect) warnEffect(shape, props.effect, warn)
         tween(meta, shape.uid).dur = speedOf(props)
         setDelay(meta, shape.uid, props)
         return

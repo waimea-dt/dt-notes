@@ -1269,6 +1269,11 @@ sp: rect at 1,2 slow
 sq: rect at 2,2 speed -1
 st: text "x" at 3,2 stroke red
 rr: rect at 4,2 radius 0.2
+dw: rect at 5,1 draw
+sl: line from 1,1 to 2,1 slide
+fl: line from 1,3 to 3,3 dashed flow
+fl: solid
+at2: circle attach dw gap 1
 cp: copy zz
 hl: rect at 3,1 highlight sparkle
 a: rect "A" at 2,2
