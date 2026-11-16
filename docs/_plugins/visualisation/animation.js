@@ -1127,20 +1127,27 @@
   // Grid and bounds
   // ---------------------------------------------------------------------------
 
-  function shapeBounds(shape, byId) {
+  // The one bounds function: a shape's world-space box (its rotated, scaled outline, plus the
+  // label under an image or icon), a line's ends, or the union of a group's members. Used when
+  // compiling and on every frame: `ends` gives a line's ends mid-blend, `dx` a shake offset.
+  function bounds(shape, byId, { ends, dx = 0 } = {}, depth = 0) {
     if (LINE_TYPES.includes(shape.type)) {
-      const { from, to } = resolveEnds(shape, byId)
+      const { from, to } = ends || resolveEnds(shape, byId)
       return { x0: Math.min(from.x, to.x), y0: Math.min(from.y, to.y), x1: Math.max(from.x, to.x), y1: Math.max(from.y, to.y) }
+    }
+    if (shape.type === 'group' && depth < 8) {
+      const members = (shape.members || []).map((id) => byId.get(id)).filter(Boolean)
+      if (members.length) return unionBounds(members, byId, depth + 1)
     }
     const c = boxCentre(shape)
     const { hw, hh } = outline(shape)
-    return { x0: c.x - hw, y0: c.y - hh, x1: c.x + hw, y1: c.y + hh + labelBelow(shape) }
+    return { x0: c.x - hw + dx, y0: c.y - hh, x1: c.x + hw + dx, y1: c.y + hh + labelBelow(shape) }
   }
 
-  function unionBounds(list, byId) {
+  function unionBounds(list, byId, depth = 0) {
     const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
     for (const shape of list) {
-      const b = shapeBounds(shape, byId)
+      const b = bounds(shape, byId, {}, depth)
       box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
       box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
     }
@@ -1157,7 +1164,7 @@
     }
     const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
     beats.forEach(({ state }) => state.forEach((shape) => {
-      const b = shapeBounds(shape, state)
+      const b = bounds(shape, state)
       box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
       box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
     }))
@@ -1471,7 +1478,7 @@
     }
 
     function offscreenOffset(shape) {
-      const c = shapeBounds(shape, new Map())
+      const c = bounds(shape, new Map())
       const cx = (c.x0 + c.x1) / 2
       const cy = (c.y0 + c.y1) / 2
       const options = [
@@ -1639,31 +1646,6 @@
       }
     }
 
-    // World-space bounds of a shape as drawn now: outline (rotated, scaled), a line's ends, or a
-    // group's members.
-    function liveBounds(item, now, depth = 0) {
-      const s = item.shape
-      if (LINE_TYPES.includes(s.type)) {
-        const { from, to } = item.v.ends || resolveEnds(s, now)
-        return { x0: Math.min(from.x, to.x), y0: Math.min(from.y, to.y), x1: Math.max(from.x, to.x), y1: Math.max(from.y, to.y) }
-      }
-      if (s.type === 'group' && depth < 8) {
-        const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
-        for (const id of s.members || []) {
-          const m = now.get(id)
-          if (!m) continue
-          const b = liveBounds({ shape: m, v: {} }, now, depth + 1)
-          box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
-          box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
-        }
-        if (Number.isFinite(box.x0)) return box
-      }
-      const c = boxCentre(s)
-      const dx = item.v.dx || 0
-      const { hw, hh } = outline(s)
-      return { x0: c.x - hw + dx, y0: c.y - hh, x1: c.x + hw + dx, y1: c.y + hh + labelBelow(s) }
-    }
-
     // How much of a two-state feature shows: from A's value to B's over the shape's progress,
     // times the shape's own visibility (entering / leaving).
     const blend = (item, has) => lerp(item.a && has(item.a) ? 1 : 0, item.b && has(item.b) ? 1 : 0, item.a && item.b ? item.t : 1) * (item.a && item.b ? 1 : item.v.opacity)
@@ -1674,7 +1656,7 @@
       const boxOpacity = blend(item, (s) => s.hl?.box) * Math.min(1, item.v.opacity / 1)
       const bubbleOpacity = blend(item, (s) => s.callout)
       if (!boxOpacity && !node.box && !bubbleOpacity && !node.bubble) return
-      const b = liveBounds(item, now)
+      const b = bounds(item.shape, now, { ends: item.v.ends, dx: item.v.dx })
 
       if (boxOpacity || node.box) {
         if (!node.box) node.box = highlightLayer.appendChild(svgEl('rect', { class: 'anim-highlight-box' }))
