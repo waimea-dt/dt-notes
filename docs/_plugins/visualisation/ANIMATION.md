@@ -12,7 +12,7 @@ Plugin `animation.js` · CSS `_css/visualisation/animation.css` · examples `_te
 
 Caption for step 1 (any Markdown).
 
-```scene
+```anim
 a: rect "A" at 2,3
 ```
 
@@ -20,7 +20,7 @@ a: rect "A" at 2,3
 
 ## Step 2 heading
 
-```scene
+```anim
 a: move 5,3
 ```
 
@@ -28,7 +28,7 @@ a: move 5,3
 
 Caption text added when this beat plays.
 
-```scene
+```anim
 a: fill green
 ```
 
@@ -42,7 +42,7 @@ Teacher notes (to the end of the step; S shows them).
 |---|---|
 | `---` | New step |
 | `+++` | New beat within a step (caption and scene split together) |
-| ` ```scene ` | Scene lines for the step / beat (optional) |
+| ` ```anim ` | Scene lines for the step / beat (optional) |
 | `Note:` | Teacher notes for the step |
 
 Markers must be alone on their line. Everything in one beat plays at the same time.

@@ -12,7 +12,7 @@ Click an animation to give it focus, then use ← / → to step and `F` for full
 
 We start with an unsorted array.
 
-```scene
+```anim
 defaults fill blue
 a5: rect "5" at 5,3 size 0.9
 a3: rect "3" at 6,3 size 0.9
@@ -27,7 +27,7 @@ i: text "i" below a5
 
 Is `5` bigger than `3`?
 
-```scene
+```anim
 a5: fill amber
 a3: fill amber
 pair: group a5 a3 highlight spotlight
@@ -37,7 +37,7 @@ pair: group a5 a3 highlight spotlight
 
 Yes it is!
 
-```scene
+```anim
 a5: fill green pulse
 ```
 
@@ -47,7 +47,7 @@ a5: fill green pulse
 
 So they swap places...
 
-```scene
+```anim
 a5: move 6,3 via +0.5,-0.5
 a3: move 5,3 via -0.5,+0.5
 ```
@@ -56,7 +56,7 @@ a3: move 5,3 via -0.5,+0.5
 
 ...and `i` moves on.
 
-```scene
+```anim
 a5: fill blue
 a3: fill none
 pair: ungroup
@@ -76,7 +76,7 @@ Ask the class to predict the next comparison before advancing.
 
 Five cities, with a road between every pair. The salesperson starts at **A**.
 
-```scene
+```anim
 defaults fill bg stroke fg
 a: circle "A" at 3,6
 b: circle "B" at 6,2
@@ -107,7 +107,7 @@ a: fill blue
 
 The first leg of the route.
 
-```scene
+```anim
 defaults stroke blue weight 2 speed slow
 r1: arrow from a to b draw
 s: move above b gap 0.1
@@ -118,7 +118,7 @@ b: fill blue delay 0.25 pulse
 
 ## B to C
 
-```scene
+```anim
 r2: arrow from b to c draw
 s: move above c gap 0.1
 c: fill blue delay 0.25 pulse
@@ -128,7 +128,7 @@ c: fill blue delay 0.25 pulse
 
 ## C to D
 
-```scene
+```anim
 r3: arrow from c to d draw
 s: move right-of d gap 0.1
 d: fill blue delay 0.25 pulse
@@ -140,7 +140,7 @@ d: fill blue delay 0.25 pulse
 
 Every city has now been visited.
 
-```scene
+```anim
 r4: arrow from d to e draw
 s: move below e gap 0.1
 e: fill blue delay 0.25 pulse
@@ -152,7 +152,7 @@ e: fill blue delay 0.25 pulse
 
 The salesperson returns home to finish the tour.
 
-```scene
+```anim
 r5: arrow from e to a draw
 s: move left-of a gap 0.1
 a: fill green delay 0.25 pulse
@@ -162,7 +162,7 @@ a: fill green delay 0.25 pulse
 
 The route is **A → B → C → D → E → A**. Is it the shortest one?
 
-```scene
+```anim
 ac: remove
 ad: remove
 bd: remove
@@ -183,7 +183,7 @@ Ask: how many different routes are there from A? (4 × 3 × 2 × 1 = 24.)
 
 Alice wants to send Bob a secret message over the internet, where anyone (like Eve) could be listening.
 
-```scene
+```anim
 net: line from 1,5.5 to 15,5.5 dashed stroke muted "the internet" back
 alice: icon(user) "Alice" at 2,3 scale 1.5
 bob: icon(user) "Bob" at 14,3 scale 1.5
@@ -197,7 +197,7 @@ msg: rect "Hi Bob" at 4,5.5 size 2x0.8 fill blue
 
 Bob creates two matching keys. Anything locked with his **public key** can only be unlocked with his **private key**.
 
-```scene
+```anim
 pub: icon(key-round) "Public" at 12,1.5 stroke green pop
 priv: icon(key-round) "Private" at 15.2,1.5 stroke red pop
 ```
@@ -206,7 +206,7 @@ priv: icon(key-round) "Private" at 15.2,1.5 stroke red pop
 
 The private key never leaves Bob.
 
-```scene
+```anim
 priv: weight 1.5 speed fast
 ```
 
@@ -216,7 +216,7 @@ priv: weight 1.5 speed fast
 
 It's public, so Bob gives a copy to anyone who asks: Alice, and Eve too.
 
-```scene
+```anim
 pubA: copy pub move 4,2 via 8,1.3 speed slow
 pubE: copy pub move 9.5,7 via 11,4.5 speed slow
 ```
@@ -227,7 +227,7 @@ pubE: copy pub move 9.5,7 via 11,4.5 speed slow
 
 Alice locks her message with **Bob's public key**. It's now scrambled.
 
-```scene
+```anim
 pubA: move above msg speed slow
 msg: "x7#q!" fill amber delay 1
 lock: icon(lock) attach right-of msg stroke amber pop delay 1
@@ -237,7 +237,7 @@ lock: icon(lock) attach right-of msg stroke amber pop delay 1
 
 Even Alice can't unlock it now: a public key can only lock.
 
-```scene
+```anim
 pubA: move 4,2
 ```
 
@@ -247,7 +247,7 @@ pubA: move 4,2
 
 The scrambled message travels across the internet (the lock is attached, so it goes too).
 
-```scene
+```anim
 msg: move +8,+0 speed slow
 ```
 
@@ -255,7 +255,7 @@ msg: move +8,+0 speed slow
 
 Eve copies it as it passes, but her public key can't unlock it. All she sees is `x7#q!`.
 
-```scene
+```anim
 eve: stroke red callout "x7#q! ???" left-of
 pubE: shake
 ```
@@ -266,7 +266,7 @@ pubE: shake
 
 Only **Bob's private key** can unlock the message.
 
-```scene
+```anim
 eve: callout clear
 priv: move lock speed slow front
 lock: remove pop delay 1
@@ -277,7 +277,7 @@ msg: "Hi Bob" fill green delay 1 pulse
 
 His private key goes straight back where it was. It never travelled across the internet.
 
-```scene
+```anim
 priv: move 15.2,1.5 speed slow
 ```
 
@@ -302,7 +302,7 @@ Ask: what would Bob need to do so Alice could also receive secret replies? (Alic
 
 The browser wants to visit **https://bank.example**. Before anything private is sent, the two sides agree a secret **session key**, without Eve ever learning it.
 
-```scene
+```anim
 net: line from 1,5.5 to 15,5.5 dashed stroke muted "the internet" back
 browser: icon(laptop) "Browser" at 2,3 scale 1.5
 server: icon(server) "bank.example" at 14,3 scale 1.5
@@ -315,7 +315,7 @@ eve: icon(venetian-mask) "Eve" at 8,7 scale 1.2 stroke muted
 
 The browser says hello, listing the encryption methods it supports.
 
-```scene
+```anim
 m1: rect "Hello + options" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 ```
 
@@ -323,7 +323,7 @@ m1: rect "Hello + options" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 
 It's sent in the open. Eve can read it, but there's nothing secret in it.
 
-```scene
+```anim
 m1: move +7,+0 speed slow
 ```
 
@@ -333,7 +333,7 @@ m1: move +7,+0 speed slow
 
 The server picks a method and replies with its **certificate**: its **public key**, signed by a certificate authority (CA) that browsers trust. Its **private key** stays on the server.
 
-```scene
+```anim
 m1: remove
 pub: icon(key-round) "Public" at 12.3,0.9 stroke green pop
 priv: icon(key-round) "Private" at 15.3,0.9 stroke red pop
@@ -345,7 +345,7 @@ pubB: icon(key-round) attach above m2 stroke green scale 0.8 pop
 
 The public key is attached to the certificate, so it travels with it.
 
-```scene
+```anim
 m2: move -7,+0 speed slow
 ```
 
@@ -355,7 +355,7 @@ m2: move -7,+0 speed slow
 
 It checks the CA's signature, the name **bank.example** and the dates. A fake certificate fails here, so Eve can't pretend to be the bank.
 
-```scene
+```anim
 m2: fill green delay 0.25 highlight box
 check: icon(badge-check) attach left-of m2 stroke green pop
 ```
@@ -366,7 +366,7 @@ check: icon(badge-check) attach left-of m2 stroke green pop
 
 The browser makes a brand-new random **session key**.
 
-```scene
+```anim
 m2: remove
 check: remove
 sess: icon(key-round) "Session key" at 4.5,2 stroke amber pop
@@ -376,7 +376,7 @@ sess: icon(key-round) "Session key" at 4.5,2 stroke amber pop
 
 It locks a copy with the **server's public key**...
 
-```scene
+```anim
 pubB: move 4.5,4.3 speed slow
 m3: rect "session key" at 4.5,5.5 size 3x0.8 font 0.8 fill amber pop delay 1
 lock3: icon(lock) attach right-of m3 stroke amber pop delay 1
@@ -386,7 +386,7 @@ lock3: icon(lock) attach right-of m3 stroke amber pop delay 1
 
 ...and sends it. Eve sees it pass, but only the server's **private key** can unlock it.
 
-```scene
+```anim
 pubB: remove
 m3: move +7,+0 speed slow
 ```
@@ -397,7 +397,7 @@ m3: move +7,+0 speed slow
 
 The server unlocks it with its private key. Now both sides have the same session key, and Eve doesn't.
 
-```scene
+```anim
 priv: move lock3 speed slow front
 lock3: remove pop delay 1
 m3: remove delay 1
@@ -408,7 +408,7 @@ ssk: icon(key-round) "Session key" at 10,2 stroke amber pop delay 1.2
 
 The public and private keys have done their job. From here on, everything is locked and unlocked with the session key. This is **symmetric encryption**: much faster than public and private keys.
 
-```scene
+```anim
 pub: remove speed slow
 priv: remove speed slow
 sess: weight 1.5
@@ -421,7 +421,7 @@ ssk: weight 1.5
 
 The browser asks for the page...
 
-```scene
+```anim
 req: rect "GET /balance" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 ```
 
@@ -429,7 +429,7 @@ req: rect "GET /balance" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 
 ...locks it with the session key...
 
-```scene
+```anim
 req: "k#2@Lp" fill amber
 lk4: icon(lock) attach right-of req stroke amber pop
 ```
@@ -438,7 +438,7 @@ lk4: icon(lock) attach right-of req stroke amber pop
 
 ...and sends it. Eve only sees scrambled data.
 
-```scene
+```anim
 req: move +7,+0 speed slow
 eve: callout "k#2@Lp ???" left-of
 ```
@@ -449,7 +449,7 @@ eve: callout "k#2@Lp ???" left-of
 
 The server unlocks the request with its copy of the session key...
 
-```scene
+```anim
 eve: callout clear
 lk4: remove pop
 req: "GET /balance" fill blue
@@ -459,7 +459,7 @@ req: "GET /balance" fill blue
 
 ...and locks its response the same way before sending it back.
 
-```scene
+```anim
 req: remove
 res: rect "Zq!7x" at 11.5,5.5 size 3x0.8 font 0.8 fill amber pop
 lk5: icon(lock) attach left-of res stroke amber pop
@@ -467,7 +467,7 @@ lk5: icon(lock) attach left-of res stroke amber pop
 
 +++
 
-```scene
+```anim
 res: move -7,+0 speed slow
 ```
 
@@ -475,7 +475,7 @@ res: move -7,+0 speed slow
 
 The browser unlocks it and shows the page.
 
-```scene
+```anim
 lk5: remove pop
 res: "Balance: $42" fill green pulse
 ```
@@ -486,7 +486,7 @@ res: "Balance: $42" fill green pulse
 
 That padlock in the address bar means all of this happened: the certificate checked out, and everything since has been encrypted with the session key.
 
-```scene
+```anim
 pad: icon(lock) "https://" above browser stroke green pop
 ```
 
@@ -505,7 +505,7 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 
 <animation grid="12x4">
 
-```scene
+```anim
 # a whole-line comment
 r: rect "rect" at 2,2 size 2x1 radius 0.15 dotted   # a comment after a command
 c: circle "circle" at 5,2 radius 0.8 fill blue
@@ -521,7 +521,7 @@ hx: text "C# code" at 3,4 stroke #f80   # a hex colour and a "# " in a label are
 
 Fills tween; labels cross-fade.
 
-```scene
+```anim
 r: fill green "done" solid
 c: fill pink stroke red weight 2
 t: stroke amber "changed"
@@ -534,7 +534,7 @@ i: stroke blue
 
 `r: radius 0.5` turns the rounded rect into a pill.
 
-```scene
+```anim
 r: radius 0.5
 c: size 1 weight 3
 ```
@@ -547,7 +547,7 @@ c: size 1 weight 3
 
 ## Solid
 
-```scene
+```anim
 a: circle "A" at 2,2 radius 0.5
 b: circle "B" at 10,2 radius 0.5
 l: line from a to b weight 2
@@ -560,7 +560,7 @@ ring: circle at 6,3.3 radius 0.6 weight 1.5 stroke teal
 
 The solid line fades into a dashed one.
 
-```scene
+```anim
 l: dashed speed slow
 ring: dashed speed slow
 ```
@@ -571,7 +571,7 @@ ring: dashed speed slow
 
 The dashes fade into dots.
 
-```scene
+```anim
 l: dotted speed slow
 ```
 
@@ -581,7 +581,7 @@ l: dotted speed slow
 
 `l: flow` sends the dots from A to B; the ring's dashes march round it.
 
-```scene
+```anim
 l: flow
 ring: flow
 ```
@@ -592,7 +592,7 @@ ring: flow
 
 `l: flow-reverse` sends them back from B to A.
 
-```scene
+```anim
 l: flow-reverse
 ```
 
@@ -602,7 +602,7 @@ l: flow-reverse
 
 `l: solid static speed slow`: the dots fade back into a solid line.
 
-```scene
+```anim
 l: solid static speed slow
 ring: solid static speed slow
 ```
@@ -617,7 +617,7 @@ ring: solid static speed slow
 
 `r: rect at 3,2 size 2x1`
 
-```scene
+```anim
 r: rect "R" at 3,2 size 2x1 radius 0.1
 i: icon(laptop) "icon" at 9,2
 ```
@@ -628,7 +628,7 @@ i: icon(laptop) "icon" at 9,2
 
 `r: width +2` and `i: height +1`
 
-```scene
+```anim
 r: width +2
 i: height +1
 ```
@@ -639,7 +639,7 @@ i: height +1
 
 `r: size 1x1` and `i: size 1`
 
-```scene
+```anim
 r: size 1x1
 i: size 1
 ```
@@ -650,7 +650,7 @@ i: size 1
 
 `r: size +1` grows both sides by a cell; `i: size -0.25` shrinks it.
 
-```scene
+```anim
 r: size +1
 i: size -0.25
 ```
@@ -667,7 +667,7 @@ Plays by itself once it's on screen, then loops. Clicking anything turns autopla
 
 The dot sets off on its own.
 
-```scene
+```anim
 dot: circle at 2,2 radius 0.4 fill blue
 ```
 
@@ -677,7 +677,7 @@ dot: circle at 2,2 radius 0.4 fill blue
 
 It holds here for 2 seconds (instead of the 1 second `hold`).
 
-```scene
+```anim
 dot: move 6,2 speed slow
 pause 2
 ```
@@ -688,7 +688,7 @@ pause 2
 
 Now it waits until you click Next (which nudges).
 
-```scene
+```anim
 dot: move 10,2 speed slow
 pause
 ```
@@ -697,7 +697,7 @@ pause
 
 ## Then it loops
 
-```scene
+```anim
 dot: fill green
 ```
 
@@ -709,21 +709,21 @@ dot: fill green
 
 <animation autoplay loop-bounce hold="0.5" controls="none" grid="12x3">
 
-```scene
+```anim
 ball1: circle at 2,2  size 1 fill pink
 ball2: circle at 11,2 size 1 fill blue
 ```
 
 ---
 
-```scene
+```anim
 ball1: goto 11,2 via 5,1.5 via 8,2.5 speed vslow
 ball2: goto 2,2  via 8,1.5 via 5,2.5 speed vfast
 ```
 
 ---
 
-```scene
+```anim
 ball1: fill teal   scale 1.3 speed slow
 ball2: fill yellow scale 1.3 speed fast
 ```
@@ -738,7 +738,7 @@ Not autoplaying: one click on Next plays the whole chain; Back undoes it in one 
 
 ## Before the chain
 
-```scene
+```anim
 a: rect "a" at 2,2
 ```
 
@@ -748,7 +748,7 @@ a: rect "a" at 2,2
 
 First it moves right...
 
-```scene
+```anim
 a: move 6,2
 auto
 ```
@@ -757,7 +757,7 @@ auto
 
 ...then hops over...
 
-```scene
+```anim
 a: move 10,2 via 8,0.8
 auto
 ```
@@ -766,7 +766,7 @@ auto
 
 ...then turns green.
 
-```scene
+```anim
 a: fill green
 ```
 
@@ -784,7 +784,7 @@ Back from here returns to the end of the chain; Back again undoes the whole chai
 
 ## Start
 
-```scene
+```anim
 key: icon(key-round) "Public key" at 3,1.5 stroke green
 msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
 ```
@@ -795,7 +795,7 @@ msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
 
 `key2: copy key move 8,1.5 via 5.5,0.7 speed slow`: the copy flies off from the original.
 
-```scene
+```anim
 key2: copy key move 8,1.5 via 5.5,0.7 speed slow
 ```
 
@@ -805,13 +805,13 @@ key2: copy key move 8,1.5 via 5.5,0.7 speed slow
 
 `lock: icon(lock) attach right-of msg`: the lock rides on the message, even round a curve.
 
-```scene
+```anim
 lock: icon(lock) attach right-of msg stroke amber pop
 ```
 
 +++
 
-```scene
+```anim
 msg: move 9,4 via 6,2.8 speed slow
 ```
 
@@ -821,13 +821,13 @@ msg: move 9,4 via 6,2.8 speed slow
 
 `pkt: group msg lock`, then moving the group moves both.
 
-```scene
+```anim
 pkt: group msg lock highlight box
 ```
 
 +++
 
-```scene
+```anim
 pkt: move 11,2.5 speed slow
 ```
 
@@ -835,7 +835,7 @@ pkt: move 11,2.5 speed slow
 
 `pkt: remove pop` removes the group and its members.
 
-```scene
+```anim
 pkt: remove pop
 ```
 
@@ -847,7 +847,7 @@ pkt: remove pop
 
 ## A small network
 
-```scene
+```anim
 pc: icon(laptop) "PC" at 1.5,2.5
 r1: circle "R1" at 4.5,1.5 radius 0.45
 r2: circle "R2" at 7.5,3.5 radius 0.45
@@ -869,7 +869,7 @@ pkt: rect at 1.5,2.5 size 0.5x0.35 fill amber front
 
 `pkt: travel r1 r2 r3 srv speed slow`: hop by hop through the routers.
 
-```scene
+```anim
 pkt: travel r1 r2 r3 srv speed slow
 ```
 
@@ -879,13 +879,13 @@ pkt: travel r1 r2 r3 srv speed slow
 
 `ack: follow-reverse l5`: back along the dashed shortcut from R3 to R1.
 
-```scene
+```anim
 ack: rect "ack" at 10.5,1.5 size 0.8x0.4 fill green font 0.7 front
 ```
 
 +++
 
-```scene
+```anim
 ack: follow-reverse l5 speed slow
 ```
 
@@ -897,7 +897,7 @@ ack: follow-reverse l5 speed slow
 
 ## Start
 
-```scene
+```anim
 a: rect "A" at 4,2
 b: circle "B" at 7,2 radius 0.5
 c: rect "C" at 10,2
@@ -907,7 +907,7 @@ c: rect "C" at 10,2
 
 ## pulse, shake, box and wobble
 
-```scene
+```anim
 a: pulse
 b: shake
 c: highlight box
@@ -917,7 +917,7 @@ c: highlight box
 
 `c: wobble`
 
-```scene
+```anim
 c: wobble
 ```
 
@@ -927,7 +927,7 @@ c: wobble
 
 Everything else dims.
 
-```scene
+```anim
 a: highlight spotlight
 c: highlight spotlight
 ```
@@ -936,14 +936,14 @@ c: highlight spotlight
 
 ## callout
 
-```scene
+```anim
 b: callout "Look at this!"
 a: callout "Left side" left-of
 ```
 
 +++
 
-```scene
+```anim
 b: callout "Now below" below
 ```
 
@@ -953,7 +953,7 @@ b: callout "Now below" below
 
 `highlight clear` and `callout clear` put everything back.
 
-```scene
+```anim
 a: highlight clear callout clear
 b: callout clear
 c: highlight clear
@@ -969,7 +969,7 @@ c: highlight clear
 
 Images, shapes, text and icons can be turned (degrees clockwise, 0 = upright) and scaled.
 
-```scene
+```anim
 mac: image(../_assets/macs/macintosh.svg) at 2,3 size 2 angle -15
 r: rect "45°" at 5,2 angle 45
 c: rect "wide" at 5,4 size 2x1 angle 90 scale 0.8
@@ -985,7 +985,7 @@ l: arrow from r to box "edge"
 
 The cog spins, the Mac turns upright and grows, and the arrow stays on the rotating rect's edge.
 
-```scene
+```anim
 cog: angle +360 speed slow
 mac: angle 0 scale 1.3 speed slow
 r: angle +90 speed slow
@@ -998,7 +998,7 @@ t: angle 0 scale 1.3
 
 `angle -90` (relative) turns a quarter anticlockwise; `scale 0.5` halves.
 
-```scene
+```anim
 r: angle -90
 c: scale 0.5
 cog: angle -360 speed slow
@@ -1012,7 +1012,7 @@ cog: angle -360 speed slow
 
 ## Start
 
-```scene
+```anim
 a: circle "a" at 2,4 radius 0.4 fill blue
 b: rect "b" at 6,3
 c: circle "c" at 2,2.5 radius 0.4 fill pink
@@ -1025,7 +1025,7 @@ l: line from a to c dashed
 
 `a: move 8,4 via 5,1` — a semicircle over `b` (the via point is centred, half the distance away).
 
-```scene
+```anim
 a: move 8,4 via 5,1 speed slow
 ```
 
@@ -1035,7 +1035,7 @@ a: move 8,4 via 5,1 speed slow
 
 `c: move 10,2.5 via 4,4 via 6,2.5 via 8,1` — zig-zag via points give a sine-like wave, at an even speed. The dashed line follows both ends.
 
-```scene
+```anim
 c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
 ```
 
@@ -1045,7 +1045,7 @@ c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
 
 `a` loops through the spot below `b`; `c` goes `via -2,+2` (relative to where it starts).
 
-```scene
+```anim
 a: move 2,4 via below b speed slow
 c: move 2,2.5 via -2,+2 speed slow
 ```
@@ -1056,7 +1056,7 @@ c: move 2,2.5 via -2,+2 speed slow
 
 <animation grid="8x2" debug>
 
-```scene
+```anim
 a: rect at 2,1
 b: rect at 4,1 via 5,2
 a: fill blue via 3,2
@@ -1075,7 +1075,7 @@ a: move 6,1 via zz
 
 The debug grid shows rows, columns and ids.
 
-```scene
+```anim
 mac: image(../_assets/macs/macintosh.svg) "A Mac" at 3,2 size 2
 box: rect "box" at 9,2
 l: line from 2,5 to 6,5 "line"
@@ -1088,7 +1088,7 @@ p: arrow from mac to box
 
 `box: move +1,+2`, `mac: x +3`.
 
-```scene
+```anim
 box: move +1,+2
 mac: x +3
 ```
@@ -1099,7 +1099,7 @@ mac: x +3
 
 `l: to +4,-1` moves only the end; the arrow follows `box`.
 
-```scene
+```anim
 l: to +4,-1
 box: y -1
 ```
@@ -1108,7 +1108,7 @@ box: y -1
 
 ## Shift a whole line
 
-```scene
+```anim
 l: move +0,-1
 p: to 11,1
 ```
@@ -1123,13 +1123,13 @@ p: to 11,1
 
 Each shape enters with a different effect.
 
-```scene
+```anim
 f: rect "fade" at 2,2
 ```
 
 ---
 
-```scene
+```anim
 p: rect "pop" at 5,2 pop
 d: arrow from 1,3 to 11,3 draw speed slow
 s: circle "slide" at 9,2 slide
@@ -1139,7 +1139,7 @@ s: circle "slide" at 9,2 slide
 
 Second beat: removal effects.
 
-```scene
+```anim
 f: remove pop
 p: remove speed fast
 s: remove slide
@@ -1149,14 +1149,14 @@ s: remove slide
 
 ## Instant and slow
 
-```scene
+```anim
 d: remove speed instant
 sl: rect "slow" at 2,2
 ```
 
 +++
 
-```scene
+```anim
 sl: move 11,2 speed slow
 ```
 
@@ -1168,7 +1168,7 @@ sl: move 11,2 speed slow
 
 ## Back, normal and front
 
-```scene
+```anim
 a: rect "normal" at 4,2 size 3x1 fill blue
 b: circle at 3,2 radius 1 fill amber back
 c: circle at 6,2 radius 1 fill pink front
@@ -1180,7 +1180,7 @@ c: circle at 6,2 radius 1 fill pink front
 
 `b: front` and `c: back`.
 
-```scene
+```anim
 b: front
 c: back
 ```
@@ -1191,7 +1191,7 @@ c: back
 
 <animation grid="fit">
 
-```scene
+```anim
 a: rect "A" at 3,3
 b: rect "B" at 6,3
 l: arrow from a to b "fit"
@@ -1217,7 +1217,7 @@ Bad lines are listed under the animation and skipped; the rest still draws.
 
 <animation grid="8x3" debug hold="fast" controls="hidden">
 
-```scene
+```anim
 pause -1
 auto now
 defaults: fill red
@@ -1249,7 +1249,7 @@ This block must stay as code:
 
 ````markdown
 <animation>
-```scene
+```anim
 a: rect at 2,3
 ```
 </animation>

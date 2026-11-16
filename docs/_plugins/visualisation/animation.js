@@ -8,12 +8,12 @@
  *   <animation grid="16x9" debug>
  *   # Title               the first heading of step 1 stays fixed for the whole animation
  *   Caption text.
- *   ```scene
+ *   ```anim
  *   a: rect "A" at 2,3    id: type, label and properties - creates a shape
  *   ```
  *   ---                   start a new step
  *   ## Step heading
- *   ```scene
+ *   ```anim
  *   a: move 5,3 speed slow  id: properties - changes a shape (animated); `delay 1` waits a second first
  *   ```
  *   +++                   start a new beat (caption text and scene play one after another)
@@ -214,13 +214,13 @@
     return chunks
   }
 
-  // Removes ```scene fences from a beat, returning the caption lines and the scene text.
+  // Removes ```anim fences from a beat, returning the caption lines and the scene text.
   function extractScene(lines) {
     const caption = []
     const scene = []
     let inScene = false
     scanLines(lines, (line, _inCode, fence) => {
-      if (fence.opening && fence.info === 'scene') { inScene = true; return }
+      if (fence.opening && fence.info === 'anim') { inScene = true; return }
       if (inScene && fence.closing) { inScene = false; return }
       if (inScene) scene.push(line)
       else caption.push(line)
