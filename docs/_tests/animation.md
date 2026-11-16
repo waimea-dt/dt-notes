@@ -507,12 +507,12 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 
 ```anim
 # a whole-line comment
-r: rect "rect" at 2,2 size 2x1 radius 0.15 dotted   # a comment after a command
+r: rect "rect" at 2,2 size 2x1 corner 0.15 dotted   # a comment after a command
 c: circle "circle" at 5,2 radius 0.8 fill blue
-t: text "text, left" at 8,1 align left stroke theme
+t: text "text, left" at 8,1 align left colour theme
 b: text "bold, 1.5x" at 8,3 font 1.5 bold
 i: icon(laptop) "icon" at 11,2
-hx: text "C# code" at 3,4 stroke #f80   # a hex colour and a "# " in a label are kept
+hx: text "C# code" at 3,4 colour #f80   # a hex colour and a "# " in a label are kept
 ```
 
 ---
@@ -523,8 +523,8 @@ Fills tween; labels cross-fade.
 
 ```anim
 r: fill green "done" solid
-c: fill pink stroke red weight 2
-t: stroke amber "changed"
+c: fill pink stroke red weight 2 colour yellow   # colour: the label
+t: colour amber "changed"
 i: stroke blue
 ```
 
@@ -532,10 +532,10 @@ i: stroke blue
 
 ## Dashed, thick and rounded
 
-`r: radius 0.5` turns the rounded rect into a pill.
+`r: corner 0.5` turns the rounded rect into a pill.
 
 ```anim
-r: radius 0.5
+r: corner 0.5
 c: size 1 weight 3
 ```
 
@@ -618,7 +618,7 @@ ring: solid static speed slow
 `r: rect at 3,2 size 2x1`
 
 ```anim
-r: rect "R" at 3,2 size 2x1 radius 0.1
+r: rect "R" at 3,2 size 2x1 corner 0.1
 i: icon(laptop) "icon" at 9,2
 ```
 
@@ -968,7 +968,7 @@ A line indented more than the line that started a command continues it, so long 
 <animation grid="12x3">
 
 ```anim
-one: rect "one line" at 3,2 size 3x0.8 font 0.8 fill blue radius 0.2
+one: rect "one line" at 3,2 size 3x0.8 font 0.8 fill blue corner 0.2
 
 two:
     rect "laid out"     # comments still work
@@ -977,7 +977,7 @@ two:
 
     font 0.8            # and blank lines inside
     fill blue
-    radius 0.2
+    corner 0.2
 ```
 
 ---
@@ -1267,6 +1267,8 @@ auto now
 defaults: fill red
 sp: rect at 1,2 slow
 sq: rect at 2,2 speed -1
+st: text "x" at 3,2 stroke red
+rr: rect at 4,2 radius 0.2
 cp: copy zz
 hl: rect at 3,1 highlight sparkle
 a: rect "A" at 2,2

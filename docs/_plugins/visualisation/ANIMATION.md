@@ -94,9 +94,9 @@ m1:
 
 | Type | Example | Default size |
 |---|---|---|
-| `rect` | `a: rect "A" at 2,3 size 2x1 radius 0.1` | 1×1 (radius = corner, in cells) |
+| `rect` | `a: rect "A" at 2,3 size 2x1 corner 0.1` | 1×1 |
 | `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
-| `text` | `t: text "Hi" at 7,1 align left` | — (colour = `stroke`) |
+| `text` | `t: text "Hi" at 7,1 align left colour blue` | — |
 | `line` / `arrow` | `l: arrow from a to 9,3 "yes"` | — |
 | `image(path)` | `p: image(../_assets/x.svg) at 3,4 size 2 "Alt"` | 1×1, fits inside, keeps proportions |
 | `icon(name)` | `i: icon(laptop) at 10,2` | 1×1, a Lucide icon |
@@ -113,8 +113,10 @@ m1:
 | line ends | `from 2,3 to b` | An end on a shape follows it (stops at its edge) |
 | size | `size 2x1` · `size 2` | Circle: `size` = diameter |
 | width / height | `width 3` · `height 0.5` | Rect, image, icon |
-| radius | `radius 0.5` | Circle radius; rect corners |
-| fill / stroke | `fill blue` · `stroke #f80` · `none` | See colours |
+| radius | `radius 0.5` | Circles |
+| corner | `corner 0.2` | Rect corner radius, in cells (up to half the shorter side: a pill) |
+| fill / stroke | `fill blue` · `stroke #f80` · `none` | See colours. No `stroke` on text |
+| colour | `colour amber` | A text shape's colour, or any shape's label |
 | weight | `weight 2` | Stroke thickness × normal; `0` hides it |
 | line style | `solid` · `dashed` · `dotted` | Dashed 3w:3w, dotted 1w:1w. Changes cross-fade |
 | flow | `flow` · `flow-reverse` · `static` | Dashes march along (dashed / dotted only) |
@@ -124,7 +126,7 @@ m1:
 | align | `align left` · `centre` · `right` | Text only |
 | layer | `back` · `normal` · `front` | Within a layer: creation order |
 
-**Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg black white none` or `#hex`. Named fills are tinted for readable labels. Defaults: rect/circle fill `bg` stroke `fg`; everything else `fg`.
+**Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg black white none` or `#hex`. Defaults: rect/circle fill `bg` stroke `fg`; everything else `fg`; text and labels `colour fg`. Fills of named colours are tinted; strokes and `colour` are full strength.
 
 ## Relative values
 

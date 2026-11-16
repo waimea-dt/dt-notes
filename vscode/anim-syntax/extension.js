@@ -1,5 +1,5 @@
 // Colour swatches for named colours in anim scenes (.anim files and ```anim fences in Markdown).
-// VS Code's own swatches only cover hex / rgb(); this adds the scene colour names after fill / stroke.
+// VS Code's own swatches only cover hex / rgb(); this adds the scene colour names after fill / stroke / colour.
 const vscode = require('vscode')
 
 // The site's dark-theme values (docs/_css/core/theme.css). In the browser these follow the theme.
@@ -9,7 +9,7 @@ const COLOURS = {
   magenta: '#c384c9', theme: '#68bef8', muted: '#8a8d90', fg: '#ffffff', bg: '#1f2428',
   black: '#000000', white: '#ffffff',
 }
-const NAMED = new RegExp(`\\b(fill|stroke)(\\s+)(${Object.keys(COLOURS).join('|')})(?![\\w-])`, 'g')
+const NAMED = new RegExp(`\\b(fill|stroke|colour)(\\s+)(${Object.keys(COLOURS).join('|')})(?![\\w-])`, 'g')
 const FENCE = /^\s*(`{3,}|~{3,})\s*([\w-]*)/
 
 // Blanks out quoted labels and # comments (keeping columns), so names in them aren't matched.

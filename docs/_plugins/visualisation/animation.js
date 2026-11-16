@@ -94,9 +94,10 @@
     at: BOXED, x: BOXED, y: BOXED,
     from: LINE_TYPES, to: LINE_TYPES,
     size: ['rect', 'circle', 'image', 'icon'],
-    radius: ['circle', 'rect'], // a rect's radius rounds its corners
+    radius: ['circle'],
+    corner: ['rect'], // corner radius
     fill: ['rect', 'circle'],
-    stroke: ALL, weight: ALL, font: ALL, bold: ALL,
+    stroke: ['rect', 'circle', 'line', 'arrow', 'image', 'icon'], colour: ALL, weight: ALL, font: ALL, bold: ALL,
     width: ['rect', 'image', 'icon'], height: ['rect', 'image', 'icon'],
     angle: BOXED, scale: BOXED,
     align: ['text'],
@@ -141,8 +142,10 @@
     width: number('width', 'a number of cells'),
     height: number('height', 'a number of cells'),
     radius: number('radius'),
+    corner: number('corner', 'a number of cells'),
     fill: colour('fill'),
     stroke: colour('stroke'),
+    colour: colour('colour'),
     weight: number('weight', 'a number (a multiple of the normal stroke thickness)'),
     font: number('font', 'a number (a multiple of the normal size)'),
     angle: number('angle', 'a number of degrees (clockwise, 0 = upright)'),
@@ -599,8 +602,8 @@
   // ---------------------------------------------------------------------------
 
   function baseShape(type) {
-    const shape = { type, label: '', stroke: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
-    if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, r: 0, fill: 'bg' }) // r: corner radius
+    const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
+    if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, corner: 0, fill: 'bg' })
     if (type === 'circle') Object.assign(shape, { r: CELL / 2, fill: 'bg' })
     if (type === 'image') Object.assign(shape, { w: CELL, h: CELL, stroke: 'none' })
     if (type === 'icon') Object.assign(shape, { w: CELL, h: CELL })
@@ -628,6 +631,8 @@
     let uid = 0
 
     const check = (shape, key, word = key) => {
+      if (key === 'stroke' && shape.type === 'text') throw new Error('"stroke" doesn\'t apply to text: use colour')
+      if (key === 'radius' && shape.type === 'rect') throw new Error('"radius" is for circles: use corner for a rect\'s corners')
       if (!APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${shape.type === 'arrow' || shape.type === 'icon' || shape.type === 'image' ? 'an' : 'a'} ${shape.type}`)
     }
 
@@ -665,8 +670,10 @@
       if (props.width) { check(shape, 'width'); shape.w = Math.max(0, cells(props.width, shape.w)) }
       if (props.height) { check(shape, 'height'); shape.h = Math.max(0, cells(props.height, shape.h)) }
       if (props.radius) { check(shape, 'radius'); shape.r = Math.max(0, cells(props.radius, shape.r)) }
+      if (props.corner) { check(shape, 'corner'); shape.corner = Math.max(0, cells(props.corner, shape.corner)) }
       if (props.fill) { check(shape, 'fill'); shape.fill = props.fill }
-      if (props.stroke) shape.stroke = props.stroke
+      if (props.stroke) { check(shape, 'stroke'); shape.stroke = props.stroke }
+      if (props.colour) shape.colour = props.colour
       if (props.weight) {
         if (shape.type === 'text') warn('"weight" has no effect on text')
         shape.weight = Math.max(0, times(props.weight, shape.weight))
@@ -804,6 +811,7 @@
         if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = cells(value.w) / 2; continue }
         if (key === 'size') { shape.w = cells(value.w); shape.h = cells(value.h); continue }
         if (key === 'radius') { shape.r = cells(value); continue }
+        if (key === 'corner') { shape.corner = cells(value); continue }
         if (key === 'width') { shape.w = cells(value); continue }
         if (key === 'height') { shape.h = cells(value); continue }
         if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = numberValue(value); continue }
@@ -1331,6 +1339,7 @@
       node.label.style.fontSize = `${fontSize}px`
       node.label.style.fontWeight = s.bold ? '700' : ''
       node.label.style.opacity = v.labelOpacity
+      paint(node.label, 'fill', colours.colour) // a text shape's colour, or any shape's label
       if (node.label.textContent !== v.label) node.label.textContent = v.label
 
       if (LINE_TYPES.includes(node.type)) {
@@ -1391,7 +1400,7 @@
       if (node.type === 'rect') {
         node.body.setAttribute('x', -hw); node.body.setAttribute('y', -hh)
         node.body.setAttribute('width', 2 * hw); node.body.setAttribute('height', 2 * hh)
-        const corner = Math.max(0, Math.min(s.r || 0, hw, hh))
+        const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
         node.body.setAttribute('rx', corner); node.body.setAttribute('ry', corner)
       }
       if (node.type === 'circle') node.body.setAttribute('r', s.r)
@@ -1433,7 +1442,6 @@
         label.setAttribute('text-anchor', anchor)
         label.setAttribute('x', anchor === 'start' ? -hw : anchor === 'end' ? hw : 0)
         label.setAttribute('y', 0)
-        paint(label, 'fill', colours.stroke)
       } else if (['image', 'icon'].includes(node.type)) {
         label.setAttribute('y', hh + fontSize * 0.75)
       } else {
@@ -1476,7 +1484,7 @@
 
     function interpolate(a, b, t) {
       const s = { ...b }
-      for (const key of ['x', 'y', 'w', 'h', 'r', 'weight', 'font', 'angle', 'scale']) {
+      for (const key of ['x', 'y', 'w', 'h', 'r', 'corner', 'weight', 'font', 'angle', 'scale']) {
         if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], t)
       }
       // A line style change cross-fades from the old style to the new (see syncGhost)
@@ -1610,6 +1618,7 @@
         const colours = {
           fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
           stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),
+          colour: mixColour(rgba(colourCss(from.colour, 'stroke')), rgba(colourCss(to.colour, 'stroke')), t),
         }
         drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
