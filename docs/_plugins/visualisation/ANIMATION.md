@@ -189,7 +189,7 @@ The parser reads the words after the colon from left to right. Properties may co
 ### Ids
 
 - Letters, digits, `_`, `-` and `.`, starting with a letter: `a`, `box1`, `arr.0`.
-- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), line styles and flow words, the action words (`copy`, `attach`, `detach`, `group`, `ungroup`, `travel`, `follow`, `follow-reverse`, `highlight`, `callout`), `pause`, `auto`, `remove` and `defaults`.
+- **Reserved** (cannot be used as ids): type words, property keywords, transition words, placement words, layer words (`front`, `back`, `normal`), line styles and flow words, the action words (`pulse`, `shake`, `copy`, `attach`, `detach`, `group`, `ungroup`, `travel`, `follow`, `follow-reverse`, `highlight`, `callout`), `pause`, `auto`, `remove` and `defaults`.
 
 ### Value types
 
@@ -473,8 +473,8 @@ ack: follow-reverse l5 slow               along a line, from its end (follow: fr
 ### 6.8 Highlights and callouts
 
 ```
-a: highlight pulse          a one-off pulse as the beat plays
-b: highlight shake          a one-off shake (e.g. a key that doesn't fit)
+a: pulse                    a one-off pulse as the beat plays
+b: shake                    a one-off shake (e.g. a key that doesn't fit)
 c: highlight box            a rounded box in the highlight colour, until cleared
 a: highlight spotlight      dims everything that isn't spotlit (several shapes can be)
 a: highlight clear          removes box and spotlight
@@ -482,7 +482,7 @@ b: callout "Look at this!"  a speech bubble pointing at the shape (above, below,
 b: callout clear            removes it
 ```
 
-- `pulse` and `shake` play only going forwards, over the line's speed; they don't change the state, so going back doesn't undo them.
+- **`pulse`** and **`shake`** are words on their own (not part of `highlight`). They play only going forwards, over the line's speed; they don't change the state, so going back doesn't undo them.
 - `box` and `spotlight` stay until `highlight clear`, fade in and out at the line's speed, and can be combined (`highlight box spotlight`). A spotlit group lights its members, and a line is lit when both shapes it joins are.
 - Boxes and callouts work on every shape, lines and groups included, and follow the shape as it moves. Callouts sit above everything and are kept inside the drawing; a new callout text cross-fades from the old.
 
@@ -637,7 +637,6 @@ Ask the class to predict the next comparison before advancing.
 - **Bracket shorthand** for common shapes, e.g. `a: ["Hello"] at 2,3` for a rect and `b: ("Goat")` for a circle. Not a copy of Mermaid.
 - **Edge anchors:** `from a.right to b.left`.
 - **Group helpers:** `row` / `column` to lay out a list of boxes (`arr.0`, `arr.1`, …) from one anchor, plus `swap a b`.
-- **Emphasis:** `a: pulse`, which draws attention without changing state.
 - **Caption-to-shape links:** a word in the caption that highlights a shape on hover or tap.
 - **Side captions:** `caption="right"` on wide screens.
 - **Slides integration:** an `<animation>` inside `<slides>`, stepped through by reveal.js fragments.

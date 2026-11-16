@@ -57,7 +57,8 @@
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
-  const HIGHLIGHTS = ['pulse', 'shake', 'box', 'spotlight', 'clear']
+  const HIGHLIGHTS = ['box', 'spotlight', 'clear']
+  const EMPHASES = ['pulse', 'shake'] // one-off effects on an existing shape
   const ACTIONS = ['copy', 'attach', 'detach', 'group', 'ungroup', 'travel', 'follow', 'follow-reverse', 'highlight', 'callout']
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
   const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
@@ -146,7 +147,7 @@
 
   const RESERVED = new Set([
     ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(PROPS), ...Object.keys(ALIASES), ...Object.keys(SPEEDS),
-    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), ...ACTIONS, 'pause', 'auto', 'remove', 'defaults', 'clear',
+    ...EFFECTS, ...Object.keys(LAYERS), ...PLACEMENTS, ...FLAGS, ...LINE_STYLES, ...Object.keys(FLOWS), ...ACTIONS, ...EMPHASES, 'pause', 'auto', 'remove', 'defaults', 'clear',
   ])
 
   // ---------------------------------------------------------------------------
@@ -377,7 +378,7 @@
         const words = []
         let j = i + 1
         while (HIGHLIGHTS.includes(wordAt(j))) words.push(wordAt(j++))
-        if (!words.length) throw new Error('"highlight" expects pulse, shake, box, spotlight or clear')
+        if (!words.length) throw new Error('"highlight" expects box, spotlight or clear (pulse and shake go on their own)')
         set('highlight', words)
         return j
       }
@@ -431,6 +432,7 @@
       else if (FLAGS.includes(word)) set(word, true)
       else if (LINE_STYLES.includes(word)) set('linestyle', word, 'line style')
       else if (word in FLOWS) set('flow', word, 'flow')
+      else if (EMPHASES.includes(word)) set('emphasis', word)
       else if (word === 'clear' && mode === 'defaults') set('reset', true)
       else if (SHAPE_TYPES.includes(word) || word === 'remove') throw new Error(`"${word}" must come straight after the id`)
       else throw new Error(`unknown word "${token.value}"`)
@@ -691,15 +693,19 @@
       }
       if (props.layer) shape.layer = props.layer
 
-      // highlight: box / spotlight stay until clear; pulse / shake are one-off effects this beat
+      // highlight: box / spotlight stay until clear
       if (props.highlight) {
         const hl = { box: false, spotlight: false, ...shape.hl }
         for (const word of props.highlight) {
           if (word === 'clear') { hl.box = false; hl.spotlight = false }
-          else if (word === 'box' || word === 'spotlight') hl[word] = true
-          else for (const target of [shape, ...groupMembers(shape)]) meta.oneoff.set(target.uid, word)
+          else hl[word] = true
         }
         shape.hl = hl
+      }
+      // pulse / shake: one-off effects this beat, on an existing shape (and a group's members)
+      if (props.emphasis) {
+        if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
+        else for (const target of [shape, ...groupMembers(shape)]) meta.oneoff.set(target.uid, props.emphasis)
       }
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
 

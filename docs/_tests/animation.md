@@ -38,7 +38,7 @@ pair: group a5 a3 highlight spotlight
 Yes it is!
 
 ```scene
-a5: fill green highlight pulse
+a5: fill green pulse
 ```
 
 ---
@@ -111,7 +111,7 @@ The first leg of the route.
 defaults stroke blue weight 2 slow
 r1: arrow from a to b draw
 s: move above b gap 0.1
-b: fill blue delay 0.25 highlight pulse
+b: fill blue delay 0.25 pulse
 ```
 
 ---
@@ -121,7 +121,7 @@ b: fill blue delay 0.25 highlight pulse
 ```scene
 r2: arrow from b to c draw
 s: move above c gap 0.1
-c: fill blue delay 0.25 highlight pulse
+c: fill blue delay 0.25 pulse
 ```
 
 ---
@@ -131,7 +131,7 @@ c: fill blue delay 0.25 highlight pulse
 ```scene
 r3: arrow from c to d draw
 s: move right-of d gap 0.1
-d: fill blue delay 0.25 highlight pulse
+d: fill blue delay 0.25 pulse
 ```
 
 ---
@@ -143,7 +143,7 @@ Every city has now been visited.
 ```scene
 r4: arrow from d to e draw
 s: move below e gap 0.1
-e: fill blue delay 0.25 highlight pulse
+e: fill blue delay 0.25 pulse
 ```
 
 ---
@@ -155,7 +155,7 @@ The salesperson returns home to finish the tour.
 ```scene
 r5: arrow from e to a draw
 s: move left-of a gap 0.1
-a: fill green delay 0.25 highlight pulse
+a: fill green delay 0.25 pulse
 ```
 
 +++
@@ -257,7 +257,7 @@ Eve copies it as it passes, but her public key can't unlock it. All she sees is 
 
 ```scene
 eve: stroke red callout "x7#q! ???" left-of
-pubE: highlight shake
+pubE: shake
 ```
 
 ---
@@ -270,7 +270,7 @@ Only **Bob's private key** can unlock the message.
 eve: callout clear
 priv: move lock slow front
 lock: remove pop delay 1
-msg: "Hi Bob" fill green delay 1 highlight pulse
+msg: "Hi Bob" fill green delay 1 pulse
 ```
 
 +++
@@ -477,7 +477,7 @@ The browser unlocks it and shows the page.
 
 ```scene
 lk5: remove pop
-res: "Balance: $42" fill green highlight pulse
+res: "Balance: $42" fill green pulse
 ```
 
 ---
@@ -906,8 +906,8 @@ c: rect "C" at 10,2
 ## pulse, shake and box
 
 ```scene
-a: highlight pulse
-b: highlight shake
+a: pulse
+b: shake
 c: highlight box
 ```
 
