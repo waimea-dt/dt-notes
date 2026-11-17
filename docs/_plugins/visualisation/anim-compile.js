@@ -142,12 +142,7 @@
         if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
         else if (!targets.length) warn(`"${shape.id}" has no lines in it, so "${props.emphasis}" does nothing`)
         else {
-          for (const target of targets) {
-            const record = tween(meta, target.uid)
-            record.effect = props.emphasis
-            record.dur = Math.max(record.dur, speedOf(props)) // a group's members play it too
-            setDelay(meta, target.uid, props)
-          }
+          for (const target of targets) schedule(meta, target.uid, props).effect = props.emphasis // a group's members play it too
         }
       }
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
@@ -306,8 +301,7 @@
       for (const member of members) {
         if (!member || LINE_TYPES.includes(member.type)) continue
         applyProps(member, { highlight: [{ number: null }] }, false, warn, meta)
-        tween(meta, member.uid).dur = Math.max(tween(meta, member.uid).dur, speedOf(props))
-        setDelay(meta, member.uid, props)
+        schedule(meta, member.uid, props)
       }
     }
 
@@ -365,19 +359,26 @@
       if (effect === 'typed' && !shape.label) warn(`"typed" types out a shape's text, and this ${shape.type} has none, so it fades instead`)
     }
 
-    // Seconds before a line's change starts (the longest delay wins if a shape changes twice in a
-    // beat), and its easing (the last one wins).
-    function setDelay(meta, uid, props) {
-      const easing = props.ease ?? defaults.ease
-      if (easing) tween(meta, uid).ease = easing
-      if (!props.delay) return
-      if (props.delay.v < 0) throw new Error('"delay" must be zero or more seconds')
+    // The one place a change's timing is set: it takes `dur` ms (the line's speed unless given),
+    // starting `after` ms after the line's delay, with the line's ease. A shape changed more than
+    // once in a beat takes the longest time and the latest start, and the last ease.
+    function schedule(meta, uid, props, { dur = speedOf(props), after = 0 } = {}) {
       const record = tween(meta, uid)
-      record.delay = Math.max(record.delay, props.delay.v * 1000)
+      const easing = props.ease ?? defaults.ease
+      if (easing) record.ease = easing
+      record.dur = Math.max(record.dur, dur)
+      record.delay = Math.max(record.delay, delayOf(props) + after)
+      return record
     }
 
     function speedOf(props) {
       return props.speed ?? defaults.speed ?? NORMAL_MS
+    }
+
+    function delayOf(props) {
+      if (!props.delay) return 0
+      if (props.delay.v < 0) throw new Error('"delay" must be zero or more seconds')
+      return props.delay.v * 1000
     }
 
     // `camera at 4,3 zoom 2` pans and zooms the view; `camera reset` goes back to the whole drawing.
@@ -431,10 +432,7 @@
       }
       camera = next
       if (JSON.stringify(camera) === before && !route) warn('this camera line changes nothing')
-      const record = tween(meta, 'camera')
-      record.dur = speedOf(props) * (route ? route.length - 1 : 1) // a route takes `speed` per hop
-      record.path = route
-      setDelay(meta, 'camera', props)
+      schedule(meta, 'camera', props, { dur: speedOf(props) * (route ? route.length - 1 : 1) }).path = route // a route takes `speed` per hop
     }
 
     function runLine(text, meta, warn) {
@@ -506,13 +504,10 @@
         if (path) tween(meta, shape.uid).path = path
         if (existing) {
           warn(`"${id}" already exists, so it is replaced`)
-          tween(meta, existing.uid).exit = 'fade'
-          tween(meta, existing.uid).dur = speedOf(props)
+          schedule(meta, existing.uid, props).exit = 'fade'
         }
         shapes.set(id, shape)
-        tween(meta, shape.uid).enter = 'copy'
-        tween(meta, shape.uid).dur = speedOf(props) * (props.travel?.length || 1) // travel: speed per hop
-        setDelay(meta, shape.uid, props)
+        schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }).enter = 'copy' // travel: speed per hop
         return
       }
       if (firstWord === 'group') {
@@ -545,8 +540,7 @@
         if (takeBareNumber(props)) numberEach(list, props, meta, warn)
         applyProps(group, props, false, warn, meta)
         shapes.set(id, group)
-        tween(meta, group.uid).enter = 'fade'
-        tween(meta, group.uid).dur = speedOf(props)
+        schedule(meta, group.uid, props).enter = 'fade'
         return
       }
       if (firstWord === 'ungroup') {
@@ -586,15 +580,11 @@
         if (existing) {
           // Lines attached to the old shape attach to its replacement (same id).
           warn(`"${id}" already exists, so it is replaced`)
-          tween(meta, existing.uid).exit = 'fade'
-          tween(meta, existing.uid).dur = speedOf(props)
-          setDelay(meta, existing.uid, props)
+          schedule(meta, existing.uid, props).exit = 'fade'
         }
         shapes.set(id, shape)
-        tween(meta, shape.uid).enter = props.effect || defaults.effect || 'fade'
+        schedule(meta, shape.uid, props).enter = props.effect || defaults.effect || 'fade'
         if (props.effect) warnEffect(shape, props.effect, warn)
-        tween(meta, shape.uid).dur = speedOf(props)
-        setDelay(meta, shape.uid, props)
         updateParts(shape, props, meta, warn)
         return
       }
@@ -621,8 +611,7 @@
       if (path) tween(meta, shape.uid).path = path
       else if (props.at || props.x || props.y) tween(meta, shape.uid).path = null // a later straight move wins
       shapes.set(id, shape)
-      tween(meta, shape.uid).dur = Math.max(tween(meta, shape.uid).dur, speedOf(props) * (props.travel?.length || 1)) // travel: speed per hop
-      setDelay(meta, shape.uid, props)
+      schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }) // travel: speed per hop
       updateParts(shape, props, meta, warn)
       if (order) applyStagger(shape, order, props, meta, warn)
       else if (props.stagger) warn(`"stagger" works on a row, column or group, and "${id}" isn't one`)
@@ -662,8 +651,7 @@
       const n = ++uid
       const look = (shape) => ({ ...structuredClone(shape), id: `~flyer${n}`, uid: n, attach: null, hl: null, callout: null, layer: 'front' })
       meta.flyers = [...(meta.flyers || []), { uid: n, from: look(from), to: look(to), hops, move }]
-      setDelay(meta, n, props)
-      Object.assign(tween(meta, n), { dur, delay: (props.delay ? props.delay.v * 1000 : 0) + after })
+      schedule(meta, n, props, { dur, after })
     }
 
     // A var's or cell's new value (and with keep-style, the look it came with), crossfading in
@@ -673,10 +661,7 @@
       setValue(changed, value)
       shapes.set(changed.id, changed)
       const speed = speedOf(props)
-      setDelay(meta, changed.uid, props)
-      const record = tween(meta, changed.uid)
-      record.dur = Math.max(record.dur, 0.5 * speed)
-      record.delay = Math.max(record.delay, (props.delay ? props.delay.v * 1000 : 0) + land - 0.25 * speed)
+      schedule(meta, changed.uid, props, { dur: 0.5 * speed, after: land - 0.25 * speed })
       return changed
     }
 
@@ -689,14 +674,6 @@
       const speed = speedOf(props)
       const changed = landValue(meta, target, valueIn(source), props, speed, keptStyle(props, source))
       fly(meta, source, changed, [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], props, { dur: 1.25 * speed, move: 0.8 })
-    }
-
-    // A change's timing, starting `after` ms into it (after any delay)
-    function timeAt(meta, uid, props, after = 0) {
-      setDelay(meta, uid, props) // the ease, and checks the delay
-      const record = tween(meta, uid)
-      record.dur = Math.max(record.dur, speedOf(props))
-      record.delay = Math.max(record.delay, (props.delay ? props.delay.v * 1000 : 0) + after)
     }
 
     // A var's / row's / column's name tag, and a row's / column's cell numbers (indices), are text
@@ -726,7 +703,7 @@
         if (!old) return warn(`"${owner.id}" has no name to clear`)
         shapes.delete(id)
         tween(meta, old.uid).exit = 'fade'
-        timeAt(meta, old.uid, props)
+        schedule(meta, old.uid, props)
         return
       }
       const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: ++uid, font: 1.2, layer: owner.layer, part: owner.id }
@@ -735,7 +712,7 @@
       Object.assign(text, attachPos(text, owner, text.attach))
       shapes.set(id, text)
       if (!old) tween(meta, text.uid).enter = 'fade'
-      timeAt(meta, text.uid, props)
+      schedule(meta, text.uid, props)
     }
 
     // Adds or removes index texts so a row / column has one per cell (none without "indices"),
@@ -750,7 +727,7 @@
           if (!old) break
           shapes.delete(id)
           tween(meta, old.uid).exit = 'fade'
-          timeAt(meta, old.uid, props, remove)
+          schedule(meta, old.uid, props, { after: remove })
           continue
         }
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
@@ -764,7 +741,7 @@
         if (old) continue
         shapes.set(id, text)
         tween(meta, text.uid).enter = 'fade'
-        timeAt(meta, text.uid, props, add)
+        schedule(meta, text.uid, props, { after: add })
       }
     }
 
@@ -776,10 +753,8 @@
       leaveGroup(target)
       freezeEndsAttachedTo(target.id)
       shapes.delete(target.id)
-      tween(meta, target.uid).exit = props.effect || defaults.effect || 'fade'
+      schedule(meta, target.uid, props).exit = props.effect || defaults.effect || 'fade'
       if (props.effect) warnEffect(target, props.effect, warn)
-      tween(meta, target.uid).dur = speedOf(props)
-      setDelay(meta, target.uid, props)
     }
 
     // A row (side by side) or column (one under another) of rect cells, ids "id.0", "id.1", …: a
@@ -845,14 +820,11 @@
       }
       applyProps(row, pick(props, ['at', 'x', 'y', 'highlight', 'callout']), true, warn, meta)
       shapes.set(id, row)
-      tween(meta, row.uid).enter = 'fade'
-      tween(meta, row.uid).dur = speedOf(props)
+      schedule(meta, row.uid, props).enter = 'fade'
       for (const cell of cells) {
         Object.assign(cell, { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy })
         shapes.set(cell.id, cell)
-        tween(meta, cell.uid).enter = props.effect || defaults.effect || 'fade'
-        tween(meta, cell.uid).dur = speedOf(props)
-        setDelay(meta, cell.uid, props)
+        schedule(meta, cell.uid, props).enter = props.effect || defaults.effect || 'fade'
       }
       if (props.effect) warnEffect(cells[0], props.effect, warn)
       updateParts(row, props, meta, warn)
@@ -882,8 +854,7 @@
         const changed = structuredClone(member)
         applyProps(changed, own, false, warn, meta)
         shapes.set(changed.id, changed)
-        tween(meta, changed.uid).dur = Math.max(tween(meta, changed.uid).dur, speedOf(props))
-        setDelay(meta, changed.uid, props)
+        schedule(meta, changed.uid, props)
       }
       const unused = Object.keys(look).find((key) => !used.has(key))
       if (unused) warn(`"${unused === 'mono' ? 'monospace' : unused === 'linestyle' ? look[unused] : unused}" doesn't apply to any of the shapes in "${group.id}"`)
@@ -909,11 +880,7 @@
         warn('a row, column or group moves as one, so its move isn\'t staggered')
       }
       const list = stagger.reverse ? [...order].reverse() : order
-      const base = props.delay ? props.delay.v * 1000 : 0
-      list.forEach((uids, k) => uids.forEach((uid) => {
-        const record = tween(meta, uid)
-        record.delay = Math.max(record.delay, base + k * stagger.gap * 1000)
-      }))
+      list.forEach((uids, k) => uids.forEach((uid) => schedule(meta, uid, props, { dur: 0, after: k * stagger.gap * 1000 })))
     }
 
     // "arr: swap 0 3": two cells change places, one arcing over and one under (a column's: to the
@@ -948,8 +915,7 @@
       })
       for (const moved of moves) {
         shapes.set(moved.id, moved)
-        tween(meta, moved.uid).dur = Math.max(tween(meta, moved.uid).dur, speedOf(props))
-        setDelay(meta, moved.uid, props)
+        schedule(meta, moved.uid, props)
       }
     }
 
@@ -1027,8 +993,7 @@
       if (target && target.uid === cells[at].uid) throw new Error(`"${target.id}" is the cell being removed, so it can't be removed into`)
 
       const speed = speedOf(props)
-      const base = props.delay ? props.delay.v * 1000 : 0
-      const timing = (uid, after) => timeAt(meta, uid, props, after)
+      const timing = (uid, after) => schedule(meta, uid, props, { after })
       const across = row.layout === 'row'
       const aside = (cell) => (across ? { x: 0, y: 1.2 * cell.h } : { x: -1.2 * cell.w, y: 0 }) // where a cell comes from / goes to
 
@@ -1090,8 +1055,7 @@
         uid: ++uid, ref: id, across, closing: removing, then: THEN / (1 + THEN),
         dx: slotCell.attach.dx, dy: slotCell.attach.dy, w: slotCell.w, h: slotCell.h, corner: slotCell.corner || 0,
       }
-      setDelay(meta, slot.uid, props)
-      Object.assign(tween(meta, slot.uid), { dur: (1 + THEN) * speed, delay: base })
+      schedule(meta, slot.uid, props, { dur: (1 + THEN) * speed })
       meta.slots = [...(meta.slots || []), slot]
     }
 
