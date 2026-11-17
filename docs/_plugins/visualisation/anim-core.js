@@ -327,9 +327,17 @@
     return self.cx !== undefined ? { x: p.x - self.cx, y: p.y - self.cy } : p
   }
 
-  // Where an attached shape sits: beside its ref (attach), or at a fixed offset (group member).
+  // A shape's attachment (shape.attach), one of two kinds:
+  //   beside  next to its ref (side: a placement word, or 'centre' on top of it, and a gap): attach,
+  //           and a var's / row's name
+  //   offset  at a fixed offset from its ref (dx, dy): a group's members (a row's cells too), and a
+  //           row's index labels
+  const besideOf = (ref, side, gap) => ({ kind: 'beside', ref, side, gap })
+  const offsetFrom = (ref, dx, dy) => ({ kind: 'offset', ref, dx, dy })
+
+  // Where an attached shape sits, from its ref and its attachment.
   function attachPos(shape, ref, spec) {
-    if (spec.dx !== undefined) return { x: ref.x + spec.dx, y: ref.y + spec.dy }
+    if (spec.kind === 'offset') return { x: ref.x + spec.dx, y: ref.y + spec.dy }
     if (spec.side === 'centre') return boxCentre(ref)
     return placeNextTo(shape, ref, spec.side, spec.gap ?? PLACE_GAP)
   }
@@ -593,7 +601,7 @@
   Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, COLOURS, EASES, FLOWS,
     FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LAYOUT_TYPES, LINE_STARTS, LINE_TYPES, NORMAL_MS,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
-    SIGNALS, SPEEDS, STROKE, attachPos, bounds, boxCentre, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
+    SIGNALS, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

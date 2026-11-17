@@ -465,7 +465,7 @@
       const isLit = (shape, depth = 0) => {
         if (!shape || depth > 8) return false
         if (shape.hl?.spotlight) return true
-        if (shape.attach?.dx !== undefined) return isLit(state.get(shape.attach.ref), depth + 1)
+        if (shape.attach?.kind === 'offset') return isLit(state.get(shape.attach.ref), depth + 1) // a group member
         if (shape.part) return isLit(state.get(shape.part), depth + 1) // a name / index goes with its owner
         return false
       }
@@ -572,8 +572,8 @@
         const spec = item && !LINE_TYPES.includes(item.shape.type) && (item.b || item.a).attach
         if (!spec || passed.has(spec.ref)) return null
         const before = item.a?.attach
-        if (item.a && item.b && !(before && before.ref === spec.ref && before.side === spec.side)) return null
-        if (spec.dx === undefined || before?.dx === undefined) return spec
+        if (item.a && item.b && !(before && before.kind === spec.kind && before.ref === spec.ref && before.side === spec.side)) return null
+        if (spec.kind !== 'offset' || before?.kind !== 'offset') return spec
         return { ...spec, dx: lerp(before.dx, spec.dx, item.t), dy: lerp(before.dy, spec.dy, item.t) }
       }, (shape, p) => {
         const item = byItem.get(shape.id)

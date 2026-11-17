@@ -7,7 +7,14 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, FLOWS, resolveEnds, boxCentre, PLACE_GAP,
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, SIGNALS,
-    parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints } = window.Anim
+    parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom } = window.Anim
+
+  // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
+  // id.1, …) and their index labels (id.index.0, …), and the name (id.name)
+  const cellId = (id, k) => `${id}.${k}`
+  const indexId = (id, k) => `${id}.index.${k}`
+  const nameId = (id) => `${id}.name`
+  const cellRange = (id, n) => (n ? `${cellId(id, 0)} to ${cellId(id, n - 1)}` : 'none')
 
   // A row's or column's look, given to each of its cells (when made, and on a change to it)
   const CELL_STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'corner', 'linestyle', 'flow']
@@ -207,7 +214,7 @@
         if (props.attach.ref === shape.id) throw new Error('a shape can\'t attach to itself')
         leaveGroup(shape)
         if (props.gap && props.attach.side === 'centre') warn('"gap" does nothing when attaching on top of a shape (give a side, e.g. attach right-of a)')
-        shape.attach = { ref: props.attach.ref, side: props.attach.side, gap: props.gap ? props.gap.v * CELL : PLACE_GAP }
+        shape.attach = besideOf(props.attach.ref, props.attach.side, props.gap ? props.gap.v * CELL : PLACE_GAP)
         Object.assign(shape, attachPos(shape, shapes.get(props.attach.ref), shape.attach))
       }
       if (props.detach) {
@@ -222,7 +229,7 @@
       const moved = positioned || props.via || props.travel || props.follow
       const keepOffset = () => {
         if (!moved || !shape.attach || props.attach) return
-        if (shape.attach.dx === undefined) { shape.attach = null; return }
+        if (shape.attach.kind !== 'offset') { shape.attach = null; return }
         const parent = shapes.get(shape.attach.ref)
         shape.attach.dx = shape.x - parent.x
         shape.attach.dy = shape.y - parent.y
@@ -312,7 +319,7 @@
 
     // Takes a shape out of the group it's in (if any).
     function leaveGroup(shape) {
-      if (shape.attach?.dx === undefined) return
+      if (shape.attach?.kind !== 'offset') return
       const parent = shapes.get(shape.attach.ref)
       if (parent?.members) parent.members = parent.members.filter((id) => id !== shape.id)
       shape.attach = null
@@ -533,7 +540,7 @@
         for (const m of list) {
           if (LINE_TYPES.includes(m.type)) continue // follows the shapes its ends are attached to
           leaveGroup(m)
-          m.attach = { ref: id, dx: m.x - group.x, dy: m.y - group.y }
+          m.attach = offsetFrom(id, m.x - group.x, m.y - group.y)
         }
         if (takeBareNumber(props)) numberEach(list, props, meta, warn)
         applyProps(group, props, false, warn, meta)
@@ -713,20 +720,20 @@
     }
 
     function setName(owner, name, props, meta, warn) {
-      const nameId = `${owner.id}.name`
-      const old = shapes.get(nameId)
+      const id = nameId(owner.id)
+      const old = shapes.get(id)
       if (name.none) {
         if (!old) return warn(`"${owner.id}" has no name to clear`)
-        shapes.delete(nameId)
+        shapes.delete(id)
         tween(meta, old.uid).exit = 'fade'
         timeAt(meta, old.uid, props)
         return
       }
-      const text = old ? structuredClone(old) : { ...baseShape('text'), id: nameId, uid: ++uid, font: 1.2, layer: owner.layer, part: owner.id }
+      const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: ++uid, font: 1.2, layer: owner.layer, part: owner.id }
       text.label = name.text
-      text.attach = { ref: owner.id, side: name.side || old?.attach?.side || (owner.layout === 'column' ? 'above' : 'left-of'), gap: 0.2 * CELL }
+      text.attach = besideOf(owner.id, name.side || old?.attach?.side || (owner.layout === 'column' ? 'above' : 'left-of'), 0.2 * CELL)
       Object.assign(text, attachPos(text, owner, text.attach))
-      shapes.set(nameId, text)
+      shapes.set(id, text)
       if (!old) tween(meta, text.uid).enter = 'fade'
       timeAt(meta, text.uid, props)
     }
@@ -737,25 +744,25 @@
       const n = row.indices ? row.members.length : 0
       const across = row.layout === 'row'
       for (let k = 0; ; k++) {
-        const indexId = `${row.id}.index.${k}`
-        const old = shapes.get(indexId)
+        const id = indexId(row.id, k)
+        const old = shapes.get(id)
         if (k >= n) {
           if (!old) break
-          shapes.delete(indexId)
+          shapes.delete(id)
           tween(meta, old.uid).exit = 'fade'
           timeAt(meta, old.uid, props, remove)
           continue
         }
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
         // cell slides in or out of it; at the back, so a sliding cell passes over it
-        const text = old || { ...baseShape('text'), id: indexId, uid: ++uid, label: String(k), font: 0.88, colour: 'muted', layer: 'back', part: row.id }
-        const cell = shapes.get(`${row.id}.${k}`)
+        const text = old || { ...baseShape('text'), id, uid: ++uid, label: String(k), font: 0.88, colour: 'muted', layer: 'back', part: row.id }
+        const cell = shapes.get(cellId(row.id, k))
         const place = { ...cell, x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }
         const p = placeNextTo(text, place, across ? 'below' : 'left-of', (across ? 0.1 : 0.2) * CELL)
-        text.attach = { ref: row.id, dx: p.x - row.x, dy: p.y - row.y }
+        text.attach = offsetFrom(row.id, p.x - row.x, p.y - row.y)
         Object.assign(text, p)
         if (old) continue
-        shapes.set(indexId, text)
+        shapes.set(id, text)
         tween(meta, text.uid).enter = 'fade'
         timeAt(meta, text.uid, props, add)
       }
@@ -806,7 +813,7 @@
         warn(`"${id}" already exists, so it is replaced`)
         removeShape(existing, props, meta, warn)
       }
-      const ids = values.map((_, k) => `${id}.${k}`)
+      const ids = values.map((_, k) => cellId(id, k))
       for (const cellId of ids) {
         if (!shapes.has(cellId)) continue
         warn(`"${cellId}" already exists, so it is replaced by a cell of "${id}"`)
@@ -921,10 +928,9 @@
       const props = parseProps(tokens, 3, 'swap', shapes)
       const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease'].includes(key))
       if (extra) throw new Error(`"swap" only takes a speed, a delay and an ease, not "${extra}"`)
-      const ids = [`${id}.${i}`, `${id}.${j}`]
-      const [a, b] = ids.map((cellId) => {
-        const cell = shapes.get(cellId)
-        if (!cell || cell.attach?.ref !== id || cell.attach.dx === undefined) throw new Error(`"${cellId}" isn't a cell of "${id}" (its cells are ${id}.0 to ${id}.${row.members.length - 1})`)
+      const [a, b] = [i, j].map((k) => {
+        const cell = row.members.includes(cellId(id, k)) && shapes.get(cellId(id, k))
+        if (!cell) throw new Error(`"${cellId(id, k)}" isn't a cell of "${id}" (its cells are ${cellRange(id, row.members.length)})`)
         return cell
       })
       if (i === j) return warn('a cell swapped with itself stays where it is')
@@ -935,7 +941,7 @@
       const moves = [[a, b], [b, a]].map(([cell, other]) => {
         const moved = structuredClone(cell)
         moved.id = other.id
-        moved.attach = { ...cell.attach, dx: other.attach.dx, dy: other.attach.dy }
+        moved.attach = offsetFrom(id, other.attach.dx, other.attach.dy)
         const onward = across ? other.attach.dx > cell.attach.dx : other.attach.dy > cell.attach.dy
         tween(meta, moved.uid).arc = across ? { x: 0, y: onward ? -lift : lift } : { x: onward ? lift : -lift, y: 0 }
         return moved
@@ -955,8 +961,8 @@
       cells.forEach((cell, k) => {
         const before = cells[k - 1]
         if (before) offset += (across ? (before.w + cell.w) / 2 : (before.h + cell.h) / 2) + (row.gap || 0)
-        cell.id = `${row.id}.${k}`
-        cell.attach = { ref: row.id, dx: across ? offset : 0, dy: across ? 0 : offset }
+        cell.id = cellId(row.id, k)
+        cell.attach = offsetFrom(row.id, across ? offset : 0, across ? 0 : offset)
       })
       row.members = cells.map((cell) => cell.id)
     }
@@ -978,7 +984,7 @@
       const example = removing ? `"${id}: remove 2" or "${id}: remove end into v1"` : `"${id}: insert 7 at 3" or "${id}: insert v1 at end"`
       const cells = row.members.map((m) => shapes.get(m)).filter(Boolean)
       const n = cells.length
-      const range = n ? `${id}.0 to ${id}.${n - 1}` : 'none'
+      const range = cellRange(id, n)
       // a cell number, or end: the last cell (remove), or after it (insert)
       const place = (token) => (token?.kind === 'word' && token.lower === 'end' ? (removing ? n - 1 : n) : parseAs('index', token))
 
@@ -1032,7 +1038,7 @@
       const list = cells.map((cell) => structuredClone(cell))
       let slotCell
       if (removing) {
-        freezeEndsAttachedTo(`${id}.${n - 1}`) // the last place goes
+        freezeEndsAttachedTo(cellId(id, n - 1)) // the last place goes
         const [gone] = list.splice(at, 1)
         if (target) tween(meta, gone.uid).cut = true // it flies to the target instead (below)
         else Object.assign(tween(meta, gone.uid), { exit: 'fade', offset: aside(gone) })
