@@ -549,15 +549,15 @@
         } else if (b) {
           shape = b
           v = appear(tw?.enter || 'fade', t, b, raw)
-          // a row's cell slides in from beside the row (insert, push); solid when a flyer brought
+          // a row's cell slides in from beside the row (insert); solid when a flyer brought
           // its value there
           if (tw?.offset) { v.dx += tw.offset.x * (1 - t); v.dy += tw.offset.y * (1 - t) }
           if (tw?.solid) v.opacity = raw > 0 ? 1 : 0
         } else {
           shape = a
           v = appear(tw?.exit || 'fade', 1 - t, a, 1 - raw)
-          if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (delete, pop)
-          if (tw?.cut) v.opacity = raw > 0 ? 0 : 1 // a flyer takes over from it (pop into)
+          if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (remove)
+          if (tw?.cut) v.opacity = raw > 0 ? 0 : 1 // a flyer takes over from it (remove … into)
         }
         // an arrowhead fades in or out as it's added to or taken off a line
         v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
@@ -571,7 +571,7 @@
       // Attached shapes and group members follow their ref's current (interpolated) place, so they
       // stay together along curves and routes. A shape whose attachment changes this beat keeps its
       // own interpolated path; a group member moved within its group glides to its new offset.
-      // An id held by a shape leaving and one arriving (a deleted cell's place) is the arriving one's
+      // An id held by a shape leaving and one arriving (a removed cell's place) is the arriving one's
       const byItem = new Map()
       for (const item of items) if (item.b || !byItem.has(item.shape.id)) byItem.set(item.shape.id, item)
       resolveAttachments(now, (shape) => {
@@ -658,7 +658,7 @@
       drawSlots(meta, progress, now)
     }
 
-    // The slots (muted outlines) of a beat's row / column edits (delete, insert, push, pop), which only show
+    // The slots (muted outlines) of a beat's row / column edits (insert, remove), which only show
     // while it plays. A closing slot appears as its cell leaves, then shrinks from its far side as
     // the cells after it close up; an opening one grows as the cells move aside and goes as its
     // cell lands. `then` is where the second part starts in the slot's time (the first ends at

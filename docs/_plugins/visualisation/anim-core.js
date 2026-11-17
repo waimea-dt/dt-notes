@@ -29,7 +29,7 @@
   const EFFECTS = ['fade', 'pop', 'draw', 'slide', 'typed']
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
-  const ALIGNS = { left: 'left', centre: 'centre', center: 'centre', right: 'right' }
+  const ALIGNS = { left: 'left', centre: 'centre', right: 'right' }
   const LINE_STYLES = ['solid', 'dashed', 'dotted']
   // Each pattern as a visible mark and gap, in multiples of the line's thickness (w):
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
@@ -190,7 +190,7 @@
       help: 'quoted text (e.g. name "total"), optionally then a side (above, below, left-of, right-of), or clear',
     },
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
-    // a value copied or moved (v1: a.1, insert, push, pop into) takes its fill, stroke and colour
+    // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
     // with it, rather than taking on the look of where it goes
     'keep-style': fixed('keepStyle', true, { modes: ['edit', 'defaults'] }),
     null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
@@ -203,10 +203,13 @@
   for (const entry of Object.values(KEYWORDS)) for (const list of [entry.sigs, entry.list]) list?.sort((a, b) => b.length - a.length)
 
   // Words that start a line (after "id:") rather than describe it
-  const LINE_STARTS = ['copy', 'group', 'ungroup', 'remove', 'swap', 'delete', 'insert', 'push', 'pop', 'var']
+  // (delete: a shape; insert / remove: a row's or column's cells; swap: two of them)
+  const LINE_STARTS = ['copy', 'group', 'ungroup', 'delete', 'swap', 'insert', 'remove', 'var']
+  // Words inside a row edit: "insert 7 at end", "remove 2 into v1"
+  const EDIT_WORDS = ['end', 'into']
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, 'pause', 'auto', 'defaults', 'camera',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...EDIT_WORDS, 'pause', 'auto', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------

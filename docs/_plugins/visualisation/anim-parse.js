@@ -228,7 +228,7 @@
       const entry = KEYWORDS[word]
       if (!entry || (entry.modes && !entry.modes.includes(mode))) {
         if (SHAPE_TYPES.includes(word) || LAYOUT_TYPES.includes(word) || LINE_STARTS.includes(word)) throw new Error(`"${word}" must come straight after the id`)
-        if (word === 'keep-style') throw new Error('"keep-style" goes on a value being copied or moved: "v1: a.1", insert, push or pop into')
+        if (word === 'keep-style') throw new Error('"keep-style" goes on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"')
         throw new Error(`unknown word "${token.value}"`)
       }
       if (entry.error) throw new Error(entry.error)

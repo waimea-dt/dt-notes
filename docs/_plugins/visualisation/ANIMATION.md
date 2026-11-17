@@ -68,7 +68,7 @@ Markers go alone on their line. Everything in a beat plays at once.
 ```anim
 a: rect "A" at 2,3         # create: id: type "label" properties
 a: move 5,3 fill red       # change
-a: remove                  # remove
+a: delete                  # delete
 # a comment ("#" then a space)
 m:
     rect "Long command"    # indented more = same command
@@ -162,7 +162,7 @@ pkt: ungroup
 
 - Moving an attached shape detaches it. Moving a group member keeps it in the group.
 - A look change on a group (`fill`, `stroke` …) goes to its members.
-- Removing a group removes its members.
+- Deleting a group deletes its members.
 
 ## Rows and columns
 
@@ -171,22 +171,23 @@ arr: row [5 3 8 1] at 3,4          # cells arr.0 … arr.3
 col: column ["A" "B" "C"] at 12,2 gap 0.2
 mem: row 8 at 2,6                  # 8 empty cells
 arr: swap 0 3                      # two cells change places
-arr: delete 2                      # slides out, the rest close up
 arr: insert 7 at 3                 # a space opens, 7 slides in
-arr: push 8                        # onto the end
-arr: pop                           # off the end
+arr: insert 8 at end               # onto the end
+arr: remove 2                      # slides out, the rest close up
+arr: remove end                    # off the end
 arr.2: fill amber                  # one cell
 arr: fill green                    # every cell
+arr: delete                        # the whole row
 ```
 
 - Values go in `[ ]`: numbers or `"quoted"`, commas optional (`[5, 3, 8]`). A bare whole number makes that many empty cells.
 - `size` and `gap` (default 0), plus fill, stroke, font and the other looks, apply to every cell.
 - `at` places the first cell. `below b` etc. place the whole row.
-- After a swap, delete or insert, ids stay with the places: what's attached to `arr.0` stays put, and `arr.2` is whichever cell is now third. Highlights move with the cell.
-- Cells come and go below a row, left of a column. New cells take the row's look (as changed by `arr: fill …`). `insert … at` goes from 0 to the length (the end). A row can be popped empty and pushed onto again.
-- A muted outline (a slot) shows the space while it plays: left behind as a cell goes, closing as the rest close up; or opening as cells move aside, for the new one to land in. Push and pop open or close one on the end.
+- After a swap, insert or remove, ids stay with the places: what's attached to `arr.0` stays put, and `arr.2` is whichever cell is now third. Highlights move with the cell.
+- Cells come and go below a row, left of a column. New cells take the row's look (as changed by `arr: fill …`). `insert … at` goes from 0 to the length, or `end`. A row can be emptied and inserted into again.
+- A muted outline (a slot) shows the space while it plays: left behind as a cell goes, closing as the rest close up; or opening as cells move aside, for the new one to land in. At the end, one opens or closes on the end.
 - Cells hold values like a var: `arr.2: 7`, `arr.2: "x"`, `arr.2: null`, and `null` in `[ ]`.
-- `swap` `delete` `insert` `push` `pop` take `speed`, `delay` and `ease`. Delete, insert, push and pop are two moves in turn (out then close up, or open up then in), so they take about 1.6 × the speed.
+- `swap` `insert` `remove` take `speed`, `delay` and `ease`. Insert and remove are two moves in turn (out then close up, or open up then in), so they take about 1.6 × the speed.
 
 ## Variables
 
@@ -207,8 +208,9 @@ v1: null
 v1: a.1                            # a copy of a.1 glides onto v1, which takes its value
 a.2: v2                            # and back: vars and cells both ways
 a: insert v1 at 3                  # a copy of v1 glides to the opening slot and slides in
-a: push v2
-a: pop v2                          # the last cell glides onto v2, the slot closes
+a: insert v2 at end
+a: remove end into v2              # the last cell glides onto v2, the slot closes
+a: remove 1 into v1                # from the middle: the rest close up
 ```
 
 - Values are copied: v1 keeps its own, and changing it later doesn't change the cell.
@@ -225,9 +227,9 @@ v1: name clear
 arr: indices                       # show them; indices clear hides them
 ```
 
-- For vars, rows and columns. Both are text shapes that move with their owner and go when it's removed: `v1.name`, `arr.index.0` … (style them like any shape, e.g. `arr.name: bold`).
+- For vars, rows and columns. Both are text shapes that move with their owner and go when it's deleted: `v1.name`, `arr.index.0` … (style them like any shape, e.g. `arr.name: bold`).
 - `highlight outline` goes round the whole thing, name and indices too (to pick out the data, highlight cells or change colours).
-- Indices (small, muted) sit below a row's cells, left of a column's. They stay with the places through a swap, and the last one comes and goes with delete, insert, push and pop.
+- Indices (small, muted) sit below a row's cells, left of a column's. They stay with the places through a swap, and the last one comes and goes with insert and remove.
 
 ## Stagger
 
@@ -237,7 +239,7 @@ arr: fill green stagger                    # 0.1 s apart
 arr: pulse stagger 0.1
 arr: highlight outline stagger 0.2         # one outline per cell, in turn
 arr: fill amber stagger-reverse            # last cell first
-g: remove pop stagger 0.2                  # group members, in listed order
+g: delete pop stagger 0.2                  # group members, in listed order
 ```
 
 - Rows, columns and groups. Order: cell number / the order in `group`.
@@ -284,7 +286,7 @@ a: move 9,2 ease linear    # in-out (default) linear in out spring
 a: rect at 2,3 pop         # fade (default) pop slide typed
 l: arrow from a to b draw  # lines
 t: text "$ ls" at 2,1 typed
-a: remove pop              # exits too
+a: delete pop              # exits too
 ```
 
 - Speeds: instant 0 · vfast 0.25 · fast 0.5 · **normal 1** · slow 2 · vslow 4 s.
@@ -316,7 +318,7 @@ Takes `at` `x` `y` `travel` `zoom` `reset` `speed` `delay` `ease`. Stays until c
 ## Switching off
 
 ```anim
-a: remove
+a: delete
 g: ungroup
 a: detach
 l: static

@@ -141,7 +141,7 @@ The largest value, 8, has 'bubbled' to the end!
 
 ```anim
 arr.3: fill green wiggle speed fast
-i: remove
+i: delete
 ```
 
 </animation>
@@ -238,11 +238,11 @@ a: fill green delay 0.5
 +++
 
 ```anim
-ac: remove
-ad: remove
-bd: remove
-be: remove
-ce: remove
+ac: delete
+ad: delete
+bd: delete
+be: delete
+ce: delete
 auto
 ```
 
@@ -366,7 +366,7 @@ Only **Bob's private key** can unlock the message.
 ```anim
 eve: callout clear
 priv: move lock speed slow front
-lock: remove pop delay 1
+lock: delete pop delay 1
 msg: "Hi Bob" fill green delay 1 pulse
 ```
 
@@ -430,7 +430,7 @@ m1: move +7,+0 speed slow
 The server picks a method and replies with its **certificate**: its **public key**, signed by a certificate authority (CA) that browsers trust. Its **private key** stays on the server.
 
 ```anim
-m1: remove
+m1: delete
 pub: icon(key-round) "Public" at 12.3,0.9 stroke green pop
 priv: icon(key-round) "Private" at 15.3,0.9 stroke red pop
 m2: rect "Certificate" at 11.5,5.5 size 3x0.8 font 0.8 fill teal pop
@@ -463,8 +463,8 @@ check: icon(badge-check) attach left-of m2 stroke green pop
 The browser makes a brand-new random **session key**.
 
 ```anim
-m2: remove
-check: remove
+m2: delete
+check: delete
 sess: icon(key-round) "Session key" at 4.5,2 stroke amber pop
 ```
 
@@ -483,7 +483,7 @@ lock3: icon(lock) attach right-of m3 stroke amber pop delay 1
 ...and sends it. Eve sees it pass, but only the server's **private key** can unlock it.
 
 ```anim
-pubB: remove
+pubB: delete
 m3: move +7,+0 speed slow
 ```
 
@@ -495,8 +495,8 @@ The server unlocks it with its private key. Now both sides have the same session
 
 ```anim
 priv: move lock3 speed slow front
-lock3: remove pop delay 1
-m3: remove delay 1
+lock3: delete pop delay 1
+m3: delete delay 1
 ssk: icon(key-round) "Session key" at 10,2 stroke amber pop delay 1.2
 ```
 
@@ -505,8 +505,8 @@ ssk: icon(key-round) "Session key" at 10,2 stroke amber pop delay 1.2
 The public and private keys have done their job. From here on, everything is locked and unlocked with the session key. This is **symmetric encryption**: much faster than public and private keys.
 
 ```anim
-pub: remove speed slow
-priv: remove speed slow
+pub: delete speed slow
+priv: delete speed slow
 sess: weight 1.5
 ssk: weight 1.5
 ```
@@ -547,7 +547,7 @@ The server unlocks the request with its copy of the session key...
 
 ```anim
 eve: callout clear
-lk4: remove pop
+lk4: delete pop
 req: "GET /balance" fill blue
 ```
 
@@ -556,7 +556,7 @@ req: "GET /balance" fill blue
 ...and locks its response the same way before sending it back.
 
 ```anim
-req: remove
+req: delete
 res: rect "Zq!7x" at 11.5,5.5 size 3x0.8 font 0.8 fill amber pop
 lk5: icon(lock) attach left-of res stroke amber pop
 ```
@@ -572,7 +572,7 @@ res: move -7,+0 speed slow
 The browser unlocks it and shows the page.
 
 ```anim
-lk5: remove pop
+lk5: delete pop
 res: "Balance: $42" fill green pulse
 ```
 
@@ -1198,9 +1198,9 @@ fish: callout "Blub!" below
 ## Gone
 
 ```anim
-fish: remove slide
-dog: remove pop
-pair: remove fade stagger 0.2
+fish: delete slide
+dog: delete pop
+pair: delete fade stagger 0.2
 ```
 
 </animation>
@@ -1782,7 +1782,7 @@ g2: group [a, b]
 +++
 
 ```anim
-g2: remove pop
+g2: delete pop
 ```
 
 </animation>
@@ -1831,10 +1831,10 @@ words: below col gap 0.5 speed slow
 
 ---
 
-## remove
+## delete
 
 ```anim
-arr: remove pop
+arr: delete pop
 ```
 
 </animation>
@@ -1891,7 +1891,7 @@ col: swap 0 2 speed slow
 
 </animation>
 
-## Feature: delete, insert, push, pop
+## Feature: insert and remove
 
 <animation grid="12x6">
 
@@ -1903,12 +1903,12 @@ st: column [4 9] at 10,1.5 size 1.6x0.8 fill teal
 
 ---
 
-## delete
+## remove
 
 `arr.2` slides out below, leaving an empty slot, and the cells after it close it up. `i` stays with place 2.
 
 ```anim
-arr: delete 2
+arr: remove 2
 ```
 
 +++
@@ -1916,7 +1916,7 @@ arr: delete 2
 The first cell: the rest close up from the left.
 
 ```anim
-arr: delete 0 speed slow
+arr: remove 0 speed slow
 ```
 
 ---
@@ -1940,35 +1940,35 @@ arr: insert "x" at 0 speed slow
 
 ---
 
-## push and pop
+## At the end
 
-A slot opens on the end for the new cell; a popped one leaves a slot that closes.
+A slot opens on the end for the new cell; a removed one leaves a slot that closes.
 
 ```anim
-arr: push 8
-st: push 6
+arr: insert 8 at end
+st: insert 6 at end
 ```
 
 +++
 
 ```anim
-arr: pop
-st: pop speed slow
+arr: remove end
+st: remove end speed slow
 ```
 
 +++
 
-Popped empty, a column can be pushed onto again.
+Emptied, a column can be inserted into again.
 
 ```anim
-st: pop
-st: pop delay 0.3
+st: remove end
+st: remove end delay 0.3
 ```
 
 +++
 
 ```anim
-st: push 1
+st: insert 1 at end
 ```
 
 </animation>
@@ -2044,7 +2044,7 @@ a.2: v2 speed slow
 
 ---
 
-## insert and push a var
+## insert a var
 
 The space opens while a copy of `v1` glides to just below it, then slides up into it.
 
@@ -2061,23 +2061,31 @@ a: insert v1 at 1
 +++
 
 ```anim
-a: push v2 speed slow
+a: insert v2 at end speed slow
 ```
 
 ---
 
-## pop into a var
+## remove into a var
 
 The last cell itself drops out and glides onto `v1`, while the space closes behind it.
 
 ```anim
-a: pop v1
+a: remove end into v1
 ```
 
 +++
 
 ```anim
-a: pop v2 speed slow
+a: remove end into v2 speed slow
+```
+
++++
+
+From the middle: the cells after it close up.
+
+```anim
+a: remove 1 into v1
 ```
 
 ---
@@ -2188,14 +2196,14 @@ arr: swap 0 2
 The last index comes and goes with the slot.
 
 ```anim
-arr: push 3
-st: pop
+arr: insert 3 at end
+st: remove end
 ```
 
 +++
 
 ```anim
-arr: delete 0
+arr: remove 0
 ```
 
 ---
@@ -2209,10 +2217,10 @@ total: name clear
 
 +++
 
-Removing a row removes its name and indices.
+Deleting a row deletes its name and indices.
 
 ```anim
-st: remove
+st: delete
 ```
 
 </animation>
@@ -2678,7 +2686,7 @@ g: fill pink stagger 0.3
 +++
 
 ```anim
-g: remove pop stagger 0.2
+g: delete pop stagger 0.2
 ```
 
 </animation>
@@ -2722,12 +2730,12 @@ auto
 +++
 
 ```anim
-c1: remove stagger 0.15
-c2: remove stagger 0.15 delay 1
-c3: remove stagger 0.15 delay 2
-c4: remove stagger 0.15 delay 3
-c5: remove stagger 0.15 delay 4
-c6: remove stagger 0.15 delay 5
+c1: delete stagger 0.15
+c2: delete stagger 0.15 delay 1
+c3: delete stagger 0.15 delay 2
+c4: delete stagger 0.15 delay 3
+c5: delete stagger 0.15 delay 4
+c6: delete stagger 0.15 delay 5
 auto
 ```
 
@@ -2802,10 +2810,10 @@ dr: arrow from 1,3.5 to 11,3.5 draw speed slow
 ## Exits
 
 ```anim
-fd: remove
-pp: remove pop
-sl: remove slide
-dr: remove draw
+fd: delete
+pp: delete pop
+sl: delete slide
+dr: delete draw
 ```
 
 </animation>
@@ -2824,7 +2832,7 @@ t2: text "Hello, world!" at 2,2 align left typed speed slow delay 2
 ## As an exit it un-types
 
 ```anim
-t1: remove typed
+t1: delete typed
 ```
 
 </animation>
@@ -3015,10 +3023,14 @@ vv: name clear
 defaults name "x"
 null: rect at 1,1
 er: row [1 2] at 1,1
-er: delete 5
+er: remove 5
 er: insert 3 at 9
-er: push
-er: delete 1 fill red
+er: remove 1 fill red
+er: delete 0
+er: remove 0 into zz
+er: remove 0 into er.0
+er: insert 3 at front
+dw: remove 0
 ```
 
 </animation>

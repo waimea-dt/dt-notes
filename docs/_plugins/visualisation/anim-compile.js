@@ -325,7 +325,7 @@
       resolveAttachments(shapes)
       for (const group of shapes.values()) {
         if (group.type !== 'group') continue
-        // a row / column emptied by delete / pop: nothing, at its first cell's place
+        // a row / column emptied by remove: nothing, at its first cell's place
         if (!group.members.length) { if (group.layout) Object.assign(group, { w: 0, h: 0, cx: 0, cy: 0 }); continue }
         const b = unionBounds(group.members.map((id) => shapes.get(id)).filter(Boolean), shapes)
         if (group.layout) {
@@ -464,11 +464,13 @@
       if (first?.kind === 'res' && !type) throw new Error(`unknown shape "${first.name}(…)"`)
       const existing = shapes.get(id)
 
-      if (first?.kind === 'word' && first.lower === 'remove') {
+      if (first?.kind === 'word' && first.lower === 'delete') {
         if (!existing) throw new Error(`no shape called "${id}"`)
-        const props = parseProps(tokens, 1, 'remove', shapes)
+        const where = tokens[1]?.kind === 'word' && (/^\d+$/.test(tokens[1].value) || tokens[1].lower === 'end') ? tokens[1].value : null
+        if (existing.layout && where) throw new Error(`"delete" deletes the whole ${existing.layout}: to take one cell out, "${id}: remove ${where}"`)
+        const props = parseProps(tokens, 1, 'delete', shapes)
         const extra = Object.keys(props).filter((key) => !['speed', 'effect', 'delay', 'ease', 'stagger'].includes(key))
-        if (extra.length) throw new Error(`"remove" only takes a speed, an effect, a delay, an ease and a stagger, not "${extra[0]}"`)
+        if (extra.length) throw new Error(`"delete" only takes a speed, an effect, a delay, an ease and a stagger, not "${extra[0]}"`)
         const order = staggerOrder(existing) // taken before its members go
         removeShape(existing, props, meta, warn)
         applyStagger(existing, order, props, meta, warn)
@@ -478,10 +480,7 @@
       // "arr: row 5 3 8 1 at 2,3" (or column): its cells are arr.0, arr.1, …
       if (first?.kind === 'word' && LAYOUT_TYPES.includes(first.lower)) return createLayout(id, first.lower, tokens, existing, meta, warn)
       if (first?.kind === 'word' && first.lower === 'swap') return swapCells(id, existing, tokens, meta, warn)
-      // "pop" on anything else is the effect (which warns that it does nothing on a change)
-      if (first?.kind === 'word' && (['delete', 'insert', 'push'].includes(first.lower) || (first.lower === 'pop' && existing?.layout))) {
-        return editCells(id, existing, first.lower, tokens, meta)
-      }
+      if (first?.kind === 'word' && ['insert', 'remove'].includes(first.lower)) return editCells(id, existing, first.lower, tokens, meta)
 
       const firstWord = first?.kind === 'word' ? first.lower : ''
       if (firstWord === 'copy') {
@@ -605,7 +604,7 @@
       const props = parseProps(tokens, newValue ? 1 : 0, 'change', shapes)
       if (newValue && props.label !== undefined) throw new Error('give one value: a number, "quoted" text or null')
       checkParts(existing, props)
-      if (props.effect) warn(`"${props.effect}" only applies when a shape is created or removed`)
+      if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
       const order = existing.type === 'group' ? staggerOrder(existing) : null
       if (order && takeBareNumber(props)) numberEach(existing.members.map((m) => shapes.get(m)), props, meta, warn)
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
@@ -825,7 +824,7 @@
         cell.layer = props.layer || defaults.layer || 'normal'
         return cell
       })
-      // a blank cell in the row's look, for cells added later (insert, push)
+      // a blank cell in the row's look, for cells added later (insert)
       const blank = { ...structuredClone(cells[0]), label: '', nil: false }
       delete blank.id
       delete blank.uid
@@ -967,58 +966,61 @@
     // is mostly gone, and an arriving one when its slot has mostly opened.
     const THEN = 0.6
 
-    // "arr: delete 2" / "arr: pop" / "arr: insert 7 at 3" / "arr: push 8": a cell leaves or
-    // arrives, sliding out below a row (left of a column) as it fades, and the cells after it close
-    // up or open a space. Ids go with the places, as in a swap: after "delete 2", arr.2 is the
-    // cell that was arr.3, and what's attached to the last place (now gone) is left where it was.
+    // "arr: remove 2" / "arr: remove end" / "arr: insert 7 at 3" / "arr: insert 8 at end": a cell
+    // leaves or arrives, sliding out below a row (left of a column) as it fades, and the cells
+    // after it close up or open a space. Ids go with the places, as in a swap: after "remove 2",
+    // arr.2 is the cell that was arr.3, and what's attached to the last place (now gone) is left
+    // where it was. "insert v1 at …" copies a var's or cell's value in; "remove … into v1" moves
+    // the cell's value out into one.
     function editCells(id, row, word, tokens, meta) {
       if (!row) throw new Error(`no shape called "${id}"`)
-      if (!row.layout) throw new Error(`"${word}" changes the cells of a row or column, and "${id}" isn't one`)
-      const examples = { delete: 'delete 2', insert: 'insert 7 at 3" or "insert v1 at 3', push: 'push 8" or "push v1', pop: 'pop" or "pop v1' }
+      const removing = word === 'remove'
+      if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} a row or column, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
+      const example = removing ? `"${id}: remove 2" or "${id}: remove end into v1"` : `"${id}: insert 7 at 3" or "${id}: insert v1 at end"`
       const cells = row.members.map((m) => shapes.get(m)).filter(Boolean)
       const n = cells.length
       const range = n ? `${id}.0 to ${id}.${n - 1}` : 'none'
-      const index = (token) => (token?.kind === 'word' && /^\d+$/.test(token.value) ? Number(token.value) : undefined)
+      // a cell number, or end: the last cell (remove), or after it (insert)
+      const place = (token) => (token?.kind !== 'word' ? undefined
+        : token.lower === 'end' ? (removing ? n - 1 : n) : /^\d+$/.test(token.value) ? Number(token.value) : undefined)
 
-      // The operands: where, and what goes in (a value, or a copy of a var's or cell's), or for
-      // pop, the var or cell its value goes into
+      // The operands: where, and what goes in (a value, or a copy of a var's or cell's), or the var
+      // or cell the removed value goes into
       let at
       let value
-      let source // a var or cell copied in (insert, push), as it is now
-      let target // the var or cell popped into
-      let next = 1
-      if (word === 'delete') {
-        at = index(tokens[1])
-        if (at === undefined) throw new Error(`"delete" expects a cell number, e.g. "${id}: ${examples.delete}"`)
+      let source // a var or cell copied in (insert), as it is now
+      let target // the var or cell removed into
+      let next
+      if (removing) {
+        at = place(tokens[1])
+        if (at === undefined) throw new Error(`"remove" expects a cell number or end, e.g. ${example}`)
         next = 2
-      } else if (word === 'pop') {
-        at = n - 1
-        if (holderRef(tokens[1])) { target = holderRef(tokens[1], 'pop into'); next = 2 }
+        if (tokens[2]?.kind === 'word' && tokens[2].lower === 'into') {
+          if (!holderRef(tokens[3])) throw new Error(`"into" expects a var or cell, e.g. ${example}`)
+          target = holderRef(tokens[3], 'remove into')
+          next = 4
+        }
       } else {
         value = valueOf(tokens[1])
         if (!value && holderRef(tokens[1])) {
-          source = structuredClone(holderRef(tokens[1], word === 'push' ? 'push' : 'insert'))
+          source = structuredClone(holderRef(tokens[1], 'insert'))
           value = valueIn(source)
         }
-        if (!value) throw new Error(`"${word}" expects a value (a number, "quoted" text or null) or a var, e.g. "${id}: ${examples[word]}"`)
-        next = 2
-        if (word === 'insert') {
-          if (tokens[2]?.lower !== 'at' || index(tokens[3]) === undefined) throw new Error(`"insert" expects a value and where it goes, e.g. "${id}: ${examples.insert}"`)
-          at = index(tokens[3])
-          next = 4
-        } else at = n
+        if (!value) throw new Error(`"insert" expects a value (a number, "quoted" text or null) or a var, e.g. ${example}`)
+        if (tokens[2]?.lower !== 'at' || place(tokens[3]) === undefined) throw new Error(`"insert" expects a value and where it goes (a cell number or end), e.g. ${example}`)
+        at = place(tokens[3])
+        next = 4
       }
       const props = parseProps(tokens, next, 'edit', shapes)
       const moving = source || target // a var's or cell's value comes in or goes out
       const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease', ...(moving ? ['keepStyle'] : [])].includes(key))
-      if (extra === 'keepStyle') throw new Error(`"keep-style" goes with a var's or cell's value, e.g. "${id}: ${word === 'pop' ? 'pop v1' : word === 'push' ? 'push v1' : 'insert v1 at 0'} keep-style"`)
+      if (extra === 'keepStyle') throw new Error(`"keep-style" goes with a var's or cell's value, e.g. "${id}: ${removing ? 'remove end into v1' : 'insert v1 at 0'} keep-style"`)
       if (extra) throw new Error(`"${word}" only takes a speed, a delay and an ease${moving ? ' (and keep-style)' : ''}, not "${extra === 'label' ? 'quoted text' : extra}"`)
 
-      const removing = word === 'delete' || word === 'pop'
-      if (removing && !n) throw new Error(`"${id}" has no cells left to ${word}`)
+      if (removing && !n) throw new Error(`"${id}" has no cells left to remove`)
       if (removing && at >= n) throw new Error(`"${id}" has no cell ${at} (its cells are ${range})`)
-      if (!removing && at > n) throw new Error(`"insert … at" goes from 0 to ${n} (${n}: on the end), and "${id}" has ${n} cell${n === 1 ? '' : 's'}`)
-      if (target?.id === `${id}.${n - 1}`) throw new Error(`"${target.id}" is the cell being popped, so it can't be popped into`)
+      if (!removing && at > n) throw new Error(`"insert … at" goes from 0 to ${n} (or end), and "${id}" has ${n} cell${n === 1 ? '' : 's'}`)
+      if (target && target.uid === cells[at].uid) throw new Error(`"${target.id}" is the cell being removed, so it can't be removed into`)
 
       const speed = speedOf(props)
       const base = props.delay ? props.delay.v * 1000 : 0
@@ -1028,7 +1030,7 @@
 
       // A slot (a muted outline) marks the space while it opens or closes (drawn only during the beat): left
       // where a cell goes out, closing as the cells after it close up; or opening as the cells move
-      // aside, for the new cell to land in. Push and pop open and close one on the end.
+      // aside, for the new cell to land in. At the end, one opens or closes on the end.
       const list = cells.map((cell) => structuredClone(cell))
       let slotCell
       if (removing) {
@@ -1058,11 +1060,12 @@
       // the last index comes with the slot, or goes as it closes
       if (row.indices) syncIndices(row, props, meta, { add: 0, remove: THEN * speed })
 
-      // pop into: the popped cell itself drops out and glides onto the target, which takes its value
-      // as it lands (the target may be another of this row's cells, so after the layout)
+      // remove into: the removed cell itself drops out and glides onto the target, which takes its
+      // value as it lands. The target may be another of this row's cells, which may have moved up a
+      // place, so it's found by its uid after the layout.
       if (target) {
         const out = aside(slotCell)
-        const to = shapes.get(target.id)
+        const to = [...shapes.values()].find((s) => s.uid === target.uid)
         const hops = [{ x: slotCell.x, y: slotCell.y }, { x: slotCell.x + out.x, y: slotCell.y + out.y }, { x: to.x, y: to.y }]
         const changed = landValue(meta, to, valueIn(slotCell), props, 1.2 * speed, keptStyle(props, slotCell))
         fly(meta, slotCell, changed, hops, props, { dur: 1.5 * speed, move: 0.8 })
