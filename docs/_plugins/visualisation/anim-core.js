@@ -17,6 +17,7 @@
   const STROKE = 3                 // normal stroke thickness
   const FONT = 30                  // normal font size
   const PLACE_GAP = 0.25 * CELL    // default gap for above / below / left-of / right-of
+  const GRID_MARGIN = 0.2 * CELL   // drawn round a fixed grid (about 1rem at full width)
   const EDGE_GAP = 0.06 * CELL     // gap between a line end and the edge of its shape
   const HEAD = 0.2 * CELL          // arrowhead length at normal weight
   const CAPTION_MS = 500           // caption transition (kept snappy, whatever the shapes' speed)
@@ -536,9 +537,10 @@
     const fixed = String(gridAttr || '').trim().toLowerCase().match(/^(\d+)\s*x\s*(\d+)$/)
     if (gridAttr && gridAttr !== 'fit' && !fixed) warnings.push(`grid="${gridAttr}" isn't "CxR" or "fit", so 16x9 is used`)
     if (gridAttr !== 'fit') {
+      // the grid, with a margin all round so shapes on (or just over) its edge aren't against the frame
       const cols = fixed ? Math.max(1, +fixed[1]) : 16
       const rows = fixed ? Math.max(1, +fixed[2]) : 9
-      return { x: 0, y: 0, w: cols * CELL, h: rows * CELL, cols, rows }
+      return { x: -GRID_MARGIN, y: -GRID_MARGIN, w: cols * CELL + 2 * GRID_MARGIN, h: rows * CELL + 2 * GRID_MARGIN, cols, rows }
     }
     const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
     beats.forEach(({ state }) => state.forEach((shape) => {
@@ -558,7 +560,7 @@
     const reported = new Set()
     beats.forEach(({ state, step, beat }) => state.forEach((shape) => {
       if (LINE_TYPES.includes(shape.type) || reported.has(shape.uid)) return
-      if (shape.x < 0 || shape.y < 0 || shape.x > viewBox.w || shape.y > viewBox.h) {
+      if (shape.x < 0 || shape.y < 0 || shape.x > viewBox.cols * CELL || shape.y > viewBox.rows * CELL) {
         reported.add(shape.uid)
         const multi = beats.some((b) => b.step === step && b.beat > 0)
         warnings.push(`Step ${step + 1}${multi ? `, beat ${beat + 1}` : ''}: "${shape.id}" is outside the ${viewBox.cols}x${viewBox.rows} grid`)

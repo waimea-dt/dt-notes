@@ -705,18 +705,29 @@
       const w = Math.max(CELL, ...lines.map((line) => textWidth(line, size))) + size * 1.4
       const h = lines.length * lineH + size * 0.75
       const tail = 0.3 * CELL
+      const m = 4
+      // A side with no room for the bubble (a shape at the drawing's edge) flips to the opposite
+      // side, then tries the other two; with no room anywhere it keeps its side.
+      const room = {
+        above: b.y0 - tail - h >= viewBox.y + m,
+        below: b.y1 + tail + h <= viewBox.y + viewBox.h - m,
+        left: b.x0 - tail - w >= viewBox.x + m,
+        right: b.x1 + tail + w <= viewBox.x + viewBox.w - m,
+      }
+      const opposite = { above: 'below', below: 'above', left: 'right', right: 'left' }
+      const across = callout.side === 'above' || callout.side === 'below' ? ['left', 'right'] : ['above', 'below']
+      const side = [callout.side, opposite[callout.side], ...across].find((s) => room[s]) || callout.side
       const cx0 = (b.x0 + b.x1) / 2
       const cy0 = (b.y0 + b.y1) / 2
       let cx = cx0, cy = cy0, tip
-      if (callout.side === 'below') { tip = { x: cx0, y: b.y1 + 4 }; cy = b.y1 + tail + h / 2 }
-      else if (callout.side === 'left') { tip = { x: b.x0 - 4, y: cy0 }; cx = b.x0 - tail - w / 2 }
-      else if (callout.side === 'right') { tip = { x: b.x1 + 4, y: cy0 }; cx = b.x1 + tail + w / 2 }
+      if (side === 'below') { tip = { x: cx0, y: b.y1 + 4 }; cy = b.y1 + tail + h / 2 }
+      else if (side === 'left') { tip = { x: b.x0 - 4, y: cy0 }; cx = b.x0 - tail - w / 2 }
+      else if (side === 'right') { tip = { x: b.x1 + 4, y: cy0 }; cx = b.x1 + tail + w / 2 }
       else { tip = { x: cx0, y: b.y0 - 4 }; cy = b.y0 - tail - h / 2 }
       // Keep the bubble inside the drawing (the tail still points at the shape)
-      const m = 4
       cx = Math.min(viewBox.x + viewBox.w - w / 2 - m, Math.max(viewBox.x + w / 2 + m, cx))
       cy = Math.min(viewBox.y + viewBox.h - h / 2 - m, Math.max(viewBox.y + h / 2 + m, cy))
-      attr(node.bubblePath, 'd', bubblePath(cx, cy, w, h, Math.min(10, h / 3), callout.side, tip))
+      attr(node.bubblePath, 'd', bubblePath(cx, cy, w, h, Math.min(10, h / 3), side, tip))
       node.bubbleText.style.fontSize = `${size}px`
       if (node.bubbleKey !== callout.text) {
         node.bubbleKey = callout.text
@@ -765,7 +776,9 @@
     return { render, clearColours: () => colourCache.clear() }
   }
 
-  function drawDebugGrid(svg, vb) {
+  function drawDebugGrid(svg, view) {
+    // a fixed grid's cells only (not the margin round it); a fitted drawing's whole view
+    const vb = view.cols ? { x: 0, y: 0, w: view.cols * CELL, h: view.rows * CELL } : view
     const g = svg.appendChild(svgEl('g', { class: 'anim-debug-grid' }))
     const c0 = Math.floor(vb.x / CELL)
     const c1 = Math.ceil((vb.x + vb.w) / CELL)

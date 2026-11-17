@@ -126,7 +126,7 @@
     const debug = source.hasAttribute('data-debug')
     const grid = source.dataset.grid
     const fixedGrid = grid !== 'fit' && viewBoxFor(grid, [], [])
-    const centre = fixedGrid && { x: fixedGrid.w / 2, y: fixedGrid.h / 2 }
+    const centre = fixedGrid && { x: fixedGrid.x + fixedGrid.w / 2, y: fixedGrid.y + fixedGrid.h / 2 }
     const { beats, errors, warnings } = compile(steps, { assets, centre })
     const viewBox = viewBoxFor(source.dataset.grid, beats, warnings)
     if (debug) warnOutsideGrid(beats, viewBox, warnings)

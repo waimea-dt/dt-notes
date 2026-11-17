@@ -129,7 +129,14 @@
         const targets = [shape, ...groupMembers(shape)].filter((target) => !signal || LINE_TYPES.includes(target.type))
         if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
         else if (!targets.length) warn(`"${shape.id}" has no lines in it, so "${props.emphasis}" does nothing`)
-        else for (const target of targets) tween(meta, target.uid).effect = props.emphasis
+        else {
+          for (const target of targets) {
+            const record = tween(meta, target.uid)
+            record.effect = props.emphasis
+            record.dur = Math.max(record.dur, speedOf(props)) // a group's members play it too
+            setDelay(meta, target.uid, props)
+          }
+        }
       }
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
 
