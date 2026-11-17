@@ -190,6 +190,9 @@
       help: 'quoted text (e.g. name "total"), optionally then a side (above, below, left-of, right-of), or clear',
     },
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
+    // a value copied or moved (v1: a.1, insert, push, pop into) takes its fill, stroke and colour
+    // with it, rather than taking on the look of where it goes
+    'keep-style': fixed('keepStyle', true, { modes: ['edit', 'defaults'] }),
     null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
     // defaults only
     clear: fixed('reset', true, { modes: ['defaults'] }),

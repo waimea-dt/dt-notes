@@ -1980,6 +1980,7 @@ st: push 1
 A box that holds a value: a number, "text" or null (muted).
 
 ```anim
+defaults corner 0.2
 v1: var 67 at 3,2
 v2: var "Dog" at 6,2 size 1.6x1
 v3: var null at 9,2
@@ -1999,7 +2000,7 @@ v3: 4
 
 ```anim
 v1: null
-v2: null fill amber
+v2: null fill red
 ```
 
 +++
@@ -2009,6 +2010,122 @@ A cell holds values too.
 ```anim
 r: row [1 2 3] at 4,3.5 size 0.8
 r.1: null
+```
+
+</animation>
+
+## Feature: Moving values
+
+<animation grid="14x7">
+
+```anim
+v1: var 7 at 2,6 name "v1" fill teal
+v2: var "Dog" at 10,6 size 1.6x1 name "v2"
+a: row [1 2 3] at 4,2.5 name "a" indices fill blue
+```
+
+---
+
+## Copy into a var or a cell
+
+A copy of `a.0` glides onto `v1`, which takes its value as it lands.
+
+```anim
+v1: a.0
+```
+
++++
+
+And back: `a.2` takes v2's value. The copy turns from v2's look into the row's.
+
+```anim
+a.2: v2 speed slow
+```
+
+---
+
+## insert and push a var
+
+The space opens while a copy of `v1` glides to just below it, then slides up into it.
+
+```anim
+v1: 9
+```
+
++++
+
+```anim
+a: insert v1 at 1
+```
+
++++
+
+```anim
+a: push v2 speed slow
+```
+
+---
+
+## pop into a var
+
+The last cell itself drops out and glides onto `v1`, while the space closes behind it.
+
+```anim
+a: pop v1
+```
+
++++
+
+```anim
+a: pop v2 speed slow
+```
+
+---
+
+## exchange vars
+
+New value for v1
+
+```anim
+v1: "Egg"
+```
+
++++
+
+Copy to v2
+
+```anim
+v2: v1
+```
+
+---
+
+## keep-style
+
+A red value keeps its look as it goes in, so it can be followed.
+
+```anim
+v1: 5 fill red colour white
+```
+
++++
+
+```anim
+a: insert v1 at 0 keep-style
+```
+
++++
+
+```anim
+v2: a.0 keep-style
+```
+
++++
+
+Without it, the box keeps its own look.
+
+```anim
+a.1: v2
 ```
 
 </animation>

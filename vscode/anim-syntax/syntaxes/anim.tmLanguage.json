@@ -158,7 +158,7 @@
     },
     "value": {
       "name": "support.constant.property-value.anim",
-      "match": "(?<![\\w-])(bold|monospace|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|outline|inside|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right|null)(?![\\w-])"
+      "match": "(?<![\\w-])(keep-style|bold|monospace|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|outline|inside|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right|null)(?![\\w-])"
     },
     "colour": {
       "patterns": [

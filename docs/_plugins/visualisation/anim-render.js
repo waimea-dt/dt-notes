@@ -549,12 +549,15 @@
         } else if (b) {
           shape = b
           v = appear(tw?.enter || 'fade', t, b, raw)
-          // a row's cell slides in from beside the row (insert, push)
+          // a row's cell slides in from beside the row (insert, push); solid when a flyer brought
+          // its value there
           if (tw?.offset) { v.dx += tw.offset.x * (1 - t); v.dy += tw.offset.y * (1 - t) }
+          if (tw?.solid) v.opacity = raw > 0 ? 1 : 0
         } else {
           shape = a
           v = appear(tw?.exit || 'fade', 1 - t, a, 1 - raw)
           if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (delete, pop)
+          if (tw?.cut) v.opacity = raw > 0 ? 0 : 1 // a flyer takes over from it (pop into)
         }
         // an arrowhead fades in or out as it's added to or taken off a line
         v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
@@ -598,6 +601,22 @@
         const vias = ea.vias.length === eb.vias.length ? eb.vias.map((q, i) => mix(ea.vias[i], q)) : eb.vias
         item.v.ends = { from: mix(ea.from, eb.from), to: mix(ea.to, eb.to), vias }
       }
+
+      // Flyers: copies of a value gliding between vars and cells, drawn only while the beat plays.
+      // Hop by hop through the first `move` of their time, their look blending from `from`'s to
+      // `to`'s, then fading out (or, with move 1, gone as they arrive, where a cell takes over).
+      for (const flyer of meta.flyers || []) {
+        uids.add(flyer.uid)
+        const easing = easeFn(meta.tweens.get(flyer.uid)?.ease)
+        const raw = clamp01(progress(flyer.uid))
+        const u = clamp01(raw / flyer.move)
+        const k = easing(u)
+        const shape = { ...interpolate(flyer.from, flyer.to, k), ...pointOnHops(flyer.hops, u, easing) }
+        const opacity = flyer.move < 1 ? 1 - clamp01((raw - flyer.move) / (1 - flyer.move)) : raw < 1 ? 1 : 0
+        const v = { opacity, scale: 1, draw: 1, dx: 0, dy: 0, head: 0, label: flyer.from.label, nil: flyer.from.nil, labelOpacity: 1 }
+        items.push({ uid: flyer.uid, shape, v, node: nodes.get(flyer.uid) || makeNode(shape), a: flyer.from, b: flyer.to, t: k, flyer: true })
+      }
+
       for (const [uid, node] of nodes) {
         if (!uids.has(uid)) {
           for (const el of [node.g, node.outline, node.inside, node.pointer, node.badge, node.bubble]) el?.remove()
@@ -609,6 +628,7 @@
       const litA = litFor(A)
       const litB = litFor(B)
       for (const item of items) {
+        if (item.flyer) { item.dimK = 1; continue } // a value on the move is never dimmed
         // each state by the shape's id in it (a swapped cell's id changes)
         const dimA = litA && !litA.has((item.a || item.shape).id) ? 1 : 0
         const dimB = litB && !litB.has((item.b || item.shape).id) ? 1 : 0

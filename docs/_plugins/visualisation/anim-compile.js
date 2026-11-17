@@ -270,7 +270,7 @@
     // Copies the defaults that apply to this type onto a new shape.
     function applyDefaults(shape) {
       for (const [key, value] of Object.entries(defaults)) {
-        if (['speed', 'effect', 'ease', 'stagger'].includes(key)) continue
+        if (['speed', 'effect', 'ease', 'stagger', 'keepStyle'].includes(key)) continue
         if (APPLIES[key] && !APPLIES[key].includes(shape.type)) continue
         const cells = (n) => numberValue(n, undefined, { unit: CELL })
         if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = cells(value.w) / 2; continue }
@@ -598,6 +598,8 @@
         const known = !word || KEYWORDS[word] || RESERVED.has(word)
         throw new Error(known ? `no shape called "${id}" (to create one, put a type after the colon, e.g. "${id}: rect")` : `unknown shape type "${first.value}"`)
       }
+      // "v1: a.1" / "a.2: v2": a copy of another var's or cell's value glides over
+      if (existing.holds && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
       // "v: 123" / "arr.2: null": a new value for a var or a row's / column's cell ("text" is a label)
       const newValue = existing.holds && first?.kind === 'word' ? valueOf(first) : undefined
       const props = parseProps(tokens, newValue ? 1 : 0, 'change', shapes)
@@ -630,6 +632,57 @@
     function setValue(shape, value) {
       shape.label = value.label
       shape.nil = Boolean(value.nil)
+    }
+    const valueIn = (shape) => ({ label: shape.label, nil: shape.nil })
+    // keep-style: the look a value takes with it (not its size, or highlights)
+    const KEPT_STYLE = ['fill', 'stroke', 'colour']
+    const keptStyle = (props, shape) => ((props.keepStyle ?? defaults.keepStyle) ? pick(shape, KEPT_STYLE) : {})
+
+    // A word naming another shape (not a keyword or a value): the var or cell it names, or, with
+    // `use` (what it's for), an error if it isn't one. Without `use`, undefined if it isn't a name.
+    function holderRef(token, use) {
+      if (token?.kind !== 'word' || !ID.test(token.value) || KEYWORDS[token.lower] || RESERVED.has(token.lower)) return undefined
+      const shape = shapes.get(token.value)
+      if (!use) return token.value
+      if (!shape) throw new Error(`unknown word "${token.value}" (and no var or cell has that name to ${use})`)
+      if (!shape.holds) throw new Error(`"${token.value}" doesn't hold a value, so there's nothing to ${use}: use a var or a row's / column's cell`)
+      return shape
+    }
+
+    // A flyer: a copy that exists only while the beat plays, gliding hop by hop through `hops` in
+    // the first `move` of its time (then fading out), or (move 1) vanishing as it arrives, where
+    // something else takes over. Its look blends from `from`'s to `to`'s on the way.
+    function fly(meta, from, to, hops, props, { after = 0, dur, move = 1 }) {
+      const n = ++uid
+      const look = (shape) => ({ ...structuredClone(shape), id: `~flyer${n}`, uid: n, attach: null, hl: null, callout: null, layer: 'front' })
+      meta.flyers = [...(meta.flyers || []), { uid: n, from: look(from), to: look(to), hops, move }]
+      setDelay(meta, n, props)
+      Object.assign(tween(meta, n), { dur, delay: (props.delay ? props.delay.v * 1000 : 0) + after })
+    }
+
+    // A var's or cell's new value (and with keep-style, the look it came with), crossfading in
+    // over `land` ms (the moment a flyer lands)
+    function landValue(meta, target, value, props, land, style = {}) {
+      const changed = { ...structuredClone(target), ...style }
+      setValue(changed, value)
+      shapes.set(changed.id, changed)
+      const speed = speedOf(props)
+      setDelay(meta, changed.uid, props)
+      const record = tween(meta, changed.uid)
+      record.dur = Math.max(record.dur, 0.5 * speed)
+      record.delay = Math.max(record.delay, (props.delay ? props.delay.v * 1000 : 0) + land - 0.25 * speed)
+      return changed
+    }
+
+    // "v1: a.1": a copy of a.1 glides onto v1, which takes its value as it lands
+    function assignValue(target, source, tokens, meta, warn) {
+      const props = parseProps(tokens, 1, 'edit', shapes)
+      const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease', 'keepStyle'].includes(key))
+      if (extra) throw new Error(`copying a value only takes a speed, a delay, an ease and keep-style, not "${extra === 'label' ? 'quoted text' : extra}"`)
+      if (source.id === target.id) return warn(`"${target.id}" already holds its own value`)
+      const speed = speedOf(props)
+      const changed = landValue(meta, target, valueIn(source), props, speed, keptStyle(props, source))
+      fly(meta, source, changed, [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], props, { dur: 1.25 * speed, move: 0.8 })
     }
 
     // A change's timing, starting `after` ms into it (after any delay)
@@ -670,7 +723,7 @@
         timeAt(meta, old.uid, props)
         return
       }
-      const text = old ? structuredClone(old) : { ...baseShape('text'), id: nameId, uid: ++uid, font: 0.8, layer: owner.layer, part: owner.id }
+      const text = old ? structuredClone(old) : { ...baseShape('text'), id: nameId, uid: ++uid, font: 1.2, layer: owner.layer, part: owner.id }
       text.label = name.text
       text.attach = { ref: owner.id, side: name.side || old?.attach?.side || (owner.layout === 'column' ? 'above' : 'left-of'), gap: 0.2 * CELL }
       Object.assign(text, attachPos(text, owner, text.attach))
@@ -695,8 +748,8 @@
           continue
         }
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
-        // cell slides in or out of it
-        const text = old || { ...baseShape('text'), id: indexId, uid: ++uid, label: String(k), font: 0.88, colour: 'muted', layer: row.layer, part: row.id }
+        // cell slides in or out of it; at the back, so a sliding cell passes over it
+        const text = old || { ...baseShape('text'), id: indexId, uid: ++uid, label: String(k), font: 0.88, colour: 'muted', layer: 'back', part: row.id }
         const cell = shapes.get(`${row.id}.${k}`)
         const place = { ...cell, x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }
         const p = placeNextTo(text, place, across ? 'below' : 'left-of', (across ? 0.1 : 0.2) * CELL)
@@ -921,15 +974,18 @@
     function editCells(id, row, word, tokens, meta) {
       if (!row) throw new Error(`no shape called "${id}"`)
       if (!row.layout) throw new Error(`"${word}" changes the cells of a row or column, and "${id}" isn't one`)
-      const examples = { delete: 'delete 2', insert: 'insert 7 at 3', push: 'push 8', pop: 'pop' }
+      const examples = { delete: 'delete 2', insert: 'insert 7 at 3" or "insert v1 at 3', push: 'push 8" or "push v1', pop: 'pop" or "pop v1' }
       const cells = row.members.map((m) => shapes.get(m)).filter(Boolean)
       const n = cells.length
       const range = n ? `${id}.0 to ${id}.${n - 1}` : 'none'
       const index = (token) => (token?.kind === 'word' && /^\d+$/.test(token.value) ? Number(token.value) : undefined)
 
-      // The operands: where, and what goes in
+      // The operands: where, and what goes in (a value, or a copy of a var's or cell's), or for
+      // pop, the var or cell its value goes into
       let at
       let value
+      let source // a var or cell copied in (insert, push), as it is now
+      let target // the var or cell popped into
       let next = 1
       if (word === 'delete') {
         at = index(tokens[1])
@@ -937,9 +993,14 @@
         next = 2
       } else if (word === 'pop') {
         at = n - 1
+        if (holderRef(tokens[1])) { target = holderRef(tokens[1], 'pop into'); next = 2 }
       } else {
         value = valueOf(tokens[1])
-        if (!value) throw new Error(`"${word}" expects a value (a number, "quoted" text or null), e.g. "${id}: ${examples[word]}"`)
+        if (!value && holderRef(tokens[1])) {
+          source = structuredClone(holderRef(tokens[1], word === 'push' ? 'push' : 'insert'))
+          value = valueIn(source)
+        }
+        if (!value) throw new Error(`"${word}" expects a value (a number, "quoted" text or null) or a var, e.g. "${id}: ${examples[word]}"`)
         next = 2
         if (word === 'insert') {
           if (tokens[2]?.lower !== 'at' || index(tokens[3]) === undefined) throw new Error(`"insert" expects a value and where it goes, e.g. "${id}: ${examples.insert}"`)
@@ -948,13 +1009,16 @@
         } else at = n
       }
       const props = parseProps(tokens, next, 'edit', shapes)
-      const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease'].includes(key))
-      if (extra) throw new Error(`"${word}" only takes a speed, a delay and an ease, not "${extra === 'label' ? 'quoted text' : extra}"`)
+      const moving = source || target // a var's or cell's value comes in or goes out
+      const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease', ...(moving ? ['keepStyle'] : [])].includes(key))
+      if (extra === 'keepStyle') throw new Error(`"keep-style" goes with a var's or cell's value, e.g. "${id}: ${word === 'pop' ? 'pop v1' : word === 'push' ? 'push v1' : 'insert v1 at 0'} keep-style"`)
+      if (extra) throw new Error(`"${word}" only takes a speed, a delay and an ease${moving ? ' (and keep-style)' : ''}, not "${extra === 'label' ? 'quoted text' : extra}"`)
 
       const removing = word === 'delete' || word === 'pop'
       if (removing && !n) throw new Error(`"${id}" has no cells left to ${word}`)
       if (removing && at >= n) throw new Error(`"${id}" has no cell ${at} (its cells are ${range})`)
       if (!removing && at > n) throw new Error(`"insert … at" goes from 0 to ${n} (${n}: on the end), and "${id}" has ${n} cell${n === 1 ? '' : 's'}`)
+      if (target?.id === `${id}.${n - 1}`) throw new Error(`"${target.id}" is the cell being popped, so it can't be popped into`)
 
       const speed = speedOf(props)
       const base = props.delay ? props.delay.v * 1000 : 0
@@ -970,13 +1034,14 @@
       if (removing) {
         freezeEndsAttachedTo(`${id}.${n - 1}`) // the last place goes
         const [gone] = list.splice(at, 1)
-        Object.assign(tween(meta, gone.uid), { exit: 'fade', offset: aside(gone) })
+        if (target) tween(meta, gone.uid).cut = true // it flies to the target instead (below)
+        else Object.assign(tween(meta, gone.uid), { exit: 'fade', offset: aside(gone) })
         timing(gone.uid, 0)
         list.slice(at).forEach((cell) => timing(cell.uid, THEN * speed))
         slotCell = gone
       } else {
         const blank = row.cell || { ...baseShape('rect') }
-        const cell = { ...structuredClone(blank), uid: ++uid, holds: true, hl: null, callout: null }
+        const cell = { ...structuredClone(blank), ...(source ? keptStyle(props, source) : {}), uid: ++uid, holds: true, hl: null, callout: null }
         setValue(cell, value)
         list.splice(at, 0, cell)
         list.slice(at + 1).forEach((other) => timing(other.uid, 0))
@@ -992,6 +1057,25 @@
       }
       // the last index comes with the slot, or goes as it closes
       if (row.indices) syncIndices(row, props, meta, { add: 0, remove: THEN * speed })
+
+      // pop into: the popped cell itself drops out and glides onto the target, which takes its value
+      // as it lands (the target may be another of this row's cells, so after the layout)
+      if (target) {
+        const out = aside(slotCell)
+        const to = shapes.get(target.id)
+        const hops = [{ x: slotCell.x, y: slotCell.y }, { x: slotCell.x + out.x, y: slotCell.y + out.y }, { x: to.x, y: to.y }]
+        const changed = landValue(meta, to, valueIn(slotCell), props, 1.2 * speed, keptStyle(props, slotCell))
+        fly(meta, slotCell, changed, hops, props, { dur: 1.5 * speed, move: 0.8 })
+      }
+
+      // A copy of a var or cell glides to just outside the opening slot (its look turning into the
+      // row's on the way), then the new cell, solid from the start, slides in from there
+      if (source) {
+        tween(meta, slotCell.uid).solid = true
+        const out = aside(slotCell)
+        const place = { x: row.x + slotCell.attach.dx, y: row.y + slotCell.attach.dy }
+        fly(meta, source, slotCell, [{ x: source.x, y: source.y }, { x: place.x + out.x, y: place.y + out.y }], props, { dur: THEN * speed })
+      }
 
       // The slot's place in the row (a removed cell's from before, a new cell's from after the
       // layout), and its time: both parts, start to end

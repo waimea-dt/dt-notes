@@ -201,6 +201,20 @@ v1: null
 
 - A var is a rect (size, fill and the rest work), whose value goes straight after `var`.
 
+## Moving values
+
+```anim
+v1: a.1                            # a copy of a.1 glides onto v1, which takes its value
+a.2: v2                            # and back: vars and cells both ways
+a: insert v1 at 3                  # a copy of v1 glides to the opening slot and slides in
+a: push v2
+a: pop v2                          # the last cell glides onto v2, the slot closes
+```
+
+- Values are copied: v1 keeps its own, and changing it later doesn't change the cell.
+- The copy's look turns into the target's on the way: the value moves, the box keeps its look. It takes the line's `speed`, `delay` and `ease`.
+- `keep-style` (on any of these, or `defaults keep-style`): the value takes its fill, stroke and colour with it, to track it (`a: insert v1 at 3 keep-style`). Not its size or highlights. `a: fill …` resets a row.
+
 ## Names and indices
 
 ```anim
