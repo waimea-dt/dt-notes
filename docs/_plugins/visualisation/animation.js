@@ -46,20 +46,22 @@
   // Transparent icon buttons styled like reveal.js's controls (animation.css): chevrons are drawn in
   // CSS, other icons use the shared --butt-icon-* masks. No type attribute: Docsify's core CSS
   // styles button[type].
-  function createButton(className, label) {
+  function createButton(className, label, key) {
     const button = document.createElement('button')
     button.className = `anim-ctrl ${className}`
-    setButtonLabel(button, label)
+    setButtonLabel(button, label, key)
     return button
   }
 
-  function setButtonLabel(button, label) {
+  // The tooltip names the button's key, e.g. "Next (Right)"
+  function setButtonLabel(button, label, key) {
     button.setAttribute('aria-label', label)
-    button.title = label
+    button.setAttribute('aria-keyshortcuts', key.replace(/^(Left|Right)$/, 'Arrow$1'))
+    button.title = `${label} (${key})`
   }
 
   // The keyboard shortcuts summary (?), styled like reveal.js's help overlay.
-  function buildHelp(widget, hasNotes) {
+  function buildHelp(widget) {
     const rows = [
       ['→ , N , Space', 'Next step'],
       ['← , P , Shift Space', 'Previous step'],
@@ -67,7 +69,7 @@
       ['End', 'Last step'],
       ['A', 'Play / pause'],
       ['F', 'Full screen'],
-      ...(hasNotes ? [['S', 'Teacher notes']] : []),
+      ['S', 'Speaker notes'],
       ['?', 'Show or hide these shortcuts'],
       ['Esc', 'Close this / exit full screen'],
     ]
@@ -164,6 +166,7 @@
     const caption = widget.appendChild(document.createElement('div'))
     caption.className = 'anim-caption'
     caption.setAttribute('aria-live', 'polite')
+    caption.title = 'F, Full screen\nS, Speaker notes\n?, Help' // the keys with no button
     const pages = steps.map((step) => {
       const page = caption.appendChild(document.createElement('div'))
       page.className = 'anim-page'
@@ -187,13 +190,13 @@
     // full screen (F) and the shortcuts summary (?) are keyboard-only.
     const controls = widget.appendChild(document.createElement('div'))
     controls.className = 'anim-controls'
-    const rewind = controls.appendChild(createButton('anim-rewind anim-chevron', 'Back to the start'))
+    const rewind = controls.appendChild(createButton('anim-rewind anim-chevron', 'Restart', 'Home'))
     rewind.appendChild(document.createElement('span')).className = 'anim-chevron-bar'
-    const prev = controls.appendChild(createButton('anim-prev anim-chevron', 'Back'))
-    const play = controls.appendChild(createButton('anim-play anim-chevron', 'Play'))
+    const prev = controls.appendChild(createButton('anim-prev anim-chevron', 'Previous', 'Left'))
+    const play = controls.appendChild(createButton('anim-play anim-chevron', 'Play', 'A'))
     play.appendChild(document.createElement('span')).className = 'anim-chevron-bar'
     play.appendChild(document.createElement('span')).className = 'anim-chevron-bar anim-pause-bar'
-    const next = controls.appendChild(createButton('anim-next anim-chevron', 'Next'))
+    const next = controls.appendChild(createButton('anim-next anim-chevron', 'Next', 'Right'))
     const hasNotes = steps.some((step) => step.notes)
 
     const progress = widget.appendChild(document.createElement('div'))
@@ -470,7 +473,7 @@
       setWaiting(false)
       clearTimeout(playTimer)
       widget.classList.remove('is-playing')
-      setButtonLabel(play, 'Play')
+      setButtonLabel(play, 'Play', 'A')
     }
 
     function schedule(ms) {
@@ -509,7 +512,7 @@
     function startPlaying({ waiting = false, holdFirst = false } = {}) {
       playing = true
       widget.classList.add('is-playing')
-      setButtonLabel(play, 'Pause')
+      setButtonLabel(play, 'Pause', 'A')
       if (waiting) return schedule(Infinity)
       // autoplay: show where it starts first (after the intro, if it's playing)
       if (holdFirst) return (intro || Promise.resolve()).then(() => { if (playing) schedule(holdAfter(current)) })
@@ -588,7 +591,7 @@
       userJump(Math.round(fraction * last))
     })
     const toggleNotes = () => { if (hasNotes) notesPanel.hidden = !notesPanel.hidden }
-    const help = buildHelp(widget, hasNotes)
+    const help = buildHelp(widget)
 
     // Keys, as on slides: → N Space next, ← P Shift+Space back, Home / End, A (play), F, S, ? and Esc.
     widget.addEventListener('keydown', (event) => {
