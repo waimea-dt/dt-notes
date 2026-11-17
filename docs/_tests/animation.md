@@ -1089,6 +1089,124 @@ mac2: size 1
 
 </animation>
 
+### Images
+
+Scratch sprites: placing, sizing, turning, moving along paths, and the extras that work on any shape.
+
+<animation grid="14x7">
+
+## Placed and sized
+
+A box from `size` (or `width` / `height`): the image fits inside it, keeping its proportions.
+
+```anim
+cat: image(../_assets/scratch/sprites/cat.svg) "cat" at 2,2 pop
+dog: image(../_assets/scratch/sprites/dog.svg) "dog" right-of cat gap 1 size 1.5
+fish: image(../_assets/scratch/sprites/fish.svg) at 2,5.5 size 2x1
+rocket: image(../_assets/scratch/sprites/rocket1.svg) at 12.5,5 size 1x2 stroke muted dashed
+earth: image(../_assets/scratch/sprites/earth.svg) at 10,2 size 1.5
+```
+
+---
+
+## Resized
+
+```anim
+cat: size 2
+dog: width +1
+fish: height 2 delay 0.3
+rocket: width 2
+```
+
+---
+
+## Turned and scaled
+
+```anim
+rocket: angle 45
+earth: angle +180 scale 1.4 speed slow
+fish: angle -20
+```
+
+---
+
+## Moving
+
+```anim
+cat: move 6,4 via 4,6.5 speed slow
+dog: move 7,1.5 ease spring
+```
+
++++
+
+```anim
+fish: travel 4,4 6,6 2,5.5
+```
+
+---
+
+## Following a path
+
+The bug ends on the earth's centre, then comes back.
+
+```anim
+path: curve from cat to earth via 9,6.5 dashed
+bug: image(../_assets/scratch/sprites/bug1.svg) at cat size 0.8 front
+```
+
++++
+
+```anim
+bug: follow path speed vslow
+```
+
++++
+
+```anim
+bug: follow-reverse path speed slow
+```
+
+---
+
+## Attached, copied and grouped
+
+```anim
+star: image(../_assets/scratch/sprites/star.svg) size 0.7 attach above earth
+earth: move 10,4.2 speed slow
+```
+
++++
+
+```anim
+bug2: copy bug move 2,2.5 via 4,1
+pair: group [cat bug]
+pair: move -2,+0
+```
+
+---
+
+## Emphasis, highlights and callouts
+
+```anim
+cat: pulse
+dog: wobble
+earth: highlight outline
+rocket: highlight inside
+fish: callout "Blub!" below
+```
+
+---
+
+## Gone
+
+```anim
+fish: remove slide
+dog: remove pop
+pair: remove fade stagger 0.2
+```
+
+</animation>
+
 ### icon
 
 <animation grid="12x3">
