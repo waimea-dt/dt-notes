@@ -7,7 +7,7 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, FLOWS, resolveEnds, boxCentre, PLACE_GAP,
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, SIGNALS,
-    parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom } = window.Anim
+    parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …) and their index labels (id.index.0, …), and the name (id.name)
@@ -644,25 +644,28 @@
       return shape
     }
 
-    // A flyer: a copy that exists only while the beat plays, gliding hop by hop through `hops` in
-    // the first `move` of its time (then fading out), or (move 1) vanishing as it arrives, where
+    // A flyer: a copy that exists only while the beat plays, gliding hop by hop through `hops` to
+    // arrive `arrive` ms in (after the line's delay). It then lingers where it landed, fading out
+    // (it moves for flyMove of its time), or with linger false vanishes as it arrives, where
     // something else takes over. Its look blends from `from`'s to `to`'s on the way.
-    function fly(meta, from, to, hops, props, { after = 0, dur, move = 1 }) {
+    function fly(meta, from, to, hops, props, { arrive, linger = true }) {
       const n = ++uid
+      const move = linger ? C.flyMove : 1
       const look = (shape) => ({ ...structuredClone(shape), id: `~flyer${n}`, uid: n, attach: null, hl: null, callout: null, layer: 'front' })
       meta.flyers = [...(meta.flyers || []), { uid: n, from: look(from), to: look(to), hops, move }]
-      schedule(meta, n, props, { dur, after })
+      schedule(meta, n, props, { dur: arrive / move })
     }
 
-    // A var's or cell's new value (and with keep-style, the look it came with), crossfading in
-    // over `land` ms (the moment a flyer lands)
-    function landValue(meta, target, value, props, land, style = {}) {
-      const changed = { ...structuredClone(target), ...style }
-      setValue(changed, value)
+    // A value flown from `source` (a var or cell) along `hops` into `target`, a var or cell that
+    // takes it as the flyer lands, `arrive` ms in: crossfading in, centred on the landing, and with
+    // keep-style taking the look it came with.
+    function flyValue(meta, source, target, hops, props, arrive) {
+      const changed = { ...structuredClone(target), ...keptStyle(props, source) }
+      setValue(changed, valueIn(source))
       shapes.set(changed.id, changed)
-      const speed = speedOf(props)
-      schedule(meta, changed.uid, props, { dur: 0.5 * speed, after: land - 0.25 * speed })
-      return changed
+      const fade = C.crossfade * speedOf(props)
+      schedule(meta, changed.uid, props, { dur: fade, after: arrive - fade / 2 })
+      fly(meta, source, changed, hops, props, { arrive })
     }
 
     // "v1: a.1": a copy of a.1 glides onto v1, which takes its value as it lands
@@ -671,9 +674,7 @@
       const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease', 'keepStyle'].includes(key))
       if (extra) throw new Error(`copying a value only takes a speed, a delay, an ease and keep-style, not "${extra === 'label' ? 'quoted text' : extra}"`)
       if (source.id === target.id) return warn(`"${target.id}" already holds its own value`)
-      const speed = speedOf(props)
-      const changed = landValue(meta, target, valueIn(source), props, speed, keptStyle(props, source))
-      fly(meta, source, changed, [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], props, { dur: 1.25 * speed, move: 0.8 })
+      flyValue(meta, source, target, [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], props, C.arrive * speedOf(props))
     }
 
     // A var's / row's / column's name tag, and a row's / column's cell numbers (indices), are text
@@ -904,7 +905,7 @@
 
       // Neighbours just pass each other; further apart, they clear the cells in between
       const across = row.layout === 'row'
-      const lift = (Math.abs(i - j) > 1 ? 1.1 : 0.6) * Math.max(...[a, b].map((cell) => (across ? cell.h : cell.w)))
+      const lift = C.swapLift[Math.abs(i - j) > 1 ? 'far' : 'near'] * Math.max(...[a, b].map((cell) => (across ? cell.h : cell.w)))
       const moves = [[a, b], [b, a]].map(([cell, other]) => {
         const moved = structuredClone(cell)
         moved.id = other.id
@@ -932,10 +933,6 @@
       })
       row.members = cells.map((cell) => cell.id)
     }
-
-    // When the second part of a cell edit starts: the cells closing up start when the leaving one
-    // is mostly gone, and an arriving one when its slot has mostly opened.
-    const THEN = 0.6
 
     // "arr: remove 2" / "arr: remove end" / "arr: insert 7 at 3" / "arr: insert 8 at end": a cell
     // leaves or arrives, sliding out below a row (left of a column) as it fades, and the cells
@@ -993,9 +990,12 @@
       if (target && target.uid === cells[at].uid) throw new Error(`"${target.id}" is the cell being removed, so it can't be removed into`)
 
       const speed = speedOf(props)
+      // the second of the two moves (closing up, or sliding in) starts when the leaving cell is
+      // mostly gone, or the arriving one's slot has mostly opened
+      const then = C.then * speed
       const timing = (uid, after) => schedule(meta, uid, props, { after })
       const across = row.layout === 'row'
-      const aside = (cell) => (across ? { x: 0, y: 1.2 * cell.h } : { x: -1.2 * cell.w, y: 0 }) // where a cell comes from / goes to
+      const aside = (cell) => (across ? { x: 0, y: C.aside * cell.h } : { x: -C.aside * cell.w, y: 0 }) // where a cell comes from / goes to
 
       // A slot (a muted outline) marks the space while it opens or closes (drawn only during the beat): left
       // where a cell goes out, closing as the cells after it close up; or opening as the cells move
@@ -1008,7 +1008,7 @@
         if (target) tween(meta, gone.uid).cut = true // it flies to the target instead (below)
         else Object.assign(tween(meta, gone.uid), { exit: 'fade', offset: aside(gone) })
         timing(gone.uid, 0)
-        list.slice(at).forEach((cell) => timing(cell.uid, THEN * speed))
+        list.slice(at).forEach((cell) => timing(cell.uid, then))
         slotCell = gone
       } else {
         const blank = row.cell || { ...baseShape('rect') }
@@ -1017,7 +1017,7 @@
         list.splice(at, 0, cell)
         list.slice(at + 1).forEach((other) => timing(other.uid, 0))
         Object.assign(tween(meta, cell.uid), { enter: 'fade', offset: aside(cell) })
-        timing(cell.uid, THEN * speed)
+        timing(cell.uid, then) // when a flyer brings a var's value (below), as it arrives
         slotCell = cell
       }
       for (const cell of cells) shapes.delete(cell.id)
@@ -1027,7 +1027,7 @@
         shapes.set(cell.id, cell)
       }
       // the last index comes with the slot, or goes as it closes
-      if (row.indices) syncIndices(row, props, meta, { add: 0, remove: THEN * speed })
+      if (row.indices) syncIndices(row, props, meta, { add: 0, remove: then })
 
       // remove into: the removed cell itself drops out and glides onto the target, which takes its
       // value as it lands. The target may be another of this row's cells, which may have moved up a
@@ -1036,8 +1036,7 @@
         const out = aside(slotCell)
         const to = [...shapes.values()].find((s) => s.uid === target.uid)
         const hops = [{ x: slotCell.x, y: slotCell.y }, { x: slotCell.x + out.x, y: slotCell.y + out.y }, { x: to.x, y: to.y }]
-        const changed = landValue(meta, to, valueIn(slotCell), props, 1.2 * speed, keptStyle(props, slotCell))
-        fly(meta, slotCell, changed, hops, props, { dur: 1.5 * speed, move: 0.8 })
+        flyValue(meta, slotCell, to, hops, props, C.arriveOut * speed)
       }
 
       // A copy of a var or cell glides to just outside the opening slot (its look turning into the
@@ -1046,16 +1045,16 @@
         tween(meta, slotCell.uid).solid = true
         const out = aside(slotCell)
         const place = { x: row.x + slotCell.attach.dx, y: row.y + slotCell.attach.dy }
-        fly(meta, source, slotCell, [{ x: source.x, y: source.y }, { x: place.x + out.x, y: place.y + out.y }], props, { dur: THEN * speed })
+        fly(meta, source, slotCell, [{ x: source.x, y: source.y }, { x: place.x + out.x, y: place.y + out.y }], props, { arrive: then, linger: false })
       }
 
       // The slot's place in the row (a removed cell's from before, a new cell's from after the
       // layout), and its time: both parts, start to end
       const slot = {
-        uid: ++uid, ref: id, across, closing: removing, then: THEN / (1 + THEN),
+        uid: ++uid, ref: id, across, closing: removing, then: C.then / (1 + C.then),
         dx: slotCell.attach.dx, dy: slotCell.attach.dy, w: slotCell.w, h: slotCell.h, corner: slotCell.corner || 0,
       }
-      schedule(meta, slot.uid, props, { dur: (1 + THEN) * speed })
+      schedule(meta, slot.uid, props, { dur: speed + then })
       meta.slots = [...(meta.slots || []), slot]
     }
 

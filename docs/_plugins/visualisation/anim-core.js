@@ -26,6 +26,19 @@
   // speed <word | seconds>: how long a line's change takes
   const SPEEDS = { instant: 0, vfast: 250, fast: 500, normal: 1000, slow: 2000, vslow: 4000 }
   const NORMAL_MS = SPEEDS.normal
+
+  // How a row's / column's edits and a value on the move play out. Times are shares of the line's
+  // speed; distances are shares of a cell's size.
+  const CHOREOGRAPHY = {
+    then: 0.6,        // insert / remove are two moves in turn: the second starts this far in
+    aside: 1.2,       // a cell slides in from / out to this far below a row (left of a column)
+    swapLift: { near: 0.6, far: 1.1 }, // how far a swapped cell bows out (neighbours / further apart)
+    arrive: 1,        // a value copied to a var or cell (v1: a.1) lands after this
+    arriveOut: 1.2,   // a cell removed into a var drops out, then lands after this
+    flyMove: 0.8,     // a flyer moves for this share of its time, then fades out where it landed
+    crossfade: 0.5,   // the value it brings crossfades in over this, centred on its landing
+    slotFade: 0.15,   // a slot fades in or out over this share of its time
+  }
   const EFFECTS = ['fade', 'pop', 'draw', 'slide', 'typed']
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
@@ -598,7 +611,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, COLOURS, EASES, FLOWS,
+  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
     FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LAYOUT_TYPES, LINE_STARTS, LINE_TYPES, NORMAL_MS,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     SIGNALS, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,

@@ -7,7 +7,7 @@
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
-    MONO_FONT, measure, mergeBoxes, pointAt } = window.Anim
+    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -669,10 +669,10 @@
         if (slot.closing) {
           const u = clamp01(ease(clamp01((raw - slot.then) / (1 - slot.then))))
           size = 1 - u
-          opacity = clamp01(raw / 0.15) * (1 - u)
+          opacity = clamp01(raw / CHOREOGRAPHY.slotFade) * (1 - u)
         } else {
           size = clamp01(ease(clamp01(raw / (1 - slot.then))))
-          opacity = size * (1 - clamp01((raw - 0.85) / 0.15))
+          opacity = size * (1 - clamp01((raw - (1 - CHOREOGRAPHY.slotFade)) / CHOREOGRAPHY.slotFade))
         }
         let el = slotNodes.get(slot.uid)
         if (!el) slotNodes.set(slot.uid, (el = slotLayer.appendChild(svgEl('rect', { class: 'anim-slot' }))))
