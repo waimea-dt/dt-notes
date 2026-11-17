@@ -4,7 +4,7 @@ Step-by-step animated explanations from `<animation>` blocks. Full syntax: `docs
 
 Click an animation to give it focus, then use ← / → to step and `F` for full screen.
 
-## Bubble Sort
+## Examples of Use
 
 <animation grid="12x5">
 
@@ -146,7 +146,6 @@ i: remove
 
 </animation>
 
-## Travelling Salesperson
 
 <animation>
 
@@ -274,7 +273,6 @@ Ask: how many different routes are there from A? (4 × 3 × 2 × 1 = 24.)
 
 </animation>
 
-## Public-Key Encryption
 
 <animation grid="16x8">
 
@@ -393,7 +391,6 @@ Ask: what would Bob need to do so Alice could also receive secret replies? (Alic
 
 </animation>
 
-## HTTPS: TLS Handshake
 
 <animation grid="16x8">
 
@@ -600,273 +597,167 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 
 ## Feature Tests
 
-### Shapes, labels and colours
+### Steps, beats and notes
 
-<animation grid="12x4">
+<animation grid="12x3">
+
+# The title stays fixed
+
+Step 1's caption.
+
+```anim
+a: rect "a" at 2,2
+```
+
+---
+
+## Step 2
+
+`+++` adds a beat: more caption and scene.
+
+```anim
+a: move 6,2
+```
+
++++
+
+The second beat.
+
+```anim
+a: fill green
+```
+
+Note:
+Teacher notes for step 2 (press S).
+
+---
+
+## Step 2
+
+Same heading, so only the text changes. No scene.
+
+</animation>
+
+### Grid: fit
+
+<animation grid="fit">
+
+```anim
+a: rect "A" at 3,3
+b: rect "B" at 6,3
+l: arrow from a to b "fit"
+```
+
+</animation>
+
+### Debug
+
+Grid numbers, ids and warnings.
+
+<animation grid="10x3" debug>
+
+```anim
+a: rect "a" at 2,2
+b: circle "b" at 5,2
+far: rect "far" at 12,2
+a: fill blue pop
+```
+
+</animation>
+
+### Comments and multi-line commands
+
+`one` and `two` should look the same.
+
+<animation grid="12x3">
 
 ```anim
 # a whole-line comment
-r: rect "rect" at 2,2 size 2x1 corner 0.15 dotted   # a comment after a command
-c: circle "circle" at 5,2 radius 0.8 fill blue
-t: text "text, left" at 8,1 align left colour theme
-b: text "bold, 1.5x" at 8,3 font 1.5 bold
-i: icon(laptop) "icon" at 11,2
-hx: text "C# code" at 3,4 colour #f80   # a hex colour and a "# " in a label are kept
+one: rect "one line" at 3,2 size 3x0.8 font 0.8 fill blue corner 0.2   # a comment after a command
+
+two:
+    rect "laid out"     # comments still work
+    at 9,2
+    size 3x0.8
+
+    font 0.8            # and blank lines inside
+    fill blue
+    corner 0.2
+
+hex: text "C# and #f80" at 6,3 colour #f80   # a hex colour and a "#" in a label are kept
 ```
 
 ---
 
-## Colour and label changes
-
-Fills tween; labels cross-fade.
+## Changes too
 
 ```anim
-r: fill green "done" solid
-c: fill pink stroke red weight 2 colour yellow   # colour: the label
-t: colour amber "changed"
-i: stroke blue
+two:
+    move 9,1
+    fill green
+one: move 3,1 fill green
 ```
 
 ---
 
-## Dashed, thick and rounded
+## A whole block indented
 
-`r: corner 0.5` turns the rounded rect into a pill.
+Each line is indented the same, so each is its own command.
 
 ```anim
-r: corner 0.5
-c: size 1 weight 3
+    one: fill amber
+    two: fill amber
 ```
 
 </animation>
 
-### Line styles and flow
+### Autoplay and loop
 
-<animation grid="12x5">
-
-## Solid
-
-```anim
-a: circle "A" at 2,2 radius 0.5
-b: circle "B" at 10,2 radius 0.5
-l: line from a to b weight 2
-ring: circle at 6,3.3 radius 0.6 weight 1.5 stroke teal
-```
-
----
-
-## Solid to dashed
-
-The solid line fades into a dashed one.
-
-```anim
-l: dashed speed slow
-ring: dashed speed slow
-```
-
----
-
-## Dashed to dotted
-
-The dashes fade into dots.
-
-```anim
-l: dotted speed slow
-```
-
----
-
-## Flow
-
-`l: flow` sends the dots from A to B; the ring's dashes march round it.
-
-```anim
-l: flow
-ring: flow
-```
-
----
-
-## Flow reversed
-
-`l: flow-reverse` sends them back from B to A.
-
-```anim
-l: flow-reverse
-ring: flow-reverse
-```
-
----
-
-## Back to solid
-
-`l: solid static speed slow`: the dots fade back into a solid line.
-
-```anim
-l: solid static speed slow
-ring: solid static speed slow
-```
-
-</animation>
-
-### Curves, and arrowheads
-
-<animation grid="12x6">
-
-## Curves
-
-`c1: curve from a to b via 6,1` bends through one point; `c2` has two vias for an S-shape.
-
-```anim
-a: circle "A" at 2,3 radius 0.5
-b: circle "B" at 10,3 radius 0.5
-c1: curve from a to b via 6,1 draw stroke pink
-c2: curve from a to b via 4,5 via 8,3 dashed stroke teal draw
-```
-
----
-
-## Arrowheads
-
-`c1: arrow` adds a head to the existing curve; `l: line … arrow` draws like an arrow.
-
-```anim
-c1: arrow
-c2: arrow
-l: line from 2,6 to 10,6 arrow "line … arrow"
-```
-
-+++
-
-`c1: via 6,0.5` keeps one via, so the bend blends to the new point. `c2: flow` sends its dashes along the curve.
-
-```anim
-c1: via 6,1.5 speed slow
-c2: flow
-```
-
-+++
-
-`p: follow c1` goes along the curve.
-
-```anim
-p: circle at 2,3 radius 0.2 fill amber front
-```
-
-+++
-
-```anim
-p: follow c1 speed slow
-```
-
-+++
-
-```anim
-p: follow-reverse c2 speed slow
-```
-
-</animation>
-
-### Monospace and typed
-
-<animation grid="12x3">
-
-## Monospace and typed
-
-```anim
-t1: text "$ ls -la" at 3,2 align left monospace typed speed slow
-t2: text "Hello, world!" at 3,3 align left typed speed slow delay 2
-box: rect "monospace" at 9,2 size 3x0.8 monospace fill blue
-```
-
-+++
-
-`typed` as an exit un-types.
-
-```anim
-t1: remove typed
-```
-
-</animation>
-
-### Intro
-
-The first beat uses `typed` and `pop`, so it plays in when the animation comes into view, and again after rewinding (⏮ or Home).
-
-<animation grid="12x3">
-
-```anim
-prompt: text "$ ping example.com" at 2,1 align left monospace typed speed slow
-srv: rect "server" at 10,2 size 2x1 pop delay 2
-```
-
----
-
-## Next
-
-```anim
-srv: fill green
-```
-
-</animation>
-
-### Size, width and height
-
-<animation grid="12x4">
-
-## size
-
-`r: rect at 3,2 size 2x1`
-
-```anim
-r: rect "R" at 3,2 size 2x1 corner 0.1
-i: icon(laptop) "icon" at 9,2
-```
-
----
-
-## width / height (relative)
-
-`r: width +2` and `i: height +1`
-
-```anim
-r: width +2
-i: height +1
-```
-
----
-
-## size (absolute)
-
-`r: size 1x1` and `i: size 1`
-
-```anim
-r: size 1x1
-i: size 1
-```
-
----
-
-## size (relative)
-
-`r: size +1` grows both sides by a cell; `i: size -0.25` shrinks it.
-
-```anim
-r: size +1
-i: size -0.25
-```
-
-</animation>
-
-### Autoplay, loop and pause
-
-Plays by itself once it's on screen, then loops. Clicking anything turns autoplay off; `A` or Play plays by hand.
+`autoplay loop hold="1"`: plays when on screen, then starts again. Clicking stops it.
 
 <animation autoplay loop hold="1" grid="12x3">
 
-## Autoplay
+```anim
+dot: circle at 2,2 radius 0.4 fill blue
+```
 
-The dot sets off on its own.
+---
+
+```anim
+dot: move 6,2
+```
+
+---
+
+```anim
+dot: move 10,2 fill green
+```
+
+</animation>
+
+### Loop-bounce and no controls
+
+`autoplay loop-bounce hold="0.5" controls="none"`: there and back for ever, with no buttons.
+
+<animation autoplay loop-bounce hold="0.5" controls="none" grid="12x3">
+
+```anim
+dot: circle at 2,2 radius 0.4 fill pink
+```
+
+---
+
+```anim
+dot: move 10,2 speed slow
+```
+
+</animation>
+
+### pause
+
+Press `A` to play.
+
+<animation grid="12x3">
 
 ```anim
 dot: circle at 2,2 radius 0.4 fill blue
@@ -876,10 +767,10 @@ dot: circle at 2,2 radius 0.4 fill blue
 
 ## pause 2
 
-It holds here for 2 seconds (instead of the 1 second `hold`).
+Holds 2 seconds here.
 
 ```anim
-dot: move 6,2 speed slow
+dot: move 6,2
 pause 2
 ```
 
@@ -887,16 +778,16 @@ pause 2
 
 ## pause
 
-Now it waits until you click Next (which nudges).
+Waits here for Next.
 
 ```anim
-dot: move 10,2 speed slow
+dot: move 10,2
 pause
 ```
 
 ---
 
-## Then it loops
+## Done
 
 ```anim
 dot: fill green
@@ -904,36 +795,9 @@ dot: fill green
 
 </animation>
 
-### Loop-bounce, speed and no controls
+### auto
 
-`autoplay loop-bounce hold="0.5" controls="none"`: no buttons or progress bar, backwards and forwards for ever. The pink ball moves `vslow` (4 s), the blue one `vfast` (0.25 s).
-
-<animation autoplay loop-bounce hold="0.5" controls="none" grid="12x3">
-
-```anim
-ball1: circle at 2,2  size 1 fill pink
-ball2: circle at 11,2 size 1 fill blue
-```
-
----
-
-```anim
-ball1: goto 11,2 via 5,1.5 via 8,2.5 speed vslow
-ball2: goto 2,2  via 8,1.5 via 5,2.5 speed vfast
-```
-
----
-
-```anim
-ball1: fill teal   scale 1.3 speed slow
-ball2: fill yellow scale 1.3 speed fast
-```
-
-</animation>
-
-### auto chains
-
-Not autoplaying: one click on Next plays the whole chain; Back undoes it in one go.
+One click on Next plays the chain; Back undoes it.
 
 <animation grid="12x3">
 
@@ -947,7 +811,7 @@ a: rect "a" at 2,2
 
 ## The chain
 
-First it moves right...
+Right...
 
 ```anim
 a: move 6,2
@@ -956,7 +820,7 @@ auto
 
 +++
 
-...then hops over...
+...over...
 
 ```anim
 a: move 10,2 via 8,0.8
@@ -965,7 +829,7 @@ auto
 
 +++
 
-...then turns green.
+...green.
 
 ```anim
 a: fill green
@@ -975,607 +839,422 @@ a: fill green
 
 ## After the chain
 
-Back from here returns to the end of the chain; Back again undoes the whole chain.
-
 </animation>
 
-### Camera
+### Intro
 
-<animation grid="12x6">
-
-## The whole drawing
-
-```anim
-a: rect "a" at 2,2 fill red
-b: circle "b" at 10,5 fill blue
-l: arrow from a to b "Zoom!" stroke yellow
-```
-
----
-
-## Zoom in on a
-
-```anim
-camera at a zoom 3
-```
-
----
-
-## Pan along the arrow
-
-```anim
-camera at 6,3.5 zoom 2 speed slow
-```
-
----
-
-## Close up on b, then it changes
-
-```anim
-camera at b zoom 3
-```
-
-+++
-
-```anim
-b: fill green pulse
-```
-
----
-
-## Back out
-
-```anim
-camera reset speed slow
-```
-
----
-
-## Zoomed out and nudged
-
-```anim
-camera zoom 0.8 move +1,+0
-```
-
-+++
-
-```anim
-camera reset speed fast
-```
-
----
-
-## Panning
-
-```anim
-camera goto a zoom 3
-```
-
-+++
-
-```anim
-camera goto b speed vslow
-auto
-```
-
-+++
-
-```anim
-camera zoom 1 speed slow
-auto
-```
-
-</animation>
-
-### Copy, attach and group
-
-<animation grid="14x5">
-
-## Start
-
-```anim
-key: icon(key-round) "Public key" at 3,1.5 stroke green
-msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
-```
-
----
-
-## copy
-
-`key2: copy key move 8,1.5 via 5.5,0.7 speed slow`: the copy flies off from the original.
-
-```anim
-key2: copy key move 8,1.5 via 5.5,0.7 speed slow
-```
-
----
-
-## attach
-
-`lock: icon(lock) attach right-of msg`: the lock rides on the message, even round a curve.
-
-```anim
-lock: icon(lock) attach right-of msg stroke amber pop
-```
-
-+++
-
-```anim
-msg: move 9,4 via 6,2.8 speed slow
-```
-
----
-
-## group
-
-`pkt: group msg lock`, then moving the group moves both.
-
-```anim
-pkt: group msg lock highlight box
-```
-
-+++
-
-```anim
-pkt: move 11,2.5 speed slow
-```
-
-+++
-
-`pkt: remove pop` removes the group and its members.
-
-```anim
-pkt: remove pop
-```
-
-</animation>
-
-### Travel and follow
-
-<animation grid="14x5">
-
-## A small network
-
-```anim
-pc: icon(laptop) "PC" at 1.5,2.5
-r1: circle "R1" at 4.5,1.5 radius 0.45
-r2: circle "R2" at 7.5,3.5 radius 0.45
-r3: circle "R3" at 10.5,1.5 radius 0.45
-srv: icon(server) "Server" at 13,2.5
-defaults stroke muted back
-l1: line from pc to r1
-l2: line from r1 to r2
-l3: line from r2 to r3
-l4: line from r3 to srv
-l5: line from r1 to r3 dashed
-defaults clear
-pkt: rect at 1.5,2.5 size 0.5x0.35 fill amber front
-```
-
----
-
-## travel
-
-`pkt: travel r1 r2 r3 srv`: hop by hop through the routers, each hop taking the speed.
-
-```anim
-pkt: travel r1 r2 r3 srv
-```
-
----
-
-## follow
-
-`ack: follow-reverse l5`: back along the dashed shortcut from R3 to R1.
-
-```anim
-ack: rect "ack" at 10.5,1.5 size 0.8x0.4 fill green font 0.7 front
-```
-
-+++
-
-```anim
-ack: follow-reverse l5 speed slow
-```
-
-</animation>
-
-### Highlights and callouts
-
-<animation grid="12x6">
-
-## Start
-
-Top row: one emphasis each. Bottom row: one highlight (or callout) each.
-
-```anim
-defaults size 1.6x0.8 font 0.6
-pu: rect "pulse" at 2,2
-sh: rect "shake" at 4,2
-wo: rect "wobble" at 6,2
-bn: rect "bounce" at 8,2
-gl: rect "glow" at 10,2
-
-ar: rect "arrow" at 1.5,5
-bx: rect "box" at 3.5,5
-hg: rect "glow" at 5.5,5
-nu: rect "number" at 7.5,5
-ca: rect "callout" at 9.5,5
-sp: rect "spotlight" at 11.5,5
-defaults clear
-```
-
----
-
-## Emphasis
-
-`pu: pulse`
-
-```anim
-pu: pulse
-```
-
-+++
-
-`sh: shake`
-
-```anim
-sh: shake
-```
-
-+++
-
-`wo: wobble` (or `wiggle`)
-
-```anim
-wo: wobble
-```
-
-+++
-
-`bn: bounce`
-
-```anim
-bn: bounce
-```
-
-+++
-
-`gl: glow`
-
-```anim
-gl: glow
-```
-
----
-
-## Highlights
-
-`highlight box`, `highlight arrow`, `highlight glow` and `highlight number 1` stay until cleared.
-
-```anim
-bx: highlight box
-ar: highlight arrow
-hg: highlight glow
-nu: highlight number 1
-```
-
-+++
-
-`nu: highlight number 2` swaps the number.
-
-```anim
-nu: highlight number 2
-```
-
----
-
-## Callout
-
-```anim
-ca: callout "Look at this!"
-```
-
-+++
-
-```anim
-ca: callout "Now below" below
-```
-
-+++
-
-Long callout text wraps at about 24 characters.
-
-```anim
-ca: callout "A much longer callout that should wrap onto several lines" left-of
-```
-
----
-
-## Spotlight
-
-Everything else dims, including the other shapes' highlights and callouts.
-
-```anim
-ca: callout clear
-sp: highlight spotlight
-```
-
-+++
-
-Several shapes can be spotlit.
-
-```anim
-nu: highlight spotlight
-```
-
----
-
-## clear
-
-`highlight clear` and `callout clear` put everything back.
-
-```anim
-bx: highlight clear
-ar: highlight clear
-hg: highlight clear
-nu: highlight clear
-ca: callout clear
-sp: highlight clear
-```
-
-</animation>
-
-### Multi-line layout
-
-A line indented more than the line that started a command continues it, so long commands can be laid out one property per line. `one` and `two` should look the same.
+The first beat uses `typed`, `pop` and `delay`, so it plays in when it comes into view, and after rewinding.
 
 <animation grid="12x3">
 
 ```anim
-one: rect "one line" at 3,2 size 3x0.8 font 0.8 fill blue corner 0.2
-
-two:
-    rect "laid out"     # comments still work
-    at 9,2
-    size 3x0.8
-
-    font 0.8            # and blank lines inside
-    fill blue
-    corner 0.2
+prompt: text "$ ping example.com" at 2,1 align left monospace typed speed slow
+srv: rect "server" at 10,2 size 2x1 pop delay 2
 ```
 
 ---
 
-## Changes too
-
 ```anim
-two:
-    move 9,1
-    fill green
-    speed slow
-one: move 3,1 fill green speed slow
-```
-
----
-
-## A whole block indented
-
-Every line here is indented by the same amount, so each is its own command.
-
-```anim
-    one: fill amber
-    two: fill amber
+srv: fill green
 ```
 
 </animation>
 
-### Angle and scale
+### rect
+
+<animation grid="12x4">
+
+```anim
+r1: rect "1x1" at 2,2
+r2: rect "2x1" at 5,2 size 2x1
+r3: rect "corner" at 8.5,2 size 2x1 corner 0.2
+r4: rect "pill" at 11,2 size 1.6x0.8 corner 0.4
+```
+
+---
+
+## width, height, size
+
+```anim
+r1: size 1.5
+r2: width 3
+r3: height 1.6
+r4: corner 0
+```
+
+</animation>
+
+### circle
+
+<animation grid="12x3">
+
+```anim
+c1: circle "0.5" at 2,2
+c2: circle "0.8" at 5,2 radius 0.8
+c3: circle "size 1.2" at 8.5,2 size 1.2 font 0.7
+```
+
+---
+
+## radius, size
+
+```anim
+c1: radius 0.8
+c3: size +0.4
+```
+
+</animation>
+
+### diamond
+
+Lines stop at its slanted edges.
 
 <animation grid="12x5">
 
-## Rotated and scaled
+```anim
+d: diamond "x > 3?" at 4,3 size 3x1.6 fill amber
+yes: rect "yes" at 9,1.5 size 2x0.8 corner 0.2
+no: rect "no" at 9,4.5 size 2x0.8 corner 0.2
+ly: arrow from d to yes
+ln: arrow from d to no
+top: arrow from 4,0.5 to d
+c: curve from 1,1 to d via 2,3
+```
 
-Images, shapes, text and icons can be turned (degrees clockwise, 0 = upright) and scaled.
+---
+
+## Resized and turned
+
+```anim
+d: width 2.4 angle 20
+```
+
+</animation>
+
+### text
+
+The dotted box is column 6: `align` anchors to its edges.
+
+<animation grid="12x4">
+
+```anim
+cell: rect at 6,2 size 1x3 dotted stroke muted fill none back
+t1: text "centre" at 6,1
+t2: text "align left" at 6,2 align left
+t3: text "align right" at 6,3 align right
+```
+
+---
+
+## Changed
+
+```anim
+t1: "new text" colour amber
+```
+
+
+</animation>
+
+### Fonts: font, bold, monospace
+
+<animation grid="12x4">
+
+```anim
+f1: text "font 1" at 3,1
+f2: text "font 1.5" at 3,2.2 font 1.5
+f3: text "bold" at 8,1 bold
+f4: text "monospace" at 8,2.2 monospace
+box: rect "a bold label" at 5.5,3.5 size 3x0.8 bold font 0.8
+```
+
+---
+
+## font changes tween
+
+```anim
+f1: font 1.5
+f2: font 1
+```
+
+</animation>
+
+### line and arrow
+
+<animation grid="12x5">
+
+```anim
+a: circle "a" at 2,2
+b: rect "b" at 10,2
+l1: line from a to b "line"
+l2: arrow from 2,4 to 10,4 "arrow"
+```
+
+---
+
+## l1: arrow
+
+Adds a head.
+
+```anim
+l1: arrow
+```
+
++++
+
+An end on a shape follows it.
+
+```anim
+b: move 9,1
+```
+
+</animation>
+
+### curve
+
+<animation grid="12x6">
+
+```anim
+a: circle "a" at 2,3
+b: circle "b" at 10,3
+c1: curve from a to b via 6,1
+c2: curve from a to b via 4,5 via 8,4 dashed stroke teal arrow
+```
+
+---
+
+## c1: via 6,2
+
+The bend blends to the new point.
+
+```anim
+c1: via 6,2 speed slow
+```
+
++++
+
+The ends follow their shapes.
+
+```anim
+b: move 10,1
+```
+
+</animation>
+
+### image
+
+<animation grid="12x4">
+
+```anim
+mac: image(../_assets/macs/macintosh.svg) "A Mac" at 3,2 size 1.5x2
+mac2: image(../_assets/macs/macintosh.svg) at 8,2 size 2 stroke blue dashed
+```
+
+---
+
+## Resized
+
+It keeps its proportions inside its box.
+
+```anim
+mac: width +1
+mac2: size 1
+```
+
+</animation>
+
+### icon
+
+<animation grid="12x3">
+
+```anim
+i1: icon(laptop) "laptop" at 2,1.5
+i2: icon(server) "server" at 5,1.5 stroke blue
+i3: icon(lock) at 8,1.5 size 1.5 stroke amber weight 1.5
+```
+
+---
+
+```anim
+i1: stroke green scale 1.3
+```
+
+</animation>
+
+### Colours
+
+<animation grid="13x4">
+
+```anim
+pal: row "red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme" at 1,1 font 0.4
+pal.0: fill red
+pal.1: fill orange
+pal.2: fill amber
+pal.3: fill yellow
+pal.4: fill green
+pal.5: fill teal
+pal.6: fill cyan
+pal.7: fill blue
+pal.8: fill purple
+pal.9: fill pink
+pal.10: fill magenta
+pal.11: fill theme
+st: rect "stroke" at 2,3 size 2x0.8 stroke red weight 2
+cl: rect "colour" at 5,3 size 2x0.8 colour amber
+hx: text "#f80" at 8,3 colour #f80
+mu: text "muted" at 11,3 colour muted
+```
+
+---
+
+## Changes tween
+
+```anim
+st: fill green stroke blue
+cl: colour pink
+hx: colour teal
+```
+
+</animation>
+
+### weight
+
+<animation grid="12x4">
+
+```anim
+w1: line from 1,1 to 5,1 weight 0.5
+w2: line from 1,2 to 5,2
+w3: line from 1,3 to 5,3 weight 2
+w4: line from 1,4 to 5,4 weight 4
+r1: rect "weight 3" at 8,2 size 2x1 weight 3
+r2: rect "weight 0" at 8,3.5 size 2x1 weight 0 fill blue
+```
+
+---
+
+```anim
+w1: weight 4
+w4: weight 0.5
+```
+
+</animation>
+
+### Line styles
+
+Style changes cross-fade.
+
+<animation grid="12x3">
+
+## solid
+
+```anim
+l: line from 1,2 to 7,2 weight 2
+ring: circle at 10,2 radius 0.7 weight 1.5 stroke teal
+```
+
+---
+
+## dashed
+
+```anim
+l: dashed speed slow
+ring: dashed speed slow
+```
+
+---
+
+## dotted
+
+```anim
+l: dotted speed slow
+ring: dotted speed slow
+```
+
+---
+
+## solid
+
+```anim
+l: solid speed slow
+ring: solid speed slow
+```
+
+</animation>
+
+### flow
+
+<animation grid="12x3">
+
+```anim
+a: circle "A" at 2,2
+b: circle "B" at 7,2
+l: line from a to b dotted weight 2
+ring: circle at 10,2 radius 0.7 dashed weight 1.5 stroke teal
+```
+
+---
+
+## flow
+
+```anim
+l: flow
+ring: flow
+```
+
+---
+
+## flow-reverse
+
+```anim
+l: flow-reverse
+ring: flow-reverse
+```
+
+---
+
+## static
+
+```anim
+l: static
+ring: static
+```
+
+</animation>
+
+### angle and scale
+
+The arrow stays on the turning rect's edge.
+
+<animation grid="12x5">
 
 ```anim
 mac: image(../_assets/macs/macintosh.svg) at 2,3 size 2 angle -15
 r: rect "45°" at 5,2 angle 45
-c: rect "wide" at 5,4 size 2x1 angle 90 scale 0.8
-t: text "Tilted text" at 8,1 angle 20 font 1.2
+w: rect "wide" at 5,4 size 2x1 angle 90 scale 0.8
+t: text "Tilted" at 8,1 angle 20 font 1.2
 cog: icon(cog) at 8,4 scale 1.5
 box: rect "B" at 11,3
-l: arrow from r to box "edge"
+l: arrow from r to box
 ```
 
 ---
 
 ## Animated
 
-The cog spins, the Mac turns upright and grows, and the arrow stays on the rotating rect's edge.
-
 ```anim
 cog: angle +360 speed slow
 mac: angle 0 scale 1.3 speed slow
 r: angle +90 speed slow
 t: angle 0 scale 1.3
-```
-
----
-
-## Back the other way
-
-`angle -90` (relative) turns a quarter anticlockwise; `scale 0.5` halves.
-
-```anim
-r: angle -90
-c: scale 0.5
-cog: angle -360 speed slow
+w: scale 0.5
 ```
 
 </animation>
 
-### Curved moves
-
-<animation grid="12x5" debug>
-
-## Start
-
-```anim
-a: circle "a" at 2,4 radius 0.4 fill blue
-b: rect "b" at 6,3
-c: circle "c" at 2,2.5 radius 0.4 fill pink
-l: line from a to c dashed
-```
-
----
-
-## One via point
-
-`a: move 8,4 via 5,1` — a semicircle over `b` (the via point is centred, half the distance away).
-
-```anim
-a: move 8,4 via 5,1 speed slow
-```
-
----
-
-## Several via points
-
-`c: move 10,2.5 via 4,4 via 6,2.5 via 8,1` — zig-zag via points give a sine-like wave, at an even speed. The dashed line follows both ends.
-
-```anim
-c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
-```
-
----
-
-## Via a shape, and relative
-
-`a` loops through the spot below `b`; `c` goes `via -2,+2` (relative to where it starts).
-
-```anim
-a: move 2,4 via below b speed slow
-c: move 2,2.5 via -2,+2 speed slow
-```
-
-</animation>
-
-### Curved-move errors
-
-<animation grid="8x2" debug>
-
-```anim
-a: rect at 2,1
-b: rect at 4,1 via 5,2
-a: fill blue via 3,2
-l: line from a to 6,1 via 3,2
-defaults via 2,2
-a: move 6,1 via zz
-```
-
-</animation>
-
-### Images, relative moves and line ends
-
-<animation grid="12x5" debug>
-
-## Starting positions
-
-The debug grid shows rows, columns and ids.
-
-```anim
-mac: image(../_assets/macs/macintosh.svg) "A Mac" at 3,2 size 1.5x2
-box: rect "box" at 9,2
-l: line from 2,5 to 6,5 "line" stroke pink
-p: arrow from mac to box stroke yellow
-```
-
----
-
-## Relative moves
-
-`box: move +1,+2`, `mac: x +3`.
-
-```anim
-box: move +1,+2
-mac: x +3
-```
-
----
-
-## One end of a line
-
-`l: to +4,-1` moves only the end; the arrow follows `box`.
-
-```anim
-l: to +4,-1
-box: y -1
-```
-
----
-
-## Shift a whole line
-
-```anim
-l: move +0,-1
-p: to 11,1
-```
-
-</animation>
-
-### Effects and speeds
-
-<animation grid="12x3">
-
-## Effects
-
-Each shape enters with a different effect.
-
-```anim
-f: rect "fade" at 2,2
-```
-
----
-
-```anim
-p: rect "pop" at 5,2 pop
-d: arrow from 1,3 to 11,3 draw speed slow
-s: circle "slide" at 9,2 slide
-```
-
-+++
-
-Second beat: removal effects.
-
-```anim
-f: remove pop
-p: remove speed fast
-s: remove slide
-```
-
----
-
-## Instant and slow
-
-```anim
-d: remove speed instant
-sl: rect "slow" at 2,2
-```
-
-+++
-
-```anim
-sl: move 11,2 speed slow
-```
-
-</animation>
-
-### Layering
+### Layers
 
 <animation grid="10x3">
 
-## Back, normal and front
+## back, normal, front
 
 ```anim
 a: rect "normal" at 4,2 size 3x1 fill blue
@@ -1585,9 +1264,7 @@ c: circle at 6,2 radius 1 fill pink front
 
 ---
 
-## Change layer
-
-`b: front` and `c: back`.
+## Swapped
 
 ```anim
 b: front
@@ -1596,57 +1273,437 @@ c: back
 
 </animation>
 
-### Fit grid and a caption-only step
+### Position and placement
 
-<animation grid="fit">
+<animation grid="12x5">
 
 ```anim
-a: rect "A" at 3,3 corner 0.2
-b: rect "B" at 6,3 corner 0.2
-l: arrow from a to b "fit"
+a: rect "a" at 6,3
+up: circle "above" above a font 0.5
+down: circle "below" below a font 0.5
+lt: circle "left-of" left-of a font 0.5
+rt: circle "gap 1" right-of a gap 1 font 0.5
+on: circle at a radius 0.15 fill amber front
 ```
 
 ---
 
-## Same heading
+## x, y and at
 
-This step has no scene.
+```anim
+rt: x 11
+up: y 1
+on: at lt
+```
 
----
-
-## Same heading
-
-The heading stays put; only this text changes.
 
 </animation>
 
-### Rows, columns and swap
+### Relative values
+
+<animation grid="12x5">
+
+```anim
+r: rect "r" at 3,2
+```
+
+---
+
+## move +2,+1
+
+```anim
+r: move +2,+1
+```
+
+---
+
+## x +3
+
+```anim
+r: x +3
+```
+
+---
+
+## width +1, size +0.5, angle +45
+
+```anim
+r: width +1
+```
+
++++
+
+```anim
+r: size +0.5
+```
+
++++
+
+```anim
+r: angle +45
+```
+
+</animation>
+
+### Moving lines
+
+<animation grid="12x5">
+
+```anim
+a: rect "a" at 2,1
+b: rect "b" at 10,1
+p: arrow from a to b
+l: line from 2,4 to 6,4 "l" stroke pink
+```
+
+---
+
+## l: to +4,-1
+
+One end.
+
+```anim
+l: to +4,-1
+```
+
+---
+
+## l: move +0,+1
+
+The whole line.
+
+```anim
+l: move +0,+1
+```
+
+---
+
+## p: from 2,3 to b
+
+```anim
+p: from 2,3 to b
+```
+
+</animation>
+
+### Curved moves
+
+<animation grid="12x5">
+
+```anim
+a: circle "a" at 2,4 radius 0.4 fill blue
+b: rect "b" at 6,3
+c: circle "c" at 2,2.5 radius 0.4 fill pink
+```
+
+---
+
+## One via
+
+An arc over `b`.
+
+```anim
+a: move 8,4 via 5,1 speed slow
+```
+
+---
+
+## Several vias
+
+A wave, at an even speed.
+
+```anim
+c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
+```
+
+---
+
+## Via a shape, and relative
+
+```anim
+a: move 2,4 via below b speed slow
+c: move 2,2.5 via -2,+2 speed slow
+```
+
+</animation>
+
+### travel
+
+Hop by hop; each hop takes the speed.
+
+<animation grid="14x4">
+
+```anim
+pc: icon(laptop) "PC" at 1.5,2
+r1: circle "R1" at 4.5,1.5 radius 0.45
+r2: circle "R2" at 7.5,3 radius 0.45
+r3: circle "R3" at 10.5,1.5 radius 0.45
+srv: icon(server) "Server" at 13,2
+defaults stroke muted back
+l1: line from pc to r1
+l2: line from r1 to r2
+l3: line from r2 to r3
+l4: line from r3 to srv
+defaults clear
+pkt: rect at 1.5,2 size 0.5x0.35 fill amber front
+```
+
+---
+
+```anim
+pkt: travel r1 r2 r3 srv
+```
+
+</animation>
+
+### follow
+
+<animation grid="12x5">
+
+```anim
+a: circle "a" at 2,3
+b: circle "b" at 10,3
+l: line from a to b
+c: curve from a to b via 6,1 dashed
+dot: circle at 2,3 radius 0.2 fill amber front
+```
+
+---
+
+## follow l
+
+```anim
+dot: follow l speed slow
+```
+
+---
+
+## follow-reverse c
+
+```anim
+dot: follow-reverse c speed slow
+```
+
+</animation>
+
+### copy
+
+The copy starts on the original and moves off.
+
+<animation grid="12x3">
+
+```anim
+key: icon(key-round) "key" at 2,2 stroke green
+```
+
+---
+
+```anim
+k2: copy key move 6,2 via 4,1 speed slow
+```
+
++++
+
+```anim
+k3: copy k2 move 10,2 stroke amber
+```
+
+</animation>
+
+### attach and detach
+
+<animation grid="12x5">
+
+```anim
+msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
+```
+
+---
+
+## attach right-of msg
+
+```anim
+lock: icon(lock) attach right-of msg stroke amber pop
+```
+
++++
+
+It rides along, even round a curve.
+
+```anim
+msg: move 9,4 via 6,2.5 speed slow
+```
+
+---
+
+## detach
+
+```anim
+lock: detach
+```
+
++++
+
+```anim
+msg: move 3,4 speed slow
+```
+
+---
+
+## attach msg
+
+On top.
+
+```anim
+lock: attach msg
+```
+
+</animation>
+
+### group and ungroup
+
+<animation grid="12x4">
+
+```anim
+a: rect "a" at 2,2
+b: circle "b" at 5,3
+l: arrow from a to b
+```
+
+---
+
+## group
+
+```anim
+g: group a b l highlight box
+```
+
++++
+
+Acts as one.
+
+```anim
+g: move +5,+0 speed slow
+```
+
++++
+
+```anim
+g: pulse
+```
+
+---
+
+## ungroup
+
+The members stay where they are.
+
+```anim
+g: ungroup
+```
+
++++
+
+```anim
+a: move 2,2
+```
+
+---
+
+## Removing a group removes its members
+
+```anim
+g2: group a b
+```
+
++++
+
+```anim
+g2: remove pop
+```
+
+</animation>
+
+### Rows and columns
 
 <animation grid="12x6">
 
-## A row and a column
+```anim
+arr: row 5 3 8 1 at 2,1.5 fill blue
+col: column "A" "B" "C" at 10,1.5 size 1.6x0.8 gap 0.2 fill teal corner 0.1
+words: row "cat" "" "dog" at 2,4 size 1.4x0.8 gap 0.3
+```
 
-`arr: row 5 3 8 1 at 2,2` makes cells `arr.0` to `arr.3`, with the first cell at 2,2. `col: column "A" "B" "C"` stacks them, with a `gap`.
+---
+
+## One cell, every cell
+
+```anim
+arr.1: fill amber
+```
+
++++
+
+```anim
+arr: fill green
+```
+
+---
+
+## Placed
+
+`move` places the first cell; `below` the whole row.
+
+```anim
+arr: move 3,3 speed slow
+```
+
++++
+
+```anim
+words: below col gap 0.5 speed slow
+```
+
+---
+
+## remove
+
+```anim
+arr: remove pop
+```
+
+</animation>
+
+### swap
+
+<animation grid="12x5">
 
 ```anim
 arr: row 5 3 8 1 at 2,2 fill blue
-col: column "A" "B" "C" at 10,1.5 size 1.6x0.8 gap 0.2 fill teal corner 0.1
 i: text "i" attach below arr.0
-p: arrow from 1,5 to arr.0
+p: arrow from 1,4.5 to arr.3
+col: column "A" "B" "C" at 10,1.5 size 1.6x0.8 gap 0.2 fill teal
+```
+
+---
+
+## Neighbours
+
+```anim
+arr: swap 0 1
 ```
 
 +++
 
-`arr: swap 0 3`: one goes over, one under. Ids go with the places, so `i` and the arrow stay put. A column's cells pass to the right and left.
+Further apart, they clear the cells between. `i` and the arrow stay with their places.
 
 ```anim
 arr: swap 0 3 speed slow
-col: swap 0 2 speed slow
 ```
 
-+++
+---
 
-A spotlit cell keeps its highlight as it moves.
+## A highlight moves with its cell
 
 ```anim
 arr.1: highlight spotlight
@@ -1660,97 +1717,354 @@ arr: swap 1 2
 
 ---
 
-## Restyle and move
-
-`arr: fill green` restyles every cell; `move` places the first cell. `col.1: fill amber` is one cell.
+## Column
 
 ```anim
 arr.2: highlight clear
-arr: fill green move 4,4 speed slow
-col.1: fill amber pulse
-col: highlight box
-```
-
-+++
-
-`below` puts the whole row beside a shape.
-
-```anim
-arr: below col gap 0.5
-```
-
-+++
-
-`arr: remove pop` removes every cell.
-
-```anim
-arr: remove pop
+col: swap 0 2 speed slow
 ```
 
 </animation>
 
-### Diamonds and signals
+### Emphasis
 
-<animation grid="12x5">
-
-## Diamond
-
-`d: diamond "x > 3?" size 3x1.6`: lines stop at its slanted edges.
+<animation grid="12x3">
 
 ```anim
-d: diamond "x > 3?" at 4,3 size 3x1.6 fill amber
-yes: rect "yes" at 9,1.5 size 2x0.8 corner 0.2
-no: rect "no" at 9,4.5 size 2x0.8 corner 0.2
-ly: arrow from d to yes
-ln: arrow from d to no
-c: curve from 1,1 to d via 2,3
+defaults size 1.6x0.8 font 0.6
+pu: rect "pulse" at 2,2
+sh: rect "shake" at 4,2
+wo: rect "wobble" at 6,2
+bn: rect "bounce" at 8,2
+gl: rect "glow" at 10,2
+defaults clear
 ```
 
 ---
 
-## Signal
+```anim
+pu: pulse
+```
 
-`ly: signal` sends a blip along the arrow; `c: signal speed slow` along the curve.
++++
 
 ```anim
-ly: signal
+sh: shake
+```
+
++++
+
+```anim
+wo: wobble
+```
+
++++
+
+```anim
+bn: bounce
+```
+
++++
+
+```anim
+gl: glow
+```
+
+
+</animation>
+
+### signal
+
+<animation grid="12x5">
+
+```anim
+a: circle "a" at 2,2
+b: rect "b" at 10,2
+l: arrow from a to b
+c: curve from a to b via 6,4.5
+```
+
+---
+
+## signal
+
+```anim
+l: signal
+```
+
++++
+
+```anim
 c: signal speed slow
 ```
 
-+++
+---
 
-`signal-reverse` runs from the end back to the start.
+## signal-reverse
 
 ```anim
-ln: signal-reverse
+l: signal-reverse
 ```
 
-+++
+---
 
-`g: signal` on a group sends one along each of its lines.
+## On a group: each of its lines
 
 ```anim
-g: group d yes no ly ln
+g: group a b l c
 g: signal speed fast
-```
-
-+++
-
-A diamond turns and scales like any shape.
-
-```anim
-d: angle +90 scale 0.8
 ```
 
 </animation>
 
-### Easing
+### Highlights
+
+<animation grid="12x3">
+
+```anim
+defaults size 1.6x0.8 font 0.6
+bx: rect "box" at 2,2
+ar: rect "arrow" at 5,2
+hg: rect "glow" at 8,2
+nu: rect "number" at 11,2
+defaults clear
+```
+
+---
+
+```anim
+bx: highlight box
+ar: highlight arrow
+hg: highlight glow
+nu: highlight number 1
+```
+
++++
+
+```anim
+nu: highlight number 2
+```
+
+---
+
+## clear
+
+```anim
+bx: highlight clear
+ar: highlight clear
+hg: highlight clear
+nu: highlight clear
+```
+
+</animation>
+
+### Spotlight
+
+Everything else dims, including their highlights and callouts.
+
+<animation grid="12x3">
+
+```anim
+a: rect "a" at 2,2
+b: rect "b" at 5,2 highlight box
+c: rect "c" at 8,2 callout "hi"
+d: rect "d" at 11,2
+```
+
+---
+
+```anim
+a: highlight spotlight
+```
+
++++
+
+Several can be spotlit.
+
+```anim
+d: highlight spotlight
+```
+
+---
+
+## clear
+
+```anim
+a: highlight clear
+d: highlight clear
+```
+
+</animation>
+
+### Callouts
+
+<animation grid="12x4">
+
+```anim
+a: rect "a" at 6,2.5
+edge: rect "edge" at 11.5,0.5
+```
+
+---
+
+```anim
+a: callout "Look at this!"
+```
+
++++
+
+```anim
+a: callout "Now below" below
+```
+
++++
+
+Long text wraps.
+
+```anim
+a: callout "A much longer callout that wraps onto several lines" left-of
+```
+
++++
+
+It stays inside the drawing.
+
+```anim
+a: callout clear
+edge: callout "Near the edge"
+```
+
+</animation>
+
+### speed
+
+<animation grid="12x7">
+
+```anim
+defaults radius 0.3 fill blue
+s1: circle at 3,1
+s2: circle at 3,2
+s3: circle at 3,3
+s4: circle at 3,4
+s5: circle at 3,5
+s6: circle at 3,6
+s7: circle at 3,7
+defaults clear
+t1: text "instant" at 1.5,1 font 0.6
+t2: text "vfast" at 1.5,2 font 0.6
+t3: text "fast" at 1.5,3 font 0.6
+t4: text "normal" at 1.5,4 font 0.6
+t5: text "slow" at 1.5,5 font 0.6
+t6: text "vslow" at 1.5,6 font 0.6
+t7: text "3 s" at 1.5,7 font 0.6
+```
+
+---
+
+```anim
+s1: move 11,1 speed instant
+s2: move 11,2 speed vfast
+s3: move 11,3 speed fast
+s4: move 11,4
+s5: move 11,5 speed slow
+s6: move 11,6 speed vslow
+s7: move 11,7 speed 3
+```
+
+</animation>
+
+### delay
+
+<animation grid="12x3">
+
+```anim
+a: rect "0" at 3,2
+b: rect "1 s" at 6,2
+c: rect "2 s" at 9,2
+```
+
+---
+
+```anim
+a: fill green
+b: fill green delay 1
+c: fill green delay 2
+```
+
+</animation>
+
+### stagger
+
+<animation grid="12x5">
+
+```anim
+arr: row 5 3 8 1 9 2 at 3,2 fill blue pop stagger 0.15
+```
+
+---
+
+## stagger
+
+```anim
+arr: fill green stagger
+```
+
++++
+
+```anim
+arr: pulse stagger 0.1
+```
+
+---
+
+## stagger-reverse, after a delay
+
+```anim
+arr: fill amber stagger-reverse 0.2 delay 0.5
+```
+
+---
+
+## One highlight per cell
+
+```anim
+arr: highlight box stagger 0.2
+```
+
++++
+
+```anim
+arr: highlight clear stagger 0.1
+```
+
+---
+
+## A group, in listed order
+
+```anim
+a: rect "a" at 3,4
+b: circle "b" at 6,4
+c: rect "c" at 9,4
+g: group c a b
+```
+
++++
+
+```anim
+g: fill pink stagger 0.3
+```
+
++++
+
+```anim
+g: remove pop stagger 0.2
+```
+
+</animation>
+
+### ease
 
 <animation grid="12x6">
-
-## ease
-
-Each dot uses a different `ease`.
 
 ```anim
 defaults radius 0.3 fill blue
@@ -1760,14 +2074,14 @@ e3: circle at 3,3
 e4: circle at 3,4
 e5: circle at 3,5
 defaults clear
-t1: text "in-out" at 1.5,1
-t2: text "linear" at 1.5,2
-t3: text "in" at 1.5,3
-t4: text "out" at 1.5,4
-t5: text "spring" at 1.5,5
+t1: text "in-out" at 1.5,1 font 0.6
+t2: text "linear" at 1.5,2 font 0.6
+t3: text "in" at 1.5,3 font 0.6
+t4: text "out" at 1.5,4 font 0.6
+t5: text "spring" at 1.5,5 font 0.6
 ```
 
-+++
+---
 
 ```anim
 e1: move 11,1 speed slow
@@ -1779,21 +2093,175 @@ e5: move 11,5 speed slow ease spring
 
 ---
 
-## Defaults, pop and camera
-
-`defaults ease spring`: shapes overshoot as they pop in; the camera eases out.
+## spring on pop, and on the camera
 
 ```anim
-defaults ease spring
-b: rect "spring" at 7,3 size 2x1 fill pink pop
-e5: travel 11,1 7,1 ease linear
-camera at b zoom 1.5 ease out
+b: rect "spring" at 7,3 size 2x1 fill pink pop ease spring
+camera at b zoom 1.5 ease spring
 ```
 
 +++
 
 ```anim
-camera reset ease in
+camera reset ease out
+```
+
+</animation>
+
+### Entrance and exit effects
+
+<animation grid="12x4">
+
+```anim
+fd: rect "fade" at 2,2
+```
+
+---
+
+## Entrances
+
+```anim
+pp: rect "pop" at 5,2 pop
+sl: circle "slide" at 8,2 slide
+dr: arrow from 1,3.5 to 11,3.5 draw speed slow
+```
+
+---
+
+## Exits
+
+```anim
+fd: remove
+pp: remove pop
+sl: remove slide
+dr: remove draw
+```
+
+</animation>
+
+### typed
+
+<animation grid="12x3">
+
+```anim
+t1: text "$ ls -la" at 2,1 align left monospace typed speed slow
+t2: text "Hello, world!" at 2,2 align left typed speed slow delay 2
+```
+
+---
+
+## As an exit it un-types
+
+```anim
+t1: remove typed
+```
+
+</animation>
+
+### defaults
+
+<animation grid="12x4">
+
+```anim
+defaults fill blue size 2x1
+a: rect "a" at 2,1.5
+b: rect "b" at 5,1.5
+defaults clear
+c: rect "c" at 8,1.5
+```
+
+---
+
+## defaults speed slow ease spring
+
+```anim
+defaults speed slow ease spring
+a: move 2,3
+b: move 5,3
+c: move 8,3
+```
+
+</animation>
+
+### Camera
+
+<animation grid="12x6">
+
+```anim
+a: rect "a" at 2,2 fill red
+b: circle "b" at 10,5 fill blue
+l: arrow from a to b
+```
+
+---
+
+## at a zoom 3
+
+```anim
+camera at a zoom 3
+```
+
+---
+
+## at 6,3.5 zoom 2
+
+```anim
+camera at 6,3.5 zoom 2 speed slow
+```
+
+---
+
+## reset
+
+```anim
+camera reset
+```
+
+---
+
+## zoom 0.8 move +1,+0
+
+Zoomed out and nudged.
+
+```anim
+camera zoom 0.8 move +1,+0
+```
+
++++
+
+```anim
+camera reset speed fast
+```
+
+</animation>
+
+### Camera travel
+
+<animation grid="12x6">
+
+```anim
+a: circle "a" at 2,2
+b: circle "b" at 10,2
+c: circle "c" at 10,5
+d: circle "d" at 2,5
+```
+
+---
+
+```anim
+camera at a zoom 3
+```
+
++++
+
+```anim
+camera travel b c d
+```
+
++++
+
+```anim
+camera reset speed slow
 ```
 
 </animation>
@@ -1840,10 +2308,16 @@ k: circle at 1,1 width 2
 defaults fill none
 defaults fill none
 remove: rect at 1,1
+vb: rect at 4,1 via 5,2
+a: fill blue via 3,2
+vl: line from a to 6,1 via 3,2
+defaults via 2,2
+a: move 6,1 via zz
 ar: row at 1,1
 dw: swap 0 1
 dw: signal
 q: rect at 1,1 ease bouncy
+dw: fill red stagger -1
 ```
 
 </animation>

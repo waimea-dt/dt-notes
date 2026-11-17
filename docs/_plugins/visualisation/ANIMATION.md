@@ -1,16 +1,16 @@
 # Animation Cheat-Sheet
 
 `<animation>` blocks: a step-by-step animated SVG drawing with a caption per step.
-Plugin `animation.js` (widget and playback) with `anim-core.js` (constants, keywords, geometry), `anim-parse.js`, `anim-compile.js` and `anim-render.js` · CSS `_css/visualisation/animation.css` · examples `_tests/animation.md` · VS Code highlighting: `vscode/anim-syntax/` in the repo root (see its README).
+Code: `anim-core.js` · `anim-parse.js` · `anim-compile.js` · `anim-render.js` · `animation.js` · CSS `_css/visualisation/animation.css` · Tests `_tests/animation.md` · VS Code highlighting `vscode/anim-syntax/`.
 
 ## Block
 
 ````markdown
-<animation grid="16x9" autoplay loop>
+<animation grid="16x9">
 
-# Title (fixed for the whole animation)
+# Title (fixed)
 
-Caption for step 1 (any Markdown).
+Caption for step 1.
 
 ```anim
 a: rect "A" at 2,3
@@ -26,271 +26,248 @@ a: move 5,3
 
 +++
 
-Caption text added when this beat plays.
+More caption, shown with this beat.
 
 ```anim
 a: fill green
 ```
 
 Note:
-Teacher notes (to the end of the step; S shows them).
+Teacher notes (S).
 
 </animation>
 ````
 
-| Marker | Meaning |
+| Marker | |
 |---|---|
 | `---` | New step |
-| `+++` | New beat within a step (caption and scene split together) |
-| ` ```anim ` | Scene lines for the step / beat (optional) |
-| `Note:` | Teacher notes for the step |
+| `+++` | New beat (caption and scene) |
+| ` ```anim ` | Scene lines |
+| `Note:` | Teacher notes, to the end of the step |
 
-Markers must be alone on their line. Everything in one beat plays at the same time.
+Markers go alone on their line. Everything in a beat plays at once.
 
-| Tag attribute | Default | |
+| Attribute | Default | |
 |---|---|---|
-| `grid="CxR"` | `16x9` | Grid size; `grid="fit"` fits the content |
-| `debug` | off | Grid numbers, shape ids, warnings |
-| `autoplay` | off | Plays once on screen, after any intro (not for reduced motion; stops for good when someone navigates) |
-| `loop` / `loop-bounce` | off | At the end: jump to the start / play backwards to the start |
+| `grid="CxR"` / `grid="fit"` | `16x9` | Grid size / fit the content |
+| `debug` | off | Grid numbers, ids, warnings |
+| `autoplay` | off | Plays when on screen |
+| `loop` / `loop-bounce` | off | Restart / play back to the start |
 | `hold="s"` | `1.5` | Wait between beats while playing |
-| `controls="none"` | shown | Hide buttons and progress bar (keys still work) |
+| `controls="none"` | shown | Hide buttons and progress bar |
 
-**Keys** (click the animation first): → `N` `Space` next · ← `P` `Shift+Space` back · `Home` / `End` · `A` play/pause · `F` full screen · `S` notes · `?` shortcuts · `Esc`.
+**Keys:** → `N` `Space` next · ← `P` `Shift+Space` back · `Home` `End` · `A` play · `F` full screen · `S` notes · `?` help · `Esc`
 
 ## Grid
 
-- Cells numbered from 1, top-left, y down. `at 3,2` = centre of column 3, row 2. Fractions OK.
-- Sizes are in cells. One cell = 80px at full width (same size as a slide).
-- Points use a comma (`at 5,4`), sizes an `x` (`size 2x1`). Spaces also work.
+- Cells from 1, top-left. `at 3,2` = centre of column 3, row 2. Fractions OK.
+- Points `5,4`, sizes `2x1`, all in cells.
 
 ## Lines
 
 ```anim
-a: rect "A" at 2,3          # create: id, type, label, properties
-a: move 5,3 fill red        # change an existing shape
-a: remove                   # remove (optionally with an effect and speed)
-# a comment line
+a: rect "A" at 2,3         # create: id: type "label" properties
+a: move 5,3 fill red       # change
+a: remove                  # remove
+# a comment ("#" then a space)
+m:
+    rect "Long command"    # indented more = same command
+    at 4,5
 ```
 
-A long command can be laid out one property per line: a line indented more than the line that started the command continues it.
-
-```anim
-m1:
-    rect "Hello + options"
-    at 4.5,5.5
-    size 3x0.8
-    fill blue      # comments and blank lines are fine inside
-    pop
-```
-
-- `#` followed by a space starts a comment, on its own line or after a command (`#f80` is still a colour).
-- Properties go in any order. One quoted string per command = the label.
-- A type word on an existing id replaces the shape (`debug` warns), except `l: arrow` on a line or curve with no `from` / `to`, which adds a head.
-- Ids: letters, digits, `_ - .`, starting with a letter. Keywords can't be ids.
-- Bad lines show an inline error (step + line) and are skipped.
+- Ids: letters, digits, `_ - .`, starting with a letter. Not a keyword.
+- One quoted label per line. Properties in any order.
+- A type on an existing id replaces the shape.
+- Bad lines are skipped and listed under the animation.
 
 ## Shapes
 
-| Type | Example | Default size |
+| Type | Example | Default |
 |---|---|---|
 | `rect` | `a: rect "A" at 2,3 size 2x1 corner 0.1` | 1×1 |
 | `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
 | `diamond` | `d: diamond "x > 3?" at 4,3 size 3x1.5` | 1×1 |
-| `text` | `t: text "Hi" at 7,1 align left colour blue` | — |
-| `line` / `arrow` | `l: arrow from a to 9,3 "yes"` | — |
-| `curve` | `c: curve from a to b via 5,1 via 7,3` | A smooth curve through its via points |
-| `image(path)` | `p: image(../_assets/x.svg) at 3,4 size 2 "Alt"` | 1×1, fits inside, keeps proportions |
-| `icon(name)` | `i: icon(laptop) at 10,2` | 1×1, a Lucide icon |
+| `text` | `t: text "Hi" at 7,1 align left` | |
+| `line` / `arrow` | `l: arrow from a to 9,3 "label"` | |
+| `curve` | `c: curve from a to b via 5,1 via 7,3` | |
+| `image(path)` | `p: image(../_assets/x.svg) "Alt" at 3,4 size 2` | 1×1 |
+| `icon(name)` | `i: icon(laptop) "Laptop" at 10,2` | 1×1, Lucide |
 
-- Labels: centred in rect / circle, halfway along a line or curve, under an image / icon (also its alt text).
-- `arrow` after a line or curve's other properties gives it a head: `l: line from a to b arrow` draws the same as `l: arrow from a to b`. On an existing line, `l: arrow` adds one (it fades in). Straight after the id with `from` / `to`, `arrow` is the arrow shape. After `highlight` it's the highlight arrow, so put a head before any highlight: `l: line from a to b arrow highlight box`. A head can't be taken off (recreate the line without one).
-- A curve bends through its `via` points with the same smooth path as `move … via`. A via on a shape follows it; `above b` etc. is fixed where it is then; a signed via is relative to the point before. `c: via 6,1` on an existing curve replaces its vias (they blend when the count stays the same). `follow` goes along the curve.
-- Image paths resolve like `![](…)` on the same page.
+- Labels: centred; halfway along a line; under an image / icon.
+- Arrowhead: `l: line from a to b arrow`, or `l: arrow` on an existing line. Put it before any `highlight`.
+- Curve: a `via` on a shape follows it; a signed via is relative to the point before. `c: via 6,1` re-bends it.
+- Image paths work like `![](…)`.
 
 ## Properties
 
-| Property | Syntax | Notes |
-|---|---|---|
-| position | `at 3,2` · `at b` · `at below b` | `move` / `goto` = `at`. Also `x 3`, `y 2` |
-| placement | `below b` · `above` · `left-of` · `right-of` | Next to b's edge, once (doesn't follow). `gap 1` |
-| line ends | `from 2,3 to b` | An end on a shape follows it (stops at its edge) |
-| size | `size 2x1` · `size 2` | Circle: `size` = diameter |
-| width / height | `width 3` · `height 0.5` | Rect, image, icon |
-| radius | `radius 0.5` | Circles |
-| corner | `corner 0.2` | Rect corner radius, in cells (up to half the shorter side: a pill) |
-| fill / stroke | `fill blue` · `stroke #f80` · `none` | See colours. No `stroke` on text |
-| colour | `colour amber` | A text shape's colour, or any shape's label |
-| weight | `weight 2` | Stroke thickness × normal; `0` hides it |
-| line style | `solid` · `dashed` · `dotted` | Dashed 4w:4w, dotted 1w:1.5w. Changes cross-fade |
-| flow | `flow` · `flow-reverse` · `static` | Dashes march along at a steady 2 cells/s (dashed / dotted only). Changing direction or stopping carries on from where the dashes are |
-| angle | `angle 45` | Degrees clockwise, 0 = upright. Not lines |
-| scale | `scale 1.5` | About the centre. Not lines |
-| font | `font 1.5` · `bold` · `monospace` | × normal size. `monospace`: the site's code font |
-| arrowhead | `arrow` | Lines and curves (see Shapes) |
-| align | `align left` · `centre` · `right` | Text only |
-| layer | `back` · `normal` · `front` | Within a layer: creation order |
+| Property | Syntax |
+|---|---|
+| position | `at 3,2` · `at b` · `x 3` · `y 2` (`move` / `goto` = `at`) |
+| placement | `below b` · `above b` · `left-of b` · `right-of b` · `gap 1` |
+| line ends | `from 2,3 to b` (an end on a shape follows it) |
+| size | `size 2x1` · `size 2` (circle: diameter) · `width 3` · `height 0.5` |
+| radius / corner | `radius 0.5` (circle) · `corner 0.2` (rect) |
+| colour | `fill blue` · `stroke #f80` · `colour amber` (text and labels) |
+| weight | `weight 2` (× normal, `0` hides) |
+| line style | `solid` · `dashed` · `dotted` |
+| flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |
+| angle / scale | `angle 45` (clockwise) · `scale 1.5` (not lines) |
+| font | `font 1.5` · `bold` · `monospace` |
+| align | `align left` · `centre` · `right` (text) |
+| layer | `back` · `normal` · `front` |
 
-**Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg black white none` or `#hex`. Defaults: rect/circle fill `bg` stroke `fg`; everything else `fg`; text and labels `colour fg`. Fills of named colours are tinted; strokes and `colour` are full strength.
+**Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg black white none` · `#hex`
 
 ## Relative values
 
-On a change, a signed number is relative; unsigned is absolute. When creating, everything is absolute.
+A signed number on a change is relative. When creating, everything is absolute.
 
 ```anim
 a: move +2,-1        # 2 right, 1 up
 a: move +2,3         # 2 right, to row 3
-a: x +3              # 3 right
 a: width +1          # 1 cell wider
 a: size +1           # 1 cell bigger each way
 a: angle +90         # a further quarter turn
 ```
 
-- Watch out: `size +1x0` is an error (use `width` / `height`). A signed `move` on a change is always relative, so to start off-screen, create the shape there.
-- One line can't set the same axis twice (`move 1,3 x 4`).
-
 ## Moving lines
 
 ```anim
-l: to 6,5            # move one end
-l: to +1,+0          # one end, relatively
+l: to 6,5            # one end
 l: from a to 9,9     # both ends
-l: move +1,+0        # shift the whole line
-c: via 6,1           # a curve's bend (replaces its via points)
+l: move +1,+0        # the whole line
+c: via 6,1           # a curve's bend
 ```
-
-No `at`, `x`, `y`, angle, scale or absolute `move` on a line or curve. Shifting a curve moves its free via points too (vias on shapes stay on them).
 
 ## Movement
 
 ```anim
-a: move 9,3 via 5,1              # curve through a point (a circular arc)
-a: move 9,3 via 3,1 via 6,5      # more points: smooth, sine-like
-a: travel r1 r2 4,3 srv          # straight hops through shapes / points
-a: follow l                      # along line or curve l, from its start
-a: follow-reverse l              # along line or curve l, from its end
+a: move 9,3 via 5,1           # an arc through a point
+a: move 9,3 via 3,1 via 6,5   # a wave through several
+a: travel r1 r2 4,3           # hop by hop (speed per hop)
+a: follow l                   # along line / curve l
+a: follow-reverse l           # from its end
 ```
 
-- `via` / `travel` / `follow` move an existing shape (not when creating, not on lines). On a curve, `via` is its bend instead (see Shapes).
-- Signed `via` points are relative to the start; signed `travel` stops to the stop before.
-- `travel` eases hop by hop, each hop taking `speed` (4 stops = 4 × speed). `via` and `follow` are one ease.
-
-## Copies, attachments, groups
+## Copy, attach, group
 
 ```anim
-k2: copy key move 8,1 via 5,0.5        # the copy starts on the original and moves off
-lock: icon(lock) attach right-of msg   # rides beside msg wherever it goes
-lock: attach msg                       # on top of msg
-lock: detach                           # let go
-pkt: group msg lock                    # move / travel / highlight / remove act on all
-pkt: ungroup                           # members stay where they are
+k2: copy key move 8,1          # copy, then move off
+lock: attach right-of msg      # rides beside msg
+lock: attach msg               # on top of msg
+lock: detach
+pkt: group msg lock            # acts as one
+pkt: ungroup
 ```
 
-- Moving an attached shape releases it; moving a group member keeps it in the group.
-- Removing a group removes its members. Groups can't be copied.
-- A line can join a group only if both ends are on shapes.
+- Moving an attached shape detaches it. Moving a group member keeps it in the group.
+- A look change on a group (`fill`, `stroke` …) goes to its members.
+- Removing a group removes its members.
 
 ## Rows and columns
 
 ```anim
-arr: row 5 3 8 1 at 3,4 fill blue        # cells arr.0 … arr.3, side by side
-col: column "A" "B" "C" at 12,2 gap 0.2  # one under another
-arr: swap 0 3                            # two cells change places
-arr.2: fill amber                        # one cell
-arr: fill green                          # every cell
+arr: row 5 3 8 1 at 3,4            # cells arr.0 … arr.3
+col: column "A" "B" "C" at 12,2 gap 0.2
+arr: swap 0 3                      # two cells change places
+arr.2: fill amber                  # one cell
+arr: fill green                    # every cell
 ```
 
-- Values go straight after `row` / `column`: numbers, or quoted text (`""` is an empty cell).
-- Cells are rects numbered from 0. `size` (default 1×1), `gap` (default 0: the cells touch) and the look (`fill stroke colour weight font bold monospace corner dashed …`) apply to every cell. The cell size can't change later.
-- `at` / `move` / `x` / `y` place the **first** cell; `below b` etc. put the whole row beside b. It's a group: `move`, `travel`, `highlight`, emphasis and `remove` act on all its cells.
-- `swap i j`: in a row one cell arcs over and the other under (a column's pass right and left); further apart, they clear the cells between. Takes `speed`, `delay` and `ease`.
-- Ids go with the places: after `swap 0 3`, `arr.0` is the cell now first. Whatever is attached to `arr.0` (`i: text "i" attach below arr.0`) or ends on it stays at that place; a cell's own highlights and callout move with it.
+- Values: numbers or `"quoted"`.
+- `size` and `gap` (default 0), plus fill, stroke, font and the other looks, apply to every cell.
+- `at` places the first cell. `below b` etc. place the whole row.
+- After a swap, ids stay with the places: what's attached to `arr.0` stays put. Highlights move with the cell.
 
-## Emphasis, highlights, callouts
+## Stagger
 
 ```anim
-a: pulse                       # one-off, forwards only
-a: shake
-a: wobble                      # or wiggle
-a: bounce                      # hops up like a dropped ball
-a: glow                        # brightens with a soft glow
-l: signal                      # a glowing blip runs along line / arrow / curve l
-l: signal-reverse              # from its end back to its start
-a: highlight box               # stays until cleared
-a: highlight spotlight         # dims everything not spotlit (several shapes can be)
-a: highlight arrow             # block arrow pointing in from the top-right
-a: highlight glow              # glows in the highlight colour until cleared (bare "glow" is the one-off)
-a: highlight number 2          # numbered disc on the top-left corner
-a: highlight box arrow         # several at once
-a: highlight clear             # clears them all
-a: callout "Look!"             # speech bubble above the shape
-a: callout "Look!" below       # or left-of / right-of
-a: callout clear
+arr: row 5 3 8 1 at 2,2 pop stagger 0.15   # cells pop in one by one
+arr: fill green stagger                    # 0.1 s apart
+arr: pulse stagger 0.1
+arr: highlight box stagger 0.2             # one box per cell, in turn
+arr: fill amber stagger-reverse            # last cell first
+g: remove pop stagger 0.2                  # group members, in listed order
 ```
 
-- `signal` only goes on lines, arrows and curves (on a group: each of its lines). It runs at an even pace over the `speed`, and like the other emphasis words plays forwards only.
-- Emphasis words go on their own, not after `highlight`: `a: glow highlight box` is a one-off glow plus a box, but `a: highlight box glow` is a box plus a lasting glow.
-- Spotlight: shapes outside it dim to 20%, and so do their highlights and callouts.
-- Callouts stay inside the drawing, and their text wraps at about 24 characters.
+- Rows, columns and groups. Order: cell number / the order in `group`.
+- After any `delay`. Not on moves (the members move together). Also `defaults stagger 0.1`.
+
+## Emphasis
+
+```anim
+a: pulse
+a: shake
+a: wobble            # or wiggle
+a: bounce
+a: glow
+l: signal            # a blip along a line / curve
+l: signal-reverse
+```
+
+One-off; they don't replay going back. `signal` is for lines (on a group: each of its lines).
+
+## Highlights and callouts
+
+```anim
+a: highlight box
+a: highlight arrow
+a: highlight glow
+a: highlight number 2
+a: highlight spotlight     # dims everything else
+a: highlight box arrow     # several
+a: highlight clear
+a: callout "Look!"         # above
+a: callout "Look!" below   # or left-of / right-of
+a: callout clear
+```
 
 ## Timing and effects
 
 ```anim
-a: move 4,2 speed slow         # instant | vfast | fast | normal | slow | vslow
-a: move 4,2 speed 1.5          # or seconds
-a: fill red delay 1            # wait 1 s before starting
-a: move 9,2 ease linear        # in-out (default) | linear | in | out | spring
-a: rect at 2,3 pop             # entrance: fade (default) | pop | slide | typed
-l: arrow from a to b draw      # a line draws itself in
-t: text "$ ls" at 2,1 monospace typed   # types out one character at a time
-a: remove pop                  # exits take the same effects
+a: move 4,2 speed slow     # instant vfast fast normal slow vslow, or seconds
+a: fill red delay 1        # seconds
+a: move 9,2 ease linear    # in-out (default) linear in out spring
+a: rect at 2,3 pop         # fade (default) pop slide typed
+l: arrow from a to b draw  # lines
+t: text "$ ls" at 2,1 typed
+a: remove pop              # exits too
 ```
 
-- **Intro:** if the first beat uses `typed`, `pop`, `draw`, `slide` or a `delay`, it plays in from nothing when the animation first comes into view, and again after going back to the start (⏮, Home, or a `loop`). The drawing stays empty until then. A first beat with only plain fades is just shown, as is everything for viewers who prefer reduced motion.
-- `typed` types a shape's text out at an even pace over the `speed` (the shape fades in quickly first); as an exit it un-types. Shapes with no text fade.
 - Speeds: instant 0 · vfast 0.25 · fast 0.5 · **normal 1** · slow 2 · vslow 4 s.
-- `ease`: **in-out** starts and ends gently · `linear` an even pace · `in` speeds up · `out` slows down · `spring` overshoots and settles (a `pop` springs past full size). Works on any change, entrance or exit, `travel` (each hop), `swap`, `camera` and `defaults` (`defaults ease spring`).
-- A bare speed word is an error: write `speed slow`.
-- A beat lasts until its last change ends. Going back plays it exactly in reverse.
+- Intro: a first beat with `pop`, `slide`, `draw`, `typed` or `delay` plays in when the animation comes into view.
 
-## Beat lines (no id)
+## Beat lines (no id, no colon)
 
 ```anim
-defaults fill blue speed fast    # applies to lines after it (merges)
+defaults fill blue speed fast    # for the lines after it
 defaults clear
-pause                            # while playing, wait here for Next
-pause 2                          # while playing, hold 2 s here
-auto                             # go straight on to the next beat (one click plays a chain)
+pause                            # while playing: wait for Next
+pause 2                          # while playing: hold 2 s
+auto                             # go straight on to the next beat
 ```
 
-- `defaults` has no colon. No `at` / `via` / `delay` / labels in defaults.
-- `pause` / `auto` describe what happens *after* their beat.
-
-## Camera (beat line, no id)
+## Camera (no id, no colon)
 
 ```anim
-camera at 4,3 zoom 2             # centre on 4,3, twice as close (goto / move = at)
-camera at a zoom 3 speed slow    # centre on where a is now (doesn't follow it)
-camera zoom 1.5                  # zoom about the current centre
-camera move +2,0                 # pan 2 cells right (relative, like shapes)
-camera zoom +1                   # one step closer
-camera travel b c d              # pan hop by hop through the stops (ids and/or x,y)
-camera reset                     # back to the whole drawing
+camera at 4,3 zoom 2
+camera at a zoom 3 speed slow
+camera move +2,0
+camera zoom +1
+camera travel b c d
+camera reset
 ```
 
-- Takes `at` / `x` / `y`, `travel`, `zoom`, `reset`, `speed`, `delay` and `ease`. No colon.
-- `travel` can't go with `at` / `x` / `y`. Each hop eases on its own and takes `speed`, so 3 stops take 3 × speed.
-- Stays until changed (later steps keep it). Going back plays it in reverse; jumps cut.
-- Zoomed in (`zoom` ≥ 1), the view stays inside the drawing; `zoom 0.5` zooms out.
+Takes `at` `x` `y` `travel` `zoom` `reset` `speed` `delay` `ease`. Stays until changed.
 
-## Switching things off
+## Switching off
 
 ```anim
 a: remove
 g: ungroup
 a: detach
-l: static              # stop flowing
-l: solid               # no dashes or dots
+l: static
+l: solid
 a: highlight clear
 a: callout clear
 defaults clear
