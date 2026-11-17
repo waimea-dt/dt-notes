@@ -604,23 +604,27 @@
 
     // A row (side by side) or column (one under another) of rect cells, ids "id.0", "id.1", …: a
     // group placed by its first cell. The values go in [ ] straight after the type (numbers or
-    // quoted text, commas optional); size, gap and the look apply to every cell.
+    // quoted text, commas optional), or a bare count makes that many empty cells; size, gap and
+    // the look apply to every cell.
     function createLayout(id, layout, tokens, existing, meta, warn) {
-      const example = `e.g. "${id}: ${layout} [5 3 8 1] at 2,3" (words in quotes: ["A" "B"])`
-      if (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[') throw new Error(`a ${layout}'s values go in [ ] straight after "${layout}", ${example}`)
-      const values = []
-      let j = 2
-      for (; j < tokens.length; j++) {
+      const example = `e.g. "${id}: ${layout} [5 3 8 1] at 2,3" (words in quotes: ["A" "B"]), or a number of empty cells: "${id}: ${layout} 4 at 2,3"`
+      const count = tokens[1]?.kind === 'word' && NUMBER.test(tokens[1].value) ? tokens[1].value : null
+      if (count !== null && !/^\d+$/.test(count)) throw new Error(`a ${layout}'s number of cells is a whole number, e.g. "${id}: ${layout} 4", not "${count}"`)
+      if (count !== null && +count < 1) throw new Error(`a ${layout} needs at least one cell`)
+      if (count === null && (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[')) throw new Error(`a ${layout}'s values go in [ ] straight after "${layout}", ${example}`)
+      const values = count === null ? [] : Array(+count).fill('')
+      let j = count === null ? 2 : 1
+      for (; count === null && j < tokens.length; j++) {
         const token = tokens[j]
         if (token.kind === 'bracket') break
         if (token.kind === 'str') values.push(token.value)
         else if (token.kind === 'word' && NUMBER.test(token.value)) values.push(token.value)
         else throw new Error(`a ${layout}'s values are numbers or "quoted" text, not "${token.value ?? token.name}" (is a "]" missing?)`)
       }
-      if (tokens[j]?.value !== ']') throw new Error(`the "[" of a ${layout} has no closing "]"`)
+      if (count === null && tokens[j]?.value !== ']') throw new Error(`the "[" of a ${layout} has no closing "]"`)
       if (!values.length) throw new Error(`a ${layout} needs at least one value, ${example}`)
       const props = parseProps(tokens, j + 1, 'layout', shapes)
-      if (props.label !== undefined) throw new Error(`a ${layout}'s values all go inside its [ ]`)
+      if (props.label !== undefined) throw new Error(count === null ? `a ${layout}'s values all go inside its [ ]` : `a ${layout} of ${count} empty cells has no labels: give its values in [ ] instead`)
       const allowed = ['at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', 'speed', 'delay', 'ease', 'stagger', 'effect', 'highlight', 'callout']
       const extra = Object.keys(props).find((key) => !allowed.includes(key))
       if (extra) throw new Error(`"${extra === 'head' ? 'arrow' : extra}" doesn't apply to a ${layout}`)

@@ -169,12 +169,13 @@ pkt: ungroup
 ```anim
 arr: row [5 3 8 1] at 3,4          # cells arr.0 … arr.3
 col: column ["A" "B" "C"] at 12,2 gap 0.2
+mem: row 8 at 2,6                  # 8 empty cells
 arr: swap 0 3                      # two cells change places
 arr.2: fill amber                  # one cell
 arr: fill green                    # every cell
 ```
 
-- Values go in `[ ]`: numbers or `"quoted"`, commas optional (`[5, 3, 8]`).
+- Values go in `[ ]`: numbers or `"quoted"`, commas optional (`[5, 3, 8]`). A bare whole number makes that many empty cells.
 - `size` and `gap` (default 0), plus fill, stroke, font and the other looks, apply to every cell.
 - `at` places the first cell. `below b` etc. place the whole row.
 - After a swap, ids stay with the places: what's attached to `arr.0` stays put. Highlights move with the cell.

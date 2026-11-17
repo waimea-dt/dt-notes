@@ -1659,6 +1659,7 @@ g2: remove pop
 arr: row [5 3 8 1] at 2,1.5 fill blue
 col: column ["A" "B" "C"] at 10,1.5 size 1.6x0.8 gap 0.2 fill teal corner 0.1
 words: row ["cat" "" "dog"] at 2,4 size 1.4x0.8 gap 0.3
+mem: row 4 at 7.5,5.3 size 0.8
 ```
 
 ---
@@ -1667,6 +1668,7 @@ words: row ["cat" "" "dog"] at 2,4 size 1.4x0.8 gap 0.3
 
 ```anim
 arr.1: fill amber
+mem.2: "7"
 ```
 
 +++
@@ -2219,6 +2221,56 @@ g: remove pop stagger 0.2
 
 </animation>
 
+<animation grid="8x8" autoplay>
+
+```anim
+c1: column 6 at 2,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15
+c2: column 6 at 3,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 1
+c3: column 6 at 4,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 2
+c4: column 6 at 5,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 3
+c5: column 6 at 6,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 4
+c6: column 6 at 7,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 5
+auto
+```
+
++++
+
+```anim
+c1: fill red    stagger 0.15
+c2: fill orange stagger 0.15 delay 1
+c3: fill yellow stagger 0.15 delay 2
+c4: fill green  stagger 0.15 delay 3
+c5: fill cyan   stagger 0.15 delay 4
+c6: fill purple stagger 0.15 delay 5
+auto
+```
+
++++
+
+```anim
+c1: fill green  stagger-reverse 0.15
+c2: fill cyan   stagger-reverse 0.15 delay 1
+c3: fill purple stagger-reverse 0.15 delay 2
+c4: fill red    stagger-reverse 0.15 delay 3
+c5: fill orange stagger-reverse 0.15 delay 4
+c6: fill yellow stagger-reverse 0.15 delay 5
+auto
+```
+
++++
+
+```anim
+c1: remove stagger 0.15
+c2: remove stagger 0.15 delay 1
+c3: remove stagger 0.15 delay 2
+c4: remove stagger 0.15 delay 3
+c5: remove stagger 0.15 delay 4
+c6: remove stagger 0.15 delay 5
+auto
+```
+
+</animation>
+
 ### ease
 
 <animation grid="12x6">
@@ -2479,6 +2531,9 @@ ar3: row [5 3 at 1,1
 ar4: row [] at 1,1
 ar5: row [5 3] "label" at 1,1
 ar6: rect at 1,1 [5]
+ar7: row 2.5 at 1,1
+ar8: column 0 at 1,1
+ar9: row 3 "x" at 1,1
 dw: swap 0 1
 dw: signal
 q: rect at 1,1 ease bouncy
