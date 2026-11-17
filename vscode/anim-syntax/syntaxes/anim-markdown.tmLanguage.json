@@ -1,9 +1,10 @@
 {
-  "$comment": "Injects the anim grammar into ```anim fenced code blocks in Markdown.",
+  "$comment": "Injects the anim grammar into ```anim fenced code blocks in Markdown. Markdown examples (```markdown / ```md fences, e.g. in ANIMATION.md) are highlighted as Markdown too, so ```anim fences nested in them are highlighted.",
   "scopeName": "markdown.anim.codeblock",
   "injectionSelector": "L:text.html.markdown",
   "patterns": [
-    { "include": "#anim-code-block" }
+    { "include": "#anim-code-block" },
+    { "include": "#markdown-code-block" }
   ],
   "repository": {
     "anim-code-block": {
@@ -27,6 +28,24 @@
             { "include": "source.anim" }
           ]
         }
+      ]
+    },
+    "markdown-code-block": {
+      "$comment": "No while-wrapper here (unlike anim): the content is Markdown with its own fences, so only the outer fence (same length) ends it",
+      "name": "markup.fenced_code.block.markdown",
+      "begin": "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?i:(markdown|md)(\\s+[^`~]*)?$)",
+      "beginCaptures": {
+        "3": { "name": "punctuation.definition.markdown" },
+        "4": { "name": "fenced_code.block.language.markdown" },
+        "5": { "name": "fenced_code.block.language.attributes.markdown" }
+      },
+      "end": "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$",
+      "endCaptures": {
+        "3": { "name": "punctuation.definition.markdown" }
+      },
+      "contentName": "meta.embedded.block.markdown",
+      "patterns": [
+        { "include": "text.html.markdown" }
       ]
     }
   }

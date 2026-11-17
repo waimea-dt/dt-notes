@@ -60,6 +60,8 @@ const provider = {
 
 function activate(context) {
   context.subscriptions.push(vscode.languages.registerColorProvider([{ language: 'anim' }, { language: 'markdown' }], provider))
+  // anim highlighting in the Markdown preview (see preview.js)
+  return { extendMarkdownIt: require('./preview').extendMarkdownIt }
 }
 
 module.exports = { activate, deactivate() {} }

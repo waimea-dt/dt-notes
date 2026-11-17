@@ -2,7 +2,7 @@
   "name": "dt-notes-anim-syntax",
   "displayName": "DT Notes Anim Syntax",
   "description": "Syntax highlighting and colour swatches for <animation> scene lines (```anim fences in Markdown, and .anim files).",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "publisher": "dt-notes",
   "license": "MIT",
   "repository": {
@@ -21,6 +21,7 @@
     "onLanguage:markdown"
   ],
   "contributes": {
+    "markdown.markdownItPlugins": true,
     "languages": [
       {
         "id": "anim",
