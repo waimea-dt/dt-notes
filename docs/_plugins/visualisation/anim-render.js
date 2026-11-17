@@ -9,6 +9,10 @@
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
     MONO_FONT } = window.Anim
 
+  // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
+  // "central" baseline sits it a little low
+  const LABEL_LIFT = 0.07
+
   // An arrowhead's strength (0-1): arrows have one, and lines or curves given "arrow"
   const headOf = (shape) => (shape.type === 'arrow' || shape.head ? 1 : 0)
 
@@ -360,7 +364,7 @@
       } else if (['image', 'icon'].includes(node.type)) {
         attr(label, 'y', hh + fontSize * 0.75)
       } else {
-        attr(label, 'y', 0)
+        attr(label, 'y', -LABEL_LIFT * fontSize) // "central" sits text a little low in a shape
       }
       if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); node.debugId.textContent = s.id }
     }
@@ -676,7 +680,7 @@
         if (node.badgeText.textContent !== label) node.badgeText.textContent = label
         const badgeFont = FONT * (label.length > 2 ? 0.62 : 0.88)
         node.badgeText.style.fontSize = `${badgeFont}px`
-        attr(node.badgeText, 'y', -0.07 * badgeFont) // digits have no descenders, so "central" sits them low
+        attr(node.badgeText, 'y', -LABEL_LIFT * badgeFont) // "central" sits text a little low
         attr(node.badge, 'transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(0.001, 0.6 + 0.4 * badgeOpacity / k)})`)
         node.badge.style.opacity = badgeOpacity
         if (!badgeOpacity) { node.badge.remove(); node.badge = null }
