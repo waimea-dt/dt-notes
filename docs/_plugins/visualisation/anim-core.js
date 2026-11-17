@@ -32,7 +32,7 @@
   const LINE_STYLES = ['solid', 'dashed', 'dotted']
   // Each pattern as a visible mark and gap, in multiples of the line's thickness (w):
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
-  const PATTERNS = { dashed: { d: 3, g: 3 }, dotted: { d: 1, g: 1 } }
+  const PATTERNS = { dashed: { d: 4, g: 4 }, dotted: { d: 1, g: 1.5 } }
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
@@ -183,7 +183,9 @@
   const clamp01 = (t) => Math.min(1, Math.max(0, t))
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
-  const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  // One media query, made once (it's checked for every shape on every frame); .matches stays live
+  const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)')
+  const reducedMotion = () => Boolean(motionQuery?.matches)
 
   function lucideIcon(name) {
     const pascal = name.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join('')

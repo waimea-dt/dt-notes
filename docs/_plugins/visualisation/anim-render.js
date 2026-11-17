@@ -14,6 +14,20 @@
 
   const flowState = new WeakMap() // stroke element -> { key, anim } for flowing dashes
 
+  // Sets (or with null, removes) an attribute only when it changes. Writing an SVG attribute makes
+  // the browser re-check the element's layout even when the value is the same, and every shape is
+  // drawn on every frame of a transition. Each element's last values are remembered here.
+  const attrCache = new WeakMap()
+  function attr(el, name, value) {
+    let cache = attrCache.get(el)
+    if (!cache) attrCache.set(el, (cache = new Map()))
+    const text = value === null || value === undefined ? null : String(value)
+    if (cache.has(name) && cache.get(name) === text) return
+    cache.set(name, text)
+    if (text === null) el.removeAttribute(name)
+    else el.setAttribute(name, text)
+  }
+
   // Parses a computed colour to [r, g, b, a] (0-255, alpha 0-1). rgb() and color(srgb …) are read
   // directly; anything else (the theme's oklch palette, lab, …) is converted by painting one pixel
   // on a canvas and reading it back as sRGB.
@@ -67,7 +81,7 @@
       }
       if (shape.type === 'icon') {
         node.icon = window.lucide.createElement(lucideIcon(shape.icon))
-        node.icon.setAttribute('class', 'no-zoom') // the zoom plugin also attaches to nested SVGs
+        attr(node.icon, 'class', 'no-zoom') // the zoom plugin also attaches to nested SVGs
         g.appendChild(node.icon)
       }
       node.label = g.appendChild(svgEl('text', { class: 'anim-label', 'dominant-baseline': 'central' }))
@@ -109,7 +123,7 @@
       const { g } = node
       if (node.type === 'group') {
         // A group is invisible (its highlight box is drawn in drawOverlays)
-        if (node.debugId) { node.debugId.setAttribute('x', s.x); node.debugId.setAttribute('y', s.y); node.debugId.textContent = s.id }
+        if (node.debugId) { attr(node.debugId, 'x', s.x); attr(node.debugId, 'y', s.y); node.debugId.textContent = s.id }
         return
       }
       const strokeWidth = STROKE * s.weight
@@ -122,24 +136,28 @@
         const gapLen = PATTERNS[style].g * k + strokeWidth
         return { dash: `${dashLen} ${gapLen}`, cap: 'round', dashLen, gapLen, plain: false }
       }
-      const { dash, cap, dashLen, gapLen, plain } = dashFor(s.linestyle)
+      const pattern = dashFor(s.linestyle)
+      const { dash, cap } = pattern
 
       // A style change cross-fades: a copy of the stroke in the old style (the ghost) fades out on
       // top while the new style fades in. The ghost mirrors the stroke's geometry and colour.
       const fading = s.fromStyle && s.fromStyle !== s.linestyle && v.draw >= 1
-      const syncGhost = (body) => {
+      const syncGhost = (body, base = 0) => {
         if (!fading) {
-          node.ghost?.remove()
+          if (node.ghost) { flowState.get(node.ghost)?.anim?.cancel(); node.ghost.remove() }
           node.ghost = null
           body.style.strokeOpacity = ''
           return
         }
-        if (!node.ghost) node.ghost = body.cloneNode(false)
+        if (!node.ghost) {
+          node.ghost = body.cloneNode(false)
+          // the old pattern carries on from where the stroke's flow had got to
+          flowState.set(node.ghost, { key: '', shift: flowState.get(body)?.shift || 0 })
+        }
         const ghost = node.ghost
         for (const name of ['x', 'y', 'width', 'height', 'rx', 'ry', 'r', 'x1', 'y1', 'x2', 'y2']) {
           const value = body.getAttribute(name)
-          if (value === null) ghost.removeAttribute(name)
-          else ghost.setAttribute(name, value)
+          attr(ghost, name, value)
         }
         if (ghost.previousSibling !== body) body.after(ghost)
         const old = dashFor(s.fromStyle)
@@ -148,23 +166,39 @@
           fill: 'none', stroke: body.style.stroke, strokeWidth: body.style.strokeWidth,
           strokeDasharray: old.dash, strokeLinecap: old.cap, strokeOpacity: String(1 - s.styleT),
         })
+        setFlow(ghost, old, base)
         body.style.strokeOpacity = String(s.styleT)
       }
-      // Flow: a looping Web Animation moves the dash offset by one pattern period (seamless);
-      // reverse runs it backwards. Restarted only when the period or direction changes.
-      const setFlow = (el) => {
-        const on = s.flow !== 'none' && !plain && v.draw >= 1 && !reducedMotion()
-        const period = Math.round(dashLen + gapLen)
-        const key = on ? `${period}|${s.flow}` : ''
-        const state = flowState.get(el)
-        if ((state?.key || '') === key) return
-        state?.anim.cancel()
-        flowState.delete(el)
-        if (!on || !el.animate || !period) return
-        const anim = el.animate([{ strokeDashoffset: '0px' }, { strokeDashoffset: `${-period}px` }], {
-          duration: (period / FLOW_SPEED) * 1000, iterations: Infinity, direction: s.flow === 'reverse' ? 'reverse' : 'normal',
-        })
-        flowState.set(el, { key, anim })
+      // Flow: a looping Web Animation adds a steady march to the dash offset, one pattern period
+      // per loop (seamless); reverse runs it backwards. It never eases. The offset underneath it
+      // (inline) is `base` (see dashBase) plus `shift`, how far the march had got when it last
+      // stopped or changed, so a new pattern, a change of direction or stopping carries on from
+      // where the dashes are instead of jumping.
+      const setFlow = (el, pat = pattern, base = 0) => {
+        const on = s.flow !== 'none' && !pat.plain && v.draw >= 1 && !reducedMotion()
+        const period = pat.dashLen + pat.gapLen
+        const key = on ? `${period.toFixed(3)}|${s.flow}` : ''
+        let state = flowState.get(el)
+        if (!state) flowState.set(el, (state = { key: '', shift: 0 }))
+        if (state.key !== key) {
+          if (state.anim) {
+            const { duration, iterations } = state.anim.effect.getTiming()
+            const frac = iterations && duration ? ((state.anim.currentTime ?? 0) % duration) / duration : 0
+            state.shift -= state.period * (state.reverse ? 1 - frac : frac)
+            state.anim.cancel()
+            state.anim = null
+          }
+          if (on && period) state.shift %= period // whole periods don't show
+          state.key = key
+          if (on && el.animate && period) {
+            state.period = period
+            state.reverse = s.flow === 'reverse'
+            state.anim = el.animate([{ strokeDashoffset: '0px' }, { strokeDashoffset: `${-period}px` }], {
+              duration: (period / FLOW_SPEED) * 1000, iterations: Infinity, direction: state.reverse ? 'reverse' : 'normal', composite: 'add',
+            })
+          }
+        }
+        el.style.strokeDashoffset = `${base + state.shift}px`
       }
       g.style.opacity = v.opacity
       // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
@@ -187,6 +221,10 @@
       if (LINE_TYPES.includes(node.type)) {
         let { from, to } = resolveEnds(s, byId)
         if (v.ends) ({ from, to } = v.ends)
+        // dashBase: a line from a shape starts its pattern at the shape's centre, not its edge, so
+        // the dashes stay put while the edge point slides round the shape as the other end moves
+        const fromShape = s.from?.ref && byId.get(s.from.ref)
+        const dashBase = fromShape ? Math.hypot(from.x - boxCentre(fromShape).x, from.y - boxCentre(fromShape).y) : 0
         from = { x: from.x + v.dx, y: from.y + v.dy }
         to = { x: to.x + v.dx, y: to.y + v.dy }
         const len = Math.hypot(to.x - from.x, to.y - from.y)
@@ -200,52 +238,51 @@
           const drawn = { x: from.x + (to.x - from.x) * v.draw, y: from.y + (to.y - from.y) * v.draw }
           const tip = v.draw < 1 ? drawn : to
           const base = v.draw < 1 ? { x: tip.x - ux * head, y: tip.y - uy * head } : back
-          node.head.setAttribute('points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
+          attr(node.head, 'points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
           node.head.style.opacity = clamp01(v.draw * 4 - 0.2)
           node.head.style.strokeWidth = strokeWidth
           paint(node.head, 'fill', colours.stroke)
           paint(node.head, 'stroke', colours.stroke)
           end = back
         }
-        node.body.setAttribute('x1', from.x); node.body.setAttribute('y1', from.y)
-        node.body.setAttribute('x2', end.x); node.body.setAttribute('y2', end.y)
+        attr(node.body, 'x1', from.x); attr(node.body, 'y1', from.y)
+        attr(node.body, 'x2', end.x); attr(node.body, 'y2', end.y)
         node.body.style.strokeWidth = strokeWidth
         if (v.draw < 1) {
           setFlow(node.body) // off while drawing in
           syncGhost(node.body)
-          node.body.setAttribute('pathLength', '1')
+          attr(node.body, 'pathLength', '1')
           node.body.style.strokeDasharray = '1 1'
           node.body.style.strokeDashoffset = String(1 - v.draw)
         } else {
-          node.body.removeAttribute('pathLength')
+          attr(node.body, 'pathLength', null)
           node.body.style.strokeDasharray = dash
           node.body.style.strokeLinecap = cap
-          node.body.style.strokeDashoffset = ''
-          setFlow(node.body)
-          syncGhost(node.body)
+          setFlow(node.body, pattern, dashBase)
+          syncGhost(node.body, dashBase)
         }
         paint(node.body, 'stroke', colours.stroke)
         const mx = (from.x + to.x) / 2
         const my = (from.y + to.y) / 2
-        node.label.setAttribute('x', mx); node.label.setAttribute('y', my)
-        node.label.setAttribute('text-anchor', 'middle')
+        attr(node.label, 'x', mx); attr(node.label, 'y', my)
+        attr(node.label, 'text-anchor', 'middle')
         node.label.classList.add('anim-halo')
-        g.setAttribute('transform', v.scale === 1 && !v.rot ? '' : `translate(${mx} ${my}) rotate(${v.rot || 0}) scale(${v.scale}) translate(${-mx} ${-my})`)
-        if (node.debugId) { node.debugId.setAttribute('x', from.x); node.debugId.setAttribute('y', from.y); node.debugId.textContent = s.id }
+        attr(g, 'transform', v.scale === 1 && !v.rot ? '' : `translate(${mx} ${my}) rotate(${v.rot || 0}) scale(${v.scale}) translate(${-mx} ${-my})`)
+        if (node.debugId) { attr(node.debugId, 'x', from.x); attr(node.debugId, 'y', from.y); node.debugId.textContent = s.id }
         return
       }
 
       const c = boxCentre(s)
-      g.setAttribute('transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle + (v.rot || 0)}) scale(${v.scale * s.scale})`)
+      attr(g, 'transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle + (v.rot || 0)}) scale(${v.scale * s.scale})`)
       const { hw, hh } = extents(s)
 
       if (node.type === 'rect') {
-        node.body.setAttribute('x', -hw); node.body.setAttribute('y', -hh)
-        node.body.setAttribute('width', 2 * hw); node.body.setAttribute('height', 2 * hh)
+        attr(node.body, 'x', -hw); attr(node.body, 'y', -hh)
+        attr(node.body, 'width', 2 * hw); attr(node.body, 'height', 2 * hh)
         const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
-        node.body.setAttribute('rx', corner); node.body.setAttribute('ry', corner)
+        attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
       }
-      if (node.type === 'circle') node.body.setAttribute('r', s.r)
+      if (node.type === 'circle') attr(node.body, 'r', s.r)
       if (['rect', 'circle'].includes(node.type)) {
         paint(node.body, 'fill', colours.fill)
         paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
@@ -257,8 +294,8 @@
       }
       if (node.type === 'image') {
         for (const el of [node.image, node.body]) {
-          el.setAttribute('x', -hw); el.setAttribute('y', -hh)
-          el.setAttribute('width', 2 * hw); el.setAttribute('height', 2 * hh)
+          attr(el, 'x', -hw); attr(el, 'y', -hh)
+          attr(el, 'width', 2 * hw); attr(el, 'height', 2 * hh)
         }
         paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
@@ -268,34 +305,41 @@
         syncGhost(node.body)
       }
       if (node.type === 'icon') {
-        node.icon.setAttribute('x', -hw); node.icon.setAttribute('y', -hh)
-        node.icon.setAttribute('width', 2 * hw); node.icon.setAttribute('height', 2 * hh)
-        node.icon.setAttribute('stroke-width', 2 * s.weight)
+        attr(node.icon, 'x', -hw); attr(node.icon, 'y', -hh)
+        attr(node.icon, 'width', 2 * hw); attr(node.icon, 'height', 2 * hh)
+        attr(node.icon, 'stroke-width', 2 * s.weight)
         paint(node.icon, 'stroke', colours.stroke)
       }
       if (node.title && node.title.textContent !== s.label) node.title.textContent = s.label
 
       // Label: inside rect/circle, the content of text, under image/icon
       const label = node.label
-      label.setAttribute('x', 0)
-      label.setAttribute('text-anchor', 'middle')
+      attr(label, 'x', 0)
+      attr(label, 'text-anchor', 'middle')
       if (node.type === 'text') {
         const anchor = s.align === 'left' ? 'start' : s.align === 'right' ? 'end' : 'middle'
-        label.setAttribute('text-anchor', anchor)
-        label.setAttribute('x', anchor === 'start' ? -hw : anchor === 'end' ? hw : 0)
-        label.setAttribute('y', 0)
+        attr(label, 'text-anchor', anchor)
+        attr(label, 'x', anchor === 'start' ? -hw : anchor === 'end' ? hw : 0)
+        attr(label, 'y', 0)
       } else if (['image', 'icon'].includes(node.type)) {
-        label.setAttribute('y', hh + fontSize * 0.75)
+        attr(label, 'y', hh + fontSize * 0.75)
       } else {
-        label.setAttribute('y', 0)
+        attr(label, 'y', 0)
       }
-      if (node.debugId) { node.debugId.setAttribute('x', -hw); node.debugId.setAttribute('y', -hh - 4); node.debugId.textContent = s.id }
+      if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); node.debugId.textContent = s.id }
     }
 
     // Puts each node in its layer, in creation order.
     function order(list) {
       list.sort((a, b) => LAYERS[a.shape.layer] - LAYERS[b.shape.layer] || a.shape.uid - b.shape.uid)
-      list.forEach(({ node, shape }) => layers[LAYERS[shape.layer]].appendChild(node.g))
+      // Moves only the nodes that are out of place: re-appending every node each frame is costly
+      const prev = layers.map(() => null)
+      list.forEach(({ node, shape }) => {
+        const i = LAYERS[shape.layer]
+        const want = prev[i] ? prev[i].nextSibling : layers[i].firstChild
+        if (node.g.parentNode !== layers[i] || want !== node.g) layers[i].insertBefore(node.g, want)
+        prev[i] = node.g
+      })
     }
 
     function offscreenOffset(shape) {
@@ -355,6 +399,13 @@
       return lit
     }
 
+    // A beat's state never changes once compiled, so its spotlit shapes are worked out once
+    const litCache = new WeakMap()
+    function litFor(state) {
+      if (!litCache.has(state)) litCache.set(state, litIds(state))
+      return litCache.get(state)
+    }
+
     const DIM = 0.2 // opacity of shapes outside the spotlight
 
     /**
@@ -382,6 +433,7 @@
         let v
         if (a && b) {
           shape = interpolate(a, b, t)
+          if (!extra.forward) shape.flow = a.flow // flow switches to where we're going (A, going back)
           if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw) : pointOnPath(tw.path, t))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
@@ -447,8 +499,8 @@
       }
 
       // Spotlight: shapes outside it fade to DIM over the beat
-      const litA = litIds(A)
-      const litB = litIds(B)
+      const litA = litFor(A)
+      const litB = litFor(B)
       for (const item of items) {
         const dimA = litA && !litA.has(item.shape.id) ? 1 : 0
         const dimB = litB && !litB.has(item.shape.id) ? 1 : 0
@@ -497,7 +549,7 @@
       if (boxOpacity || node.box) {
         if (!node.box) node.box = highlightLayer.appendChild(svgEl('rect', { class: 'anim-highlight-box' }))
         Object.entries({ x: b.x0 - pad, y: b.y0 - pad, width: b.x1 - b.x0 + 2 * pad, height: b.y1 - b.y0 + 2 * pad, rx: 0.12 * CELL })
-          .forEach(([k, val]) => node.box.setAttribute(k, val))
+          .forEach(([k, val]) => attr(node.box, k, val))
         node.box.style.opacity = boxOpacity
         if (!boxOpacity) { node.box.remove(); node.box = null }
       }
@@ -508,11 +560,11 @@
           node.pointer = highlightLayer.appendChild(svgEl('polygon', { class: 'anim-highlight-arrow', 'stroke-linejoin': 'round' }))
           // pointing along +x with its tip at 0,0 (rotated to point down-left below)
           const L = 0.9 * CELL, H = 0.50 * CELL, HW = 0.33 * CELL, SW = 0.17 * CELL
-          node.pointer.setAttribute('points', `0,0 ${-H},${-HW} ${-H},${-SW} ${-L},${-SW} ${-L},${SW} ${-H},${SW} ${-H},${HW}`)
+          attr(node.pointer, 'points', `0,0 ${-H},${-HW} ${-H},${-SW} ${-L},${-SW} ${-L},${SW} ${-H},${SW} ${-H},${HW}`)
         }
         const back = (1 - arrowOpacity / k) * 0.4 * CELL // slides by its fade, not the dimming
         const tip = { x: b.x1 - 0.75 * pad + back, y: b.y0 + 0.75 * pad - back }
-        node.pointer.setAttribute('transform', `translate(${tip.x} ${tip.y}) rotate(135)`)
+        attr(node.pointer, 'transform', `translate(${tip.x} ${tip.y}) rotate(135)`)
         node.pointer.style.opacity = arrowOpacity
         if (!arrowOpacity) { node.pointer.remove(); node.pointer = null }
       }
@@ -530,8 +582,8 @@
         if (node.badgeText.textContent !== label) node.badgeText.textContent = label
         const badgeFont = FONT * (label.length > 2 ? 0.62 : 0.88)
         node.badgeText.style.fontSize = `${badgeFont}px`
-        node.badgeText.setAttribute('y', -0.07 * badgeFont) // digits have no descenders, so "central" sits them low
-        node.badge.setAttribute('transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(0.001, 0.6 + 0.4 * badgeOpacity / k)})`)
+        attr(node.badgeText, 'y', -0.07 * badgeFont) // digits have no descenders, so "central" sits them low
+        attr(node.badge, 'transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(0.001, 0.6 + 0.4 * badgeOpacity / k)})`)
         node.badge.style.opacity = badgeOpacity
         if (!badgeOpacity) { node.badge.remove(); node.badge = null }
       }
@@ -570,7 +622,7 @@
       const m = 4
       cx = Math.min(viewBox.x + viewBox.w - w / 2 - m, Math.max(viewBox.x + w / 2 + m, cx))
       cy = Math.min(viewBox.y + viewBox.h - h / 2 - m, Math.max(viewBox.y + h / 2 + m, cy))
-      node.bubblePath.setAttribute('d', bubblePath(cx, cy, w, h, Math.min(10, h / 3), callout.side, tip))
+      attr(node.bubblePath, 'd', bubblePath(cx, cy, w, h, Math.min(10, h / 3), callout.side, tip))
       node.bubbleText.style.fontSize = `${size}px`
       if (node.bubbleKey !== callout.text) {
         node.bubbleKey = callout.text
@@ -581,8 +633,8 @@
         }))
       }
       ;[...node.bubbleText.children].forEach((span, i) => {
-        span.setAttribute('x', cx)
-        span.setAttribute('y', cy + (i - (lines.length - 1) / 2) * lineH)
+        attr(span, 'x', cx)
+        attr(span, 'y', cy + (i - (lines.length - 1) / 2) * lineH)
       })
     }
 

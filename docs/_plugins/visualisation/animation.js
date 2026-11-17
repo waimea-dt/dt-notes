@@ -252,7 +252,9 @@
 
     function setView(v) {
       Object.assign(view, v)
-      svg.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`)
+      // Only when it changes: setting it, even to the same value, makes the browser redraw everything
+      const box = `${v.x} ${v.y} ${v.w} ${v.h}`
+      if (svg.getAttribute('viewBox') !== box) svg.setAttribute('viewBox', box)
     }
     const empty = new Map()
     const emptyMeta = { tweens: new Map() }

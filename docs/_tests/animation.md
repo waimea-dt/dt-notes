@@ -701,6 +701,7 @@ ring: flow
 
 ```anim
 l: flow-reverse
+ring: flow-reverse
 ```
 
 ---
