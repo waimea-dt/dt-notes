@@ -287,15 +287,38 @@
       if (hasNotes) notesPanel.replaceChildren(...notes[step])
     }
 
-    function animateEl(el, frames, ms) {
-      if (!ms || !el.animate) return
-      el.animate(frames, { duration: ms, easing: 'ease-in-out' })
+    // A caption slide or fade. While it runs the element has its own compositor layer, so the
+    // browser moves the text without repainting it, and the diagram's frames aren't held up.
+    function animateEl(el, frames, ms, options = {}) {
+      if (!ms || !el.animate) return null
+      el.style.willChange = 'transform, opacity'
+      const anim = el.animate(frames, { duration: ms, easing: 'ease-in-out', ...options })
+      afterCaption(anim, () => { el.style.willChange = '' })
+      return anim
+    }
+
+    // What to undo once a caption animation is over (classes, styles, a held last frame). It waits
+    // until the diagram stops moving: the site's many :has() selectors make any class change
+    // restyle the whole page, which would stall a shape mid-move (the caption ends 500ms in).
+    let tidyUps = []
+    function afterCaption(anim, fn) {
+      let done = false
+      tidyUps.push({ anim, fn: () => { if (!done) { done = true; fn() } } })
+    }
+    function tidyCaptions() {
+      const list = tidyUps
+      tidyUps = []
+      for (const { anim, fn } of list) {
+        if (anim.playState === 'finished' || anim.playState === 'idle') fn()
+        else { anim.addEventListener('finish', fn); anim.addEventListener('cancel', fn) } // still going
+      }
     }
 
     function showCaption(from, to, animate) {
       const a = beats[from] || beats[0]
       const b = beats[to] || beats[0]
       if (!a || !b) return
+      tidyCaptions() // the last change's, before this one starts
       const ms = animate && !reducedMotion() ? CAPTION_MS : 0
       const forward = to > from
       const pageA = pages[a.step]
@@ -313,20 +336,20 @@
           const outTarget = sameHeading ? pageA.body : pageA.page
           pageA.page.classList.add('is-leaving')
           if (sameHeading) pageA.heading.style.visibility = 'hidden'
-          const out = outTarget.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${forward ? '-1.5em' : '1.5em'})` }], { duration: ms, easing: 'ease-in-out', fill: 'forwards' })
-          out.onfinish = out.oncancel = () => {
+          const out = animateEl(outTarget, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${forward ? '-1.5em' : '1.5em'})` }], ms, { fill: 'forwards' })
+          afterCaption(out, () => {
             pageA.page.classList.remove('is-leaving')
             pageA.heading.style.visibility = ''
             out.cancel()
-          }
+          })
         }
       } else if (a.beat !== b.beat) {
         const part = pageB.parts[Math.max(a.beat, b.beat)]
         if (forward) animateEl(part, [{ opacity: 0 }, { opacity: 1 }], ms)
         else if (ms) {
           part.classList.add('is-leaving')
-          const out = part.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ms, easing: 'ease-in-out', fill: 'forwards' })
-          out.onfinish = out.oncancel = () => { part.classList.remove('is-leaving'); out.cancel() }
+          const out = animateEl(part, [{ opacity: 1 }, { opacity: 0 }], ms, { fill: 'forwards' })
+          afterCaption(out, () => { part.classList.remove('is-leaving'); out.cancel() })
         }
       }
     }
@@ -395,6 +418,7 @@
           cancelAnimationFrame(frame)
           running = null
           showStatic(to)
+          tidyCaptions() // the diagram is still now
           resolve()
         }
         const tick = () => {
