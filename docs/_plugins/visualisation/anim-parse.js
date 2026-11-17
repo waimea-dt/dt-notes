@@ -4,8 +4,8 @@
  */
 
 ;(function () {
-  const { escapeHtml, HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, COLOURS, SPEEDS, RESERVED,
-    KEYWORDS, SHAPE_TYPES, LINE_STARTS } = window.Anim
+  const { escapeHtml, HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, COLOURS, SPEEDS, EASES, RESERVED,
+    KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LINE_STARTS } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Markdown -> source markup (beforeEach)
@@ -179,6 +179,7 @@
       case 'align': return ALIGNS[word]
       case 'colour': return COLOURS[word] !== undefined || HEX.test(word) ? word : undefined
       case 'speed': return word in SPEEDS ? SPEEDS[word] : NUMBER.test(word) && !/^[+-]/.test(word) ? parseFloat(word) * 1000 : undefined
+      case 'ease': return word in EASES ? word : undefined
     }
     return undefined
   }
@@ -224,7 +225,7 @@
       const word = token.lower
       const entry = KEYWORDS[word]
       if (!entry || (entry.modes && !entry.modes.includes(mode))) {
-        if (SHAPE_TYPES.includes(word) || LINE_STARTS.includes(word)) throw new Error(`"${word}" must come straight after the id`)
+        if (SHAPE_TYPES.includes(word) || LAYOUT_TYPES.includes(word) || LINE_STARTS.includes(word)) throw new Error(`"${word}" must come straight after the id`)
         throw new Error(`unknown word "${token.value}"`)
       }
       if (entry.error) throw new Error(entry.error)
@@ -234,7 +235,8 @@
       i = next
     }
 
-    if (props.gap && props.at?.kind !== 'place' && !props.attach) throw new Error('"gap" only works with above / below / left-of / right-of, or attach')
+    // in a row / column, gap is the space between its cells
+    if (props.gap && mode !== 'layout' && props.at?.kind !== 'place' && !props.attach) throw new Error('"gap" only works with above / below / left-of / right-of, or attach (or between the cells of a row / column)')
     if (props.at && (props.x || props.y)) throw new Error('the position is given twice (at/move and x/y)')
     return props
   }

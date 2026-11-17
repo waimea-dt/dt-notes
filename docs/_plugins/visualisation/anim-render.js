@@ -6,7 +6,7 @@
 ;(function () {
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
-    CELL, ease, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
+    CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
     MONO_FONT } = window.Anim
 
   // An arrowhead's strength (0-1): arrows have one, and lines or curves given "arrow"
@@ -75,6 +75,7 @@
       const node = { g, type: shape.type, uid: shape.uid }
       if (shape.type === 'rect') node.body = g.appendChild(svgEl('rect'))
       if (shape.type === 'circle') node.body = g.appendChild(svgEl('circle'))
+      if (shape.type === 'diamond') node.body = g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))
       if (LINE_TYPES.includes(shape.type)) {
         // one path for lines, arrows and curves; every line has a head, hidden unless it has one
         node.body = g.appendChild(svgEl('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' }))
@@ -176,7 +177,7 @@
           flowState.set(node.ghost, { key: '', shift: flowState.get(body)?.shift || 0 })
         }
         const ghost = node.ghost
-        for (const name of ['x', 'y', 'width', 'height', 'rx', 'ry', 'r', 'd']) {
+        for (const name of ['x', 'y', 'width', 'height', 'rx', 'ry', 'r', 'd', 'points']) {
           const value = body.getAttribute(name)
           attr(ghost, name, value)
         }
@@ -296,6 +297,7 @@
           syncGhost(node.body, dashBase)
         }
         paint(node.body, 'stroke', colours.stroke)
+        drawSignal(node, v.signal, pts, along, pointAt, strokeWidth)
         const { x: mx, y: my } = pointAt(total / 2) // the label sits halfway along
         attr(node.label, 'x', mx); attr(node.label, 'y', my)
         attr(node.label, 'text-anchor', 'middle')
@@ -316,7 +318,8 @@
         attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
       }
       if (node.type === 'circle') attr(node.body, 'r', s.r)
-      if (['rect', 'circle'].includes(node.type)) {
+      if (node.type === 'diamond') attr(node.body, 'points', `0,${-hh} ${hw},0 0,${hh} ${-hw},0`)
+      if (['rect', 'circle', 'diamond'].includes(node.type)) {
         paint(node.body, 'fill', colours.fill)
         paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
@@ -360,6 +363,42 @@
         attr(label, 'y', 0)
       }
       if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); node.debugId.textContent = s.id }
+    }
+
+    // signal: a glowing blip running along a line once (signal: { t: 0-1, reverse }), its tail
+    // fading behind it. It runs on until the tail has gone past the end.
+    const TAIL_PARTS = 5
+    function drawSignal(node, signal, pts, along, pointAt, strokeWidth) {
+      if (!signal) {
+        if (node.blip) node.blip.style.display = 'none'
+        return
+      }
+      if (!node.blip) {
+        node.blip = node.g.appendChild(svgEl('g', { class: 'anim-signal' }))
+        node.blipTail = Array.from({ length: TAIL_PARTS }, () => node.blip.appendChild(svgEl('path', { fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })))
+        node.blipHead = node.blip.appendChild(svgEl('circle'))
+      }
+      node.blip.style.display = ''
+      const total = along[along.length - 1]
+      const tail = Math.min(0.9 * CELL, total / 2)
+      const d = clamp01(signal.t) * (total + tail) // how far the tip has gone
+      // a stretch of the line between two distances from the start, flipped for signal-reverse
+      const stretch = (d0, d1) => {
+        let a = Math.max(0, d0)
+        let b = Math.min(total, d1)
+        if (signal.reverse) [a, b] = [total - b, total - a]
+        if (b <= a) return ''
+        return `M ${[pointAt(a), ...pts.filter((_, i) => along[i] > a && along[i] < b), pointAt(b)].map((p) => `${p.x} ${p.y}`).join(' L ')}`
+      }
+      // the tail: overlapping pieces, so it's brightest at the tip
+      node.blipTail.forEach((part, i) => {
+        attr(part, 'd', stretch(d - (tail * (i + 1)) / TAIL_PARTS, d) || null)
+        part.style.strokeWidth = Math.max(6, 2.2 * strokeWidth)
+      })
+      const tip = pointAt(signal.reverse ? total - d : d)
+      attr(node.blipHead, 'cx', tip.x); attr(node.blipHead, 'cy', tip.y)
+      attr(node.blipHead, 'r', Math.max(10, 3.2 * strokeWidth))
+      node.blipHead.style.opacity = d <= total ? 1 : 0
     }
 
     // Puts each node in its layer, in creation order.
@@ -458,6 +497,9 @@
       const uids = new Set([...aByUid.keys(), ...bByUid.keys()])
       const items = []
       const now = new Map() // id -> interpolated shape, for attached line ends and shapes
+      // Ids that pass from one shape to another (cells that swap, a shape replaced): what's
+      // attached to them stays with the id's place rather than riding along with either shape.
+      const passed = new Set([...B.keys()].filter((id) => A.has(id) && A.get(id).uid !== B.get(id).uid))
 
       for (const uid of uids) {
         // A copy starts as its original, so it animates away from it
@@ -465,13 +507,14 @@
         const a = aByUid.get(uid) || (bByUid.has(uid) ? tw?.from : undefined)
         const b = bByUid.get(uid)
         const raw = clamp01(progress(uid))
-        const t = ease(raw)
+        const easing = easeFn(tw?.ease)
+        const t = easing(raw) // spring goes past 1 and back
         let shape
         let v
         if (a && b) {
           shape = interpolate(a, b, t)
           if (!extra.forward) shape.flow = a.flow // flow switches to where we're going (A, going back)
-          if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw) : pointOnPath(tw.path, t))
+          if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw, easing) : pointOnPath(tw.path, t))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           v.label = swap && t < 0.5 ? a.label : b.label
@@ -486,6 +529,14 @@
           if (oneoff === 'bounce') v.dy = -0.6 * CELL * Math.abs(Math.sin(3 * Math.PI * raw)) * Math.pow(1 - raw, 1.5)
           // glow: brightens and glows, then fades back
           if (oneoff === 'glow') v.glow = Math.sin(Math.PI * raw)
+          // signal: a blip along the line at an even pace
+          if (oneoff === 'signal' || oneoff === 'signal-reverse') v.signal = { t: raw, reverse: oneoff === 'signal-reverse' }
+          // swap: the cell bows out to one side on its way to the other's place
+          if (tw?.arc) {
+            const k = Math.sin(Math.PI * clamp01(t))
+            v.dx += tw.arc.x * k
+            v.dy += tw.arc.y * k
+          }
         } else if (b) {
           shape = b
           v = appear(tw?.enter || 'fade', t, b, raw)
@@ -509,7 +560,7 @@
       resolveAttachments(now, (shape) => {
         const item = byItem.get(shape.id)
         const spec = item && !LINE_TYPES.includes(item.shape.type) && (item.b || item.a).attach
-        if (!spec) return null
+        if (!spec || passed.has(spec.ref)) return null
         const before = item.a?.attach
         if (item.a && item.b && !(before && before.ref === spec.ref && before.side === spec.side)) return null
         if (spec.dx === undefined || before?.dx === undefined) return spec
@@ -521,10 +572,12 @@
       })
 
       // Lines whose ends move between A and B (or swap between a shape and a point) blend the two.
+      // An end on an id that passes to another shape goes from its place in A to its place in B.
+      const at = (state) => (passed.size ? { get: (id) => (passed.has(id) ? state.get(id) : now.get(id)) } : now)
       for (const item of items) {
         if (!LINE_TYPES.includes(item.shape.type) || !item.a || !item.b) continue
-        const ea = resolveEnds(item.a, now)
-        const eb = resolveEnds(item.b, now)
+        const ea = resolveEnds(item.a, at(A))
+        const eb = resolveEnds(item.b, at(B))
         const mix = (p, q) => ({ x: lerp(p.x, q.x, item.t), y: lerp(p.y, q.y, item.t) })
         // A curve's via points blend too, when it has the same number before and after; otherwise
         // the new ones are used throughout (straightening from or bending to them as the ends move)
@@ -542,8 +595,9 @@
       const litA = litFor(A)
       const litB = litFor(B)
       for (const item of items) {
-        const dimA = litA && !litA.has(item.shape.id) ? 1 : 0
-        const dimB = litB && !litB.has(item.shape.id) ? 1 : 0
+        // each state by the shape's id in it (a swapped cell's id changes)
+        const dimA = litA && !litA.has((item.a || item.shape).id) ? 1 : 0
+        const dimB = litB && !litB.has((item.b || item.shape).id) ? 1 : 0
         const dim = lerp(dimA, dimB, extra.beatT)
         item.dimK = 1 - (1 - DIM) * dim // its highlights and callout dim with it
         item.v.opacity *= item.dimK
@@ -556,7 +610,7 @@
         // colours: blended from A's to B's over the shape's progress (entering / leaving: their own)
         const from = item.a || item.b
         const to = item.b || item.a
-        const t = item.a && item.b ? item.t : 1
+        const t = item.a && item.b ? clamp01(item.t) : 1
         const colours = {
           fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
           stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),

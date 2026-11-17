@@ -13,12 +13,8 @@ Click an animation to give it focus, then use ← / → to step and `F` for full
 We start with an unsorted array.
 
 ```anim
-defaults fill blue
-a5: rect "5" at 5,3 size 0.9
-a3: rect "3" at 6,3 size 0.9
-a8: rect "8" at 7,3 size 0.9
-a1: rect "1" at 8,3 size 0.9
-i: text "i" below a5
+arr: row 5 3 8 1 at 5,3 size 0.9 gap 0.1 fill blue
+i: text "i" attach below arr.0
 ```
 
 ---
@@ -28,8 +24,8 @@ i: text "i" below a5
 Is `5` bigger than `3`?
 
 ```anim
-a5: highlight spotlight
-a3: highlight spotlight
+arr.0: highlight spotlight
+arr.1: highlight spotlight
 ```
 
 +++
@@ -37,7 +33,7 @@ a3: highlight spotlight
 Yes it is!
 
 ```anim
-a5: fill amber pulse
+arr.0: fill amber pulse
 ```
 
 ---
@@ -47,8 +43,7 @@ a5: fill amber pulse
 So they swap places...
 
 ```anim
-a5: move 6,3 via +0.5,-0.5
-a3: move 5,3 via -0.5,+0.5
+arr: swap 0 1
 ```
 
 +++
@@ -56,9 +51,9 @@ a3: move 5,3 via -0.5,+0.5
 ...and `i` moves on.
 
 ```anim
-a5: fill blue highlight clear
-a3: fill blue highlight clear
-i: move below a5
+arr.0: fill blue highlight clear
+arr.1: fill blue highlight clear
+i: attach below arr.1
 ```
 
 Note:
@@ -71,8 +66,8 @@ Ask the class to predict the next comparison before advancing.
 Is `5` bigger than `8`?
 
 ```anim
-a5: highlight spotlight
-a8: highlight spotlight
+arr.1: highlight spotlight
+arr.2: highlight spotlight
 ```
 
 +++
@@ -80,7 +75,7 @@ a8: highlight spotlight
 No it's not
 
 ```anim
-a8: fill amber pulse
+arr.2: fill amber pulse
 ```
 
 ---
@@ -94,9 +89,9 @@ So they remain in place...
 ...and `i` moves on.
 
 ```anim
-a5: fill blue highlight clear
-a8: fill blue highlight clear
-i: move below a8
+arr.1: fill blue highlight clear
+arr.2: fill blue highlight clear
+i: attach below arr.2
 ```
 
 Note:
@@ -109,8 +104,8 @@ Ask the class to predict the next comparison before advancing.
 Is `8` bigger than `1`?
 
 ```anim
-a8: highlight spotlight
-a1: highlight spotlight
+arr.2: highlight spotlight
+arr.3: highlight spotlight
 ```
 
 +++
@@ -118,7 +113,7 @@ a1: highlight spotlight
 Yes it is!
 
 ```anim
-a8: fill amber pulse
+arr.2: fill amber pulse
 ```
 
 ---
@@ -128,8 +123,7 @@ a8: fill amber pulse
 So they swap places...
 
 ```anim
-a8: move 8,3 via +0.5,-0.5
-a1: move 7,3 via -0.5,+0.5
+arr: swap 2 3
 ```
 
 +++
@@ -137,18 +131,16 @@ a1: move 7,3 via -0.5,+0.5
 ...and that pass is done.
 
 ```anim
-a8: highlight clear
-a1: highlight clear
+arr.2: fill blue highlight clear
+arr.3: highlight clear
 ```
 
 +++
-
-...and that pass is done.
 
 The largest value, 8, has 'bubbled' to the end!
 
 ```anim
-a8: fill green wiggle speed fast
+arr.3: fill green wiggle speed fast
 i: remove
 ```
 
@@ -1628,6 +1620,184 @@ The heading stays put; only this text changes.
 
 </animation>
 
+### Rows, columns and swap
+
+<animation grid="12x6">
+
+## A row and a column
+
+`arr: row 5 3 8 1 at 2,2` makes cells `arr.0` to `arr.3`, with the first cell at 2,2. `col: column "A" "B" "C"` stacks them, with a `gap`.
+
+```anim
+arr: row 5 3 8 1 at 2,2 fill blue
+col: column "A" "B" "C" at 10,1.5 size 1.6x0.8 gap 0.2 fill teal corner 0.1
+i: text "i" attach below arr.0
+p: arrow from 1,5 to arr.0
+```
+
++++
+
+`arr: swap 0 3`: one goes over, one under. Ids go with the places, so `i` and the arrow stay put. A column's cells pass to the right and left.
+
+```anim
+arr: swap 0 3 speed slow
+col: swap 0 2 speed slow
+```
+
++++
+
+A spotlit cell keeps its highlight as it moves.
+
+```anim
+arr.1: highlight spotlight
+```
+
++++
+
+```anim
+arr: swap 1 2
+```
+
+---
+
+## Restyle and move
+
+`arr: fill green` restyles every cell; `move` places the first cell. `col.1: fill amber` is one cell.
+
+```anim
+arr.2: highlight clear
+arr: fill green move 4,4 speed slow
+col.1: fill amber pulse
+col: highlight box
+```
+
++++
+
+`below` puts the whole row beside a shape.
+
+```anim
+arr: below col gap 0.5
+```
+
++++
+
+`arr: remove pop` removes every cell.
+
+```anim
+arr: remove pop
+```
+
+</animation>
+
+### Diamonds and signals
+
+<animation grid="12x5">
+
+## Diamond
+
+`d: diamond "x > 3?" size 3x1.6`: lines stop at its slanted edges.
+
+```anim
+d: diamond "x > 3?" at 4,3 size 3x1.6 fill amber
+yes: rect "yes" at 9,1.5 size 2x0.8 corner 0.2
+no: rect "no" at 9,4.5 size 2x0.8 corner 0.2
+ly: arrow from d to yes
+ln: arrow from d to no
+c: curve from 1,1 to d via 2,3
+```
+
+---
+
+## Signal
+
+`ly: signal` sends a blip along the arrow; `c: signal speed slow` along the curve.
+
+```anim
+ly: signal
+c: signal speed slow
+```
+
++++
+
+`signal-reverse` runs from the end back to the start.
+
+```anim
+ln: signal-reverse
+```
+
++++
+
+`g: signal` on a group sends one along each of its lines.
+
+```anim
+g: group d yes no ly ln
+g: signal speed fast
+```
+
++++
+
+A diamond turns and scales like any shape.
+
+```anim
+d: angle +90 scale 0.8
+```
+
+</animation>
+
+### Easing
+
+<animation grid="12x6">
+
+## ease
+
+Each dot uses a different `ease`.
+
+```anim
+defaults radius 0.3 fill blue
+e1: circle at 3,1
+e2: circle at 3,2
+e3: circle at 3,3
+e4: circle at 3,4
+e5: circle at 3,5
+defaults clear
+t1: text "in-out" at 1.5,1
+t2: text "linear" at 1.5,2
+t3: text "in" at 1.5,3
+t4: text "out" at 1.5,4
+t5: text "spring" at 1.5,5
+```
+
++++
+
+```anim
+e1: move 11,1 speed slow
+e2: move 11,2 speed slow ease linear
+e3: move 11,3 speed slow ease in
+e4: move 11,4 speed slow ease out
+e5: move 11,5 speed slow ease spring
+```
+
+---
+
+## Defaults, pop and camera
+
+`defaults ease spring`: shapes overshoot as they pop in; the camera eases out.
+
+```anim
+defaults ease spring
+b: rect "spring" at 7,3 size 2x1 fill pink pop
+e5: travel 11,1 7,1 ease linear
+camera at b zoom 1.5 ease out
+```
+
++++
+
+```anim
+camera reset ease in
+```
+
+</animation>
+
 ### Errors
 
 Bad lines are listed under the animation and skipped; the rest still draws.
@@ -1670,6 +1840,10 @@ k: circle at 1,1 width 2
 defaults fill none
 defaults fill none
 remove: rect at 1,1
+ar: row at 1,1
+dw: swap 0 1
+dw: signal
+q: rect at 1,1 ease bouncy
 ```
 
 </animation>

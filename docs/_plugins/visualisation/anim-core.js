@@ -38,11 +38,23 @@
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   const HIGHLIGHTS = ['box', 'spotlight', 'arrow', 'glow', 'clear'] // and "number N" (see KEYWORDS.highlight)
   const EMPHASES = ['pulse', 'shake', 'wobble', 'bounce', 'glow']
+  const SIGNALS = { signal: 'signal', 'signal-reverse': 'signal-reverse' } // one-off blips along a line
   const CALLOUT_CH = 24 // callout text wraps at about this many characters
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
-  const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow', 'curve']
+  const SHAPE_TYPES = ['rect', 'circle', 'diamond', 'text', 'line', 'arrow', 'curve']
   const RESOURCE_TYPES = ['image', 'icon']
   const LINE_TYPES = ['line', 'arrow', 'curve'] // a curve is a line bent through via points
+  const LAYOUT_TYPES = ['row', 'column'] // a group of cells, laid out side by side or one under another
+
+  // ease <name>: how a change speeds up and slows down (t: 0-1 of its time -> 0-1 of the way).
+  // spring overshoots, then settles exactly on 1.
+  const EASES = {
+    'in-out': (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+    linear: (t) => t,
+    in: (t) => t * t * t,
+    out: (t) => 1 - Math.pow(1 - t, 3),
+    spring: (t) => (t >= 1 ? 1 : 1 - Math.exp(-5 * t) * Math.cos(2.5 * Math.PI * t)),
+  }
 
   // Named colours map to the site's theme variables, so light and dark themes both work.
   const COLOURS = {
@@ -70,20 +82,20 @@
 
   // Which properties each shape type accepts.
   const ALL = [...SHAPE_TYPES, ...RESOURCE_TYPES]
-  const BOXED = ['rect', 'circle', 'text', 'image', 'icon']
+  const BOXED = ['rect', 'circle', 'diamond', 'text', 'image', 'icon']
   const APPLIES = {
     at: BOXED, x: BOXED, y: BOXED,
     from: LINE_TYPES, to: LINE_TYPES,
-    size: ['rect', 'circle', 'image', 'icon'],
+    size: ['rect', 'circle', 'diamond', 'image', 'icon'],
     radius: ['circle'],
     corner: ['rect'], // corner radius
-    fill: ['rect', 'circle'],
-    stroke: ['rect', 'circle', ...LINE_TYPES, 'image', 'icon'], colour: ALL, weight: ALL, font: ALL, bold: ALL, mono: ALL,
-    width: ['rect', 'image', 'icon'], height: ['rect', 'image', 'icon'],
+    fill: ['rect', 'circle', 'diamond'],
+    stroke: ['rect', 'circle', 'diamond', ...LINE_TYPES, 'image', 'icon'], colour: ALL, weight: ALL, font: ALL, bold: ALL, mono: ALL,
+    width: ['rect', 'diamond', 'image', 'icon'], height: ['rect', 'diamond', 'image', 'icon'],
     angle: BOXED, scale: BOXED,
     align: ['text'],
-    linestyle: ['rect', 'circle', ...LINE_TYPES, 'image'], // solid | dashed | dotted
-    flow: ['rect', 'circle', ...LINE_TYPES, 'image'], // dashes/dots march along the stroke
+    linestyle: ['rect', 'circle', 'diamond', ...LINE_TYPES, 'image'], // solid | dashed | dotted
+    flow: ['rect', 'circle', 'diamond', ...LINE_TYPES, 'image'], // dashes/dots march along the stroke
     head: LINE_TYPES, // an arrowhead on the end
   }
 
@@ -143,10 +155,12 @@
     // timing and effects
     speed: { key: 'speed', sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast, instant or a number of seconds' },
     delay: number('delay', 'a number of seconds'),
+    ease: { key: 'ease', sigs: [['ease']], help: 'in-out, linear, in, out or spring' },
     ...words(EFFECTS, 'effect', 'effect'),
     ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
     // emphasis, highlights and callouts
     ...words(EMPHASES, 'emphasis', 'emphasis'),
+    ...words(Object.keys(SIGNALS), 'emphasis', 'emphasis'),
     wiggle: fixed('emphasis', 'wobble', { what: 'emphasis' }),
     highlight: {
       key: 'highlight', list: [['number', 'num'], ['highlight']],
@@ -167,10 +181,10 @@
   for (const entry of Object.values(KEYWORDS)) for (const list of [entry.sigs, entry.list]) list?.sort((a, b) => b.length - a.length)
 
   // Words that start a line (after "id:") rather than describe it
-  const LINE_STARTS = ['copy', 'group', 'ungroup', 'remove']
+  const LINE_STARTS = ['copy', 'group', 'ungroup', 'remove', 'swap']
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, 'pause', 'auto', 'defaults', 'camera',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, 'pause', 'auto', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -185,7 +199,8 @@
   }
   const lerp = (a, b, t) => a + (b - a) * t
   const clamp01 = (t) => Math.min(1, Math.max(0, t))
-  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+  const ease = EASES['in-out'] // the default
+  const easeFn = (name) => EASES[name] || ease
 
   // One media query, made once (it's checked for every shape on every frame); .matches stays live
   const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)')
@@ -234,6 +249,7 @@
   function extents(shape) {
     switch (shape.type) {
       case 'circle': return { hw: shape.r, hh: shape.r, round: true }
+      case 'diamond': return { hw: shape.w / 2, hh: shape.h / 2, diamond: true }
       case 'text': {
         const size = FONT * shape.font
         return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
@@ -246,7 +262,7 @@
   function sized(shape) {
     const e = extents(shape)
     const k = shape.scale ?? 1
-    return { hw: e.hw * k, hh: e.hh * k, round: e.round }
+    return { hw: e.hw * k, hh: e.hh * k, round: e.round, diamond: e.diamond }
   }
 
   // Half-sizes of the axis-aligned box around the rotated, scaled shape.
@@ -259,8 +275,10 @@
     return { hw: e.hw * cos + e.hh * sin, hh: e.hw * sin + e.hh * cos }
   }
 
-  // Centre of a text shape's box: align left/right anchors the text to that side of its cell.
+  // Centre of a shape's box. A row / column is placed by its first cell (cx, cy: from there to the
+  // middle); align left/right anchors text to that side of its cell.
   function boxCentre(shape) {
+    if (shape.cx !== undefined) return { x: shape.x + shape.cx, y: shape.y + shape.cy }
     if (shape.type !== 'text' || shape.align === 'centre') return { x: shape.x, y: shape.y }
     const { hw } = sized(shape)
     return { x: shape.align === 'left' ? shape.x - CELL / 2 + hw : shape.x + CELL / 2 - hw, y: shape.y }
@@ -273,12 +291,15 @@
     const a = outline(self)
     const b = outline(other)
     const c = boxCentre(other)
+    let p
     switch (place) {
-      case 'above': return { x: c.x, y: c.y - b.hh - gap - a.hh - labelBelow(self) }
-      case 'below': return { x: c.x, y: c.y + b.hh + labelBelow(other) + gap + a.hh }
-      case 'left-of': return { x: c.x - b.hw - gap - a.hw, y: c.y }
-      default: return { x: c.x + b.hw + gap + a.hw, y: c.y }
+      case 'above': p = { x: c.x, y: c.y - b.hh - gap - a.hh - labelBelow(self) }; break
+      case 'below': p = { x: c.x, y: c.y + b.hh + labelBelow(other) + gap + a.hh }; break
+      case 'left-of': p = { x: c.x - b.hw - gap - a.hw, y: c.y }; break
+      default: p = { x: c.x + b.hw + gap + a.hw, y: c.y }
     }
+    // the whole row / column goes there, so its first cell is off-centre
+    return self.cx !== undefined ? { x: p.x - self.cx, y: p.y - self.cy } : p
   }
 
   // Where an attached shape sits: beside its ref (attach), or at a fixed offset (group member).
@@ -315,19 +336,58 @@
     if (len < 1e-6) return c
     const ux = dx / len
     const uy = dy / len
-    const { hw, hh, round } = sized(shape)
+    const { hw, hh, round, diamond } = sized(shape)
     // Measure in the shape's own frame, so rotated boxes are trimmed at their real edge.
     const a = (-(shape.angle || 0) * Math.PI) / 180
     const lx = ux * Math.cos(a) - uy * Math.sin(a)
     const ly = ux * Math.sin(a) + uy * Math.cos(a)
-    const dist = round ? hw : Math.min(Math.abs(lx) > 1e-9 ? hw / Math.abs(lx) : Infinity, Math.abs(ly) > 1e-9 ? hh / Math.abs(ly) : Infinity)
+    // a diamond's edges are where |x| / hw + |y| / hh = 1
+    const dist = round ? hw
+      : diamond ? 1 / Math.max(1e-9, Math.abs(lx) / Math.max(hw, 1e-9) + Math.abs(ly) / Math.max(hh, 1e-9))
+        : Math.min(Math.abs(lx) > 1e-9 ? hw / Math.abs(lx) : Infinity, Math.abs(ly) > 1e-9 ? hh / Math.abs(ly) : Infinity)
     const d = Math.min(dist + EDGE_GAP, len / 2)
     return { x: c.x + ux * d, y: c.y + uy * d }
   }
 
+  // Whether a point is inside a shape's outline, grown by EDGE_GAP all round.
+  function inside(shape, p) {
+    const c = boxCentre(shape)
+    const a = (-(shape.angle || 0) * Math.PI) / 180
+    const dx = p.x - c.x
+    const dy = p.y - c.y
+    const lx = Math.abs(dx * Math.cos(a) - dy * Math.sin(a))
+    const ly = Math.abs(dx * Math.sin(a) + dy * Math.cos(a))
+    const { hw, hh, round, diamond } = sized(shape)
+    if (round) return Math.hypot(lx, ly) <= hw + EDGE_GAP
+    if (diamond) {
+      if (hw < 1e-6 || hh < 1e-6) return false
+      const apothem = (hw * hh) / Math.hypot(hw, hh) // centre to edge, square on
+      return lx / hw + ly / hh <= 1 + EDGE_GAP / apothem
+    }
+    return lx <= hw + EDGE_GAP && ly <= hh + EDGE_GAP
+  }
+
+  // Where a path (samples, from a shape's centre outwards) first leaves the shape, or null if it
+  // never does. Found between samples by halving.
+  function leavePoint(samples, shape) {
+    for (let i = 1; i < samples.length; i++) {
+      if (inside(shape, samples[i])) continue
+      let p = samples[i - 1]
+      let q = samples[i]
+      for (let k = 0; k < 12; k++) {
+        const m = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 }
+        if (inside(shape, m)) p = m
+        else q = m
+      }
+      return q
+    }
+    return null
+  }
+
   // A line's two ends as points, trimmed to the edges of any shapes they are attached to, and a
-  // curve's via points (a via on a shape is that shape's centre). A curve's ends are trimmed
-  // towards its nearest via point, so it leaves each shape in the direction it bends.
+  // curve's via points (a via on a shape is that shape's centre). A curve is worked out between
+  // the shapes' centres and cut where it crosses their edges, so it meets each shape the way it
+  // really arrives (falling back to the edge towards its nearest via point).
   function resolveEnds(line, byId) {
     const target = (end) => (end.ref && byId.get(end.ref)) || null
     const centre = (end) => { const s = target(end); return s ? boxCentre(s) : { x: end.x, y: end.y } }
@@ -336,11 +396,14 @@
     const vias = (line.via || []).map(centre)
     const fromShape = target(line.from)
     const toShape = target(line.to)
-    return {
-      from: fromShape ? edgePoint(fromShape, vias[0] || b) : a,
-      to: toShape ? edgePoint(toShape, vias[vias.length - 1] || a) : b,
-      vias,
+    let from = fromShape ? edgePoint(fromShape, vias[0] || b) : a
+    let to = toShape ? edgePoint(toShape, vias[vias.length - 1] || a) : b
+    if (vias.length && (fromShape || toShape)) {
+      const path = buildPath([a, ...vias, b])
+      if (fromShape) from = leavePoint(path, fromShape) || from
+      if (toShape) to = leavePoint([...path].reverse(), toShape) || to
     }
+    return { from, to, vias }
   }
 
   // The points a line is drawn through: its ends, or for a curve the smooth path through its vias.
@@ -407,11 +470,11 @@
 
   // A route that eases from stop to stop (travel), each hop an equal share of the time: the point
   // a fraction `raw` (0-1, un-eased) of the way through it.
-  function pointOnHops(stops, raw) {
+  function pointOnHops(stops, raw, easing = ease) {
     const hops = stops.length - 1
     if (hops < 1) return { ...stops[0] }
     const i = Math.min(hops - 1, Math.floor(raw * hops))
-    const k = ease(raw * hops - i)
+    const k = easing(raw * hops - i)
     return { x: lerp(stops[i].x, stops[i + 1].x, k), y: lerp(stops[i].y, stops[i + 1].y, k) }
   }
 
@@ -495,10 +558,10 @@
     }))
   }
 
-  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, COLOURS, FLOWS,
-    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LINE_STARTS, LINE_TYPES, NORMAL_MS,
+  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, COLOURS, EASES, FLOWS,
+    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LAYOUT_TYPES, LINE_STARTS, LINE_TYPES, NORMAL_MS,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
-    SPEEDS, STROKE, attachPos, bounds, boxCentre, buildPath, buildPolyline, cellToPx, clamp01, ease,
+    SIGNALS, SPEEDS, STROKE, attachPos, bounds, boxCentre, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, MONO_FONT, placeNextTo, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

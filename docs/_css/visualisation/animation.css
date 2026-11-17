@@ -445,6 +445,22 @@
     stroke-width: 3px;
 }
 
+/* signal: a glowing blip running along a line, its tail made of overlapping pieces */
+.markdown-section .animation .anim-signal {
+    filter: drop-shadow(0 0 6px var(--color-important));
+
+    path {
+        stroke: var(--color-important);
+        stroke-opacity: 0.3;
+    }
+
+    circle {
+        fill: var(--color-important);
+        stroke: var(--anim-bg);
+        stroke-width: 1.5px;
+    }
+}
+
 /* highlight arrow: a block arrow pointing in at a shape */
 .markdown-section .animation .anim-highlight-arrow {
     fill: color-mix(in srgb, var(--color-important) 40%, var(--anim-bg));

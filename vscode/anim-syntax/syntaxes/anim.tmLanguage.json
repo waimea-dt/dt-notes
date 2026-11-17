@@ -25,6 +25,9 @@
       "include": "#highlight"
     },
     {
+      "include": "#ease"
+    },
+    {
       "include": "#shape-type"
     },
     {
@@ -107,7 +110,19 @@
     "action": {
       "$comment": "words that start a line's command",
       "name": "keyword.control.anim",
-      "match": "(?<![\\w-])(copy|group|ungroup|remove)(?![\\w-])"
+      "match": "(?<![\\w-])(copy|group|ungroup|remove|swap)(?![\\w-])"
+    },
+    "ease": {
+      "$comment": "ease and its value (in and out are only values here)",
+      "match": "(?<![\\w-])(ease)(?:\\s+(in-out|linear|in|out|spring)(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
     },
     "highlight": {
       "$comment": "highlight and its words (box, spotlight, arrow, number N, clear), so arrow here isn't a shape type",
@@ -131,7 +146,7 @@
     },
     "shape-type": {
       "name": "storage.type.anim",
-      "match": "(?<![\\w-])(rect|circle|text|line|arrow|curve)(?![\\w-])"
+      "match": "(?<![\\w-])(rect|circle|diamond|text|line|arrow|curve|row|column)(?![\\w-])"
     },
     "property": {
       "name": "support.type.property-name.anim",
@@ -139,7 +154,7 @@
     },
     "emphasis": {
       "name": "keyword.other.emphasis.anim",
-      "match": "(?<![\\w-])(pulse|shake|wobble|wiggle|bounce|glow)(?![\\w-])"
+      "match": "(?<![\\w-])(pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal)(?![\\w-])"
     },
     "value": {
       "name": "support.constant.property-value.anim",

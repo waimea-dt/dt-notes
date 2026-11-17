@@ -37,7 +37,7 @@
 
 ;(function () {
   const { escapeHtml, viewBoxFor, compile, warnOutsideGrid, PLAY_PAUSE, svgEl, createRenderer,
-    reducedMotion, CAPTION_MS, ease, lerp, pointOnHops, clamp01, rewriteBlocks, stripHeadingAnchors } = window.Anim
+    reducedMotion, CAPTION_MS, ease, easeFn, lerp, pointOnHops, clamp01, rewriteBlocks, stripHeadingAnchors } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Widget
@@ -369,12 +369,13 @@
       // over the whole route. `raw` is the camera's un-eased progress.
       const route = meta.tweens.get('camera')?.path
       const stops = route?.map(cameraView).map((v) => ({ x: v.x + v.w / 2, y: v.y + v.h / 2 }))
+      const cameraEase = easeFn(meta.tweens.get('camera')?.ease)
       const viewAt = (raw) => {
-        const t = ease(raw)
+        const t = cameraEase(raw)
         const w = lerp(viewA.w, viewB.w, t)
         const h = lerp(viewA.h, viewB.h, t)
         if (!stops) return { x: lerp(viewA.x, viewB.x, t), y: lerp(viewA.y, viewB.y, t), w, h }
-        const c = pointOnHops(stops, raw)
+        const c = pointOnHops(stops, raw, cameraEase)
         return { x: c.x - w / 2, y: c.y - h / 2, w, h }
       }
 

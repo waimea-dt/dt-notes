@@ -96,6 +96,7 @@ m1:
 |---|---|---|
 | `rect` | `a: rect "A" at 2,3 size 2x1 corner 0.1` | 1×1 |
 | `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
+| `diamond` | `d: diamond "x > 3?" at 4,3 size 3x1.5` | 1×1 |
 | `text` | `t: text "Hi" at 7,1 align left colour blue` | — |
 | `line` / `arrow` | `l: arrow from a to 9,3 "yes"` | — |
 | `curve` | `c: curve from a to b via 5,1 via 7,3` | A smooth curve through its via points |
@@ -189,6 +190,22 @@ pkt: ungroup                           # members stay where they are
 - Removing a group removes its members. Groups can't be copied.
 - A line can join a group only if both ends are on shapes.
 
+## Rows and columns
+
+```anim
+arr: row 5 3 8 1 at 3,4 fill blue        # cells arr.0 … arr.3, side by side
+col: column "A" "B" "C" at 12,2 gap 0.2  # one under another
+arr: swap 0 3                            # two cells change places
+arr.2: fill amber                        # one cell
+arr: fill green                          # every cell
+```
+
+- Values go straight after `row` / `column`: numbers, or quoted text (`""` is an empty cell).
+- Cells are rects numbered from 0. `size` (default 1×1), `gap` (default 0: the cells touch) and the look (`fill stroke colour weight font bold monospace corner dashed …`) apply to every cell. The cell size can't change later.
+- `at` / `move` / `x` / `y` place the **first** cell; `below b` etc. put the whole row beside b. It's a group: `move`, `travel`, `highlight`, emphasis and `remove` act on all its cells.
+- `swap i j`: in a row one cell arcs over and the other under (a column's pass right and left); further apart, they clear the cells between. Takes `speed`, `delay` and `ease`.
+- Ids go with the places: after `swap 0 3`, `arr.0` is the cell now first. Whatever is attached to `arr.0` (`i: text "i" attach below arr.0`) or ends on it stays at that place; a cell's own highlights and callout move with it.
+
 ## Emphasis, highlights, callouts
 
 ```anim
@@ -197,6 +214,8 @@ a: shake
 a: wobble                      # or wiggle
 a: bounce                      # hops up like a dropped ball
 a: glow                        # brightens with a soft glow
+l: signal                      # a glowing blip runs along line / arrow / curve l
+l: signal-reverse              # from its end back to its start
 a: highlight box               # stays until cleared
 a: highlight spotlight         # dims everything not spotlit (several shapes can be)
 a: highlight arrow             # block arrow pointing in from the top-right
@@ -209,6 +228,7 @@ a: callout "Look!" below       # or left-of / right-of
 a: callout clear
 ```
 
+- `signal` only goes on lines, arrows and curves (on a group: each of its lines). It runs at an even pace over the `speed`, and like the other emphasis words plays forwards only.
 - Emphasis words go on their own, not after `highlight`: `a: glow highlight box` is a one-off glow plus a box, but `a: highlight box glow` is a box plus a lasting glow.
 - Spotlight: shapes outside it dim to 20%, and so do their highlights and callouts.
 - Callouts stay inside the drawing, and their text wraps at about 24 characters.
@@ -219,6 +239,7 @@ a: callout clear
 a: move 4,2 speed slow         # instant | vfast | fast | normal | slow | vslow
 a: move 4,2 speed 1.5          # or seconds
 a: fill red delay 1            # wait 1 s before starting
+a: move 9,2 ease linear        # in-out (default) | linear | in | out | spring
 a: rect at 2,3 pop             # entrance: fade (default) | pop | slide | typed
 l: arrow from a to b draw      # a line draws itself in
 t: text "$ ls" at 2,1 monospace typed   # types out one character at a time
@@ -228,6 +249,7 @@ a: remove pop                  # exits take the same effects
 - **Intro:** if the first beat uses `typed`, `pop`, `draw`, `slide` or a `delay`, it plays in from nothing when the animation first comes into view, and again after going back to the start (⏮, Home, or a `loop`). The drawing stays empty until then. A first beat with only plain fades is just shown, as is everything for viewers who prefer reduced motion.
 - `typed` types a shape's text out at an even pace over the `speed` (the shape fades in quickly first); as an exit it un-types. Shapes with no text fade.
 - Speeds: instant 0 · vfast 0.25 · fast 0.5 · **normal 1** · slow 2 · vslow 4 s.
+- `ease`: **in-out** starts and ends gently · `linear` an even pace · `in` speeds up · `out` slows down · `spring` overshoots and settles (a `pop` springs past full size). Works on any change, entrance or exit, `travel` (each hop), `swap`, `camera` and `defaults` (`defaults ease spring`).
 - A bare speed word is an error: write `speed slow`.
 - A beat lasts until its last change ends. Going back plays it exactly in reverse.
 
@@ -256,7 +278,7 @@ camera travel b c d              # pan hop by hop through the stops (ids and/or 
 camera reset                     # back to the whole drawing
 ```
 
-- Takes `at` / `x` / `y`, `travel`, `zoom`, `reset`, `speed` and `delay`. No colon.
+- Takes `at` / `x` / `y`, `travel`, `zoom`, `reset`, `speed`, `delay` and `ease`. No colon.
 - `travel` can't go with `at` / `x` / `y`. Each hop eases on its own and takes `speed`, so 3 stops take 3 × speed.
 - Stays until changed (later steps keep it). Going back plays it in reverse; jumps cut.
 - Zoomed in (`zoom` ≥ 1), the view stays inside the drawing; `zoom 0.5` zooms out.

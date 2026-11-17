@@ -6,8 +6,12 @@
 ;(function () {
   const { CELL, cellToPx, APPLIES, LINE_TYPES, FLOWS, resolveEnds, boxCentre, PLACE_GAP,
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
-    parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, parseAs, lucideIcon,
-    KEYWORDS, NUMBER, linePoints } = window.Anim
+    parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, SIGNALS,
+    parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints } = window.Anim
+
+  // A row's or column's look, given to each of its cells (when made, and on a change to it)
+  const CELL_STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'corner', 'linestyle', 'flow']
+  const pick = (props, keys) => Object.fromEntries(Object.entries(props).filter(([key]) => keys.includes(key)))
 
   // ---------------------------------------------------------------------------
   // Compiling scenes into one state per beat
@@ -16,6 +20,7 @@
   function baseShape(type) {
     const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
     if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, corner: 0, fill: 'bg' })
+    if (type === 'diamond') Object.assign(shape, { w: CELL, h: CELL, fill: 'bg' })
     if (type === 'circle') Object.assign(shape, { r: CELL / 2, fill: 'bg' })
     if (type === 'image') Object.assign(shape, { w: CELL, h: CELL, stroke: 'none' })
     if (type === 'icon') Object.assign(shape, { w: CELL, h: CELL })
@@ -117,9 +122,14 @@
       }
       // pulse / shake / wobble / bounce / glow: one-off effects this beat, on an existing shape
       // (and a group's members)
+      // signal / signal-reverse: a blip along a line (a group's lines)
       if (props.emphasis) {
+        const signal = props.emphasis in SIGNALS
+        if (signal && !isLine && shape.type !== 'group') throw new Error(`"${props.emphasis}" travels along a line, arrow or curve`)
+        const targets = [shape, ...groupMembers(shape)].filter((target) => !signal || LINE_TYPES.includes(target.type))
         if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
-        else for (const target of [shape, ...groupMembers(shape)]) tween(meta, target.uid).effect = props.emphasis
+        else if (!targets.length) warn(`"${shape.id}" has no lines in it, so "${props.emphasis}" does nothing`)
+        else for (const target of targets) tween(meta, target.uid).effect = props.emphasis
       }
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
 
@@ -244,7 +254,7 @@
     // Copies the defaults that apply to this type onto a new shape.
     function applyDefaults(shape) {
       for (const [key, value] of Object.entries(defaults)) {
-        if (['speed', 'effect'].includes(key)) continue
+        if (['speed', 'effect', 'ease'].includes(key)) continue
         if (APPLIES[key] && !APPLIES[key].includes(shape.type)) continue
         const cells = (n) => numberValue(n, undefined, { unit: CELL })
         if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = cells(value.w) / 2; continue }
@@ -280,6 +290,11 @@
       for (const group of shapes.values()) {
         if (group.type !== 'group' || !group.members.length) continue
         const b = unionBounds(group.members.map((id) => shapes.get(id)).filter(Boolean), shapes)
+        if (group.layout) {
+          // a row / column is placed by its first cell: its box is its cells' (cx, cy: to its middle)
+          Object.assign(group, { w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - group.x, cy: (b.y0 + b.y1) / 2 - group.y })
+          continue
+        }
         group.w = 2 * Math.max(group.x - b.x0, b.x1 - group.x)
         group.h = 2 * Math.max(group.y - b.y0, b.y1 - group.y)
       }
@@ -305,8 +320,11 @@
       if (effect === 'typed' && !shape.label) warn(`"typed" types out a shape's text, and this ${shape.type} has none, so it fades instead`)
     }
 
-    // Seconds before a line's change starts (the longest delay wins if a shape changes twice in a beat).
+    // Seconds before a line's change starts (the longest delay wins if a shape changes twice in a
+    // beat), and its easing (the last one wins).
     function setDelay(meta, uid, props) {
+      const easing = props.ease ?? defaults.ease
+      if (easing) tween(meta, uid).ease = easing
       if (!props.delay) return
       if (props.delay.v < 0) throw new Error('"delay" must be zero or more seconds')
       const record = tween(meta, uid)
@@ -323,11 +341,11 @@
     function runCameraLine([, colon, rest = ''], meta, warn) {
       if (colon) throw new Error('"camera" takes no colon, e.g. "camera at 4,3 zoom 2"')
       const props = parseProps(tokenize(rest), 0, 'camera', shapes)
-      const extra = Object.keys(props).find((key) => !['at', 'x', 'y', 'travel', 'zoom', 'reset', 'speed', 'delay'].includes(key))
-      if (extra) throw new Error(`"camera" takes at / x / y, travel, zoom, reset, speed and delay, not "${extra === 'label' ? 'quoted text' : extra}"`)
+      const extra = Object.keys(props).find((key) => !['at', 'x', 'y', 'travel', 'zoom', 'reset', 'speed', 'delay', 'ease'].includes(key))
+      if (extra) throw new Error(`"camera" takes at / x / y, travel, zoom, reset, speed, delay and ease, not "${extra === 'label' ? 'quoted text' : extra}"`)
       if (props.at?.kind === 'place') throw new Error('"camera at" takes "x,y" or a shape id')
       if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'travel', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects at, travel, zoom or reset, e.g. "camera at 4,3 zoom 2"')
-      if (props.reset && (props.at || props.x || props.y || props.travel || props.zoom)) throw new Error('"camera reset" takes only a speed and a delay')
+      if (props.reset && (props.at || props.x || props.y || props.travel || props.zoom)) throw new Error('"camera reset" takes only a speed, a delay and an ease')
       if (props.travel && (props.at || props.x || props.y)) throw new Error('"camera travel" sets the route, so it can\'t go with at / x / y')
 
       const before = JSON.stringify(camera)
@@ -410,21 +428,13 @@
         const props = parseProps(tokens, 1, 'remove', shapes)
         const extra = Object.keys(props).filter((key) => !['speed', 'effect', 'delay'].includes(key))
         if (extra.length) throw new Error(`"remove" only takes a speed, an effect and a delay, not "${extra[0]}"`)
-        // Removing a group removes its members too
-        const removeOne = (target) => {
-          if (!target) return
-          if (target.type === 'group') target.members.forEach((m) => removeOne(shapes.get(m)))
-          leaveGroup(target)
-          freezeEndsAttachedTo(target.id)
-          shapes.delete(target.id)
-          tween(meta, target.uid).exit = props.effect || defaults.effect || 'fade'
-          if (props.effect) warnEffect(target, props.effect, warn)
-          tween(meta, target.uid).dur = speedOf(props)
-          setDelay(meta, target.uid, props)
-        }
-        removeOne(existing)
+        removeShape(existing, props, meta, warn)
         return
       }
+
+      // "arr: row 5 3 8 1 at 2,3" (or column): its cells are arr.0, arr.1, …
+      if (first?.kind === 'word' && LAYOUT_TYPES.includes(first.lower)) return createLayout(id, first.lower, tokens, existing, meta, warn)
+      if (first?.kind === 'word' && first.lower === 'swap') return swapCells(id, existing, tokens, meta, warn)
 
       const firstWord = first?.kind === 'word' ? first.lower : ''
       if (firstWord === 'copy') {
@@ -527,6 +537,7 @@
       }
       const props = parseProps(tokens, 0, 'change', shapes)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or removed`)
+      if (existing.layout) restyleCells(existing, props, meta, warn) // takes the cells' look out of props
       const shape = structuredClone(existing)
       const path = applyProps(shape, props, false, warn, meta)
       if (path) tween(meta, shape.uid).path = path
@@ -534,6 +545,144 @@
       shapes.set(id, shape)
       tween(meta, shape.uid).dur = Math.max(tween(meta, shape.uid).dur, speedOf(props) * (props.travel?.length || 1)) // travel: speed per hop
       setDelay(meta, shape.uid, props)
+    }
+
+    // Removes a shape (and a group's members), with the line's exit effect and timing.
+    function removeShape(target, props, meta, warn) {
+      if (!target) return
+      if (target.type === 'group') target.members.forEach((m) => removeShape(shapes.get(m), props, meta, warn))
+      leaveGroup(target)
+      freezeEndsAttachedTo(target.id)
+      shapes.delete(target.id)
+      tween(meta, target.uid).exit = props.effect || defaults.effect || 'fade'
+      if (props.effect) warnEffect(target, props.effect, warn)
+      tween(meta, target.uid).dur = speedOf(props)
+      setDelay(meta, target.uid, props)
+    }
+
+    // A row (side by side) or column (one under another) of rect cells, ids "id.0", "id.1", …: a
+    // group placed by its first cell. The values come straight after the type (numbers or quoted
+    // text); size, gap and the look apply to every cell.
+    function createLayout(id, layout, tokens, existing, meta, warn) {
+      const values = []
+      let j = 1
+      for (; j < tokens.length; j++) {
+        const token = tokens[j]
+        if (token.kind === 'str') values.push(token.value)
+        else if (token.kind === 'word' && NUMBER.test(token.value)) values.push(token.value)
+        else break
+      }
+      if (!values.length) throw new Error(`a ${layout} needs its values straight after "${layout}", e.g. "${id}: ${layout} 5 3 8 1 at 2,3" (put words in quotes: "A" "B")`)
+      const props = parseProps(tokens, j, 'layout', shapes)
+      if (props.label !== undefined) throw new Error(`a ${layout}'s values all go straight after "${layout}"`)
+      const allowed = ['at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', 'speed', 'delay', 'ease', 'effect', 'highlight', 'callout']
+      const extra = Object.keys(props).find((key) => !allowed.includes(key))
+      if (extra) throw new Error(`"${extra === 'head' ? 'arrow' : extra}" doesn't apply to a ${layout}`)
+
+      if (existing) {
+        warn(`"${id}" already exists, so it is replaced`)
+        removeShape(existing, props, meta, warn)
+      }
+      const ids = values.map((_, k) => `${id}.${k}`)
+      for (const cellId of ids) {
+        if (!shapes.has(cellId)) continue
+        warn(`"${cellId}" already exists, so it is replaced by a cell of "${id}"`)
+        removeShape(shapes.get(cellId), props, meta, warn)
+      }
+
+      // The cells, laid out from the first one (at 0,0 for now)
+      const across = layout === 'row'
+      const gap = props.gap ? props.gap.v * CELL : 0
+      const look = pick(props, ['size', 'width', 'height', ...CELL_STYLE])
+      let offset = 0
+      const cells = values.map((label, k) => {
+        const cell = { ...baseShape('rect'), id: ids[k], uid: ++uid, label, x: 0, y: 0 }
+        applyDefaults(cell)
+        applyProps(cell, look, true, warn, meta)
+        cell.layer = props.layer || defaults.layer || 'normal'
+        return cell
+      })
+      cells.forEach((cell, k) => {
+        const before = cells[k - 1]
+        if (before) offset += (across ? (before.w + cell.w) / 2 : (before.h + cell.h) / 2) + gap
+        cell.attach = { ref: id, dx: across ? offset : 0, dy: across ? 0 : offset }
+        Object.assign(cell, { x: cell.attach.dx, y: cell.attach.dy })
+      })
+      const b = unionBounds(cells, shapes)
+      const row = {
+        ...baseShape('group'), id, uid: ++uid, layout, members: ids,
+        w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2,
+      }
+      applyProps(row, pick(props, ['at', 'x', 'y', 'highlight', 'callout']), true, warn, meta)
+      shapes.set(id, row)
+      tween(meta, row.uid).enter = 'fade'
+      tween(meta, row.uid).dur = speedOf(props)
+      for (const cell of cells) {
+        Object.assign(cell, { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy })
+        shapes.set(cell.id, cell)
+        tween(meta, cell.uid).enter = props.effect || defaults.effect || 'fade'
+        tween(meta, cell.uid).dur = speedOf(props)
+        setDelay(meta, cell.uid, props)
+      }
+      if (props.effect) warnEffect(cells[0], props.effect, warn)
+    }
+
+    // "arr: fill green" on a row or column: the look goes to each of its cells.
+    function restyleCells(row, props, meta, warn) {
+      for (const key of ['size', 'width', 'height']) {
+        if (props[key]) throw new Error(`a ${row.layout}'s cell size is set when it's made`)
+      }
+      const look = pick(props, CELL_STYLE)
+      if (!Object.keys(look).length) return
+      for (const key of Object.keys(look)) delete props[key]
+      for (const cellId of row.members) {
+        const cell = shapes.get(cellId)
+        if (!cell) continue
+        const changed = structuredClone(cell)
+        applyProps(changed, look, false, warn, meta)
+        shapes.set(cellId, changed)
+        tween(meta, changed.uid).dur = Math.max(tween(meta, changed.uid).dur, speedOf(props))
+        setDelay(meta, changed.uid, props)
+      }
+    }
+
+    // "arr: swap 0 3": two cells change places, one arcing over and one under (a column's: to the
+    // right and left). Ids go with the places, so afterwards arr.0 is the cell now first; whatever
+    // is attached to arr.0 (a pointer) stays there, and highlights go with the cells.
+    function swapCells(id, row, tokens, meta, warn) {
+      if (!row) throw new Error(`no shape called "${id}"`)
+      if (!row.layout) throw new Error(`"swap" swaps two cells of a row or column, and "${id}" isn't one`)
+      const index = (token) => (token?.kind === 'word' && /^\d+$/.test(token.value) ? Number(token.value) : undefined)
+      const i = index(tokens[1])
+      const j = index(tokens[2])
+      if (i === undefined || j === undefined) throw new Error(`"swap" expects two cell numbers, e.g. "${id}: swap 0 3"`)
+      const props = parseProps(tokens, 3, 'swap', shapes)
+      const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease'].includes(key))
+      if (extra) throw new Error(`"swap" only takes a speed, a delay and an ease, not "${extra}"`)
+      const ids = [`${id}.${i}`, `${id}.${j}`]
+      const [a, b] = ids.map((cellId) => {
+        const cell = shapes.get(cellId)
+        if (!cell || cell.attach?.ref !== id || cell.attach.dx === undefined) throw new Error(`"${cellId}" isn't a cell of "${id}" (its cells are ${id}.0 to ${id}.${row.members.length - 1})`)
+        return cell
+      })
+      if (i === j) return warn('a cell swapped with itself stays where it is')
+
+      // Neighbours just pass each other; further apart, they clear the cells in between
+      const across = row.layout === 'row'
+      const lift = (Math.abs(i - j) > 1 ? 1.1 : 0.6) * Math.max(...[a, b].map((cell) => (across ? cell.h : cell.w)))
+      const moves = [[a, b], [b, a]].map(([cell, other]) => {
+        const moved = structuredClone(cell)
+        moved.id = other.id
+        moved.attach = { ...cell.attach, dx: other.attach.dx, dy: other.attach.dy }
+        const onward = across ? other.attach.dx > cell.attach.dx : other.attach.dy > cell.attach.dy
+        tween(meta, moved.uid).arc = across ? { x: 0, y: onward ? -lift : lift } : { x: onward ? lift : -lift, y: 0 }
+        return moved
+      })
+      for (const moved of moves) {
+        shapes.set(moved.id, moved)
+        tween(meta, moved.uid).dur = Math.max(tween(meta, moved.uid).dur, speedOf(props))
+        setDelay(meta, moved.uid, props)
+      }
     }
 
     return { shapes, runLine, settle, camera: () => ({ ...camera }) }
