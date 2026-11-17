@@ -189,16 +189,22 @@ pkt: ungroup                           # members stay where they are
 ```anim
 a: pulse                       # one-off, forwards only
 a: shake
-a: wobble
+a: wobble                      # or wiggle
+a: bounce                      # hops up like a dropped ball
+a: glow                        # brightens with a soft glow
 a: highlight box               # stays until cleared
 a: highlight spotlight         # dims everything not spotlit (several shapes can be)
-a: highlight clear
+a: highlight arrow             # block arrow pointing in from the top-right
+a: highlight glow              # glows in the highlight colour until cleared (bare "glow" is the one-off)
+a: highlight number 2          # numbered disc on the top-left corner
+a: highlight box arrow         # several at once
+a: highlight clear             # clears them all
 a: callout "Look!"             # speech bubble above the shape
 a: callout "Look!" below       # or left-of / right-of
 a: callout clear
 ```
 
-Callouts stay inside the drawing.
+Callouts stay inside the drawing, and their text wraps at about 24 characters.
 
 ## Timing and effects
 

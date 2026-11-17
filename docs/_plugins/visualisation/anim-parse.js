@@ -170,6 +170,7 @@
     const word = token.lower
     switch (type) {
       case 'highlight': return HIGHLIGHTS.includes(word) ? word : undefined
+      case 'number': return word === 'number' ? word : undefined
       case 'side': return CALLOUT_SIDES[word]
       case 'clear': return word === 'clear' ? word : undefined
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined

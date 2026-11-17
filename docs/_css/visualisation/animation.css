@@ -13,7 +13,7 @@
 
     --anim-highlight:   color-mix(in srgb, var(--anim-accent) 55%, transparent);
 
-    
+
     position: relative; /* for the progress bar */
     display: flex;
     flex-direction: column;
@@ -443,6 +443,31 @@
     fill: none;
     stroke: var(--color-important);
     stroke-width: 3px;
+}
+
+/* highlight arrow: a block arrow pointing in at a shape */
+.markdown-section .animation .anim-highlight-arrow {
+    fill: color-mix(in srgb, var(--color-important) 40%, var(--anim-bg));
+    fill: var(--color-important);
+    stroke: var(--anim-bg);
+    stroke-width: 3px;
+    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.35));
+}
+
+/* highlight number: a numbered disc on a shape's corner */
+.markdown-section .animation .anim-highlight-number {
+    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.35));
+
+    circle {
+        fill: var(--color-important);
+        stroke: var(--anim-bg);
+        stroke-width: 3px;
+    }
+
+    text {
+        fill: var(--anim-bg);
+        font-weight: 700;
+    }
 }
 
 /* callout: a speech bubble pointing at a shape */

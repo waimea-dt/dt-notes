@@ -36,7 +36,9 @@
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
-  const HIGHLIGHTS = ['box', 'spotlight', 'clear']
+  const HIGHLIGHTS = ['box', 'spotlight', 'arrow', 'glow', 'clear'] // and "number N" (see KEYWORDS.highlight)
+  const EMPHASES = ['pulse', 'shake', 'wobble', 'bounce', 'glow']
+  const CALLOUT_CH = 24 // callout text wraps at about this many characters
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
   const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
   const RESOURCE_TYPES = ['image', 'icon']
@@ -140,8 +142,13 @@
     ...words(EFFECTS, 'effect', 'effect'),
     ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
     // emphasis, highlights and callouts
-    ...words(['pulse', 'shake', 'wobble'], 'emphasis', 'pulse / shake / wobble'),
-    highlight: { key: 'highlight', list: [['highlight']], help: 'box, spotlight or clear (pulse and shake go on their own)' },
+    ...words(EMPHASES, 'emphasis', 'emphasis'),
+    wiggle: fixed('emphasis', 'wobble', { what: 'emphasis' }),
+    highlight: {
+      key: 'highlight', list: [['number', 'num'], ['highlight']],
+      build: (v, sig) => (sig[0] === 'number' ? { number: v[1].v } : v[0]),
+      help: 'box, spotlight, arrow, glow, number N or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)',
+    },
     callout: {
       key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],
       build: (v, sig) => (sig[0] === 'clear' ? { none: true } : { text: v[0], side: v[1] || 'above' }),
@@ -411,8 +418,9 @@
 
   // The one bounds function: a shape's world-space box (its rotated, scaled outline, plus the
   // label under an image or icon), a line's ends, or the union of a group's members. Used when
-  // compiling and on every frame: `ends` gives a line's ends mid-blend, `dx` a shake offset.
-  function bounds(shape, byId, { ends, dx = 0 } = {}, depth = 0) {
+  // compiling and on every frame: `ends` gives a line's ends mid-blend, `dx` / `dy` a shake or
+  // bounce offset.
+  function bounds(shape, byId, { ends, dx = 0, dy = 0 } = {}, depth = 0) {
     if (LINE_TYPES.includes(shape.type)) {
       const { from, to } = ends || resolveEnds(shape, byId)
       return { x0: Math.min(from.x, to.x), y0: Math.min(from.y, to.y), x1: Math.max(from.x, to.x), y1: Math.max(from.y, to.y) }
@@ -423,7 +431,7 @@
     }
     const c = boxCentre(shape)
     const { hw, hh } = outline(shape)
-    return { x0: c.x - hw + dx, y0: c.y - hh, x1: c.x + hw + dx, y1: c.y + hh + labelBelow(shape) }
+    return { x0: c.x - hw + dx, y0: c.y - hh + dy, x1: c.x + hw + dx, y1: c.y + hh + labelBelow(shape) + dy }
   }
 
   function unionBounds(list, byId, depth = 0) {
@@ -470,7 +478,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_SIDES, CAPTION_MS, CELL, COLOURS, FLOWS,
+  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, COLOURS, FLOWS,
     FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LINE_STARTS, LINE_TYPES, NORMAL_MS,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     SPEEDS, STROKE, attachPos, bounds, boxCentre, buildPath, buildPolyline, cellToPx, clamp01, ease,

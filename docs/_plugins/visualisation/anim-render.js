@@ -6,7 +6,7 @@
 ;(function () {
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
-    CELL, ease, pointOnHops, pointOnPath, resolveAttachments, textWidth } = window.Anim
+    CELL, ease, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH } = window.Anim
 
   // ---------------------------------------------------------------------------
   // SVG rendering
@@ -167,6 +167,16 @@
         flowState.set(el, { key, anim })
       }
       g.style.opacity = v.opacity
+      // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
+      // (the highlight colour if it has none); highlight glow (v.hlGlow) the highlight colour.
+      const glowColour = (node.type === 'text' ? colours.colour : colours.stroke)
+      const halo = (k, colour) => `drop-shadow(0 0 ${0.15 * CELL * k}px ${colour})`
+      const filters = []
+      const bright = Math.max(v.glow || 0, v.hlGlow || 0)
+      if (bright) filters.push(`brightness(${1 + 0.35 * bright})`)
+      if (v.glow) filters.push(halo(v.glow, glowColour === 'none' ? 'var(--color-important)' : glowColour))
+      if (v.hlGlow) filters.push(halo(v.hlGlow, 'var(--color-important)'))
+      g.style.filter = filters.join(' ')
       const fontSize = FONT * s.font
       node.label.style.fontSize = `${fontSize}px`
       node.label.style.fontWeight = s.bold ? '700' : ''
@@ -383,6 +393,10 @@
           if (oneoff === 'shake') v.dx = 0.15 * CELL * Math.sin(8 * Math.PI * raw) * (1 - raw)
           // wobble: turns left and right twice, easing in and out
           if (oneoff === 'wobble') v.rot = 14 * Math.sin(4 * Math.PI * raw) * Math.sin(Math.PI * raw)
+          // bounce: three hops up, like a dropped ball, each lower than the last
+          if (oneoff === 'bounce') v.dy = -0.6 * CELL * Math.abs(Math.sin(3 * Math.PI * raw)) * Math.pow(1 - raw, 1.5)
+          // glow: brightens and glows, then fades back
+          if (oneoff === 'glow') v.glow = Math.sin(Math.PI * raw)
         } else if (b) {
           shape = b
           v = appear(tw?.enter || 'fade', t, b)
@@ -426,7 +440,10 @@
         }
       }
       for (const [uid, node] of nodes) {
-        if (!uids.has(uid)) { node.g.remove(); node.box?.remove(); node.bubble?.remove(); nodes.delete(uid) }
+        if (!uids.has(uid)) {
+          for (const el of [node.g, node.box, node.pointer, node.badge, node.bubble]) el?.remove()
+          nodes.delete(uid)
+        }
       }
 
       // Spotlight: shapes outside it fade to DIM over the beat
@@ -436,7 +453,8 @@
         const dimA = litA && !litA.has(item.shape.id) ? 1 : 0
         const dimB = litB && !litB.has(item.shape.id) ? 1 : 0
         const dim = lerp(dimA, dimB, extra.beatT)
-        if (dim) item.v.opacity *= 1 - (1 - DIM) * dim
+        item.dimK = 1 - (1 - DIM) * dim // its highlights and callout dim with it
+        item.v.opacity *= item.dimK
       }
 
       const finalByUid = new Map([...final.values()].map((s) => [s.uid, s]))
@@ -452,6 +470,7 @@
           stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),
           colour: mixColour(rgba(colourCss(from.colour, 'stroke')), rgba(colourCss(to.colour, 'stroke')), t),
         }
+        item.v.hlGlow = blend(item, (s) => s.hl?.glow) // highlight glow fades in / out like the box
         drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
       }
@@ -461,21 +480,60 @@
     // times the shape's own visibility (entering / leaving).
     const blend = (item, has) => lerp(item.a && has(item.a) ? 1 : 0, item.b && has(item.b) ? 1 : 0, item.a && item.b ? item.t : 1) * (item.a && item.b ? 1 : item.v.opacity)
 
-    // The highlight box and the callout bubble, drawn above everything in world space.
+    // The highlight box, arrow and number badge, and the callout bubble, drawn above everything
+    // in world space.
     function drawOverlays(item, now) {
       const node = item.node
-      const boxOpacity = blend(item, (s) => s.hl?.box) * Math.min(1, item.v.opacity / 1)
-      const bubbleOpacity = blend(item, (s) => s.callout)
-      if (!boxOpacity && !node.box && !bubbleOpacity && !node.bubble) return
-      const b = bounds(item.shape, now, { ends: item.v.ends, dx: item.v.dx })
+      // Each fades in / out with its feature, and dims with a shape outside the spotlight
+      const k = item.dimK
+      const boxOpacity = blend(item, (s) => s.hl?.box) * k
+      const arrowOpacity = blend(item, (s) => s.hl?.arrow) * k
+      const badgeOpacity = blend(item, (s) => s.hl?.number != null) * k
+      const bubbleOpacity = blend(item, (s) => s.callout) * k
+      if (!boxOpacity && !node.box && !arrowOpacity && !node.pointer && !badgeOpacity && !node.badge && !bubbleOpacity && !node.bubble) return
+      const b = bounds(item.shape, now, { ends: item.v.ends, dx: item.v.dx, dy: item.v.dy })
+      const pad = 0.15 * CELL
 
       if (boxOpacity || node.box) {
         if (!node.box) node.box = highlightLayer.appendChild(svgEl('rect', { class: 'anim-highlight-box' }))
-        const pad = 0.15 * CELL
         Object.entries({ x: b.x0 - pad, y: b.y0 - pad, width: b.x1 - b.x0 + 2 * pad, height: b.y1 - b.y0 + 2 * pad, rx: 0.12 * CELL })
           .forEach(([k, val]) => node.box.setAttribute(k, val))
         node.box.style.opacity = boxOpacity
         if (!boxOpacity) { node.box.remove(); node.box = null }
+      }
+
+      // arrow: a block arrow pointing in at the top-right corner, sliding in as it fades in
+      if (arrowOpacity || node.pointer) {
+        if (!node.pointer) {
+          node.pointer = highlightLayer.appendChild(svgEl('polygon', { class: 'anim-highlight-arrow', 'stroke-linejoin': 'round' }))
+          // pointing along +x with its tip at 0,0 (rotated to point down-left below)
+          const L = 0.9 * CELL, H = 0.50 * CELL, HW = 0.33 * CELL, SW = 0.17 * CELL
+          node.pointer.setAttribute('points', `0,0 ${-H},${-HW} ${-H},${-SW} ${-L},${-SW} ${-L},${SW} ${-H},${SW} ${-H},${HW}`)
+        }
+        const back = (1 - arrowOpacity / k) * 0.4 * CELL // slides by its fade, not the dimming
+        const tip = { x: b.x1 - 0.75 * pad + back, y: b.y0 + 0.75 * pad - back }
+        node.pointer.setAttribute('transform', `translate(${tip.x} ${tip.y}) rotate(135)`)
+        node.pointer.style.opacity = arrowOpacity
+        if (!arrowOpacity) { node.pointer.remove(); node.pointer = null }
+      }
+
+      // number N: a numbered disc on the top-left corner, popping in
+      if (badgeOpacity || node.badge) {
+        // The number being shown: B's, or A's while A's fades out
+        const n = (item.b?.hl?.number != null && (item.t >= 0.5 || item.a?.hl?.number == null)) ? item.b.hl.number : (item.a?.hl?.number ?? item.b?.hl?.number)
+        if (!node.badge) {
+          node.badge = highlightLayer.appendChild(svgEl('g', { class: 'anim-highlight-number' }))
+          node.badge.appendChild(svgEl('circle', { r: 0.28 * CELL }))
+          node.badgeText = node.badge.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' }))
+        }
+        const label = n == null ? '' : String(n)
+        if (node.badgeText.textContent !== label) node.badgeText.textContent = label
+        const badgeFont = FONT * (label.length > 2 ? 0.62 : 0.88)
+        node.badgeText.style.fontSize = `${badgeFont}px`
+        node.badgeText.setAttribute('y', -0.07 * badgeFont) // digits have no descenders, so "central" sits them low
+        node.badge.setAttribute('transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(0.001, 0.6 + 0.4 * badgeOpacity / k)})`)
+        node.badge.style.opacity = badgeOpacity
+        if (!badgeOpacity) { node.badge.remove(); node.badge = null }
       }
 
       if (bubbleOpacity || node.bubble) {
@@ -485,6 +543,7 @@
           node.bubble = calloutLayer.appendChild(svgEl('g', { class: 'anim-callout' }))
           node.bubblePath = node.bubble.appendChild(svgEl('path'))
           node.bubbleText = node.bubble.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' }))
+          node.bubbleKey = null // the text's lines are (re)built on first draw
         }
         if (callout) drawBubble(node, callout, b)
         node.bubble.style.opacity = bubbleOpacity
@@ -495,8 +554,10 @@
     // A speech bubble beside bounds `b`, with a tail pointing at it.
     function drawBubble(node, callout, b) {
       const size = FONT * 0.75
-      const w = Math.max(CELL, textWidth(callout.text, size) + size * 1.4)
-      const h = size * 2
+      const lineH = size * 1.25
+      const lines = wrapText(callout.text, size, CALLOUT_CH * textWidth('0', size))
+      const w = Math.max(CELL, ...lines.map((line) => textWidth(line, size))) + size * 1.4
+      const h = lines.length * lineH + size * 0.75
       const tail = 0.3 * CELL
       const cx0 = (b.x0 + b.x1) / 2
       const cy0 = (b.y0 + b.y1) / 2
@@ -510,10 +571,32 @@
       cx = Math.min(viewBox.x + viewBox.w - w / 2 - m, Math.max(viewBox.x + w / 2 + m, cx))
       cy = Math.min(viewBox.y + viewBox.h - h / 2 - m, Math.max(viewBox.y + h / 2 + m, cy))
       node.bubblePath.setAttribute('d', bubblePath(cx, cy, w, h, Math.min(10, h / 3), callout.side, tip))
-      node.bubbleText.setAttribute('x', cx)
-      node.bubbleText.setAttribute('y', cy)
       node.bubbleText.style.fontSize = `${size}px`
-      if (node.bubbleText.textContent !== callout.text) node.bubbleText.textContent = callout.text
+      if (node.bubbleKey !== callout.text) {
+        node.bubbleKey = callout.text
+        node.bubbleText.replaceChildren(...lines.map((line) => {
+          const span = svgEl('tspan')
+          span.textContent = line
+          return span
+        }))
+      }
+      ;[...node.bubbleText.children].forEach((span, i) => {
+        span.setAttribute('x', cx)
+        span.setAttribute('y', cy + (i - (lines.length - 1) / 2) * lineH)
+      })
+    }
+
+    // Splits text into lines no wider than maxW at spaces (a single long word gets a line of its own).
+    function wrapText(text, size, maxW) {
+      const lines = []
+      let line = ''
+      for (const word of text.split(/\s+/).filter(Boolean)) {
+        const next = line ? `${line} ${word}` : word
+        if (line && textWidth(next, size) > maxW) { lines.push(line); line = word }
+        else line = next
+      }
+      if (line || !lines.length) lines.push(line)
+      return lines
     }
 
     // A rounded rectangle with a tail on the side facing the shape.

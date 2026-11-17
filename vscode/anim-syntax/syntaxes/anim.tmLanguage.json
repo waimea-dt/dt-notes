@@ -22,6 +22,9 @@
       "include": "#action"
     },
     {
+      "include": "#highlight"
+    },
+    {
       "include": "#shape-type"
     },
     {
@@ -106,6 +109,26 @@
       "name": "keyword.control.anim",
       "match": "(?<![\\w-])(copy|group|ungroup|remove)(?![\\w-])"
     },
+    "highlight": {
+      "$comment": "highlight and its words (box, spotlight, arrow, number N, clear), so arrow here isn't a shape type",
+      "match": "(?<![\\w-])(highlight)((?:\\s+(?:box|spotlight|arrow|glow|clear|number(?:\\s+[+-]?(?:\\d+\\.?\\d*|\\.\\d+))?)(?![\\w-]))*)",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "patterns": [
+            {
+              "name": "support.constant.property-value.anim",
+              "match": "(?<![\\w-])(box|spotlight|arrow|glow|clear|number)(?![\\w-])"
+            },
+            {
+              "include": "#number"
+            }
+          ]
+        }
+      }
+    },
     "shape-type": {
       "name": "storage.type.anim",
       "match": "(?<![\\w-])(rect|circle|text|line|arrow)(?![\\w-])"
@@ -116,7 +139,7 @@
     },
     "emphasis": {
       "name": "keyword.other.emphasis.anim",
-      "match": "(?<![\\w-])(pulse|shake|wobble)(?![\\w-])"
+      "match": "(?<![\\w-])(pulse|shake|wobble|wiggle|bounce|glow)(?![\\w-])"
     },
     "value": {
       "name": "support.constant.property-value.anim",

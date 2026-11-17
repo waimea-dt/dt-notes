@@ -102,16 +102,19 @@
       }
       if (props.layer) shape.layer = props.layer
 
-      // highlight: box / spotlight stay until clear
+      // highlight: box / spotlight / arrow / number N stay until clear
       if (props.highlight) {
-        const hl = { box: false, spotlight: false, ...shape.hl }
-        for (const word of props.highlight) {
-          if (word === 'clear') { hl.box = false; hl.spotlight = false }
-          else hl[word] = true
+        const none = { box: false, spotlight: false, arrow: false, glow: false, number: null }
+        const hl = { ...none, ...shape.hl }
+        for (const item of props.highlight) {
+          if (item === 'clear') Object.assign(hl, none)
+          else if (typeof item === 'object') hl.number = item.number
+          else hl[item] = true
         }
         shape.hl = hl
       }
-      // pulse / shake: one-off effects this beat, on an existing shape (and a group's members)
+      // pulse / shake / wobble / bounce / glow: one-off effects this beat, on an existing shape
+      // (and a group's members)
       if (props.emphasis) {
         if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
         else for (const target of [shape, ...groupMembers(shape)]) tween(meta, target.uid).effect = props.emphasis

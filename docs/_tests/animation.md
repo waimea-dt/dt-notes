@@ -136,11 +136,19 @@ a1: move 7,3 via -0.5,+0.5
 
 ...and that pass is done.
 
+```anim
+a8: highlight clear
+a1: highlight clear
+```
+
++++
+
+...and that pass is done.
+
 The largest value, 8, has 'bubbled' to the end!
 
 ```anim
-a8: fill green highlight clear
-a1: fill blue highlight clear
+a8: fill green wiggle speed fast
 i: remove
 ```
 
@@ -1080,58 +1088,131 @@ ack: follow-reverse l5 speed slow
 
 ### Highlights and callouts
 
-<animation grid="12x4">
+<animation grid="12x6">
 
 ## Start
 
+Top row: one emphasis each. Bottom row: one highlight (or callout) each.
+
 ```anim
-a: rect "A" at 4,2
-b: circle "B" at 7,2 radius 0.5
-c: rect "C" at 10,2
+defaults size 1.6x0.8 font 0.6
+pu: rect "pulse" at 2,2
+sh: rect "shake" at 4,2
+wo: rect "wobble" at 6,2
+bn: rect "bounce" at 8,2
+gl: rect "glow" at 10,2
+
+ar: rect "arrow" at 1.5,5
+bx: rect "box" at 3.5,5
+hg: rect "glow" at 5.5,5
+nu: rect "number" at 7.5,5
+ca: rect "callout" at 9.5,5
+sp: rect "spotlight" at 11.5,5
+defaults clear
 ```
 
 ---
 
-## pulse, shake, box and wobble
+## Emphasis
+
+`pu: pulse`
 
 ```anim
-a: pulse
-b: shake
-c: highlight box
+pu: pulse
 ```
 
 +++
 
-`c: wobble`
+`sh: shake`
 
 ```anim
-c: wobble
+sh: shake
+```
+
++++
+
+`wo: wobble` (or `wiggle`)
+
+```anim
+wo: wobble
+```
+
++++
+
+`bn: bounce`
+
+```anim
+bn: bounce
+```
+
++++
+
+`gl: glow`
+
+```anim
+gl: glow
 ```
 
 ---
 
-## spotlight (two shapes)
+## Highlights
 
-Everything else dims.
+`highlight box`, `highlight arrow`, `highlight glow` and `highlight number 1` stay until cleared.
 
 ```anim
-a: highlight spotlight
-c: highlight spotlight
+bx: highlight box
+ar: highlight arrow
+hg: highlight glow
+nu: highlight number 1
+```
+
++++
+
+`nu: highlight number 2` swaps the number.
+
+```anim
+nu: highlight number 2
 ```
 
 ---
 
-## callout
+## Callout
 
 ```anim
-b: callout "Look at this!"
-a: callout "Left side" left-of
+ca: callout "Look at this!"
 ```
 
 +++
 
 ```anim
-b: callout "Now below" below
+ca: callout "Now below" below
+```
+
++++
+
+Long callout text wraps at about 24 characters.
+
+```anim
+ca: callout "A much longer callout that should wrap onto several lines" left-of
+```
+
+---
+
+## Spotlight
+
+Everything else dims, including the other shapes' highlights and callouts.
+
+```anim
+ca: callout clear
+sp: highlight spotlight
+```
+
++++
+
+Several shapes can be spotlit.
+
+```anim
+nu: highlight spotlight
 ```
 
 ---
@@ -1141,9 +1222,12 @@ b: callout "Now below" below
 `highlight clear` and `callout clear` put everything back.
 
 ```anim
-a: highlight clear callout clear
-b: callout clear
-c: highlight clear
+bx: highlight clear
+ar: highlight clear
+hg: highlight clear
+nu: highlight clear
+ca: callout clear
+sp: highlight clear
 ```
 
 </animation>
