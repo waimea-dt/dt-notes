@@ -150,7 +150,7 @@
     },
     "property": {
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|align|speed|delay|highlight|callout|zoom)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|align|speed|delay|stagger-reverse|stagger|highlight|callout|zoom)(?![\\w-])"
     },
     "emphasis": {
       "name": "keyword.other.emphasis.anim",

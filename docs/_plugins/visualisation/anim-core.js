@@ -115,6 +115,11 @@
   const colour = (key) => ({ key, sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' })
   const fixed = (key, value, extra = {}) => ({ key, sigs: [[]], build: () => value, ...extra })
   const words = (list, key, what) => Object.fromEntries(list.map((w) => [w, fixed(key, w, { what })]))
+  const buildStagger = (v, reverse) => {
+    const gap = v.length ? v[0].v : 0.1
+    if (gap < 0) throw new Error('"stagger" must be zero or more seconds')
+    return { gap, reverse }
+  }
 
   const KEYWORDS = {
     // position
@@ -156,6 +161,9 @@
     speed: { key: 'speed', sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast, instant or a number of seconds' },
     delay: number('delay', 'a number of seconds'),
     ease: { key: 'ease', sigs: [['ease']], help: 'in-out, linear, in, out or spring' },
+    // a row's / column's / group's members start one after another (seconds apart, default 0.1)
+    stagger: { key: 'stagger', sigs: [['num'], []], build: (v) => buildStagger(v, false), help: 'a number of seconds between members (or nothing, for 0.1)' },
+    'stagger-reverse': { key: 'stagger', sigs: [['num'], []], build: (v) => buildStagger(v, true), help: 'a number of seconds between members (or nothing, for 0.1)', what: 'stagger' },
     ...words(EFFECTS, 'effect', 'effect'),
     ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
     // emphasis, highlights and callouts

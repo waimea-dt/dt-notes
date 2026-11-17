@@ -254,7 +254,7 @@
     // Copies the defaults that apply to this type onto a new shape.
     function applyDefaults(shape) {
       for (const [key, value] of Object.entries(defaults)) {
-        if (['speed', 'effect', 'ease'].includes(key)) continue
+        if (['speed', 'effect', 'ease', 'stagger'].includes(key)) continue
         if (APPLIES[key] && !APPLIES[key].includes(shape.type)) continue
         const cells = (n) => numberValue(n, undefined, { unit: CELL })
         if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = cells(value.w) / 2; continue }
@@ -426,9 +426,11 @@
       if (first?.kind === 'word' && first.lower === 'remove') {
         if (!existing) throw new Error(`no shape called "${id}"`)
         const props = parseProps(tokens, 1, 'remove', shapes)
-        const extra = Object.keys(props).filter((key) => !['speed', 'effect', 'delay'].includes(key))
-        if (extra.length) throw new Error(`"remove" only takes a speed, an effect and a delay, not "${extra[0]}"`)
+        const extra = Object.keys(props).filter((key) => !['speed', 'effect', 'delay', 'ease', 'stagger'].includes(key))
+        if (extra.length) throw new Error(`"remove" only takes a speed, an effect, a delay, an ease and a stagger, not "${extra[0]}"`)
+        const order = staggerOrder(existing) // taken before its members go
         removeShape(existing, props, meta, warn)
+        applyStagger(existing, order, props, meta, warn)
         return
       }
 
@@ -445,6 +447,7 @@
         const src = shapes.get(srcId)
         if (src.type === 'group') throw new Error('a group can\'t be copied: copy its shapes instead')
         const props = parseProps(tokens, 2, 'change', shapes)
+        if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
         const fresh = { attach: null, hl: null, callout: null }
         const shape = { ...structuredClone(src), ...fresh, id, uid: ++uid }
         tween(meta, shape.uid).from = { ...structuredClone(src), ...fresh, uid: shape.uid }
@@ -468,6 +471,7 @@
         for (let ref; (ref = parseAs('id', tokens[j], shapes)); j++) members.push(ref)
         if (!members.length) throw new Error('"group" expects the ids of the shapes to group, e.g. "g: group a b c"')
         const props = parseProps(tokens, j, 'change', shapes)
+        if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
         if (props.at || props.x || props.y || props.via || props.travel || props.follow || props.attach) throw new Error('create the group first, then move it on the next line')
         const list = members.map((m) => shapes.get(m))
         for (const m of list) {
@@ -502,6 +506,7 @@
         && !tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
       if (type && !addsHead) {
         const props = parseProps(tokens, 1, 'create', shapes)
+        if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
         const shape = { ...baseShape(type), id, uid: ++uid }
         applyDefaults(shape)
         if (type === 'image') {
@@ -537,7 +542,8 @@
       }
       const props = parseProps(tokens, 0, 'change', shapes)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or removed`)
-      if (existing.layout) restyleCells(existing, props, meta, warn) // takes the cells' look out of props
+      const order = existing.type === 'group' ? staggerOrder(existing) : null
+      if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
       const shape = structuredClone(existing)
       const path = applyProps(shape, props, false, warn, meta)
       if (path) tween(meta, shape.uid).path = path
@@ -545,6 +551,8 @@
       shapes.set(id, shape)
       tween(meta, shape.uid).dur = Math.max(tween(meta, shape.uid).dur, speedOf(props) * (props.travel?.length || 1)) // travel: speed per hop
       setDelay(meta, shape.uid, props)
+      if (order) applyStagger(shape, order, props, meta, warn)
+      else if (props.stagger) warn(`"stagger" works on a row, column or group, and "${id}" isn't one`)
     }
 
     // Removes a shape (and a group's members), with the line's exit effect and timing.
@@ -575,7 +583,7 @@
       if (!values.length) throw new Error(`a ${layout} needs its values straight after "${layout}", e.g. "${id}: ${layout} 5 3 8 1 at 2,3" (put words in quotes: "A" "B")`)
       const props = parseProps(tokens, j, 'layout', shapes)
       if (props.label !== undefined) throw new Error(`a ${layout}'s values all go straight after "${layout}"`)
-      const allowed = ['at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', 'speed', 'delay', 'ease', 'effect', 'highlight', 'callout']
+      const allowed = ['at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', 'speed', 'delay', 'ease', 'stagger', 'effect', 'highlight', 'callout']
       const extra = Object.keys(props).find((key) => !allowed.includes(key))
       if (extra) throw new Error(`"${extra === 'head' ? 'arrow' : extra}" doesn't apply to a ${layout}`)
 
@@ -625,25 +633,62 @@
         setDelay(meta, cell.uid, props)
       }
       if (props.effect) warnEffect(cells[0], props.effect, warn)
+      applyStagger(row, cells.map((cell) => [cell.uid]), { ...props, at: null, x: null, y: null }, meta, warn) // placing it isn't a move
     }
 
-    // "arr: fill green" on a row or column: the look goes to each of its cells.
-    function restyleCells(row, props, meta, warn) {
-      for (const key of ['size', 'width', 'height']) {
-        if (props[key]) throw new Error(`a ${row.layout}'s cell size is set when it's made`)
+    // "arr: fill green" on a row, column or group: the look goes to each of its shapes that takes
+    // it. With a stagger, a highlight does too (one each, in turn, rather than one round them all).
+    function restyleMembers(group, props, meta, warn) {
+      if (group.layout) {
+        for (const key of ['size', 'width', 'height']) {
+          if (props[key]) throw new Error(`a ${group.layout}'s cell size is set when it's made`)
+        }
       }
-      const look = pick(props, CELL_STYLE)
+      const staggered = props.stagger ?? defaults.stagger
+      const look = pick(props, staggered ? [...CELL_STYLE, 'highlight'] : CELL_STYLE)
       if (!Object.keys(look).length) return
       for (const key of Object.keys(look)) delete props[key]
-      for (const cellId of row.members) {
-        const cell = shapes.get(cellId)
-        if (!cell) continue
-        const changed = structuredClone(cell)
-        applyProps(changed, look, false, warn, meta)
-        shapes.set(cellId, changed)
+      const used = new Set()
+      for (const member of groupMembers(group)) {
+        if (member.type === 'group') continue
+        const own = pick(look, Object.keys(look).filter((key) => key === 'highlight' || APPLIES[key].includes(member.type)))
+        if (!Object.keys(own).length) continue
+        Object.keys(own).forEach((key) => used.add(key))
+        const changed = structuredClone(member)
+        applyProps(changed, own, false, warn, meta)
+        shapes.set(changed.id, changed)
         tween(meta, changed.uid).dur = Math.max(tween(meta, changed.uid).dur, speedOf(props))
         setDelay(meta, changed.uid, props)
       }
+      const unused = Object.keys(look).find((key) => !used.has(key))
+      if (unused) warn(`"${unused === 'mono' ? 'monospace' : unused === 'linestyle' ? look[unused] : unused}" doesn't apply to any of the shapes in "${group.id}"`)
+    }
+
+    // A row's / column's / group's members in stagger order: cells by number, a group's members as
+    // listed. Each entry is a member's uid and those of any shapes in it.
+    function staggerOrder(group) {
+      if (group.type !== 'group') return []
+      return group.members.map((id) => shapes.get(id)).filter(Boolean).map((m) => [m.uid, ...groupMembers(m).map((s) => s.uid)])
+    }
+
+    // stagger / stagger-reverse: each member's change starts `gap` seconds after the one before
+    // (after any delay). Moves are left alone: the members ride on the group, so move together.
+    function applyStagger(group, order, props, meta, warn) {
+      const stagger = props.stagger ?? defaults.stagger
+      if (!stagger) return
+      if (!order.length) {
+        if (props.stagger) warn(`"stagger" works on a row, column or group, and "${group.id}" isn't one`)
+        return
+      }
+      if (props.stagger && (props.at || props.x || props.y || props.via || props.travel || props.follow)) {
+        warn('a row, column or group moves as one, so its move isn\'t staggered')
+      }
+      const list = stagger.reverse ? [...order].reverse() : order
+      const base = props.delay ? props.delay.v * 1000 : 0
+      list.forEach((uids, k) => uids.forEach((uid) => {
+        const record = tween(meta, uid)
+        record.delay = Math.max(record.delay, base + k * stagger.gap * 1000)
+      }))
     }
 
     // "arr: swap 0 3": two cells change places, one arcing over and one under (a column's: to the
