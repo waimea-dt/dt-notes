@@ -7,7 +7,7 @@
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
-    MONO_FONT } = window.Anim
+    MONO_FONT, measure, mergeBoxes, pointAt } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -255,18 +255,10 @@
         const fromShape = s.from?.ref && byId.get(s.from.ref)
         const dashBase = fromShape ? Math.hypot(ends.from.x - boxCentre(fromShape).x, ends.from.y - boxCentre(fromShape).y) : 0
         // The points it's drawn through (a curve's smooth path), with the distance along to each
-        const pts = linePoints(ends).map((p) => ({ x: p.x + v.dx, y: p.y + v.dy }))
-        const along = [0]
-        for (let i = 1; i < pts.length; i++) along.push(along[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y))
-        const total = along[along.length - 1]
-        const pointAt = (d) => {
-          let i = 1
-          while (i < pts.length - 1 && along[i] < d) i++
-          const span = along[i] - along[i - 1]
-          const k = span ? clamp01((d - along[i - 1]) / span) : 0
-          return { x: lerp(pts[i - 1].x, pts[i].x, k), y: lerp(pts[i - 1].y, pts[i].y, k) }
-        }
-        const pathTo = (d) => [...pts.filter((_, i) => along[i] < d), pointAt(d)]
+        const path = measure(linePoints(ends).map((p) => ({ x: p.x + v.dx, y: p.y + v.dy })))
+        const total = path[path.length - 1].at
+        const at = (d) => pointAt(path, d)
+        const pathTo = (d) => [...path.filter((p) => p.at < d), at(d)]
 
         // The head (fading in or out as it's added or taken off) sits on the end, or on the tip
         // while drawing in; the stroke stops at its back.
@@ -274,10 +266,10 @@
         if (v.head) {
           const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
           const reach = total * v.draw
-          const tip = pointAt(reach)
-          const behind = pointAt(Math.max(0, reach - head))
+          const tip = at(reach)
+          const behind = at(Math.max(0, reach - head))
           const dl = Math.hypot(tip.x - behind.x, tip.y - behind.y)
-          const last = pts[pts.length - 2] || pts[0]
+          const last = path[path.length - 2] || path[0]
           const [ux, uy] = dl > 1e-6 ? [(tip.x - behind.x) / dl, (tip.y - behind.y) / dl] : [Math.sign(tip.x - last.x), Math.sign(tip.y - last.y)]
           const base = { x: tip.x - ux * head, y: tip.y - uy * head }
           const half = head * 0.55
@@ -304,13 +296,13 @@
           syncGhost(node.body, dashBase)
         }
         paint(node.body, 'stroke', colours.stroke)
-        drawSignal(node, v.signal, pts, along, pointAt, strokeWidth)
-        const { x: mx, y: my } = pointAt(total / 2) // the label sits halfway along
+        drawSignal(node, v.signal, path, strokeWidth)
+        const { x: mx, y: my } = at(total / 2) // the label sits halfway along
         attr(node.label, 'x', mx); attr(node.label, 'y', my)
         attr(node.label, 'text-anchor', 'middle')
         node.label.classList.add('anim-halo')
         attr(g, 'transform', v.scale === 1 && !v.rot ? '' : `translate(${mx} ${my}) rotate(${v.rot || 0}) scale(${v.scale}) translate(${-mx} ${-my})`)
-        if (node.debugId) { attr(node.debugId, 'x', pts[0].x); attr(node.debugId, 'y', pts[0].y); node.debugId.textContent = s.id }
+        if (node.debugId) { attr(node.debugId, 'x', path[0].x); attr(node.debugId, 'y', path[0].y); node.debugId.textContent = s.id }
         return
       }
 
@@ -375,7 +367,7 @@
     // signal: a glowing blip running along a line once (signal: { t: 0-1, reverse }), its tail
     // fading behind it. It runs on until the tail has gone past the end.
     const TAIL_PARTS = 5
-    function drawSignal(node, signal, pts, along, pointAt, strokeWidth) {
+    function drawSignal(node, signal, path, strokeWidth) {
       if (!signal) {
         if (node.blip) node.blip.style.display = 'none'
         return
@@ -386,7 +378,8 @@
         node.blipHead = node.blip.appendChild(svgEl('circle'))
       }
       node.blip.style.display = ''
-      const total = along[along.length - 1]
+      const total = path[path.length - 1].at
+      const at = (d) => pointAt(path, d)
       const tail = Math.min(0.9 * CELL, total / 2)
       const d = clamp01(signal.t) * (total + tail) // how far the tip has gone
       // a stretch of the line between two distances from the start, flipped for signal-reverse
@@ -395,14 +388,14 @@
         let b = Math.min(total, d1)
         if (signal.reverse) [a, b] = [total - b, total - a]
         if (b <= a) return ''
-        return `M ${[pointAt(a), ...pts.filter((_, i) => along[i] > a && along[i] < b), pointAt(b)].map((p) => `${p.x} ${p.y}`).join(' L ')}`
+        return `M ${[at(a), ...path.filter((p) => p.at > a && p.at < b), at(b)].map((p) => `${p.x} ${p.y}`).join(' L ')}`
       }
       // the tail: overlapping pieces, so it's brightest at the tip
       node.blipTail.forEach((part, i) => {
         attr(part, 'd', stretch(d - (tail * (i + 1)) / TAIL_PARTS, d) || null)
         part.style.strokeWidth = Math.max(6, 2.2 * strokeWidth)
       })
-      const tip = pointAt(signal.reverse ? total - d : d)
+      const tip = at(signal.reverse ? total - d : d)
       attr(node.blipHead, 'cx', tip.x); attr(node.blipHead, 'cy', tip.y)
       attr(node.blipHead, 'r', Math.max(10, 3.2 * strokeWidth))
       node.blipHead.style.opacity = d <= total ? 1 : 0
@@ -770,12 +763,7 @@
 
       // An outline is round the whole thing: a var's / row's / column's name and indices too
       const parts = outlineOpacity || node.outline ? [...now.values()].filter((s) => s.part === item.shape.id) : []
-      const whole = { ...b }
-      for (const part of parts) {
-        const p = bounds(part, now)
-        whole.x0 = Math.min(whole.x0, p.x0); whole.y0 = Math.min(whole.y0, p.y0)
-        whole.x1 = Math.max(whole.x1, p.x1); whole.y1 = Math.max(whole.y1, p.y1)
-      }
+      const whole = mergeBoxes([b, ...parts.map((part) => bounds(part, now))])
 
       // outline: the shape's own outline, `pad` outside it; inside: the same line just inside its
       // stroke. Both are paths in the shape's place and turn (see highlightPath).

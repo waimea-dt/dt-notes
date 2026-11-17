@@ -915,9 +915,8 @@
     function swapCells(id, row, tokens, meta, warn) {
       if (!row) throw new Error(`no shape called "${id}"`)
       if (!row.layout) throw new Error(`"swap" swaps two cells of a row or column, and "${id}" isn't one`)
-      const index = (token) => (token?.kind === 'word' && /^\d+$/.test(token.value) ? Number(token.value) : undefined)
-      const i = index(tokens[1])
-      const j = index(tokens[2])
+      const i = parseAs('index', tokens[1])
+      const j = parseAs('index', tokens[2])
       if (i === undefined || j === undefined) throw new Error(`"swap" expects two cell numbers, e.g. "${id}: swap 0 3"`)
       const props = parseProps(tokens, 3, 'swap', shapes)
       const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease'].includes(key))
@@ -981,8 +980,7 @@
       const n = cells.length
       const range = n ? `${id}.0 to ${id}.${n - 1}` : 'none'
       // a cell number, or end: the last cell (remove), or after it (insert)
-      const place = (token) => (token?.kind !== 'word' ? undefined
-        : token.lower === 'end' ? (removing ? n - 1 : n) : /^\d+$/.test(token.value) ? Number(token.value) : undefined)
+      const place = (token) => (token?.kind === 'word' && token.lower === 'end' ? (removing ? n - 1 : n) : parseAs('index', token))
 
       // The operands: where, and what goes in (a value, or a copy of a var's or cell's), or the var
       // or cell the removed value goes into

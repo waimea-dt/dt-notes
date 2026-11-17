@@ -503,17 +503,26 @@
     return { x: lerp(stops[i].x, stops[i + 1].x, k), y: lerp(stops[i].y, stops[i + 1].y, k) }
   }
 
-  // The point a fraction t (0-1) of the way along a path, by distance.
-  function pointOnPath(samples, t) {
+  // Points with the distance along to each (`at`), as path samples.
+  function measure(points) {
+    let at = 0
+    return points.map((p, i) => ({ x: p.x, y: p.y, at: (at += i ? Math.hypot(p.x - points[i - 1].x, p.y - points[i - 1].y) : 0) }))
+  }
+
+  // The point a distance d along a path (samples with `at`), held to its ends.
+  function pointAt(samples, d) {
     const total = samples[samples.length - 1].at
-    const target = Math.min(1, Math.max(0, t)) * total
+    const target = Math.min(total, Math.max(0, d))
     let i = 1
     while (i < samples.length - 1 && samples[i].at < target) i++
     const a = samples[i - 1]
-    const b = samples[i]
+    const b = samples[i] || a
     const k = b.at > a.at ? (target - a.at) / (b.at - a.at) : 0
     return { x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) }
   }
+
+  // The point a fraction t (0-1) of the way along a path, by distance.
+  const pointOnPath = (samples, t) => pointAt(samples, clamp01(t) * samples[samples.length - 1].at)
 
   // ---------------------------------------------------------------------------
   // Grid and bounds
@@ -539,15 +548,17 @@
     return { x0: c.x - hw + dx, y0: c.y - hh + dy, x1: c.x + hw + dx, y1: c.y + hh + labelBelow(shape) + dy }
   }
 
-  function unionBounds(list, byId, depth = 0) {
+  // The box round several boxes (none: an empty, infinite-inside-out box).
+  function mergeBoxes(boxes) {
     const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
-    for (const shape of list) {
-      const b = bounds(shape, byId, {}, depth)
+    for (const b of boxes) {
       box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
       box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
     }
     return box
   }
+
+  const unionBounds = (list, byId, depth = 0) => mergeBoxes(list.map((shape) => bounds(shape, byId, {}, depth)))
 
   function viewBoxFor(gridAttr, beats, warnings) {
     const fixed = String(gridAttr || '').trim().toLowerCase().match(/^(\d+)\s*x\s*(\d+)$/)
@@ -558,12 +569,7 @@
       const rows = fixed ? Math.max(1, +fixed[2]) : 9
       return { x: -GRID_MARGIN, y: -GRID_MARGIN, w: cols * CELL + 2 * GRID_MARGIN, h: rows * CELL + 2 * GRID_MARGIN, cols, rows }
     }
-    const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }
-    beats.forEach(({ state }) => state.forEach((shape) => {
-      const b = bounds(shape, state)
-      box.x0 = Math.min(box.x0, b.x0); box.y0 = Math.min(box.y0, b.y0)
-      box.x1 = Math.max(box.x1, b.x1); box.y1 = Math.max(box.y1, b.y1)
-    }))
+    const box = mergeBoxes(beats.map(({ state }) => unionBounds([...state.values()], state)))
     if (!Number.isFinite(box.x0)) return { x: 0, y: 0, w: 16 * CELL, h: 9 * CELL, cols: 16, rows: 9 }
     const margin = CELL / 2
     const x = box.x0 - margin
@@ -588,6 +594,6 @@
     FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LAYOUT_TYPES, LINE_STARTS, LINE_TYPES, NORMAL_MS,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     SIGNALS, SPEEDS, STROKE, attachPos, bounds, boxCentre, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
-    escapeHtml, extents, lerp, linePoints, lucideIcon, MONO_FONT, placeNextTo, pointOnHops, pointOnPath, reducedMotion,
+    escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

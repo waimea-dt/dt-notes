@@ -175,6 +175,7 @@
       case 'side': return CALLOUT_SIDES[word]
       case 'clear': return word === 'clear' ? word : undefined
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined
+      case 'index': return /^\d+$/.test(word) ? Number(word) : undefined // a row's / column's cell number
       case 'id': return shapes.has(token.value) ? token.value : undefined
       case 'placement': return PLACEMENTS.includes(word) ? word : undefined
       case 'align': return ALIGNS[word]
