@@ -42,6 +42,7 @@
     let defaults = {}
     let camera = { x: null, y: null, zoom: 1 } // centre in px (null: the drawing's centre)
     let uid = 0
+    let lastNumber = 0 // "highlight number": the last number given, so a bare one takes the next
 
     const check = (shape, key, word = key) => {
       if (key === 'stroke' && shape.type === 'text') throw new Error('"stroke" doesn\'t apply to text: use colour')
@@ -119,7 +120,7 @@
             throw new Error(`"highlight inside" needs a shape with an inside (rect, circle, diamond, image or icon), not ${shape.type === 'arrow' ? 'an' : 'a'} ${shape.type === 'group' ? (shape.layout || 'group') : shape.type}`)
           }
           if (item === 'clear') Object.assign(hl, none)
-          else if (typeof item === 'object') hl.number = item.number
+          else if (typeof item === 'object') hl.number = lastNumber = item.number ?? lastNumber + 1
           else hl[item] = true
         }
         shape.hl = hl
@@ -276,6 +277,26 @@
         if (key === 'height') { shape.h = cells(value); continue }
         if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = numberValue(value); continue }
         shape[key] = value
+      }
+    }
+
+    // "highlight number" with no value on a row, column or group numbers its shapes in turn rather
+    // than the group itself. Takes it out of props; true if there was one.
+    function takeBareNumber(props) {
+      if (!props.highlight?.some((item) => item?.number === null)) return false
+      props.highlight = props.highlight.filter((item) => item?.number !== null)
+      if (!props.highlight.length) delete props.highlight
+      return true
+    }
+
+    // Numbers each of a group's direct members (not lines: they number the shapes they join), in
+    // order. Changed in place: past beats are snapshots.
+    function numberEach(members, props, meta, warn) {
+      for (const member of members) {
+        if (!member || LINE_TYPES.includes(member.type)) continue
+        applyProps(member, { highlight: [{ number: null }] }, false, warn, meta)
+        tween(meta, member.uid).dur = Math.max(tween(meta, member.uid).dur, speedOf(props))
+        setDelay(meta, member.uid, props)
       }
     }
 
@@ -495,6 +516,7 @@
           leaveGroup(m)
           m.attach = { ref: id, dx: m.x - group.x, dy: m.y - group.y }
         }
+        if (takeBareNumber(props)) numberEach(list, props, meta, warn)
         applyProps(group, props, false, warn, meta)
         shapes.set(id, group)
         tween(meta, group.uid).enter = 'fade'
@@ -554,6 +576,7 @@
       const props = parseProps(tokens, 0, 'change', shapes)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or removed`)
       const order = existing.type === 'group' ? staggerOrder(existing) : null
+      if (order && takeBareNumber(props)) numberEach(existing.members.map((m) => shapes.get(m)), props, meta, warn)
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
       const shape = structuredClone(existing)
       const path = applyProps(shape, props, false, warn, meta)
@@ -627,6 +650,7 @@
         cell.attach = { ref: id, dx: across ? offset : 0, dy: across ? 0 : offset }
         Object.assign(cell, { x: cell.attach.dx, y: cell.attach.dy })
       })
+      if (takeBareNumber(props)) numberEach(cells, props, meta, warn)
       const b = unionBounds(cells, shapes)
       const row = {
         ...baseShape('group'), id, uid: ++uid, layout, members: ids,

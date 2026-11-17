@@ -214,7 +214,9 @@ a: highlight outline       # follows the shape, just outside it (not lines)
 a: highlight inside        # just inside its stroke (not text, lines or groups)
 a: highlight arrow
 a: highlight glow
-a: highlight number 2
+a: highlight number        # the next number: 1, then 2, …
+a: highlight number 5      # 5 (the next bare one is 6)
+arr: highlight number      # a row / column / group: numbers each of its shapes in turn
 a: highlight spotlight     # dims everything else
 a: highlight outline arrow # several
 a: highlight clear

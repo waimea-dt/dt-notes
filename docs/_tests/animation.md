@@ -1885,6 +1885,60 @@ nu: highlight clear
 
 </animation>
 
+### Numbers
+
+A bare `number` takes the next one; `number N` sets where the sequence is. On a row, column or group, a bare one numbers each shape in turn.
+
+<animation grid="14x5">
+
+```anim
+defaults size 1.2x0.8 font 0.6
+a: rect "a" at 2,1.5
+b: rect "b" at 4.5,1.5
+c: rect "c" at 7,1.5
+d: rect "d" at 9.5,1.5
+e: rect "e" at 12,1.5
+defaults clear
+```
+
+---
+
+## 1, 2, then 5, 6, 7
+
+```anim
+a: highlight number
+b: highlight number
+c: highlight number 5
+d: highlight number
+e: highlight number
+```
+
+---
+
+## A row numbers its cells
+
+```anim
+arr: row 4 8 2 at 2,4 highlight number
+```
+
+---
+
+## A group, staggered
+
+```anim
+p: circle "p" at 10,4 radius 0.4
+q: circle "q" at 12,4 radius 0.4
+pq: group p q
+```
+
++++
+
+```anim
+pq: highlight number stagger 0.3
+```
+
+</animation>
+
 ### Outline and inside
 
 The outline follows each shape's own outline (turned and scaled with it); inside sits just within its stroke.
@@ -2132,6 +2186,12 @@ arr: highlight arrow stagger 0.2
 
 ```anim
 arr: highlight clear stagger 0.1
+```
+
++++
+
+```anim
+arr: highlight number stagger 0.4
 ```
 
 ---

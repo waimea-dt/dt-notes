@@ -172,9 +172,10 @@
     ...words(Object.keys(SIGNALS), 'emphasis', 'emphasis'),
     wiggle: fixed('emphasis', 'wobble', { what: 'emphasis' }),
     highlight: {
-      key: 'highlight', list: [['number', 'num'], ['highlight']],
-      build: (v, sig) => (sig[0] === 'number' ? { number: v[1].v } : v[0]),
-      help: 'outline, inside, spotlight, arrow, glow, number N or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)',
+      key: 'highlight', list: [['number', 'num'], ['number'], ['highlight']],
+      // number with no value: the next in the sequence (null until compiled)
+      build: (v, sig) => (sig[0] === 'number' ? { number: sig.length === 2 ? v[1].v : null } : v[0]),
+      help: 'outline, inside, spotlight, arrow, glow, number (N) or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)',
     },
     callout: {
       key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],
