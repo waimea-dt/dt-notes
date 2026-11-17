@@ -205,19 +205,68 @@
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
     // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
     // with it, rather than taking on the look of where it goes
-    'keep-style': fixed('keepStyle', true, { modes: ['edit', 'defaults'] }),
+    'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"' }),
     null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
-    // defaults only
-    clear: fixed('reset', true, { modes: ['defaults'] }),
+    // defaults only (elsewhere, clear goes after highlight, callout, name or indices)
+    clear: fixed('reset', true, { modes: ['defaults'], where: 'after highlight, callout, name or indices (e.g. "highlight clear"), or on its own on a defaults line' }),
     // camera only
-    zoom: { ...number('zoom', 'a number (2 = twice as close)'), modes: ['camera'] },
-    reset: fixed('reset', true, { modes: ['camera'] }),
+    zoom: { ...number('zoom', 'a number (2 = twice as close)'), modes: ['camera'], where: 'on a camera line, e.g. "camera zoom 2"' },
+    reset: fixed('reset', true, { modes: ['camera'], where: 'on a camera line, "camera reset"' }),
   }
   for (const entry of Object.values(KEYWORDS)) for (const list of [entry.sigs, entry.list]) list?.sort((a, b) => b.length - a.length)
 
-  // Words that start a line (after "id:") rather than describe it
-  // (delete: a shape; insert / remove: a row's or column's cells; swap: two of them)
-  const LINE_STARTS = ['copy', 'group', 'ungroup', 'delete', 'swap', 'insert', 'remove', 'var']
+  // The word an author types for a prop, for messages: "quoted text" for a label, the word itself
+  // for a one-word prop given its value (dashed, pop, …), otherwise the keyword that sets it.
+  function wordFor(key, value) {
+    if (key === 'label') return 'quoted text'
+    if (typeof value === 'string' && KEYWORDS[value]?.key === key) return value
+    if (KEYWORDS[key]?.key === key) return key
+    return Object.keys(KEYWORDS).find((word) => KEYWORDS[word].key === key) || key
+  }
+
+  // A list of props for a message: "a speed, a delay and an ease"
+  const ARTICLES = { speed: 'a speed', delay: 'a delay', ease: 'an ease', effect: 'an effect', stagger: 'a stagger' }
+  function listProps(keys) {
+    const words = keys.map((key) => ARTICLES[key] || wordFor(key))
+    return words.length > 1 ? `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}` : words[0] || 'nothing'
+  }
+
+  // A row's or column's look, given to each of its cells (when made, and on a change to it)
+  const CELL_STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'corner', 'linestyle', 'flow']
+  const TIMING = ['speed', 'delay', 'ease']
+
+  // Every kind of scene line and the props it can have, checked as its props are read (parseProps).
+  //   verb     typed straight after "id:" (the others are known by the line's shape)
+  //   takes    the props it takes (left out: any), with `what` naming it in the message
+  //   refuses  props it doesn't take, with `refuse(word)` the message
+  const LINES = {
+    create: {}, // "a: rect …"
+    change: {}, // "a: fill red …"
+    copy: { verb: true }, // "b: copy a …", then any change
+    group: {
+      verb: true,
+      refuses: ['at', 'x', 'y', 'via', 'travel', 'follow', 'attach'],
+      refuse: () => 'create the group first, then move it on the next line',
+    },
+    ungroup: { verb: true, takes: [] },
+    delete: { verb: true, takes: [...TIMING, 'effect', 'stagger'] }, // a shape
+    swap: { verb: true, takes: TIMING }, // two of a row's / column's cells
+    insert: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell into a row / column
+    remove: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell out of one
+    assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "v1: a.1"
+    layout: { // "arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
+      takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices'],
+      refuse: (word) => `"${word}" doesn't apply to a row or column`,
+    },
+    camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
+    defaults: {
+      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'name', 'indices'],
+      refuse: (word) => `"${word}" can't be a default`,
+    },
+  }
+
+  // Words that start a line (after "id:") rather than describe it: the verbs, and var
+  const LINE_STARTS = [...Object.keys(LINES).filter((kind) => LINES[kind].verb), 'var']
   // Words inside a row edit: "insert 7 at end", "remove 2 into v1"
   const EDIT_WORDS = ['end', 'into']
 
@@ -611,8 +660,8 @@
     }))
   }
 
-  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
-    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LAYOUT_TYPES, LINE_STARTS, LINE_TYPES, NORMAL_MS,
+  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
+    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LAYOUT_TYPES, LINES, LINE_STARTS, LINE_TYPES, listProps, NORMAL_MS, TIMING, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     SIGNALS, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,

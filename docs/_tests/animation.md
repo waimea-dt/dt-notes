@@ -3031,6 +3031,17 @@ er: remove 0 into zz
 er: remove 0 into er.0
 er: insert 3 at front
 dw: remove 0
+dw: fill red keep-style
+dw: zoom 2
+dw: clear
+dw: delete fill red
+gb5: group [a] at 2,2
+defaults "x"
+er2: row [1 2] at 1,3 arrow
+er3: row [1 2] at 1,4 "x"
+vv: er.0 fill red
+er: swap 0 1 fill red
+er: insert 3 at 0 keep-style
 ```
 
 </animation>

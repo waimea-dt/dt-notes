@@ -7,7 +7,8 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, FLOWS, resolveEnds, boxCentre, PLACE_GAP,
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, SIGNALS,
-    parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C } = window.Anim
+    parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C, CELL_STYLE, LINES,
+    wordFor } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …) and their index labels (id.index.0, …), and the name (id.name)
@@ -16,8 +17,6 @@
   const nameId = (id) => `${id}.name`
   const cellRange = (id, n) => (n ? `${cellId(id, 0)} to ${cellId(id, n - 1)}` : 'none')
 
-  // A row's or column's look, given to each of its cells (when made, and on a change to it)
-  const CELL_STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'corner', 'linestyle', 'flow']
   const pick = (props, keys) => Object.fromEntries(Object.entries(props).filter(([key]) => keys.includes(key)))
 
   // ---------------------------------------------------------------------------
@@ -387,8 +386,6 @@
     function runCameraLine([, colon, rest = ''], meta, warn) {
       if (colon) throw new Error('"camera" takes no colon, e.g. "camera at 4,3 zoom 2"')
       const props = parseProps(tokenize(rest), 0, 'camera', shapes)
-      const extra = Object.keys(props).find((key) => !['at', 'x', 'y', 'travel', 'zoom', 'reset', 'speed', 'delay', 'ease'].includes(key))
-      if (extra) throw new Error(`"camera" takes at / x / y, travel, zoom, reset, speed, delay and ease, not "${extra === 'label' ? 'quoted text' : extra}"`)
       if (props.at?.kind === 'place') throw new Error('"camera at" takes "x,y" or a shape id')
       if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'travel', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects at, travel, zoom or reset, e.g. "camera at 4,3 zoom 2"')
       if (props.reset && (props.at || props.x || props.y || props.travel || props.zoom)) throw new Error('"camera reset" takes only a speed, a delay and an ease')
@@ -448,9 +445,6 @@
 
       if (defaultsLine) {
         const props = parseProps(tokens, 0, 'defaults', shapes)
-        for (const key of ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'name', 'indices']) {
-          if (key in props) throw new Error(`"${key === 'label' ? 'quoted text' : key}" can't be a default`)
-        }
         if (props.reset) { defaults = {}; delete props.reset }
         const before = JSON.stringify(defaults)
         defaults = { ...defaults, ...props }
@@ -469,89 +463,11 @@
       if (first?.kind === 'res' && !type) throw new Error(`unknown shape "${first.name}(…)"`)
       const existing = shapes.get(id)
 
-      if (first?.kind === 'word' && first.lower === 'delete') {
-        if (!existing) throw new Error(`no shape called "${id}"`)
-        const where = tokens[1]?.kind === 'word' && (/^\d+$/.test(tokens[1].value) || tokens[1].lower === 'end') ? tokens[1].value : null
-        if (existing.layout && where) throw new Error(`"delete" deletes the whole ${existing.layout}: to take one cell out, "${id}: remove ${where}"`)
-        const props = parseProps(tokens, 1, 'delete', shapes)
-        const extra = Object.keys(props).filter((key) => !['speed', 'effect', 'delay', 'ease', 'stagger'].includes(key))
-        if (extra.length) throw new Error(`"delete" only takes a speed, an effect, a delay, an ease and a stagger, not "${extra[0]}"`)
-        const order = staggerOrder(existing) // taken before its members go
-        removeShape(existing, props, meta, warn)
-        applyStagger(existing, order, props, meta, warn)
-        return
-      }
-
-      // "arr: row 5 3 8 1 at 2,3" (or column): its cells are arr.0, arr.1, …
-      if (first?.kind === 'word' && LAYOUT_TYPES.includes(first.lower)) return createLayout(id, first.lower, tokens, existing, meta, warn)
-      if (first?.kind === 'word' && first.lower === 'swap') return swapCells(id, existing, tokens, meta, warn)
-      if (first?.kind === 'word' && ['insert', 'remove'].includes(first.lower)) return editCells(id, existing, first.lower, tokens, meta)
-
-      const firstWord = first?.kind === 'word' ? first.lower : ''
-      if (firstWord === 'copy') {
-        // An identical copy that starts on the original, so a move on the same line animates
-        // away from it
-        const srcId = parseAs('id', tokens[1], shapes)
-        if (!srcId) throw new Error(`"copy" expects a shape id${tokens[1] ? `: no shape called "${tokens[1].value}"` : ''}`)
-        const src = shapes.get(srcId)
-        if (src.type === 'group') throw new Error('a group can\'t be copied: copy its shapes instead')
-        const props = parseProps(tokens, 2, 'change', shapes)
-        if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
-        const fresh = { attach: null, hl: null, callout: null }
-        const shape = { ...structuredClone(src), ...fresh, id, uid: ++uid }
-        tween(meta, shape.uid).from = { ...structuredClone(src), ...fresh, uid: shape.uid }
-        const path = applyProps(shape, props, false, warn, meta)
-        if (path) tween(meta, shape.uid).path = path
-        if (existing) {
-          warn(`"${id}" already exists, so it is replaced`)
-          schedule(meta, existing.uid, props).exit = 'fade'
-        }
-        shapes.set(id, shape)
-        schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }).enter = 'copy' // travel: speed per hop
-        return
-      }
-      if (firstWord === 'group') {
-        if (existing) throw new Error(`"${id}" already exists`)
-        // the shapes go in [ ] (commas optional), like a row's values
-        if (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[') throw new Error(`a group's shapes go in [ ] straight after "group", e.g. "${id}: group [a b c]"`)
-        const members = []
-        let j = 2
-        for (; j < tokens.length && tokens[j].kind !== 'bracket'; j++) {
-          const ref = parseAs('id', tokens[j], shapes)
-          if (!ref) throw new Error(tokens[j].kind === 'word' ? `no shape called "${tokens[j].value}" (is a "]" missing?)` : 'a group\'s [ ] holds shape ids')
-          members.push(ref)
-        }
-        if (tokens[j]?.value !== ']') throw new Error('the "[" of a group has no closing "]"')
-        if (!members.length) throw new Error(`a group needs at least one shape, e.g. "${id}: group [a b c]"`)
-        const props = parseProps(tokens, j + 1, 'change', shapes)
-        if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
-        if (props.at || props.x || props.y || props.via || props.travel || props.follow || props.attach) throw new Error('create the group first, then move it on the next line')
-        const list = members.map((m) => shapes.get(m))
-        for (const m of list) {
-          if (LINE_TYPES.includes(m.type) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
-        }
-        const b = unionBounds(list, shapes)
-        const group = { ...baseShape('group'), id, uid: ++uid, members, x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0 }
-        for (const m of list) {
-          if (LINE_TYPES.includes(m.type)) continue // follows the shapes its ends are attached to
-          leaveGroup(m)
-          m.attach = offsetFrom(id, m.x - group.x, m.y - group.y)
-        }
-        if (takeBareNumber(props)) numberEach(list, props, meta, warn)
-        applyProps(group, props, false, warn, meta)
-        shapes.set(id, group)
-        schedule(meta, group.uid, props).enter = 'fade'
-        return
-      }
-      if (firstWord === 'ungroup') {
-        if (!existing) throw new Error(`no shape called "${id}"`)
-        if (existing.type !== 'group') throw new Error(`"${id}" isn't a group`)
-        if (tokens.length > 1) throw new Error('"ungroup" takes nothing after it')
-        for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
-        shapes.delete(id)
-        tween(meta, existing.uid).exit = 'fade'
-        return
-      }
+      // "arr: row [5 3 8 1] at 2,3" (or column): its cells are arr.0, arr.1, …
+      const word = first?.kind === 'word' ? first.lower : ''
+      if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
+      // a verb: delete, swap, insert, remove, copy, group, ungroup (LINES)
+      if (LINES[word]?.verb) return VERBS[word](id, existing, tokens, meta, warn, word)
 
       // "l: arrow …" on a line or curve that already exists, with no new ends, puts a head on it
       // (rather than replacing it with an arrow shape): read as a change, where "arrow" is the flag
@@ -617,6 +533,91 @@
       else if (props.stagger) warn(`"stagger" works on a row, column or group, and "${id}" isn't one`)
     }
 
+    // Making a shape (or a copy, or a group) has no members to stagger
+    function noStagger(props, warn) {
+      if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
+    }
+
+    // "a: delete": a shape goes, with the line's exit effect (a group's members and a var's or
+    // row's name and indices too)
+    function deleteShape(id, existing, tokens, meta, warn) {
+      if (!existing) throw new Error(`no shape called "${id}"`)
+      const where = tokens[1]?.kind === 'word' && (/^\d+$/.test(tokens[1].value) || tokens[1].lower === 'end') ? tokens[1].value : null
+      if (existing.layout && where) throw new Error(`"delete" deletes the whole ${existing.layout}: to take one cell out, "${id}: remove ${where}"`)
+      const props = parseProps(tokens, 1, 'delete', shapes)
+      const order = staggerOrder(existing) // taken before its members go
+      removeShape(existing, props, meta, warn)
+      applyStagger(existing, order, props, meta, warn)
+    }
+
+    // "b: copy a": an identical copy that starts on the original, so a move on the same line
+    // animates away from it
+    function copyShape(id, existing, tokens, meta, warn) {
+      const srcId = parseAs('id', tokens[1], shapes)
+      if (!srcId) throw new Error(`"copy" expects a shape id${tokens[1] ? `: no shape called "${tokens[1].value}"` : ''}`)
+      const src = shapes.get(srcId)
+      if (src.type === 'group') throw new Error('a group can\'t be copied: copy its shapes instead')
+      const props = parseProps(tokens, 2, 'copy', shapes)
+      noStagger(props, warn)
+      const fresh = { attach: null, hl: null, callout: null }
+      const shape = { ...structuredClone(src), ...fresh, id, uid: ++uid }
+      tween(meta, shape.uid).from = { ...structuredClone(src), ...fresh, uid: shape.uid }
+      const path = applyProps(shape, props, false, warn, meta)
+      if (path) tween(meta, shape.uid).path = path
+      if (existing) {
+        warn(`"${id}" already exists, so it is replaced`)
+        schedule(meta, existing.uid, props).exit = 'fade'
+      }
+      shapes.set(id, shape)
+      schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }).enter = 'copy' // travel: speed per hop
+    }
+
+    // "g: group [a b c]": shapes that act as one, riding on the group at their offsets. The shapes
+    // go in [ ] (commas optional), like a row's values.
+    function makeGroup(id, existing, tokens, meta, warn) {
+      if (existing) throw new Error(`"${id}" already exists`)
+      if (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[') throw new Error(`a group's shapes go in [ ] straight after "group", e.g. "${id}: group [a b c]"`)
+      const members = []
+      let j = 2
+      for (; j < tokens.length && tokens[j].kind !== 'bracket'; j++) {
+        const ref = parseAs('id', tokens[j], shapes)
+        if (!ref) throw new Error(tokens[j].kind === 'word' ? `no shape called "${tokens[j].value}" (is a "]" missing?)` : 'a group\'s [ ] holds shape ids')
+        members.push(ref)
+      }
+      if (tokens[j]?.value !== ']') throw new Error('the "[" of a group has no closing "]"')
+      if (!members.length) throw new Error(`a group needs at least one shape, e.g. "${id}: group [a b c]"`)
+      const props = parseProps(tokens, j + 1, 'group', shapes)
+      noStagger(props, warn)
+      const list = members.map((m) => shapes.get(m))
+      for (const m of list) {
+        if (LINE_TYPES.includes(m.type) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
+      }
+      const b = unionBounds(list, shapes)
+      const group = { ...baseShape('group'), id, uid: ++uid, members, x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0 }
+      for (const m of list) {
+        if (LINE_TYPES.includes(m.type)) continue // follows the shapes its ends are attached to
+        leaveGroup(m)
+        m.attach = offsetFrom(id, m.x - group.x, m.y - group.y)
+      }
+      if (takeBareNumber(props)) numberEach(list, props, meta, warn)
+      applyProps(group, props, false, warn, meta)
+      shapes.set(id, group)
+      schedule(meta, group.uid, props).enter = 'fade'
+    }
+
+    // "g: ungroup": the group goes, its shapes stay where they are
+    function ungroup(id, existing, tokens, meta) {
+      if (!existing) throw new Error(`no shape called "${id}"`)
+      if (existing.type !== 'group') throw new Error(`"${id}" isn't a group`)
+      parseProps(tokens, 1, 'ungroup', shapes)
+      for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
+      shapes.delete(id)
+      tween(meta, existing.uid).exit = 'fade'
+    }
+
+    // The verbs (LINES with verb: true), each run as (id, existing shape, tokens, meta, warn, word)
+    const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, swap: swapCells, insert: editCells, remove: editCells }
+
     // A value a var or a row's / column's cell holds: a number, "quoted" text or null (shown muted)
     function valueOf(token) {
       if (token?.kind === 'str') return { label: token.value }
@@ -670,9 +671,7 @@
 
     // "v1: a.1": a copy of a.1 glides onto v1, which takes its value as it lands
     function assignValue(target, source, tokens, meta, warn) {
-      const props = parseProps(tokens, 1, 'edit', shapes)
-      const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease', 'keepStyle'].includes(key))
-      if (extra) throw new Error(`copying a value only takes a speed, a delay, an ease and keep-style, not "${extra === 'label' ? 'quoted text' : extra}"`)
+      const props = parseProps(tokens, 1, 'assign', shapes)
       if (source.id === target.id) return warn(`"${target.id}" already holds its own value`)
       flyValue(meta, source, target, [{ x: source.x, y: source.y }, { x: target.x, y: target.y }], props, C.arrive * speedOf(props))
     }
@@ -781,9 +780,6 @@
       if (!values.length) throw new Error(`a ${layout} needs at least one value, ${example}`)
       const props = parseProps(tokens, j + 1, 'layout', shapes)
       if (props.label !== undefined) throw new Error(count === null ? `a ${layout}'s values all go inside its [ ]` : `a ${layout} of ${count} empty cells has no labels: give its values in [ ] instead`)
-      const allowed = ['at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', 'speed', 'delay', 'ease', 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices']
-      const extra = Object.keys(props).find((key) => !allowed.includes(key))
-      if (extra) throw new Error(`"${extra === 'head' ? 'arrow' : extra}" doesn't apply to a ${layout}`)
 
       if (existing) {
         warn(`"${id}" already exists, so it is replaced`)
@@ -858,7 +854,7 @@
         schedule(meta, changed.uid, props)
       }
       const unused = Object.keys(look).find((key) => !used.has(key))
-      if (unused) warn(`"${unused === 'mono' ? 'monospace' : unused === 'linestyle' ? look[unused] : unused}" doesn't apply to any of the shapes in "${group.id}"`)
+      if (unused) warn(`"${wordFor(unused, look[unused])}" doesn't apply to any of the shapes in "${group.id}"`)
     }
 
     // A row's / column's / group's members in stagger order: cells by number, a group's members as
@@ -894,8 +890,6 @@
       const j = parseAs('index', tokens[2])
       if (i === undefined || j === undefined) throw new Error(`"swap" expects two cell numbers, e.g. "${id}: swap 0 3"`)
       const props = parseProps(tokens, 3, 'swap', shapes)
-      const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease'].includes(key))
-      if (extra) throw new Error(`"swap" only takes a speed, a delay and an ease, not "${extra}"`)
       const [a, b] = [i, j].map((k) => {
         const cell = row.members.includes(cellId(id, k)) && shapes.get(cellId(id, k))
         if (!cell) throw new Error(`"${cellId(id, k)}" isn't a cell of "${id}" (its cells are ${cellRange(id, row.members.length)})`)
@@ -940,7 +934,7 @@
     // arr.2 is the cell that was arr.3, and what's attached to the last place (now gone) is left
     // where it was. "insert v1 at …" copies a var's or cell's value in; "remove … into v1" moves
     // the cell's value out into one.
-    function editCells(id, row, word, tokens, meta) {
+    function editCells(id, row, tokens, meta, warn, word) {
       if (!row) throw new Error(`no shape called "${id}"`)
       const removing = word === 'remove'
       if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} a row or column, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
@@ -978,11 +972,9 @@
         at = place(tokens[3])
         next = 4
       }
-      const props = parseProps(tokens, next, 'edit', shapes)
-      const moving = source || target // a var's or cell's value comes in or goes out
-      const extra = Object.keys(props).find((key) => !['speed', 'delay', 'ease', ...(moving ? ['keepStyle'] : [])].includes(key))
-      if (extra === 'keepStyle') throw new Error(`"keep-style" goes with a var's or cell's value, e.g. "${id}: ${removing ? 'remove end into v1' : 'insert v1 at 0'} keep-style"`)
-      if (extra) throw new Error(`"${word}" only takes a speed, a delay and an ease${moving ? ' (and keep-style)' : ''}, not "${extra === 'label' ? 'quoted text' : extra}"`)
+      const props = parseProps(tokens, next, word, shapes)
+      // keep-style needs a var's or cell's value coming in or going out
+      if (props.keepStyle && !source && !target) throw new Error(`"keep-style" goes with a var's or cell's value, e.g. "${id}: ${removing ? 'remove end into v1' : 'insert v1 at 0'} keep-style"`)
 
       if (removing && !n) throw new Error(`"${id}" has no cells left to remove`)
       if (removing && at >= n) throw new Error(`"${id}" has no cell ${at} (its cells are ${range})`)

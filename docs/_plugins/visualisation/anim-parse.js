@@ -5,7 +5,7 @@
 
 ;(function () {
   const { escapeHtml, HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, COLOURS, SPEEDS, EASES, RESERVED,
-    KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LINE_STARTS } = window.Anim
+    KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LINE_STARTS, LINES, listProps } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Markdown -> source markup (beforeEach)
@@ -212,8 +212,17 @@
     throw new Error(`"${word}" expects ${entry.help}${missing ? `: no shape called "${next.value}"` : ''}`)
   }
 
-  // Reads the properties and flags of one line (everything after the id and any type word).
-  function parseProps(tokens, i, mode, shapes) {
+  // Reads the properties and flags of one line (everything after the id and any type word), for a
+  // kind of line (LINES): a prop that kind doesn't take is an error as soon as it's read.
+  function parseProps(tokens, i, kind, shapes) {
+    const line = LINES[kind] || {}
+    const name = line.what || `"${kind}"`
+    const allow = (key, word) => {
+      const refused = (line.takes && !line.takes.includes(key)) || line.refuses?.includes(key)
+      if (!refused) return
+      if (line.refuse) throw new Error(line.refuse(word))
+      throw new Error(line.takes.length ? `${name} only takes ${listProps(line.takes)}, not "${word}"` : `${name} takes nothing after it`)
+    }
     const props = {}
     const set = (key, value, what = key) => {
       if (key in props) throw new Error(key === 'label' ? 'only one label (quoted text) per line' : `"${what}" is given twice`)
@@ -222,17 +231,18 @@
 
     while (i < tokens.length) {
       const token = tokens[i]
-      if (token.kind === 'str') { set('label', token.value); i++; continue }
+      if (token.kind === 'str') { allow('label', 'quoted text'); set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
       if (token.kind === 'bracket') throw new Error('[ ] only holds a row\'s or column\'s values, straight after "row" / "column"')
       const word = token.lower
       const entry = KEYWORDS[word]
-      if (!entry || (entry.modes && !entry.modes.includes(mode))) {
+      if (entry?.modes && !entry.modes.includes(kind)) throw new Error(`"${word}" only goes ${entry.where}`)
+      if (!entry) {
         if (SHAPE_TYPES.includes(word) || LAYOUT_TYPES.includes(word) || LINE_STARTS.includes(word)) throw new Error(`"${word}" must come straight after the id`)
-        if (word === 'keep-style') throw new Error('"keep-style" goes on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"')
         throw new Error(`unknown word "${token.value}"`)
       }
       if (entry.error) throw new Error(entry.error)
+      allow(entry.key, word)
       const { value, next } = matchKeyword(entry, word, tokens, i + 1, shapes)
       if (entry.repeat) props[entry.key] = [...(props[entry.key] || []), value]
       else set(entry.key, value, entry.what || word)
@@ -240,7 +250,7 @@
     }
 
     // in a row / column, gap is the space between its cells
-    if (props.gap && mode !== 'layout' && props.at?.kind !== 'place' && !props.attach) throw new Error('"gap" only works with above / below / left-of / right-of, or attach (or between the cells of a row / column)')
+    if (props.gap && kind !== 'layout' && props.at?.kind !== 'place' && !props.attach) throw new Error('"gap" only works with above / below / left-of / right-of, or attach (or between the cells of a row / column)')
     if (props.at && (props.x || props.y)) throw new Error('the position is given twice (at/move and x/y)')
     return props
   }
