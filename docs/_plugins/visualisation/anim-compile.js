@@ -247,6 +247,10 @@
         // along the line (a curve's whole path), from the end it starts at
         const along = linePoints(resolveEnds(line, shapes)).map(({ x, y }) => ({ x, y }))
         if (props.follow.reverse) along.reverse()
+        // The line stops short of a shape at its far end, so finish on that shape's centre (as
+        // the route starts from wherever the shape is)
+        const farEnd = props.follow.reverse ? line.from : line.to
+        if (farEnd?.ref && shapes.has(farEnd.ref)) along.push(boxCentre(shapes.get(farEnd.ref)))
         Object.assign(shape, along[along.length - 1])
         keepOffset()
         return buildPolyline([start, ...along])

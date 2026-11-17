@@ -1499,6 +1499,8 @@ dot: circle at 2,3 radius 0.2 fill amber front
 
 ## follow l
 
+Ends on b's centre, not at the line's end on b's edge.
+
 ```anim
 dot: follow l speed slow
 ```
@@ -1507,8 +1509,26 @@ dot: follow l speed slow
 
 ## follow-reverse c
 
+Back along the curve, ending on a's centre.
+
 ```anim
 dot: follow-reverse c speed slow
+```
+
+---
+
+## A free end
+
+```anim
+f: arrow from a to 6,4.6
+```
+
++++
+
+Ends at the arrow's tip: there's no shape there.
+
+```anim
+dot: follow f speed slow
 ```
 
 </animation>

@@ -145,7 +145,7 @@ c: via 6,1           # a curve's bend
 a: move 9,3 via 5,1           # an arc through a point
 a: move 9,3 via 3,1 via 6,5   # a wave through several
 a: travel r1 r2 4,3           # hop by hop (speed per hop)
-a: follow l                   # along line / curve l
+a: follow l                   # along line / curve l, ending on the shape at its end
 a: follow-reverse l           # from its end
 ```
 
