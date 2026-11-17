@@ -68,6 +68,8 @@
 
   function createRenderer(svg, viewBox, debug) {
     const layers = [0, 1, 2].map(() => svg.appendChild(svgEl('g')))
+    const slotLayer = svg.insertBefore(svgEl('g', { class: 'anim-slots' }), layers[1]) // under the cells
+    const slotNodes = new Map() // slot uid -> rect
     const highlightLayer = svg.appendChild(svgEl('g', { class: 'anim-highlights' }))
     const calloutLayer = svg.appendChild(svgEl('g', { class: 'anim-callouts' }))
     const nodes = new Map() // uid -> node
@@ -241,6 +243,7 @@
       node.label.style.fontSize = `${fontSize}px`
       node.label.style.fontWeight = s.bold ? '700' : ''
       paint(node.label, 'fontFamily', s.mono ? MONO_FONT : '')
+      paint(node.label, 'fontStyle', (v.nil ?? s.nil) ? 'italic' : '') // a null value
       node.label.style.opacity = v.labelOpacity
       paint(node.label, 'fill', colours.colour) // a text shape's colour, or any shape's label
       setLabel(node, v.label, v.typed)
@@ -470,6 +473,7 @@
         if (!shape || depth > 8) return false
         if (shape.hl?.spotlight) return true
         if (shape.attach?.dx !== undefined) return isLit(state.get(shape.attach.ref), depth + 1)
+        if (shape.part) return isLit(state.get(shape.part), depth + 1) // a name / index goes with its owner
         return false
       }
       for (const shape of state.values()) if (isLit(shape)) lit.add(shape.id)
@@ -522,6 +526,7 @@
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           v.label = swap && t < 0.5 ? a.label : b.label
+          v.nil = swap && t < 0.5 ? a.nil : b.nil
           v.labelOpacity = swap ? Math.abs(2 * t - 1) : 1
           // One-off effects, forwards only (going back doesn't replay them)
           const oneoff = extra.forward && tw?.effect
@@ -544,9 +549,12 @@
         } else if (b) {
           shape = b
           v = appear(tw?.enter || 'fade', t, b, raw)
+          // a row's cell slides in from beside the row (insert, push)
+          if (tw?.offset) { v.dx += tw.offset.x * (1 - t); v.dy += tw.offset.y * (1 - t) }
         } else {
           shape = a
           v = appear(tw?.exit || 'fade', 1 - t, a, 1 - raw)
+          if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (delete, pop)
         }
         // an arrowhead fades in or out as it's added to or taken off a line
         v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
@@ -560,7 +568,9 @@
       // Attached shapes and group members follow their ref's current (interpolated) place, so they
       // stay together along curves and routes. A shape whose attachment changes this beat keeps its
       // own interpolated path; a group member moved within its group glides to its new offset.
-      const byItem = new Map(items.map((item) => [item.shape.id, item]))
+      // An id held by a shape leaving and one arriving (a deleted cell's place) is the arriving one's
+      const byItem = new Map()
+      for (const item of items) if (item.b || !byItem.has(item.shape.id)) byItem.set(item.shape.id, item)
       resolveAttachments(now, (shape) => {
         const item = byItem.get(shape.id)
         const spec = item && !LINE_TYPES.includes(item.shape.type) && (item.b || item.a).attach
@@ -615,14 +625,60 @@
         const from = item.a || item.b
         const to = item.b || item.a
         const t = item.a && item.b ? clamp01(item.t) : 1
+        const ink = (s) => (s.nil ? 'muted' : s.colour) // a null value is muted
         const colours = {
           fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
           stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),
-          colour: mixColour(rgba(colourCss(from.colour, 'stroke')), rgba(colourCss(to.colour, 'stroke')), t),
+          colour: mixColour(rgba(colourCss(ink(from), 'stroke')), rgba(colourCss(ink(to), 'stroke')), t),
         }
         item.v.hlGlow = blend(item, (s) => s.hl?.glow) // highlight glow fades in / out like the box
         drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
+      }
+      drawSlots(meta, progress, now)
+    }
+
+    // The slots (muted outlines) of a beat's row / column edits (delete, insert, push, pop), which only show
+    // while it plays. A closing slot appears as its cell leaves, then shrinks from its far side as
+    // the cells after it close up; an opening one grows as the cells move aside and goes as its
+    // cell lands. `then` is where the second part starts in the slot's time (the first ends at
+    // 1 - then).
+    function drawSlots(meta, progress, now) {
+      const live = new Set()
+      for (const slot of meta.slots || []) {
+        const row = now.get(slot.ref)
+        if (!row) continue
+        live.add(slot.uid)
+        const raw = clamp01(progress(slot.uid))
+        const ease = easeFn(meta.tweens.get(slot.uid)?.ease)
+        let size
+        let opacity
+        if (slot.closing) {
+          const u = clamp01(ease(clamp01((raw - slot.then) / (1 - slot.then))))
+          size = 1 - u
+          opacity = clamp01(raw / 0.15) * (1 - u)
+        } else {
+          size = clamp01(ease(clamp01(raw / (1 - slot.then))))
+          opacity = size * (1 - clamp01((raw - 0.85) / 0.15))
+        }
+        let el = slotNodes.get(slot.uid)
+        if (!el) slotNodes.set(slot.uid, (el = slotLayer.appendChild(svgEl('rect', { class: 'anim-slot' }))))
+        // its near side stays put; it grows / shrinks along the row
+        const length = slot.across ? slot.w : slot.h
+        const along = (slot.across ? slot.dx : slot.dy) - length / 2 + (length * size) / 2
+        const w = slot.across ? slot.w * size : slot.w
+        const h = slot.across ? slot.h : slot.h * size
+        const cx = row.x + (slot.across ? along : slot.dx)
+        const cy = row.y + (slot.across ? slot.dy : along)
+        attr(el, 'x', cx - w / 2)
+        attr(el, 'y', cy - h / 2)
+        attr(el, 'width', Math.max(0, w))
+        attr(el, 'height', Math.max(0, h))
+        attr(el, 'rx', Math.min(slot.corner, w / 2, h / 2))
+        paint(el, 'opacity', String(size > 0.01 ? opacity : 0))
+      }
+      for (const [uid, el] of slotNodes) {
+        if (!live.has(uid)) { el.remove(); slotNodes.delete(uid) }
       }
     }
 
@@ -639,15 +695,16 @@
     }
 
     // A highlight path following a shape's outline, grown by `offset` (shrunk if negative): a rounded
-    // rect for rects and text, a circle, a diamond. Groups, images and icons (outline) get a rounded
-    // box round their bounds `b`, which includes an image's or icon's label.
-    function highlightPath(s, v, offset, b) {
+    // rect for rects and text, a circle, a diamond. Groups, images and icons (outline), and shapes
+    // with a name or indices (`boxed`), get a rounded box round their bounds `b`, which includes an
+    // image's or icon's label.
+    function highlightPath(s, v, offset, b, boxedToo = false) {
       const rectPath = (hw, hh, r) => {
         r = Math.max(0, Math.min(r, hw, hh))
         return `M ${-hw + r} ${-hh} H ${hw - r} A ${r} ${r} 0 0 1 ${hw} ${-hh + r} V ${hh - r} A ${r} ${r} 0 0 1 ${hw - r} ${hh}`
           + ` H ${-hw + r} A ${r} ${r} 0 0 1 ${-hw} ${hh - r} V ${-hh + r} A ${r} ${r} 0 0 1 ${-hw + r} ${-hh} Z`
       }
-      const boxed = s.type === 'group' || (offset > 0 && ['image', 'icon'].includes(s.type))
+      const boxed = boxedToo || s.type === 'group' || (offset > 0 && ['image', 'icon'].includes(s.type))
       if (boxed) {
         const hw = (b.x1 - b.x0) / 2 + offset
         const hh = (b.y1 - b.y0) / 2 + offset
@@ -691,12 +748,22 @@
       const b = bounds(item.shape, now, { ends: item.v.ends, dx: item.v.dx, dy: item.v.dy })
       const pad = 0.15 * CELL
 
+      // An outline is round the whole thing: a var's / row's / column's name and indices too
+      const parts = outlineOpacity || node.outline ? [...now.values()].filter((s) => s.part === item.shape.id) : []
+      const whole = { ...b }
+      for (const part of parts) {
+        const p = bounds(part, now)
+        whole.x0 = Math.min(whole.x0, p.x0); whole.y0 = Math.min(whole.y0, p.y0)
+        whole.x1 = Math.max(whole.x1, p.x1); whole.y1 = Math.max(whole.y1, p.y1)
+      }
+
       // outline: the shape's own outline, `pad` outside it; inside: the same line just inside its
       // stroke. Both are paths in the shape's place and turn (see highlightPath).
       for (const [key, opacity, offset] of [['outline', outlineOpacity, pad], ['inside', insideOpacity, -insetOf(item.shape)]]) {
         if (!opacity && !node[key]) continue
         if (!node[key]) node[key] = highlightLayer.appendChild(svgEl('path', { class: `anim-highlight-${key}` }))
-        const { d, transform } = highlightPath(item.shape, item.v, offset, b)
+        const outer = key === 'outline' && parts.length > 0
+        const { d, transform } = highlightPath(item.shape, item.v, offset, outer ? whole : b, outer)
         attr(node[key], 'd', d)
         attr(node[key], 'transform', transform)
         node[key].style.opacity = opacity

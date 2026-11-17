@@ -446,6 +446,14 @@
     stroke-width: 3px;
 }
 
+/* the slot a row's / column's cell leaves or lands in (delete, insert, push, pop): a plain muted
+   outline (dashes would crawl as it grows and shrinks) */
+.markdown-section .animation .anim-slot {
+    fill: none;
+    stroke: var(--anim-muted);
+    stroke-width: 2px;
+}
+
 /* signal: a glowing blip running along a line, its tail made of overlapping pieces */
 .markdown-section .animation .anim-signal {
     filter: drop-shadow(0 0 6px var(--color-important));

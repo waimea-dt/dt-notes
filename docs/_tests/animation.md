@@ -595,9 +595,7 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 
 </animation>
 
-## Feature Tests
-
-### Steps, beats and notes
+## Feature: Steps, beats and notes
 
 <animation grid="12x3">
 
@@ -638,7 +636,7 @@ Same heading, so only the text changes. No scene.
 
 </animation>
 
-### Grid: fit
+## Feature: Grid: fit
 
 <animation grid="fit">
 
@@ -650,7 +648,7 @@ l: arrow from a to b "fit"
 
 </animation>
 
-### Large Grid
+## Feature: Large Grid
 
 A square 12x12 grid: much taller than the 16x9 default, so check it in full screen (F) too.
 
@@ -677,7 +675,7 @@ d2: arrow from tr to bl draw
 
 </animation>
 
-### Debug
+## Feature: Debug
 
 Grid numbers, ids and warnings.
 
@@ -692,7 +690,7 @@ a: fill blue pop
 
 </animation>
 
-### Comments and multi-line commands
+## Feature: Comments and multi-line commands
 
 `one` and `two` should look the same.
 
@@ -738,7 +736,7 @@ Each line is indented the same, so each is its own command.
 
 </animation>
 
-### Autoplay and loop
+## Feature: Autoplay and loop
 
 `autoplay loop hold="1"`: plays when on screen, then starts again. Clicking stops it.
 
@@ -762,7 +760,7 @@ dot: move 10,2 fill green
 
 </animation>
 
-### Loop-bounce and no controls
+## Feature: Loop-bounce and no controls
 
 `autoplay loop-bounce hold="0.5" controls="none"`: there and back for ever, with no buttons.
 
@@ -780,7 +778,7 @@ dot: move 10,2 speed slow
 
 </animation>
 
-### pause
+## Feature: pause
 
 Press `A` to play.
 
@@ -822,7 +820,7 @@ dot: fill green
 
 </animation>
 
-### auto
+## Feature: auto
 
 One click on Next plays the chain; Back undoes it.
 
@@ -868,7 +866,7 @@ a: fill green
 
 </animation>
 
-### Intro
+## Feature: Intro
 
 The first beat uses `typed`, `pop` and `delay`, so it plays in when it comes into view, and after rewinding.
 
@@ -887,7 +885,7 @@ srv: fill green
 
 </animation>
 
-### rect
+## Feature: rect
 
 <animation grid="12x4">
 
@@ -911,7 +909,7 @@ r4: corner 0
 
 </animation>
 
-### circle
+## Feature: circle
 
 <animation grid="12x3">
 
@@ -932,7 +930,7 @@ c3: size +0.4
 
 </animation>
 
-### diamond
+## Feature: diamond
 
 Lines stop at its slanted edges.
 
@@ -958,7 +956,7 @@ d: width 2.4 angle 20
 
 </animation>
 
-### text
+## Feature: text
 
 The dotted box is column 6: `align` anchors to its edges.
 
@@ -982,7 +980,7 @@ t1: "new text" colour amber
 
 </animation>
 
-### Fonts: font, bold, monospace
+## Feature: Fonts: font, bold, monospace
 
 <animation grid="12x4">
 
@@ -1005,7 +1003,7 @@ f2: font 1
 
 </animation>
 
-### line and arrow
+## Feature: line and arrow
 
 <animation grid="12x5">
 
@@ -1036,7 +1034,7 @@ b: move 9,1
 
 </animation>
 
-### curve
+## Feature: curve
 
 <animation grid="12x6">
 
@@ -1067,7 +1065,7 @@ b: move 10,1
 
 </animation>
 
-### image
+## Feature: image
 
 <animation grid="12x4">
 
@@ -1089,7 +1087,7 @@ mac2: size 1
 
 </animation>
 
-### Images
+## Feature: Images
 
 Scratch sprites: placing, sizing, turning, moving along paths, and the extras that work on any shape.
 
@@ -1207,7 +1205,7 @@ pair: remove fade stagger 0.2
 
 </animation>
 
-### icon
+## Feature: icon
 
 <animation grid="12x3">
 
@@ -1225,7 +1223,7 @@ i1: stroke green scale 1.3
 
 </animation>
 
-### Colours
+## Feature: Colours
 
 <animation grid="12x4">
 
@@ -1261,7 +1259,7 @@ hx: colour teal
 
 </animation>
 
-### weight
+## Feature: weight
 
 <animation grid="12x4">
 
@@ -1283,7 +1281,7 @@ w4: weight 0.5
 
 </animation>
 
-### Line styles
+## Feature: Line styles
 
 Style changes cross-fade.
 
@@ -1325,7 +1323,7 @@ ring: solid speed slow
 
 </animation>
 
-### flow
+## Feature: flow
 
 <animation grid="12x3">
 
@@ -1365,7 +1363,7 @@ ring: static
 
 </animation>
 
-### angle and scale
+## Feature: angle and scale
 
 The arrow stays on the turning rect's edge.
 
@@ -1395,7 +1393,7 @@ w: scale 0.5
 
 </animation>
 
-### Layers
+## Feature: Layers
 
 <animation grid="10x3">
 
@@ -1418,7 +1416,7 @@ c: back
 
 </animation>
 
-### Position and placement
+## Feature: Position and placement
 
 <animation grid="12x5">
 
@@ -1444,7 +1442,7 @@ on: at lt
 
 </animation>
 
-### Relative values
+## Feature: Relative values
 
 <animation grid="12x5">
 
@@ -1490,7 +1488,7 @@ r: angle +45
 
 </animation>
 
-### Moving lines
+## Feature: Moving lines
 
 <animation grid="12x5">
 
@@ -1531,7 +1529,7 @@ p: from 2,3 to b
 
 </animation>
 
-### Curved moves
+## Feature: Curved moves
 
 <animation grid="12x5">
 
@@ -1572,7 +1570,7 @@ c: move 2,2.5 via -2,+2 speed slow
 
 </animation>
 
-### travel
+## Feature: travel
 
 Hop by hop; each hop takes the speed.
 
@@ -1601,7 +1599,7 @@ pkt: travel r1 r2 r3 srv
 
 </animation>
 
-### follow
+## Feature: follow
 
 <animation grid="12x5">
 
@@ -1651,7 +1649,7 @@ dot: follow f speed slow
 
 </animation>
 
-### copy
+## Feature: copy
 
 The copy starts on the original and moves off.
 
@@ -1675,7 +1673,7 @@ k3: copy k2 move 10,2 stroke amber
 
 </animation>
 
-### attach and detach
+## Feature: attach and detach
 
 <animation grid="12x5">
 
@@ -1725,7 +1723,7 @@ lock: attach msg
 
 </animation>
 
-### group and ungroup
+## Feature: group and ungroup
 
 <animation grid="12x4">
 
@@ -1789,7 +1787,7 @@ g2: remove pop
 
 </animation>
 
-### Rows and columns
+## Feature: Rows and columns
 
 <animation grid="12x6">
 
@@ -1841,7 +1839,7 @@ arr: remove pop
 
 </animation>
 
-### swap
+## Feature: swap
 
 <animation grid="12x5">
 
@@ -1893,7 +1891,216 @@ col: swap 0 2 speed slow
 
 </animation>
 
-### Emphasis
+## Feature: delete, insert, push, pop
+
+<animation grid="12x6">
+
+```anim
+arr: row [1, 2, 3, 4, 5] at 2,2 fill blue size 0.9 gap 0.2
+i: text "i" attach below arr.2
+st: column [4 9] at 10,1.5 size 1.6x0.8 fill teal
+```
+
+---
+
+## delete
+
+`arr.2` slides out below, leaving an empty slot, and the cells after it close it up. `i` stays with place 2.
+
+```anim
+arr: delete 2
+```
+
++++
+
+The first cell: the rest close up from the left.
+
+```anim
+arr: delete 0 speed slow
+```
+
+---
+
+## insert
+
+The cells open an empty slot, and 7 slides up into it.
+
+```anim
+arr: insert 7 at 1
+```
+
++++
+
+New cells take the row's look as it is now.
+
+```anim
+arr: fill green
+arr: insert "x" at 0 speed slow
+```
+
+---
+
+## push and pop
+
+A slot opens on the end for the new cell; a popped one leaves a slot that closes.
+
+```anim
+arr: push 8
+st: push 6
+```
+
++++
+
+```anim
+arr: pop
+st: pop speed slow
+```
+
++++
+
+Popped empty, a column can be pushed onto again.
+
+```anim
+st: pop
+st: pop delay 0.3
+```
+
++++
+
+```anim
+st: push 1
+```
+
+</animation>
+
+## Feature: var
+
+<animation grid="12x4">
+
+A box that holds a value: a number, "text" or null (muted).
+
+```anim
+v1: var 67 at 3,2
+v2: var "Dog" at 6,2 size 1.6x1
+v3: var null at 9,2
+```
+
+---
+
+## A new value
+
+```anim
+v1: 123
+v2: "Cat"
+v3: 4
+```
+
++++
+
+```anim
+v1: null
+v2: null fill amber
+```
+
++++
+
+A cell holds values too.
+
+```anim
+r: row [1 2 3] at 4,3.5 size 0.8
+r.1: null
+```
+
+</animation>
+
+## Feature: name and indices
+
+<animation grid="14x7">
+
+A name sits left of a var or row, above a column. Indices are small and muted: below a row's cells, left of a column's.
+
+```anim
+total: var 0 at 4,1.5 name "total"
+arr: row [5 null 8] at 4,3.5 name "arr" indices
+st: column [4 9] at 12,2 name "stack" indices fill teal
+```
+
+---
+
+## They move with it
+
+```anim
+total: move 2,6
+arr: move 7,4.5 speed slow
+```
+
++++
+
+```anim
+total: name "sum" above
+```
+
+---
+
+## An outline takes them in
+
+```anim
+total: highlight outline
+arr: highlight outline
+st: highlight outline
+```
+
++++
+
+```anim
+total: highlight clear
+arr: highlight clear
+st: highlight clear
+```
+
+---
+
+## Indices stay with the places
+
+```anim
+arr: swap 0 2
+```
+
++++
+
+The last index comes and goes with the slot.
+
+```anim
+arr: push 3
+st: pop
+```
+
++++
+
+```anim
+arr: delete 0
+```
+
+---
+
+## Switching off
+
+```anim
+arr: indices clear
+total: name clear
+```
+
++++
+
+Removing a row removes its name and indices.
+
+```anim
+st: remove
+```
+
+</animation>
+
+## Feature: Emphasis
 
 <animation grid="12x3">
 
@@ -1940,7 +2147,7 @@ gl: glow
 
 </animation>
 
-### signal
+## Feature: signal
 
 <animation grid="12x5">
 
@@ -1984,7 +2191,7 @@ g: signal speed fast
 
 </animation>
 
-### Highlights
+## Feature: Highlights
 
 <animation grid="12x3">
 
@@ -2025,7 +2232,7 @@ nu: highlight clear
 
 </animation>
 
-### Numbers
+## Feature: Numbers
 
 A bare `number` takes the next one; `number N` sets where the sequence is. On a row, column or group, a bare one numbers each shape in turn.
 
@@ -2079,7 +2286,7 @@ pq: highlight number stagger 0.3
 
 </animation>
 
-### Outline and inside
+## Feature: Outline and inside
 
 The outline follows each shape's own outline (turned and scaled with it); inside sits just within its stroke.
 
@@ -2149,7 +2356,7 @@ th: highlight outline
 
 </animation>
 
-### Spotlight
+## Feature: Spotlight
 
 Everything else dims, including their highlights and callouts.
 
@@ -2187,7 +2394,7 @@ d: highlight clear
 
 </animation>
 
-### Callouts
+## Feature: Callouts
 
 <animation grid="12x4">
 
@@ -2227,7 +2434,7 @@ edge: callout "Near the edge"
 
 </animation>
 
-### speed
+## Feature: speed
 
 <animation grid="12x7">
 
@@ -2264,7 +2471,7 @@ s7: move 11,7 speed 3
 
 </animation>
 
-### delay
+## Feature: delay
 
 <animation grid="12x3">
 
@@ -2284,7 +2491,7 @@ c: fill green delay 2
 
 </animation>
 
-### stagger
+## Feature: stagger
 
 <animation grid="12x5">
 
@@ -2409,7 +2616,7 @@ auto
 
 </animation>
 
-### ease
+## Feature: ease
 
 <animation grid="12x6">
 
@@ -2455,7 +2662,7 @@ camera reset ease out
 
 </animation>
 
-### Entrance and exit effects
+## Feature: Entrance and exit effects
 
 <animation grid="12x4">
 
@@ -2486,7 +2693,7 @@ dr: remove draw
 
 </animation>
 
-### typed
+## Feature: typed
 
 <animation grid="12x3">
 
@@ -2505,7 +2712,7 @@ t1: remove typed
 
 </animation>
 
-### defaults
+## Feature: defaults
 
 <animation grid="12x4">
 
@@ -2530,7 +2737,7 @@ c: move 8,3
 
 </animation>
 
-### Camera
+## Feature: Camera
 
 <animation grid="12x6">
 
@@ -2582,7 +2789,7 @@ camera reset speed fast
 
 </animation>
 
-### Camera travel
+## Feature: Camera travel
 
 <animation grid="12x6">
 
@@ -2613,7 +2820,7 @@ camera reset speed slow
 
 </animation>
 
-### Errors
+## Errors
 
 Bad lines are listed under the animation and skipped; the rest still draws.
 
@@ -2680,6 +2887,21 @@ dw: swap 0 1
 dw: signal
 q: rect at 1,1 ease bouncy
 dw: fill red stagger -1
+dw: name "x"
+dw: indices
+dw: 5
+dw: null
+vv: var 5 "x" at 1,1
+vv: var 5 at 1,1
+vv: 6 "x"
+vv: name clear
+defaults name "x"
+null: rect at 1,1
+er: row [1 2] at 1,1
+er: delete 5
+er: insert 3 at 9
+er: push
+er: delete 1 fill red
 ```
 
 </animation>

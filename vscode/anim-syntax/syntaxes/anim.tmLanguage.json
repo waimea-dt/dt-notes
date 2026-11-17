@@ -108,9 +108,9 @@
       }
     },
     "action": {
-      "$comment": "words that start a line's command",
+      "$comment": "words that start a line's command (pop is coloured as the effect it also is)",
       "name": "keyword.control.anim",
-      "match": "(?<![\\w-])(copy|group|ungroup|remove|swap)(?![\\w-])"
+      "match": "(?<![\\w-])(copy|group|ungroup|remove|swap|delete|insert|push)(?![\\w-])"
     },
     "ease": {
       "$comment": "ease and its value (in and out are only values here)",
@@ -146,11 +146,11 @@
     },
     "shape-type": {
       "name": "storage.type.anim",
-      "match": "(?<![\\w-])(rect|circle|diamond|text|line|arrow|curve|row|column)(?![\\w-])"
+      "match": "(?<![\\w-])(rect|circle|diamond|text|line|arrow|curve|row|column|var)(?![\\w-])"
     },
     "property": {
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|align|speed|delay|stagger-reverse|stagger|highlight|callout|zoom)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|align|speed|delay|stagger-reverse|stagger|highlight|callout|name|indices|zoom)(?![\\w-])"
     },
     "emphasis": {
       "name": "keyword.other.emphasis.anim",
@@ -158,7 +158,7 @@
     },
     "value": {
       "name": "support.constant.property-value.anim",
-      "match": "(?<![\\w-])(bold|monospace|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|outline|inside|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right)(?![\\w-])"
+      "match": "(?<![\\w-])(bold|monospace|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|outline|inside|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right|null)(?![\\w-])"
     },
     "colour": {
       "patterns": [

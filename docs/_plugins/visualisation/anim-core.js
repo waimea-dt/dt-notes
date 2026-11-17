@@ -182,6 +182,15 @@
       build: (v, sig) => (sig[0] === 'clear' ? { none: true } : { text: v[0], side: v[1] || 'above' }),
       help: 'quoted text (e.g. callout "Look!"), optionally then a side, or clear',
     },
+    // a var's / row's / column's name tag (a text shape that goes with it), and a row's / column's
+    // cell numbers
+    name: {
+      key: 'name', sigs: [['str', 'placement'], ['str'], ['clear']],
+      build: (v, sig) => (sig[0] === 'clear' ? { none: true } : { text: v[0], side: v[1] || null }),
+      help: 'quoted text (e.g. name "total"), optionally then a side (above, below, left-of, right-of), or clear',
+    },
+    indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
+    null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
     // defaults only
     clear: fixed('reset', true, { modes: ['defaults'] }),
     // camera only
@@ -191,7 +200,7 @@
   for (const entry of Object.values(KEYWORDS)) for (const list of [entry.sigs, entry.list]) list?.sort((a, b) => b.length - a.length)
 
   // Words that start a line (after "id:") rather than describe it
-  const LINE_STARTS = ['copy', 'group', 'ungroup', 'remove', 'swap']
+  const LINE_STARTS = ['copy', 'group', 'ungroup', 'remove', 'swap', 'delete', 'insert', 'push', 'pop', 'var']
 
   const RESERVED = new Set([
     ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, 'pause', 'auto', 'defaults', 'camera',

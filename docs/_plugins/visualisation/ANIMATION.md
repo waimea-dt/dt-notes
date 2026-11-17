@@ -171,6 +171,10 @@ arr: row [5 3 8 1] at 3,4          # cells arr.0 … arr.3
 col: column ["A" "B" "C"] at 12,2 gap 0.2
 mem: row 8 at 2,6                  # 8 empty cells
 arr: swap 0 3                      # two cells change places
+arr: delete 2                      # slides out, the rest close up
+arr: insert 7 at 3                 # a space opens, 7 slides in
+arr: push 8                        # onto the end
+arr: pop                           # off the end
 arr.2: fill amber                  # one cell
 arr: fill green                    # every cell
 ```
@@ -178,7 +182,38 @@ arr: fill green                    # every cell
 - Values go in `[ ]`: numbers or `"quoted"`, commas optional (`[5, 3, 8]`). A bare whole number makes that many empty cells.
 - `size` and `gap` (default 0), plus fill, stroke, font and the other looks, apply to every cell.
 - `at` places the first cell. `below b` etc. place the whole row.
-- After a swap, ids stay with the places: what's attached to `arr.0` stays put. Highlights move with the cell.
+- After a swap, delete or insert, ids stay with the places: what's attached to `arr.0` stays put, and `arr.2` is whichever cell is now third. Highlights move with the cell.
+- Cells come and go below a row, left of a column. New cells take the row's look (as changed by `arr: fill …`). `insert … at` goes from 0 to the length (the end). A row can be popped empty and pushed onto again.
+- A muted outline (a slot) shows the space while it plays: left behind as a cell goes, closing as the rest close up; or opening as cells move aside, for the new one to land in. Push and pop open or close one on the end.
+- Cells hold values like a var: `arr.2: 7`, `arr.2: "x"`, `arr.2: null`, and `null` in `[ ]`.
+- `swap` `delete` `insert` `push` `pop` take `speed`, `delay` and `ease`. Delete, insert, push and pop are two moves in turn (out then close up, or open up then in), so they take about 1.6 × the speed.
+
+## Variables
+
+```anim
+v1: var 67 at 5,3                  # a box holding a value
+v2: var "Dog" at 5,5
+v3: var null at 8,3                # null shows muted, in italics
+v1: 123                            # a new value
+v2: "Cat"
+v1: null
+```
+
+- A var is a rect (size, fill and the rest work), whose value goes straight after `var`.
+
+## Names and indices
+
+```anim
+v1: var 0 at 5,3 name "total"      # left of a var or row, above a column
+arr: row [5 3 8] at 3,4 name "arr" indices
+v1: name "sum" above               # rename, or another side
+v1: name clear
+arr: indices                       # show them; indices clear hides them
+```
+
+- For vars, rows and columns. Both are text shapes that move with their owner and go when it's removed: `v1.name`, `arr.index.0` … (style them like any shape, e.g. `arr.name: bold`).
+- `highlight outline` goes round the whole thing, name and indices too (to pick out the data, highlight cells or change colours).
+- Indices (small, muted) sit below a row's cells, left of a column's. They stay with the places through a swap, and the last one comes and goes with delete, insert, push and pop.
 
 ## Stagger
 
