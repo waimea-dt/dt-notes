@@ -1602,7 +1602,7 @@ l: arrow from a to b
 ## group
 
 ```anim
-g: group a b l highlight outline
+g: group [a, b, l] highlight outline
 ```
 
 +++
@@ -1640,7 +1640,7 @@ a: move 2,2
 ## Removing a group removes its members
 
 ```anim
-g2: group a b
+g2: group [a, b]
 ```
 
 +++
@@ -1840,7 +1840,7 @@ l: signal-reverse
 ## On a group: each of its lines
 
 ```anim
-g: group a b l c
+g: group [a, b, l, c]
 g: signal speed fast
 ```
 
@@ -1930,7 +1930,7 @@ arr: row [4, 8, 2] at 2,4 highlight number
 ```anim
 p: circle "p" at 10,4 radius 0.4
 q: circle "q" at 12,4 radius 0.4
-pq: group p q
+pq: group [p, q]
 ```
 
 +++
@@ -2204,7 +2204,7 @@ arr: highlight number stagger 0.4
 a: rect "a" at 3,4
 b: circle "b" at 6,4
 c: rect "c" at 9,4
-g: group c a b
+g: group [c, a, b]
 ```
 
 +++
@@ -2529,11 +2529,15 @@ ar: row at 1,1
 ar2: row 5 3 at 1,1
 ar3: row [5 3 at 1,1
 ar4: row [] at 1,1
-ar5: row [5 3] "label" at 1,1
+ar5: row [5, 3] "label" at 1,1
 ar6: rect at 1,1 [5]
 ar7: row 2.5 at 1,1
 ar8: column 0 at 1,1
 ar9: row 3 "x" at 1,1
+gb1: group a b
+gb2: group [a, zz]
+gb3: group [a
+gb4: group []
 dw: swap 0 1
 dw: signal
 q: rect at 1,1 ease bouncy

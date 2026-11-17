@@ -156,7 +156,7 @@ k2: copy key move 8,1          # copy, then move off
 lock: attach right-of msg      # rides beside msg
 lock: attach msg               # on top of msg
 lock: detach
-pkt: group msg lock            # acts as one
+pkt: group [msg lock]          # acts as one
 pkt: ungroup
 ```
 

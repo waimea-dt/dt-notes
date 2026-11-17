@@ -498,11 +498,18 @@
       }
       if (firstWord === 'group') {
         if (existing) throw new Error(`"${id}" already exists`)
+        // the shapes go in [ ] (commas optional), like a row's values
+        if (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[') throw new Error(`a group's shapes go in [ ] straight after "group", e.g. "${id}: group [a b c]"`)
         const members = []
-        let j = 1
-        for (let ref; (ref = parseAs('id', tokens[j], shapes)); j++) members.push(ref)
-        if (!members.length) throw new Error('"group" expects the ids of the shapes to group, e.g. "g: group a b c"')
-        const props = parseProps(tokens, j, 'change', shapes)
+        let j = 2
+        for (; j < tokens.length && tokens[j].kind !== 'bracket'; j++) {
+          const ref = parseAs('id', tokens[j], shapes)
+          if (!ref) throw new Error(tokens[j].kind === 'word' ? `no shape called "${tokens[j].value}" (is a "]" missing?)` : 'a group\'s [ ] holds shape ids')
+          members.push(ref)
+        }
+        if (tokens[j]?.value !== ']') throw new Error('the "[" of a group has no closing "]"')
+        if (!members.length) throw new Error(`a group needs at least one shape, e.g. "${id}: group [a b c]"`)
+        const props = parseProps(tokens, j + 1, 'change', shapes)
         if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
         if (props.at || props.x || props.y || props.via || props.travel || props.follow || props.attach) throw new Error('create the group first, then move it on the next line')
         const list = members.map((m) => shapes.get(m))
