@@ -650,6 +650,33 @@ l: arrow from a to b "fit"
 
 </animation>
 
+### Large Grid
+
+A square 12x12 grid: much taller than the 16x9 default, so check it in full screen (F) too.
+
+<animation grid="12x12">
+
+## Corners and centre
+
+```anim
+tl: rect "1,1" at 1,1
+tr: rect "12,1" at 12,1
+bl: rect "1,12" at 1,12
+br: rect "12,12" at 12,12
+c: circle "centre" at 6.5,6.5 radius 1.5 fill blue
+```
+
+---
+
+## Diagonals
+
+```anim
+d1: arrow from tl to br draw
+d2: arrow from tr to bl draw
+```
+
+</animation>
+
 ### Debug
 
 Grid numbers, ids and warnings.
