@@ -178,8 +178,17 @@
       "match": "(?<![\\w.])[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[xX\u00d7][+-]?(?:\\d+\\.?\\d*|\\.\\d+))?(?![\\w.])"
     },
     "punctuation": {
-      "name": "punctuation.separator.anim",
-      "match": ","
+      "patterns": [
+        {
+          "name": "punctuation.separator.anim",
+          "match": ","
+        },
+        {
+          "$comment": "a row's / column's [values]",
+          "name": "punctuation.section.brackets.anim",
+          "match": "[\\[\\]]"
+        }
+      ]
     },
     "shape-ref": {
       "$comment": "any other word is a shape id used as a value (from a to b, attach right-of msg, travel r1 r2); keep this last",

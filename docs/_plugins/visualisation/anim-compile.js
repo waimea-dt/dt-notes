@@ -603,20 +603,24 @@
     }
 
     // A row (side by side) or column (one under another) of rect cells, ids "id.0", "id.1", …: a
-    // group placed by its first cell. The values come straight after the type (numbers or quoted
-    // text); size, gap and the look apply to every cell.
+    // group placed by its first cell. The values go in [ ] straight after the type (numbers or
+    // quoted text, commas optional); size, gap and the look apply to every cell.
     function createLayout(id, layout, tokens, existing, meta, warn) {
+      const example = `e.g. "${id}: ${layout} [5 3 8 1] at 2,3" (words in quotes: ["A" "B"])`
+      if (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[') throw new Error(`a ${layout}'s values go in [ ] straight after "${layout}", ${example}`)
       const values = []
-      let j = 1
+      let j = 2
       for (; j < tokens.length; j++) {
         const token = tokens[j]
+        if (token.kind === 'bracket') break
         if (token.kind === 'str') values.push(token.value)
         else if (token.kind === 'word' && NUMBER.test(token.value)) values.push(token.value)
-        else break
+        else throw new Error(`a ${layout}'s values are numbers or "quoted" text, not "${token.value ?? token.name}" (is a "]" missing?)`)
       }
-      if (!values.length) throw new Error(`a ${layout} needs its values straight after "${layout}", e.g. "${id}: ${layout} 5 3 8 1 at 2,3" (put words in quotes: "A" "B")`)
-      const props = parseProps(tokens, j, 'layout', shapes)
-      if (props.label !== undefined) throw new Error(`a ${layout}'s values all go straight after "${layout}"`)
+      if (tokens[j]?.value !== ']') throw new Error(`the "[" of a ${layout} has no closing "]"`)
+      if (!values.length) throw new Error(`a ${layout} needs at least one value, ${example}`)
+      const props = parseProps(tokens, j + 1, 'layout', shapes)
+      if (props.label !== undefined) throw new Error(`a ${layout}'s values all go inside its [ ]`)
       const allowed = ['at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', 'speed', 'delay', 'ease', 'stagger', 'effect', 'highlight', 'callout']
       const extra = Object.keys(props).find((key) => !allowed.includes(key))
       if (extra) throw new Error(`"${extra === 'head' ? 'arrow' : extra}" doesn't apply to a ${layout}`)

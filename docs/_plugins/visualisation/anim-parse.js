@@ -143,7 +143,7 @@
   // Scene parsing
   // ---------------------------------------------------------------------------
 
-  const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([^\s,]+)/g
+  const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([[\]])|([^\s,[\]]+)/g
   const NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/
   const ID = /^[A-Za-z][\w.-]*$/
   const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
@@ -154,10 +154,11 @@
       if (m[1] !== undefined) tokens.push({ kind: 'str', value: m[1].replace(/\\(.)/g, '$1') })
       else if (m[2] !== undefined) tokens.push({ kind: 'res', name: m[2].toLowerCase(), arg: m[3].trim() })
       else if (m[4] !== undefined) throw new Error('a label is missing its closing quote')
+      else if (m[5] !== undefined) tokens.push({ kind: 'bracket', value: m[5] }) // a row's / column's [values]
       else {
         // "2x1" (a size) is two numbers
-        const pair = m[5].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
-        const words = pair ? [pair[1], pair[2]] : [m[5]]
+        const pair = m[6].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
+        const words = pair ? [pair[1], pair[2]] : [m[6]]
         words.forEach((word) => tokens.push({ kind: 'word', value: word, lower: word.toLowerCase() }))
       }
     }
@@ -222,6 +223,7 @@
       const token = tokens[i]
       if (token.kind === 'str') { set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
+      if (token.kind === 'bracket') throw new Error('[ ] only holds a row\'s or column\'s values, straight after "row" / "column"')
       const word = token.lower
       const entry = KEYWORDS[word]
       if (!entry || (entry.modes && !entry.modes.includes(mode))) {

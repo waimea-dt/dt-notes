@@ -13,7 +13,7 @@ Click an animation to give it focus, then use ← / → to step and `F` for full
 We start with an unsorted array.
 
 ```anim
-arr: row 5 3 8 1 at 5,3 size 0.9 gap 0.1 fill blue
+arr: row [5 3 8 1] at 5,3 size 0.9 gap 0.1 fill blue
 i: text "i" attach below arr.0
 ```
 
@@ -1112,7 +1112,7 @@ i1: stroke green scale 1.3
 <animation grid="12x4">
 
 ```anim
-pal: row "red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme" at 1,1 font 0.4
+pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 1,1 font 0.4
 pal.0: fill red
 pal.1: fill orange
 pal.2: fill amber
@@ -1656,9 +1656,9 @@ g2: remove pop
 <animation grid="12x6">
 
 ```anim
-arr: row 5 3 8 1 at 2,1.5 fill blue
-col: column "A" "B" "C" at 10,1.5 size 1.6x0.8 gap 0.2 fill teal corner 0.1
-words: row "cat" "" "dog" at 2,4 size 1.4x0.8 gap 0.3
+arr: row [5 3 8 1] at 2,1.5 fill blue
+col: column ["A" "B" "C"] at 10,1.5 size 1.6x0.8 gap 0.2 fill teal corner 0.1
+words: row ["cat" "" "dog"] at 2,4 size 1.4x0.8 gap 0.3
 ```
 
 ---
@@ -1706,10 +1706,10 @@ arr: remove pop
 <animation grid="12x5">
 
 ```anim
-arr: row 5 3 8 1 at 2,2 fill blue
+arr: row [5, 3, 8, 1] at 2,2 fill blue
 i: text "i" attach below arr.0
 p: arrow from 1,4.5 to arr.3
-col: column "A" "B" "C" at 10,1.5 size 1.6x0.8 gap 0.2 fill teal
+col: column ["A" "B" "C"] at 10,1.5 size 1.6x0.8 gap 0.2 fill teal
 ```
 
 ---
@@ -1918,7 +1918,7 @@ e: highlight number
 ## A row numbers its cells
 
 ```anim
-arr: row 4 8 2 at 2,4 highlight number
+arr: row [4, 8, 2] at 2,4 highlight number
 ```
 
 ---
@@ -2149,7 +2149,7 @@ c: fill green delay 2
 <animation grid="12x5">
 
 ```anim
-arr: row 5 3 8 1 9 2 at 3,2 size 1 gap 0.3 fill blue corner 0.3 pop stagger 0.15
+arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.3 fill blue corner 0.3 pop stagger 0.15
 ```
 
 ---
@@ -2474,6 +2474,11 @@ vl: line from a to 6,1 via 3,2
 defaults via 2,2
 a: move 6,1 via zz
 ar: row at 1,1
+ar2: row 5 3 at 1,1
+ar3: row [5 3 at 1,1
+ar4: row [] at 1,1
+ar5: row [5 3] "label" at 1,1
+ar6: rect at 1,1 [5]
 dw: swap 0 1
 dw: signal
 q: rect at 1,1 ease bouncy

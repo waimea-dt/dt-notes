@@ -167,14 +167,14 @@ pkt: ungroup
 ## Rows and columns
 
 ```anim
-arr: row 5 3 8 1 at 3,4            # cells arr.0 … arr.3
-col: column "A" "B" "C" at 12,2 gap 0.2
+arr: row [5 3 8 1] at 3,4          # cells arr.0 … arr.3
+col: column ["A" "B" "C"] at 12,2 gap 0.2
 arr: swap 0 3                      # two cells change places
 arr.2: fill amber                  # one cell
 arr: fill green                    # every cell
 ```
 
-- Values: numbers or `"quoted"`.
+- Values go in `[ ]`: numbers or `"quoted"`, commas optional (`[5, 3, 8]`).
 - `size` and `gap` (default 0), plus fill, stroke, font and the other looks, apply to every cell.
 - `at` places the first cell. `below b` etc. place the whole row.
 - After a swap, ids stay with the places: what's attached to `arr.0` stays put. Highlights move with the cell.
@@ -182,7 +182,7 @@ arr: fill green                    # every cell
 ## Stagger
 
 ```anim
-arr: row 5 3 8 1 at 2,2 pop stagger 0.15   # cells pop in one by one
+arr: row [5 3 8 1] at 2,2 pop stagger 0.15 # cells pop in one by one
 arr: fill green stagger                    # 0.1 s apart
 arr: pulse stagger 0.1
 arr: highlight outline stagger 0.2         # one outline per cell, in turn
