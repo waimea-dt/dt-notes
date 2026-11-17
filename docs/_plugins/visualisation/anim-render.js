@@ -590,7 +590,7 @@
       }
       for (const [uid, node] of nodes) {
         if (!uids.has(uid)) {
-          for (const el of [node.g, node.box, node.pointer, node.badge, node.bubble]) el?.remove()
+          for (const el of [node.g, node.outline, node.inside, node.pointer, node.badge, node.bubble]) el?.remove()
           nodes.delete(uid)
         }
       }
@@ -630,26 +630,77 @@
     // times the shape's own visibility (entering / leaving).
     const blend = (item, has) => lerp(item.a && has(item.a) ? 1 : 0, item.b && has(item.b) ? 1 : 0, item.a && item.b ? item.t : 1) * (item.a && item.b ? 1 : item.v.opacity)
 
-    // The highlight box, arrow and number badge, and the callout bubble, drawn above everything
+    // How far inside the shape's edge the inside highlight's centre line sits: past the shape's own
+    // stroke (half of it is inside the edge), a small gap, and half the highlight's own line.
+    const HL_LINE = 3 // the highlight's line (anim-highlight-outline / -inside in animation.css)
+    const insetOf = (s) => {
+      const stroke = s.type === 'icon' || s.stroke === 'none' ? 0 : STROKE * (s.weight ?? 1) * (s.scale ?? 1)
+      return stroke / 2 + 0.04 * CELL + HL_LINE / 2
+    }
+
+    // A highlight path following a shape's outline, grown by `offset` (shrunk if negative): a rounded
+    // rect for rects and text, a circle, a diamond. Groups, images and icons (outline) get a rounded
+    // box round their bounds `b`, which includes an image's or icon's label.
+    function highlightPath(s, v, offset, b) {
+      const rectPath = (hw, hh, r) => {
+        r = Math.max(0, Math.min(r, hw, hh))
+        return `M ${-hw + r} ${-hh} H ${hw - r} A ${r} ${r} 0 0 1 ${hw} ${-hh + r} V ${hh - r} A ${r} ${r} 0 0 1 ${hw - r} ${hh}`
+          + ` H ${-hw + r} A ${r} ${r} 0 0 1 ${-hw} ${hh - r} V ${-hh + r} A ${r} ${r} 0 0 1 ${-hw + r} ${-hh} Z`
+      }
+      const boxed = s.type === 'group' || (offset > 0 && ['image', 'icon'].includes(s.type))
+      if (boxed) {
+        const hw = (b.x1 - b.x0) / 2 + offset
+        const hh = (b.y1 - b.y0) / 2 + offset
+        return { d: rectPath(hw, hh, 0.12 * CELL), transform: `translate(${(b.x0 + b.x1) / 2} ${(b.y0 + b.y1) / 2})` }
+      }
+      const c = boxCentre(s)
+      const transform = `translate(${c.x + (v.dx || 0)} ${c.y + (v.dy || 0)}) rotate(${(s.angle || 0) + (v.rot || 0)})`
+      const k = (s.scale ?? 1) * (v.scale ?? 1)
+      const { hw, hh } = extents(s)
+      const w = Math.max(0, hw * k + offset)
+      const h = Math.max(0, hh * k + offset)
+      if (s.type === 'circle') {
+        const r = Math.max(0, s.r * k + offset)
+        return { d: `M ${-r} 0 A ${r} ${r} 0 1 1 ${r} 0 A ${r} ${r} 0 1 1 ${-r} 0 Z`, transform }
+      }
+      if (s.type === 'diamond') {
+        // each side moves out by `offset`: the same diamond, scaled by (d + offset) / d, where d is
+        // the distance from the centre to a side
+        const d = (hw * k * hh * k) / (Math.hypot(hw * k, hh * k) || 1)
+        const f = Math.max(0, (d + offset) / (d || 1))
+        return { d: `M 0 ${-hh * k * f} L ${hw * k * f} 0 L 0 ${hh * k * f} L ${-hw * k * f} 0 Z`, transform }
+      }
+      // rect (its corners, grown or shrunk with it), text, and an image or icon (inside)
+      const corner = s.type === 'rect' ? Math.min(s.corner || 0, hw, hh) * k : 0
+      const r = s.type === 'rect' ? corner + offset : offset > 0 ? offset : 0
+      return { d: rectPath(w, h, r), transform }
+    }
+
+    // The highlight outline, arrow and number badge, and the callout bubble, drawn above everything
     // in world space.
     function drawOverlays(item, now) {
       const node = item.node
       // Each fades in / out with its feature, and dims with a shape outside the spotlight
       const k = item.dimK
-      const boxOpacity = blend(item, (s) => s.hl?.box) * k
+      const outlineOpacity = blend(item, (s) => s.hl?.outline) * k
+      const insideOpacity = blend(item, (s) => s.hl?.inside) * k
       const arrowOpacity = blend(item, (s) => s.hl?.arrow) * k
       const badgeOpacity = blend(item, (s) => s.hl?.number != null) * k
       const bubbleOpacity = blend(item, (s) => s.callout) * k
-      if (!boxOpacity && !node.box && !arrowOpacity && !node.pointer && !badgeOpacity && !node.badge && !bubbleOpacity && !node.bubble) return
+      if (!outlineOpacity && !node.outline && !insideOpacity && !node.inside && !arrowOpacity && !node.pointer && !badgeOpacity && !node.badge && !bubbleOpacity && !node.bubble) return
       const b = bounds(item.shape, now, { ends: item.v.ends, dx: item.v.dx, dy: item.v.dy })
       const pad = 0.15 * CELL
 
-      if (boxOpacity || node.box) {
-        if (!node.box) node.box = highlightLayer.appendChild(svgEl('rect', { class: 'anim-highlight-box' }))
-        Object.entries({ x: b.x0 - pad, y: b.y0 - pad, width: b.x1 - b.x0 + 2 * pad, height: b.y1 - b.y0 + 2 * pad, rx: 0.12 * CELL })
-          .forEach(([k, val]) => attr(node.box, k, val))
-        node.box.style.opacity = boxOpacity
-        if (!boxOpacity) { node.box.remove(); node.box = null }
+      // outline: the shape's own outline, `pad` outside it; inside: the same line just inside its
+      // stroke. Both are paths in the shape's place and turn (see highlightPath).
+      for (const [key, opacity, offset] of [['outline', outlineOpacity, pad], ['inside', insideOpacity, -insetOf(item.shape)]]) {
+        if (!opacity && !node[key]) continue
+        if (!node[key]) node[key] = highlightLayer.appendChild(svgEl('path', { class: `anim-highlight-${key}` }))
+        const { d, transform } = highlightPath(item.shape, item.v, offset, b)
+        attr(node[key], 'd', d)
+        attr(node[key], 'transform', transform)
+        node[key].style.opacity = opacity
+        if (!opacity) { node[key].remove(); node[key] = null }
       }
 
       // arrow: a block arrow pointing in at the top-right corner, sliding in as it fades in

@@ -452,7 +452,7 @@ m2: move -7,+0 speed slow
 It checks the CA's signature, the name **bank.example** and the dates. A fake certificate fails here, so Eve can't pretend to be the bank.
 
 ```anim
-m2: fill green delay 0.25 highlight box
+m2: fill green delay 0.25 highlight outline
 check: icon(badge-check) attach left-of m2 stroke green pop
 ```
 
@@ -1109,7 +1109,7 @@ i1: stroke green scale 1.3
 
 ### Colours
 
-<animation grid="13x4">
+<animation grid="12x4">
 
 ```anim
 pal: row "red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme" at 1,1 font 0.4
@@ -1602,7 +1602,7 @@ l: arrow from a to b
 ## group
 
 ```anim
-g: group a b l highlight box
+g: group a b l highlight outline
 ```
 
 +++
@@ -1850,7 +1850,7 @@ g: signal speed fast
 
 ```anim
 defaults size 1.6x0.8 font 0.6
-bx: rect "box" at 2,2
+bx: rect "outline" at 2,2
 ar: rect "arrow" at 5,2
 hg: rect "glow" at 8,2
 nu: rect "number" at 11,2
@@ -1860,7 +1860,7 @@ defaults clear
 ---
 
 ```anim
-bx: highlight box
+bx: highlight outline
 ar: highlight arrow
 hg: highlight glow
 nu: highlight number 1
@@ -1885,6 +1885,76 @@ nu: highlight clear
 
 </animation>
 
+### Outline and inside
+
+The outline follows each shape's own outline (turned and scaled with it); inside sits just within its stroke.
+
+<animation grid="14x5">
+
+```anim
+r: rect "rect" at 2,2 size 2x1
+rc: rect "corner" at 5,2 size 2x1 corner 0.3
+c: circle "circle" at 8,2 radius 0.7
+d: diamond "diamond" at 11,2 size 2x1.4
+t: text "text" at 13.5,2
+tr: rect "turned" at 2.5,4.2 size 2x0.8 angle 20
+th: rect "thick" at 6,4.2 size 2x0.8 weight 3
+sc: circle "scaled" at 9,4.2 radius 0.4 scale 1.5
+i: icon(laptop) "icon" at 12,4
+```
+
+---
+
+## outline
+
+```anim
+r: highlight outline
+rc: highlight outline
+c: highlight outline
+d: highlight outline
+t: highlight outline
+tr: highlight outline
+th: highlight outline
+sc: highlight outline
+i: highlight outline
+```
+
++++
+
+```anim
+tr: angle +45
+sc: pulse
+```
+
+---
+
+## inside
+
+```anim
+r: highlight clear inside
+rc: highlight clear inside
+c: highlight clear inside
+d: highlight clear inside
+t: highlight clear
+tr: highlight clear inside
+th: highlight clear inside
+sc: highlight clear inside
+i: highlight clear inside
+```
+
+---
+
+## Both
+
+```anim
+r: highlight outline
+c: highlight outline
+d: highlight outline
+th: highlight outline
+```
+
+</animation>
+
 ### Spotlight
 
 Everything else dims, including their highlights and callouts.
@@ -1893,7 +1963,7 @@ Everything else dims, including their highlights and callouts.
 
 ```anim
 a: rect "a" at 2,2
-b: rect "b" at 5,2 highlight box
+b: rect "b" at 5,2 highlight outline
 c: rect "c" at 8,2 callout "hi"
 d: rect "d" at 11,2
 ```
@@ -2025,7 +2095,7 @@ c: fill green delay 2
 <animation grid="12x5">
 
 ```anim
-arr: row 5 3 8 1 9 2 at 3,2 fill blue pop stagger 0.15
+arr: row 5 3 8 1 9 2 at 3,2 size 1 gap 0.3 fill blue corner 0.3 pop stagger 0.15
 ```
 
 ---
@@ -2055,7 +2125,7 @@ arr: fill amber stagger-reverse 0.2 delay 0.5
 ## One highlight per cell
 
 ```anim
-arr: highlight box stagger 0.2
+arr: highlight arrow stagger 0.2
 ```
 
 +++
@@ -2304,6 +2374,9 @@ pause -1
 auto now
 defaults: fill red
 camera: at 2,2
+hb: rect at 1,1 highlight box
+hln: line from 1,1 to 2,2 highlight outline
+ht: text "t" at 3,3 highlight inside
 camera
 camera at below dw
 camera fill red

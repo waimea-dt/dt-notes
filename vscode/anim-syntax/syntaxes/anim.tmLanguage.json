@@ -126,7 +126,7 @@
     },
     "highlight": {
       "$comment": "highlight and its words (box, spotlight, arrow, number N, clear), so arrow here isn't a shape type",
-      "match": "(?<![\\w-])(highlight)((?:\\s+(?:box|spotlight|arrow|glow|clear|number(?:\\s+[+-]?(?:\\d+\\.?\\d*|\\.\\d+))?)(?![\\w-]))*)",
+      "match": "(?<![\\w-])(highlight)((?:\\s+(?:outline|inside|spotlight|arrow|glow|clear|number(?:\\s+[+-]?(?:\\d+\\.?\\d*|\\.\\d+))?)(?![\\w-]))*)",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"
@@ -135,7 +135,7 @@
           "patterns": [
             {
               "name": "support.constant.property-value.anim",
-              "match": "(?<![\\w-])(box|spotlight|arrow|glow|clear|number)(?![\\w-])"
+              "match": "(?<![\\w-])(outline|inside|spotlight|arrow|glow|clear|number)(?![\\w-])"
             },
             {
               "include": "#number"
@@ -158,7 +158,7 @@
     },
     "value": {
       "name": "support.constant.property-value.anim",
-      "match": "(?<![\\w-])(bold|monospace|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|box|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right)(?![\\w-])"
+      "match": "(?<![\\w-])(bold|monospace|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|outline|inside|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right)(?![\\w-])"
     },
     "colour": {
       "patterns": [

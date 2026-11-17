@@ -109,11 +109,15 @@
       }
       if (props.layer) shape.layer = props.layer
 
-      // highlight: box / spotlight / arrow / number N stay until clear
+      // highlight: outline / inside / spotlight / arrow / number N stay until clear
       if (props.highlight) {
-        const none = { box: false, spotlight: false, arrow: false, glow: false, number: null }
+        const none = { outline: false, inside: false, spotlight: false, arrow: false, glow: false, number: null }
         const hl = { ...none, ...shape.hl }
         for (const item of props.highlight) {
+          if (item === 'outline' && isLine) throw new Error('"highlight outline" doesn\'t fit a line: try glow or signal')
+          if (item === 'inside' && (isLine || ['text', 'group'].includes(shape.type))) {
+            throw new Error(`"highlight inside" needs a shape with an inside (rect, circle, diamond, image or icon), not ${shape.type === 'arrow' ? 'an' : 'a'} ${shape.type === 'group' ? (shape.layout || 'group') : shape.type}`)
+          }
           if (item === 'clear') Object.assign(hl, none)
           else if (typeof item === 'object') hl.number = item.number
           else hl[item] = true

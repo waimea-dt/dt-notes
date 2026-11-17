@@ -37,7 +37,7 @@
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
-  const HIGHLIGHTS = ['box', 'spotlight', 'arrow', 'glow', 'clear'] // and "number N" (see KEYWORDS.highlight)
+  const HIGHLIGHTS = ['outline', 'inside', 'spotlight', 'arrow', 'glow', 'clear'] // and "number N" (see KEYWORDS.highlight)
   const EMPHASES = ['pulse', 'shake', 'wobble', 'bounce', 'glow']
   const SIGNALS = { signal: 'signal', 'signal-reverse': 'signal-reverse' } // one-off blips along a line
   const CALLOUT_CH = 24 // callout text wraps at about this many characters
@@ -174,7 +174,7 @@
     highlight: {
       key: 'highlight', list: [['number', 'num'], ['highlight']],
       build: (v, sig) => (sig[0] === 'number' ? { number: v[1].v } : v[0]),
-      help: 'box, spotlight, arrow, glow, number N or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)',
+      help: 'outline, inside, spotlight, arrow, glow, number N or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)',
     },
     callout: {
       key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],

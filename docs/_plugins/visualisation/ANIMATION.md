@@ -185,7 +185,7 @@ arr: fill green                    # every cell
 arr: row 5 3 8 1 at 2,2 pop stagger 0.15   # cells pop in one by one
 arr: fill green stagger                    # 0.1 s apart
 arr: pulse stagger 0.1
-arr: highlight box stagger 0.2             # one box per cell, in turn
+arr: highlight outline stagger 0.2         # one outline per cell, in turn
 arr: fill amber stagger-reverse            # last cell first
 g: remove pop stagger 0.2                  # group members, in listed order
 ```
@@ -210,12 +210,13 @@ One-off; they don't replay going back. `signal` is for lines (on a group: each o
 ## Highlights and callouts
 
 ```anim
-a: highlight box
+a: highlight outline       # follows the shape, just outside it (not lines)
+a: highlight inside        # just inside its stroke (not text, lines or groups)
 a: highlight arrow
 a: highlight glow
 a: highlight number 2
 a: highlight spotlight     # dims everything else
-a: highlight box arrow     # several
+a: highlight outline arrow # several
 a: highlight clear
 a: callout "Look!"         # above
 a: callout "Look!" below   # or left-of / right-of

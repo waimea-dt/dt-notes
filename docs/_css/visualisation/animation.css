@@ -438,8 +438,9 @@
     animation: anim-bounce-next 2s ease-out infinite both;
 }
 
-/* highlight box: a rounded box in the highlight colour round a shape */
-.markdown-section .animation .anim-highlight-box {
+/* highlight outline / inside: a line in the highlight colour round a shape, or just inside its stroke
+   (the 3px is HL_LINE in anim-render.js) */
+.markdown-section .animation :is(.anim-highlight-outline, .anim-highlight-inside) {
     fill: none;
     stroke: var(--color-important);
     stroke-width: 3px;
