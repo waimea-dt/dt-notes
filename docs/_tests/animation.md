@@ -717,6 +717,107 @@ ring: solid static speed slow
 
 </animation>
 
+### Curves, and arrowheads
+
+<animation grid="12x6">
+
+## Curves
+
+`c1: curve from a to b via 6,1` bends through one point; `c2` has two vias for an S-shape.
+
+```anim
+a: circle "A" at 2,3 radius 0.5
+b: circle "B" at 10,3 radius 0.5
+c1: curve from a to b via 6,1 draw stroke pink
+c2: curve from a to b via 4,5 via 8,3 dashed stroke teal draw
+```
+
+---
+
+## Arrowheads
+
+`c1: arrow` adds a head to the existing curve; `l: line … arrow` draws like an arrow.
+
+```anim
+c1: arrow
+c2: arrow
+l: line from 2,6 to 10,6 arrow "line … arrow"
+```
+
++++
+
+`c1: via 6,0.5` keeps one via, so the bend blends to the new point. `c2: flow` sends its dashes along the curve.
+
+```anim
+c1: via 6,1.5 speed slow
+c2: flow
+```
+
++++
+
+`p: follow c1` goes along the curve.
+
+```anim
+p: circle at 2,3 radius 0.2 fill amber front
+```
+
++++
+
+```anim
+p: follow c1 speed slow
+```
+
++++
+
+```anim
+p: follow-reverse c2 speed slow
+```
+
+</animation>
+
+### Monospace and typed
+
+<animation grid="12x3">
+
+## Monospace and typed
+
+```anim
+t1: text "$ ls -la" at 3,2 align left monospace typed speed slow
+t2: text "Hello, world!" at 3,3 align left typed speed slow delay 2
+box: rect "monospace" at 9,2 size 3x0.8 monospace fill blue
+```
+
++++
+
+`typed` as an exit un-types.
+
+```anim
+t1: remove typed
+```
+
+</animation>
+
+### Intro
+
+The first beat uses `typed` and `pop`, so it plays in when the animation comes into view, and again after rewinding (⏮ or Home).
+
+<animation grid="12x3">
+
+```anim
+prompt: text "$ ping example.com" at 2,1 align left monospace typed speed slow
+srv: rect "server" at 10,2 size 2x1 pop delay 2
+```
+
+---
+
+## Next
+
+```anim
+srv: fill green
+```
+
+</animation>
+
 ### Size, width and height
 
 <animation grid="12x4">

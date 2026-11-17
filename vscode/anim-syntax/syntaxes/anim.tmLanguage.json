@@ -131,7 +131,7 @@
     },
     "shape-type": {
       "name": "storage.type.anim",
-      "match": "(?<![\\w-])(rect|circle|text|line|arrow)(?![\\w-])"
+      "match": "(?<![\\w-])(rect|circle|text|line|arrow|curve)(?![\\w-])"
     },
     "property": {
       "name": "support.type.property-name.anim",
@@ -143,7 +143,7 @@
     },
     "value": {
       "name": "support.constant.property-value.anim",
-      "match": "(?<![\\w-])(bold|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|box|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right)(?![\\w-])"
+      "match": "(?<![\\w-])(bold|monospace|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|box|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|center|right)(?![\\w-])"
     },
     "colour": {
       "patterns": [

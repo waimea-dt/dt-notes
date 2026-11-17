@@ -25,7 +25,7 @@
   // speed <word | seconds>: how long a line's change takes
   const SPEEDS = { instant: 0, vfast: 250, fast: 500, normal: 1000, slow: 2000, vslow: 4000 }
   const NORMAL_MS = SPEEDS.normal
-  const EFFECTS = ['fade', 'pop', 'draw', 'slide']
+  const EFFECTS = ['fade', 'pop', 'draw', 'slide', 'typed']
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
   const ALIGNS = { left: 'left', centre: 'centre', center: 'centre', right: 'right' }
@@ -40,9 +40,9 @@
   const EMPHASES = ['pulse', 'shake', 'wobble', 'bounce', 'glow']
   const CALLOUT_CH = 24 // callout text wraps at about this many characters
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
-  const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow']
+  const SHAPE_TYPES = ['rect', 'circle', 'text', 'line', 'arrow', 'curve']
   const RESOURCE_TYPES = ['image', 'icon']
-  const LINE_TYPES = ['line', 'arrow']
+  const LINE_TYPES = ['line', 'arrow', 'curve'] // a curve is a line bent through via points
 
   // Named colours map to the site's theme variables, so light and dark themes both work.
   const COLOURS = {
@@ -78,12 +78,13 @@
     radius: ['circle'],
     corner: ['rect'], // corner radius
     fill: ['rect', 'circle'],
-    stroke: ['rect', 'circle', 'line', 'arrow', 'image', 'icon'], colour: ALL, weight: ALL, font: ALL, bold: ALL,
+    stroke: ['rect', 'circle', ...LINE_TYPES, 'image', 'icon'], colour: ALL, weight: ALL, font: ALL, bold: ALL, mono: ALL,
     width: ['rect', 'image', 'icon'], height: ['rect', 'image', 'icon'],
     angle: BOXED, scale: BOXED,
     align: ['text'],
-    linestyle: ['rect', 'circle', 'line', 'arrow', 'image'], // solid | dashed | dotted
-    flow: ['rect', 'circle', 'line', 'arrow', 'image'], // dashes/dots march along the stroke
+    linestyle: ['rect', 'circle', ...LINE_TYPES, 'image'], // solid | dashed | dotted
+    flow: ['rect', 'circle', ...LINE_TYPES, 'image'], // dashes/dots march along the stroke
+    head: LINE_TYPES, // an arrowhead on the end
   }
 
   // Every word that can follow "id:" (or "defaults"), in one table. Each entry gives the prop it
@@ -133,6 +134,9 @@
     scale: number('scale', 'a number (a multiple of the normal size)'),
     align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
     bold: fixed('bold', true),
+    monospace: fixed('mono', true),
+    // "arrow" here (not straight after the id, where it's the arrow shape) puts a head on a line
+    arrow: fixed('head', true),
     ...words(LINE_STYLES, 'linestyle', 'line style'),
     ...words(Object.keys(FLOWS), 'flow', 'flow'),
     ...words(Object.keys(LAYERS), 'layer', 'layer'),
@@ -202,8 +206,9 @@
   // (falls back to an estimate when it can't be measured, e.g. before the page has a body).
   const textWidths = new Map()
   let measurer = null
-  function textWidth(text, size, bold = false) {
-    const key = `${size}|${bold ? 'b' : ''}|${text}`
+  const MONO_FONT = 'var(--font-family-mono)'
+  function textWidth(text, size, bold = false, mono = false) {
+    const key = `${size}|${bold ? 'b' : ''}|${mono ? 'm' : ''}|${text}`
     if (textWidths.has(key)) return textWidths.get(key)
     if (!measurer && document.body) {
       const holder = svgEl('svg', { width: 0, height: 0, 'aria-hidden': 'true' })
@@ -216,6 +221,7 @@
     if (measurer) {
       measurer.style.fontSize = `${size}px`
       measurer.style.fontWeight = bold ? '700' : ''
+      measurer.style.fontFamily = mono ? MONO_FONT : 'var(--font-family)'
       measurer.textContent = text
       width = measurer.getComputedTextLength()
     }
@@ -230,7 +236,7 @@
       case 'circle': return { hw: shape.r, hh: shape.r, round: true }
       case 'text': {
         const size = FONT * shape.font
-        return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold) / 2), hh: 0.6 * size }
+        return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
       }
       default: return { hw: shape.w / 2, hh: shape.h / 2 }
     }
@@ -319,19 +325,26 @@
     return { x: c.x + ux * d, y: c.y + uy * d }
   }
 
-  // A line's two ends as points, trimmed to the edges of any shapes they are attached to.
+  // A line's two ends as points, trimmed to the edges of any shapes they are attached to, and a
+  // curve's via points (a via on a shape is that shape's centre). A curve's ends are trimmed
+  // towards its nearest via point, so it leaves each shape in the direction it bends.
   function resolveEnds(line, byId) {
     const target = (end) => (end.ref && byId.get(end.ref)) || null
     const centre = (end) => { const s = target(end); return s ? boxCentre(s) : { x: end.x, y: end.y } }
     const a = centre(line.from)
     const b = centre(line.to)
+    const vias = (line.via || []).map(centre)
     const fromShape = target(line.from)
     const toShape = target(line.to)
     return {
-      from: fromShape ? edgePoint(fromShape, b) : a,
-      to: toShape ? edgePoint(toShape, a) : b,
+      from: fromShape ? edgePoint(fromShape, vias[0] || b) : a,
+      to: toShape ? edgePoint(toShape, vias[vias.length - 1] || a) : b,
+      vias,
     }
   }
+
+  // The points a line is drawn through: its ends, or for a curve the smooth path through its vias.
+  const linePoints = ({ from, to, vias }) => (vias?.length ? buildPath([from, ...vias, to]) : [from, to])
 
   // An arc of the circle through a, b, c, from p to q, turning the way a -> b -> c goes.
   // Returns t (0-1) -> point, or null when the three points are in a straight line.
@@ -424,8 +437,10 @@
   // bounce offset.
   function bounds(shape, byId, { ends, dx = 0, dy = 0 } = {}, depth = 0) {
     if (LINE_TYPES.includes(shape.type)) {
-      const { from, to } = ends || resolveEnds(shape, byId)
-      return { x0: Math.min(from.x, to.x), y0: Math.min(from.y, to.y), x1: Math.max(from.x, to.x), y1: Math.max(from.y, to.y) }
+      const pts = linePoints(ends || resolveEnds(shape, byId))
+      const xs = pts.map((p) => p.x)
+      const ys = pts.map((p) => p.y)
+      return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) }
     }
     if (shape.type === 'group' && depth < 8) {
       const members = (shape.members || []).map((id) => byId.get(id)).filter(Boolean)
@@ -484,6 +499,6 @@
     FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LINE_STARTS, LINE_TYPES, NORMAL_MS,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     SPEEDS, STROKE, attachPos, bounds, boxCentre, buildPath, buildPolyline, cellToPx, clamp01, ease,
-    escapeHtml, extents, lerp, lucideIcon, placeNextTo, pointOnHops, pointOnPath, reducedMotion,
+    escapeHtml, extents, lerp, linePoints, lucideIcon, MONO_FONT, placeNextTo, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

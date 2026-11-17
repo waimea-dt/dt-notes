@@ -51,7 +51,7 @@ Markers must be alone on their line. Everything in one beat plays at the same ti
 |---|---|---|
 | `grid="CxR"` | `16x9` | Grid size; `grid="fit"` fits the content |
 | `debug` | off | Grid numbers, shape ids, warnings |
-| `autoplay` | off | Plays once on screen (not for reduced motion; stops for good when someone navigates) |
+| `autoplay` | off | Plays once on screen, after any intro (not for reduced motion; stops for good when someone navigates) |
 | `loop` / `loop-bounce` | off | At the end: jump to the start / play backwards to the start |
 | `hold="s"` | `1.5` | Wait between beats while playing |
 | `controls="none"` | shown | Hide buttons and progress bar (keys still work) |
@@ -86,7 +86,7 @@ m1:
 
 - `#` followed by a space starts a comment, on its own line or after a command (`#f80` is still a colour).
 - Properties go in any order. One quoted string per command = the label.
-- A type word on an existing id replaces the shape (`debug` warns).
+- A type word on an existing id replaces the shape (`debug` warns), except `l: arrow` on a line or curve with no `from` / `to`, which adds a head.
 - Ids: letters, digits, `_ - .`, starting with a letter. Keywords can't be ids.
 - Bad lines show an inline error (step + line) and are skipped.
 
@@ -98,10 +98,13 @@ m1:
 | `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
 | `text` | `t: text "Hi" at 7,1 align left colour blue` | — |
 | `line` / `arrow` | `l: arrow from a to 9,3 "yes"` | — |
+| `curve` | `c: curve from a to b via 5,1 via 7,3` | A smooth curve through its via points |
 | `image(path)` | `p: image(../_assets/x.svg) at 3,4 size 2 "Alt"` | 1×1, fits inside, keeps proportions |
 | `icon(name)` | `i: icon(laptop) at 10,2` | 1×1, a Lucide icon |
 
-- Labels: centred in rect / circle, on a line's midpoint, under an image / icon (also its alt text).
+- Labels: centred in rect / circle, halfway along a line or curve, under an image / icon (also its alt text).
+- `arrow` after a line or curve's other properties gives it a head: `l: line from a to b arrow` draws the same as `l: arrow from a to b`. On an existing line, `l: arrow` adds one (it fades in). Straight after the id with `from` / `to`, `arrow` is the arrow shape. After `highlight` it's the highlight arrow, so put a head before any highlight: `l: line from a to b arrow highlight box`. A head can't be taken off (recreate the line without one).
+- A curve bends through its `via` points with the same smooth path as `move … via`. A via on a shape follows it; `above b` etc. is fixed where it is then; a signed via is relative to the point before. `c: via 6,1` on an existing curve replaces its vias (they blend when the count stays the same). `follow` goes along the curve.
 - Image paths resolve like `![](…)` on the same page.
 
 ## Properties
@@ -118,11 +121,12 @@ m1:
 | fill / stroke | `fill blue` · `stroke #f80` · `none` | See colours. No `stroke` on text |
 | colour | `colour amber` | A text shape's colour, or any shape's label |
 | weight | `weight 2` | Stroke thickness × normal; `0` hides it |
-| line style | `solid` · `dashed` · `dotted` | Dashed 3w:3w, dotted 1w:1w. Changes cross-fade |
-| flow | `flow` · `flow-reverse` · `static` | Dashes march along (dashed / dotted only) |
+| line style | `solid` · `dashed` · `dotted` | Dashed 4w:4w, dotted 1w:1.5w. Changes cross-fade |
+| flow | `flow` · `flow-reverse` · `static` | Dashes march along at a steady 2 cells/s (dashed / dotted only). Changing direction or stopping carries on from where the dashes are |
 | angle | `angle 45` | Degrees clockwise, 0 = upright. Not lines |
 | scale | `scale 1.5` | About the centre. Not lines |
-| font | `font 1.5` · `bold` | × normal size |
+| font | `font 1.5` · `bold` · `monospace` | × normal size. `monospace`: the site's code font |
+| arrowhead | `arrow` | Lines and curves (see Shapes) |
 | align | `align left` · `centre` · `right` | Text only |
 | layer | `back` · `normal` · `front` | Within a layer: creation order |
 
@@ -151,9 +155,10 @@ l: to 6,5            # move one end
 l: to +1,+0          # one end, relatively
 l: from a to 9,9     # both ends
 l: move +1,+0        # shift the whole line
+c: via 6,1           # a curve's bend (replaces its via points)
 ```
 
-No `at`, `x`, `y`, angle, scale or absolute `move` on a line.
+No `at`, `x`, `y`, angle, scale or absolute `move` on a line or curve. Shifting a curve moves its free via points too (vias on shapes stay on them).
 
 ## Movement
 
@@ -161,11 +166,11 @@ No `at`, `x`, `y`, angle, scale or absolute `move` on a line.
 a: move 9,3 via 5,1              # curve through a point (a circular arc)
 a: move 9,3 via 3,1 via 6,5      # more points: smooth, sine-like
 a: travel r1 r2 4,3 srv          # straight hops through shapes / points
-a: follow l                      # along line l, from its start
-a: follow-reverse l              # along line l, from its end
+a: follow l                      # along line or curve l, from its start
+a: follow-reverse l              # along line or curve l, from its end
 ```
 
-- `via` / `travel` / `follow` only on an existing shape (not when creating, not on lines).
+- `via` / `travel` / `follow` move an existing shape (not when creating, not on lines). On a curve, `via` is its bend instead (see Shapes).
 - Signed `via` points are relative to the start; signed `travel` stops to the stop before.
 - `travel` eases hop by hop, each hop taking `speed` (4 stops = 4 × speed). `via` and `follow` are one ease.
 
@@ -204,7 +209,9 @@ a: callout "Look!" below       # or left-of / right-of
 a: callout clear
 ```
 
-Callouts stay inside the drawing, and their text wraps at about 24 characters.
+- Emphasis words go on their own, not after `highlight`: `a: glow highlight box` is a one-off glow plus a box, but `a: highlight box glow` is a box plus a lasting glow.
+- Spotlight: shapes outside it dim to 20%, and so do their highlights and callouts.
+- Callouts stay inside the drawing, and their text wraps at about 24 characters.
 
 ## Timing and effects
 
@@ -212,11 +219,14 @@ Callouts stay inside the drawing, and their text wraps at about 24 characters.
 a: move 4,2 speed slow         # instant | vfast | fast | normal | slow | vslow
 a: move 4,2 speed 1.5          # or seconds
 a: fill red delay 1            # wait 1 s before starting
-a: rect at 2,3 pop             # entrance: fade (default) | pop | slide
+a: rect at 2,3 pop             # entrance: fade (default) | pop | slide | typed
 l: arrow from a to b draw      # a line draws itself in
+t: text "$ ls" at 2,1 monospace typed   # types out one character at a time
 a: remove pop                  # exits take the same effects
 ```
 
+- **Intro:** if the first beat uses `typed`, `pop`, `draw`, `slide` or a `delay`, it plays in from nothing when the animation first comes into view, and again after going back to the start (⏮, Home, or a `loop`). The drawing stays empty until then. A first beat with only plain fades is just shown, as is everything for viewers who prefer reduced motion.
+- `typed` types a shape's text out at an even pace over the `speed` (the shape fades in quickly first); as an exit it un-types. Shapes with no text fade.
 - Speeds: instant 0 · vfast 0.25 · fast 0.5 · **normal 1** · slow 2 · vslow 4 s.
 - A bare speed word is an error: write `speed slow`.
 - A beat lasts until its last change ends. Going back plays it exactly in reverse.

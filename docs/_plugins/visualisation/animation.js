@@ -331,6 +331,7 @@
     // Moves to beat `to`: neighbouring beats animate (backwards plays in reverse), jumps are instant.
     function goTo(to, { animate = true } = {}) {
       to = Math.max(0, Math.min(beats.length - 1, to))
+      introPending = false // moving on before it played: no intro (until back at the start)
       if (running) running.finish()
       const from = current
       if (to === from) return Promise.resolve()
@@ -344,10 +345,13 @@
       }
 
       const k = Math.max(from, to)
-      const A = beats[k - 1].state
-      const B = beats[k].state
-      const meta = beats[k].meta
-      const forward = to > from
+      return transition(beats[k - 1].state, beats[k].state, beats[k].meta, to > from,
+        cameraView(beats[k - 1].camera), cameraView(beats[k].camera), to)
+    }
+
+    // Animates from state A to state B (B's beat supplies `meta`), forwards or backwards, then
+    // shows beat `to` as it is. Used between beats, and for the intro (from nothing to beat 1).
+    function transition(A, B, meta, forward, viewA, viewB, to) {
       const final = forward ? B : A
       // Each shape's change runs from its delay to delay + duration; backwards is the exact reverse.
       const durOf = (uid) => meta.tweens.get(uid)?.dur ?? 0
@@ -360,8 +364,6 @@
         return d ? Math.min(1, Math.max(0, after / d)) : after >= 0 ? 1 : 0
       }
       const start = performance.now()
-      const viewA = cameraView(beats[k - 1].camera)
-      const viewB = cameraView(beats[k].camera)
       // `camera travel`: the view's centre eases from stop to stop, an equal share of the time each
       // (stops the edge of the drawing holds back are where the view really goes); its size eases
       // over the whole route. `raw` is the camera's un-eased progress.
@@ -426,9 +428,35 @@
       return go()
     }
 
+    // Jumps straight to a beat; arriving back at the start plays the intro again.
     function jump(index) {
-      ++navId
-      return goTo(index, { animate: false })
+      const token = ++navId
+      return goTo(index, { animate: false }).then(() => (token === navId && index === 0 ? playIntro() : null))
+    }
+
+    // The intro: when the first beat chooses an entrance (typed, pop, draw, slide) or a delay, it
+    // plays in from nothing, the first time the animation comes into view and again after going
+    // back to the start, instead of only ever being shown finished. Plain fades don't (every
+    // animation would fade in as it scrolls into view), nor for viewers who prefer reduced motion.
+    const hasIntro = !reducedMotion() && [...(beats[0]?.meta.tweens.values() || [])]
+      .some((tw) => (tw.enter && tw.enter !== 'fade') || tw.delay > 0)
+    let introPending = hasIntro && 'IntersectionObserver' in window // drawn empty until it plays
+    let intro = null // the intro's promise while it plays
+    function playIntro() {
+      introPending = false
+      if (!hasIntro || current !== 0 || reducedMotion()) return Promise.resolve()
+      if (running) running.finish()
+      const view = cameraView(beats[0].camera)
+      intro = transition(empty, beats[0].state, beats[0].meta, true, view, view, 0)
+      return intro.finally(() => { intro = null })
+    }
+    if (introPending) {
+      const introObserver = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return
+        introObserver.disconnect()
+        if (introPending) playIntro()
+      }, { threshold: 0.3 })
+      introObserver.observe(widget)
     }
 
     function setWaiting(on) {
@@ -463,8 +491,7 @@
       if (atEnd(playDir)) {
         if (opts.loop === 'loop' && last > 0) {
           playDir = 1
-          jump(0)
-          return schedule(holdAfter(0))
+          return startOver()
         }
         if (opts.loop === 'bounce' && last > 0) playDir = -playDir
         else return finished()
@@ -483,13 +510,17 @@
       widget.classList.add('is-playing')
       setButtonLabel(play, 'Pause')
       if (waiting) return schedule(Infinity)
-      if (holdFirst) return schedule(holdAfter(current)) // autoplay: show where it starts first
+      // autoplay: show where it starts first (after the intro, if it's playing)
+      if (holdFirst) return (intro || Promise.resolve()).then(() => { if (playing) schedule(holdAfter(current)) })
       if (opts.loop !== 'bounce') playDir = 1
-      if (!opts.loop && current >= last) {
-        jump(0)
-        return schedule(holdAfter(0))
-      }
+      if (!opts.loop && current >= last) return startOver()
       playNext()
+    }
+
+    // While playing: back to the start (playing the intro, if any), then hold there before going on.
+    function startOver() {
+      clearTimeout(playTimer)
+      jump(0).then(() => { if (playing && current === 0) schedule(holdAfter(0)) })
     }
 
     // Autoplay: only while the animation is on screen and the tab is visible (resuming where it
@@ -582,11 +613,11 @@
     const onThemeChange = () => {
       if (!widget.isConnected) return window.removeEventListener('docsify-theme-change', onThemeChange)
       renderer.clearColours()
-      if (!running) showStatic(current)
+      if (!running) showStatic(introPending ? -1 : current)
     }
     window.addEventListener('docsify-theme-change', onThemeChange)
 
-    showStatic(0)
+    showStatic(introPending ? -1 : 0) // -1: nothing, until the intro plays
     showCaption(0, 0, false)
     updateControls()
   }

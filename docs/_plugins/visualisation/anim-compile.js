@@ -7,7 +7,7 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, FLOWS, resolveEnds, boxCentre, PLACE_GAP,
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, parseAs, lucideIcon,
-    KEYWORDS, NUMBER } = window.Anim
+    KEYWORDS, NUMBER, linePoints } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Compiling scenes into one state per beat
@@ -90,6 +90,8 @@
       if (props.angle) { check(shape, 'angle'); shape.angle = times(props.angle, shape.angle) }
       if (props.scale) { check(shape, 'scale'); shape.scale = Math.max(0, times(props.scale, shape.scale)) }
       if (props.bold) shape.bold = true
+      if (props.mono) shape.mono = true
+      if (props.head) { check(shape, 'head', 'arrow'); shape.head = true }
       if (props.linestyle) {
         check(shape, 'linestyle', props.linestyle)
         shape.linestyle = props.linestyle
@@ -129,6 +131,8 @@
           const ends = resolveEnds(shape, shapes)
           shape.from = { x: coord(props.at.x, ends.from.x), y: coord(props.at.y, ends.from.y) }
           shape.to = { x: coord(props.at.x, ends.to.x), y: coord(props.at.y, ends.to.y) }
+          // a curve's free via points move with it (vias on shapes stay on them)
+          if (shape.via) shape.via = shape.via.map((p) => (p.ref ? p : { x: coord(props.at.x, p.x), y: coord(props.at.y, p.y) }))
         }
         for (const key of ['from', 'to']) {
           const end = props[key]
@@ -137,8 +141,24 @@
           const current = creating ? undefined : resolveEnds(shape, shapes)[key]
           shape[key] = { x: coord(end.x, current?.x), y: coord(end.y, current?.y) }
         }
-        if (creating && (!shape.from || !shape.to)) throw new Error('a line needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"')
-        if (props.via) throw new Error('"via" moves a shape along a curve, so it can\'t be used on a line')
+        if (creating && (!shape.from || !shape.to)) throw new Error(`${shape.type === 'curve' ? 'a curve' : 'a line'} needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"`)
+        if (props.via && shape.type !== 'curve') throw new Error('"via" bends a curve, so it can\'t be used on a line: use "curve" instead (e.g. "c: curve from a to b via 5,2")')
+        if (props.via) {
+          // Via points (replacing any it had): a shape id stays on that shape, a placement is fixed
+          // where it is now, and a signed number is relative to the point before.
+          const point = { type: 'point', x: 0, y: 0, w: 0, h: 0 } // something to place next to a shape
+          const ends = resolveEnds({ ...shape, via: [] }, shapes)
+          let prev = ends.from
+          shape.via = props.via.map((via) => {
+            let p
+            if (via.kind === 'ref') { p = { ref: via.ref }; prev = boxCentre(shapes.get(via.ref)); return p }
+            if (via.kind === 'place') p = placeNextTo(point, shapes.get(via.ref), via.place, PLACE_GAP)
+            else p = { x: coord(via.x, prev.x), y: coord(via.y, prev.y) }
+            prev = p
+            return { x: p.x, y: p.y }
+          })
+        }
+        if (creating && shape.type === 'curve' && !shape.via?.length) warn('a curve with no "via" points is a straight line')
         return null
       }
 
@@ -202,11 +222,12 @@
       if (props.follow) {
         const line = shapes.get(props.follow.ref)
         if (!LINE_TYPES.includes(line.type)) throw new Error(`"${props.follow.ref}" isn't a line or arrow, so it can't be followed`)
-        const ends = resolveEnds(line, shapes)
-        const [a, b] = props.follow.reverse ? [ends.to, ends.from] : [ends.from, ends.to]
-        Object.assign(shape, b)
+        // along the line (a curve's whole path), from the end it starts at
+        const along = linePoints(resolveEnds(line, shapes)).map(({ x, y }) => ({ x, y }))
+        if (props.follow.reverse) along.reverse()
+        Object.assign(shape, along[along.length - 1])
         keepOffset()
-        return buildPolyline([start, a, b])
+        return buildPolyline([start, ...along])
       }
       keepOffset()
       if (!props.via) return null
@@ -268,18 +289,20 @@
     function freezeEndsAttachedTo(id) {
       for (const shape of shapes.values()) {
         if (!LINE_TYPES.includes(shape.type)) continue
-        if (shape.from.ref !== id && shape.to.ref !== id) continue
+        if (shape.from.ref !== id && shape.to.ref !== id && !shape.via?.some((p) => p.ref === id)) continue
         const ends = resolveEnds(shape, shapes)
         if (shape.from.ref === id) shape.from = ends.from
         if (shape.to.ref === id) shape.to = ends.to
+        if (shape.via) shape.via = shape.via.map((p, i) => (p.ref === id ? ends.vias[i] : p))
       }
     }
 
-    // draw only applies to lines and arrows, slide only to shapes; otherwise they fade
+    // draw only applies to lines and arrows, slide only to shapes, typed only to text; otherwise they fade
     function warnEffect(shape, effect, warn) {
       const line = LINE_TYPES.includes(shape.type)
       if (effect === 'draw' && !line) warn(`"draw" only draws lines and arrows, so this ${shape.type} fades instead`)
       if (effect === 'slide' && line) warn(`"slide" doesn't move lines, so this ${shape.type} fades instead`)
+      if (effect === 'typed' && !shape.label) warn(`"typed" types out a shape's text, and this ${shape.type} has none, so it fades instead`)
     }
 
     // Seconds before a line's change starts (the longest delay wins if a shape changes twice in a beat).
@@ -463,7 +486,11 @@
         return
       }
 
-      if (type) {
+      // "l: arrow …" on a line or curve that already exists, with no new ends, puts a head on it
+      // (rather than replacing it with an arrow shape): read as a change, where "arrow" is the flag
+      const addsHead = type === 'arrow' && existing && LINE_TYPES.includes(existing.type)
+        && !tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
+      if (type && !addsHead) {
         const props = parseProps(tokens, 1, 'create', shapes)
         const shape = { ...baseShape(type), id, uid: ++uid }
         applyDefaults(shape)

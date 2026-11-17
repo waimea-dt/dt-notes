@@ -6,7 +6,11 @@
 ;(function () {
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
-    CELL, ease, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH } = window.Anim
+    CELL, ease, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
+    MONO_FONT } = window.Anim
+
+  // An arrowhead's strength (0-1): arrows have one, and lines or curves given "arrow"
+  const headOf = (shape) => (shape.type === 'arrow' || shape.head ? 1 : 0)
 
   // ---------------------------------------------------------------------------
   // SVG rendering
@@ -72,8 +76,9 @@
       if (shape.type === 'rect') node.body = g.appendChild(svgEl('rect'))
       if (shape.type === 'circle') node.body = g.appendChild(svgEl('circle'))
       if (LINE_TYPES.includes(shape.type)) {
-        node.body = g.appendChild(svgEl('line', { 'stroke-linecap': 'round' }))
-        if (shape.type === 'arrow') node.head = g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))
+        // one path for lines, arrows and curves; every line has a head, hidden unless it has one
+        node.body = g.appendChild(svgEl('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' }))
+        node.head = g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))
       }
       if (shape.type === 'image') {
         node.image = g.appendChild(svgEl('image', { href: shape.src, preserveAspectRatio: 'xMidYMid meet' }))
@@ -118,6 +123,22 @@
     }
     const paint = (el, prop, value) => { if (el.style[prop] !== value) el.style[prop] = value }
 
+    // A shape's text. While it's being typed (typed: 0-1, the share of characters shown) the rest
+    // is laid out but hidden, so the text doesn't shift as it grows, whatever its alignment.
+    function setLabel(node, text, typed) {
+      const chars = [...(text || '')]
+      const shown = typed === undefined ? -1 : Math.round(chars.length * clamp01(typed))
+      const key = `${shown}|${text}`
+      if (node.labelKey === key) return
+      node.labelKey = key
+      if (shown < 0) { node.label.textContent = text; return }
+      const before = svgEl('tspan')
+      const after = svgEl('tspan', { visibility: 'hidden' })
+      before.textContent = chars.slice(0, shown).join('')
+      after.textContent = chars.slice(shown).join('')
+      node.label.replaceChildren(before, after)
+    }
+
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
     function drawNode(node, s, v, colours, byId) {
       const { g } = node
@@ -155,7 +176,7 @@
           flowState.set(node.ghost, { key: '', shift: flowState.get(body)?.shift || 0 })
         }
         const ghost = node.ghost
-        for (const name of ['x', 'y', 'width', 'height', 'rx', 'ry', 'r', 'x1', 'y1', 'x2', 'y2']) {
+        for (const name of ['x', 'y', 'width', 'height', 'rx', 'ry', 'r', 'd']) {
           const value = body.getAttribute(name)
           attr(ghost, name, value)
         }
@@ -214,39 +235,52 @@
       const fontSize = FONT * s.font
       node.label.style.fontSize = `${fontSize}px`
       node.label.style.fontWeight = s.bold ? '700' : ''
+      paint(node.label, 'fontFamily', s.mono ? MONO_FONT : '')
       node.label.style.opacity = v.labelOpacity
       paint(node.label, 'fill', colours.colour) // a text shape's colour, or any shape's label
-      if (node.label.textContent !== v.label) node.label.textContent = v.label
+      setLabel(node, v.label, v.typed)
 
       if (LINE_TYPES.includes(node.type)) {
-        let { from, to } = resolveEnds(s, byId)
-        if (v.ends) ({ from, to } = v.ends)
+        const ends = v.ends || resolveEnds(s, byId)
         // dashBase: a line from a shape starts its pattern at the shape's centre, not its edge, so
         // the dashes stay put while the edge point slides round the shape as the other end moves
         const fromShape = s.from?.ref && byId.get(s.from.ref)
-        const dashBase = fromShape ? Math.hypot(from.x - boxCentre(fromShape).x, from.y - boxCentre(fromShape).y) : 0
-        from = { x: from.x + v.dx, y: from.y + v.dy }
-        to = { x: to.x + v.dx, y: to.y + v.dy }
-        const len = Math.hypot(to.x - from.x, to.y - from.y)
-        const ux = len ? (to.x - from.x) / len : 0
-        const uy = len ? (to.y - from.y) / len : 0
-        let end = to
-        if (node.head) {
-          const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), len * 0.6)
-          const back = { x: to.x - ux * head, y: to.y - uy * head }
+        const dashBase = fromShape ? Math.hypot(ends.from.x - boxCentre(fromShape).x, ends.from.y - boxCentre(fromShape).y) : 0
+        // The points it's drawn through (a curve's smooth path), with the distance along to each
+        const pts = linePoints(ends).map((p) => ({ x: p.x + v.dx, y: p.y + v.dy }))
+        const along = [0]
+        for (let i = 1; i < pts.length; i++) along.push(along[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y))
+        const total = along[along.length - 1]
+        const pointAt = (d) => {
+          let i = 1
+          while (i < pts.length - 1 && along[i] < d) i++
+          const span = along[i] - along[i - 1]
+          const k = span ? clamp01((d - along[i - 1]) / span) : 0
+          return { x: lerp(pts[i - 1].x, pts[i].x, k), y: lerp(pts[i - 1].y, pts[i].y, k) }
+        }
+        const pathTo = (d) => [...pts.filter((_, i) => along[i] < d), pointAt(d)]
+
+        // The head (fading in or out as it's added or taken off) sits on the end, or on the tip
+        // while drawing in; the stroke stops at its back.
+        let bodyLen = total
+        if (v.head) {
+          const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
+          const reach = total * v.draw
+          const tip = pointAt(reach)
+          const behind = pointAt(Math.max(0, reach - head))
+          const dl = Math.hypot(tip.x - behind.x, tip.y - behind.y)
+          const last = pts[pts.length - 2] || pts[0]
+          const [ux, uy] = dl > 1e-6 ? [(tip.x - behind.x) / dl, (tip.y - behind.y) / dl] : [Math.sign(tip.x - last.x), Math.sign(tip.y - last.y)]
+          const base = { x: tip.x - ux * head, y: tip.y - uy * head }
           const half = head * 0.55
-          const drawn = { x: from.x + (to.x - from.x) * v.draw, y: from.y + (to.y - from.y) * v.draw }
-          const tip = v.draw < 1 ? drawn : to
-          const base = v.draw < 1 ? { x: tip.x - ux * head, y: tip.y - uy * head } : back
           attr(node.head, 'points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
-          node.head.style.opacity = clamp01(v.draw * 4 - 0.2)
           node.head.style.strokeWidth = strokeWidth
           paint(node.head, 'fill', colours.stroke)
           paint(node.head, 'stroke', colours.stroke)
-          end = back
+          bodyLen = total - head * v.head
         }
-        attr(node.body, 'x1', from.x); attr(node.body, 'y1', from.y)
-        attr(node.body, 'x2', end.x); attr(node.body, 'y2', end.y)
+        node.head.style.opacity = v.head ? clamp01(v.draw * 4 - 0.2) * v.head : 0
+        attr(node.body, 'd', `M ${pathTo(bodyLen).map((p) => `${p.x} ${p.y}`).join(' L ')}`)
         node.body.style.strokeWidth = strokeWidth
         if (v.draw < 1) {
           setFlow(node.body) // off while drawing in
@@ -262,13 +296,12 @@
           syncGhost(node.body, dashBase)
         }
         paint(node.body, 'stroke', colours.stroke)
-        const mx = (from.x + to.x) / 2
-        const my = (from.y + to.y) / 2
+        const { x: mx, y: my } = pointAt(total / 2) // the label sits halfway along
         attr(node.label, 'x', mx); attr(node.label, 'y', my)
         attr(node.label, 'text-anchor', 'middle')
         node.label.classList.add('anim-halo')
         attr(g, 'transform', v.scale === 1 && !v.rot ? '' : `translate(${mx} ${my}) rotate(${v.rot || 0}) scale(${v.scale}) translate(${-mx} ${-my})`)
-        if (node.debugId) { attr(node.debugId, 'x', from.x); attr(node.debugId, 'y', from.y); node.debugId.textContent = s.id }
+        if (node.debugId) { attr(node.debugId, 'x', pts[0].x); attr(node.debugId, 'y', pts[0].y); node.debugId.textContent = s.id }
         return
       }
 
@@ -355,12 +388,16 @@
       return options.sort((a, b) => a.d - b.d)[0]
     }
 
-    // Visibility for a shape that is appearing (t: 0 -> 1) or disappearing (t: 1 -> 0).
-    function appear(effect, t, shape) {
+    // Visibility for a shape that is appearing (t: 0 -> 1) or disappearing (t: 1 -> 0); `raw` is
+    // the same without easing.
+    function appear(effect, t, shape, raw = t) {
       const v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
       const isLine = LINE_TYPES.includes(shape.type)
       if (effect === 'pop') { v.scale = Math.max(0.001, t); v.opacity = clamp01(t * 3) }
       else if (effect === 'draw' && isLine) v.draw = t
+      // typed: the shape fades in quickly and its text types out at an even pace, one character
+      // at a time (and un-types on the way out)
+      else if (effect === 'typed' && shape.label) { v.opacity = clamp01(raw * 6); v.typed = raw }
       else if (effect === 'slide' && !isLine) {
         const off = offscreenOffset(shape)
         v.dx = off.dx * (1 - t); v.dy = off.dy * (1 - t)
@@ -451,11 +488,13 @@
           if (oneoff === 'glow') v.glow = Math.sin(Math.PI * raw)
         } else if (b) {
           shape = b
-          v = appear(tw?.enter || 'fade', t, b)
+          v = appear(tw?.enter || 'fade', t, b, raw)
         } else {
           shape = a
-          v = appear(tw?.exit || 'fade', 1 - t, a)
+          v = appear(tw?.exit || 'fade', 1 - t, a, 1 - raw)
         }
+        // an arrowhead fades in or out as it's added to or taken off a line
+        v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
         v.label ??= shape.label
         v.labelOpacity ??= 1
         const node = nodes.get(uid) || makeNode(shape)
@@ -486,10 +525,11 @@
         if (!LINE_TYPES.includes(item.shape.type) || !item.a || !item.b) continue
         const ea = resolveEnds(item.a, now)
         const eb = resolveEnds(item.b, now)
-        item.v.ends = {
-          from: { x: lerp(ea.from.x, eb.from.x, item.t), y: lerp(ea.from.y, eb.from.y, item.t) },
-          to: { x: lerp(ea.to.x, eb.to.x, item.t), y: lerp(ea.to.y, eb.to.y, item.t) },
-        }
+        const mix = (p, q) => ({ x: lerp(p.x, q.x, item.t), y: lerp(p.y, q.y, item.t) })
+        // A curve's via points blend too, when it has the same number before and after; otherwise
+        // the new ones are used throughout (straightening from or bending to them as the ends move)
+        const vias = ea.vias.length === eb.vias.length ? eb.vias.map((q, i) => mix(ea.vias[i], q)) : eb.vias
+        item.v.ends = { from: mix(ea.from, eb.from), to: mix(ea.to, eb.to), vias }
       }
       for (const [uid, node] of nodes) {
         if (!uids.has(uid)) {
