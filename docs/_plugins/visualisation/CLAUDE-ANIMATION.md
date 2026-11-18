@@ -69,6 +69,7 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 
 - **Context matters for some words.** `normal` is a value after `speed`, and the layer param elsewhere. `arrow` is a type after `id:`, a value after `highlight`, and a param elsewhere. `clear` / `reset` are params on `defaults` / `camera` lines.
 - **The Markdown preview** (`preview.js`) highlights from the same grammar, mapping scopes to highlight.js classes.
+- **Error marks** (`diagnostics.js`) come from the engine itself, not the grammar. The extension loads `anim-core`, `anim-parse` and `anim-compile` from the repo into a Node sandbox (no DOM), so keep those three loadable without a browser. It relies on these engine functions: `findBlocks` (blocks with their tag lines), `splitBlock` (steps and beats, with `sceneLines` mapping each scene line to its block line), `parseAttrs`, `viewBoxFor`, and the `issues` that `compile` returns (`{ error, step, beat, line, message }`). A mark goes on the last quoted word in the message that's on the line, so quote the offending word as typed.
 - **To install after a grammar change:** run, from `vscode/anim-syntax/`, `npx --yes @vscode/vsce@3 package --allow-missing-repository --out "$TEMP/anim-syntax.vsix"`. Then `code --install-extension "$TEMP/anim-syntax.vsix" --force`, then reload the window.
 
 ## Checking a change

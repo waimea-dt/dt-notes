@@ -1091,19 +1091,25 @@
     const beats = []
     const errors = []
     const warnings = []
+    // the same, with where each is (step, beat, and line in the beat's scene), for an editor
+    const issues = []
 
     steps.forEach((step, si) => {
       step.beats.forEach((beat, bi) => {
         const meta = { tweens: new Map(), pause: null, auto: false }
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
         logicalLines(beat.scene).forEach(({ text, li }) => {
-          const warn = (message) => warnings.push(`${where(li)}: ${message}`)
+          const warn = (message) => {
+            warnings.push(`${where(li)}: ${message}`)
+            issues.push({ error: false, step: si, beat: bi, line: li, message })
+          }
           try {
             if (runTimingLine(text, meta)) return
             compiler.runLine(text, meta, warn)
             compiler.settle()
           } catch (error) {
             errors.push(`${where(li)}: ${error.message} — "${text}"`)
+            issues.push({ error: true, step: si, beat: bi, line: li, message: error.message })
           }
         })
         const state = new Map([...compiler.shapes].map(([id, shape]) => [id, structuredClone(shape)]))
@@ -1111,7 +1117,7 @@
       })
     })
 
-    return { beats, errors, warnings }
+    return { beats, errors, warnings, issues }
   }
 
   Object.assign(window.Anim, { compile })

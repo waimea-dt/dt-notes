@@ -19,43 +19,55 @@
   const SOURCE_BLOCK = /<div class="anim-source"[\s\S]*?<!-- \/animation -->/g
   const HEADING_ANCHOR = /<(h[1-6]) id="[^"]*" tabindex="-1"><a href="[^"]*" data-id="[^"]*" class="anchor">([\s\S]*?)<\/a><\/\1>/g
 
-  // Calls visit(line, inCode, fenceInfo) for each line; fence lines and lines inside a fence are code.
+  // Calls visit(line, inCode, fenceInfo, i) for each line (a string, or an item { text, i }); fence
+  // lines and lines inside a fence are code.
   function scanLines(lines, visit) {
     let fence = null
     let info = ''
-    lines.forEach((line) => {
-      const match = line.match(FENCE)
+    lines.forEach((line, i) => {
+      const match = (typeof line === 'string' ? line : line.text).match(FENCE)
       const wasInFence = Boolean(fence)
       const opening = match && !fence
       const closing = match && fence && match[1][0] === fence[0] && match[1].length >= fence.length && !match[2].trim()
       if (opening) { fence = match[1]; info = match[2].trim() }
-      visit(line, wasInFence || Boolean(match), { opening, closing, inside: wasInFence && !closing, info })
+      visit(line, wasInFence || Boolean(match), { opening, closing, inside: wasInFence && !closing, info }, i)
       if (closing) fence = null
     })
   }
 
-  // Splits lines at whole-line markers outside code: n markers give n + 1 chunks of lines.
-  function splitAtMarker(lines, marker) {
+  // Splits items ({ text, i }) at whole-line markers outside code: n markers give n + 1 chunks.
+  function splitAtMarker(items, marker) {
     const chunks = [[]]
-    scanLines(lines, (line, inCode) => {
-      if (!inCode && marker.test(line)) chunks.push([])
-      else chunks[chunks.length - 1].push(line)
+    scanLines(items, (item, inCode) => {
+      if (!inCode && marker.test(item.text)) chunks.push([])
+      else chunks[chunks.length - 1].push(item)
     })
     return chunks
   }
 
-  // Removes ```anim fences from a beat, returning the caption lines and the scene text.
-  function extractScene(lines) {
+  // Takes the ```anim fences out of a beat's items: its caption lines, and its scene text with the
+  // index (in the block) of each scene line.
+  function extractScene(items) {
     const caption = []
     const scene = []
     let inScene = false
-    scanLines(lines, (line, _inCode, fence) => {
+    scanLines(items, (item, _inCode, fence) => {
       if (fence.opening && fence.info === 'anim') { inScene = true; return }
       if (inScene && fence.closing) { inScene = false; return }
-      if (inScene) scene.push(line)
-      else caption.push(line)
+      if (inScene) scene.push(item)
+      else caption.push(item.text)
     })
-    return { caption, scene: scene.join('\n') }
+    return { caption, scene: scene.map((item) => item.text).join('\n'), sceneLines: scene.map((item) => item.i) }
+  }
+
+  // A block's lines as steps, each with its beats ({ caption, scene, sceneLines }: sceneLines[k]
+  // is the block line that scene line k came from) and its teacher notes. Used for the page, and
+  // by the VS Code extension to put its error marks on the right lines.
+  function splitBlock(lines) {
+    return splitAtMarker(lines.map((text, i) => ({ text, i })), MARKERS.step).map((stepItems) => {
+      const [content, ...notes] = splitAtMarker(stepItems, MARKERS.note)
+      return { beats: splitAtMarker(content, MARKERS.beat).map(extractScene), notes: notes.flat().map((item) => item.text) }
+    })
   }
 
   // Step headings are not page headings: keep them out of the sidebar's sub-menu.
@@ -90,15 +102,13 @@
     }
     const images = new Set()
 
-    const steps = splitAtMarker(lines, MARKERS.step).map((stepLines) => {
-      const [content, ...notes] = splitAtMarker(stepLines, MARKERS.note)
-      const beats = splitAtMarker(content, MARKERS.beat).map((beatLines) => {
-        const { caption, scene } = extractScene(beatLines)
+    const steps = splitBlock(lines).map(({ beats, notes }) => {
+      const beatBlocks = beats.map(({ caption, scene }) => {
         for (const match of scene.matchAll(/\bimage\(([^)]*)\)/g)) images.add(match[1].trim())
         return wrap(`<div class="anim-src-beat" data-scene="${attr(scene)}">`, excludeHeadingsFromToc(caption).join('\n').trim(), '</div>')
       })
-      const notesBlock = notes.length ? wrap('<div class="anim-src-notes">', notes.flat().join('\n').trim(), '</div>') : ''
-      return wrap('<div class="anim-src-step">', [...beats, notesBlock].filter(Boolean).join('\n\n'), '</div>')
+      const notesBlock = notes.length ? wrap('<div class="anim-src-notes">', notes.join('\n').trim(), '</div>') : ''
+      return wrap('<div class="anim-src-step">', [...beatBlocks, notesBlock].filter(Boolean).join('\n\n'), '</div>')
     })
 
     // Images go through Docsify as Markdown images, so their paths resolve exactly as ![](…) does.
@@ -111,26 +121,35 @@
     return `\n\n${wrap(open, [...steps, assets].filter(Boolean).join('\n\n'), '</div>')}\n${SOURCE_END}\n\n`
   }
 
+  // The <animation> blocks in a page's lines, outside code fences: { attrs, start, end, lines },
+  // start and end the indexes of the opening and closing tag lines (an unclosed block runs to the
+  // end of the page: end is the line count).
+  function findBlocks(lines) {
+    const blocks = []
+    let block = null
+    scanLines(lines, (line, inCode, _fence, i) => {
+      if (block) {
+        if (!inCode && CLOSE_TAG.test(line)) { block.end = i; blocks.push(block); block = null }
+        else block.lines.push(line)
+        return
+      }
+      const open = !inCode && line.match(OPEN_TAG)
+      if (open) block = { attrs: open[1], start: i, end: lines.length, lines: [] }
+    })
+    if (block) blocks.push(block)
+    return blocks
+  }
+
   // Rewrites every <animation> block that is outside a code fence.
   function rewriteBlocks(markdown) {
     const lines = markdown.split('\n')
     const out = []
-    let block = null
-    scanLines(lines, (line, inCode) => {
-      if (block) {
-        if (!inCode && CLOSE_TAG.test(line)) {
-          out.push(buildSource(block.attrs, block.lines))
-          block = null
-        } else {
-          block.lines.push(line)
-        }
-        return
-      }
-      const open = !inCode && line.match(OPEN_TAG)
-      if (open) block = { attrs: open[1], lines: [] }
-      else out.push(line)
-    })
-    if (block) out.push(buildSource(block.attrs, block.lines)) // unclosed: run to the end of the page
+    let at = 0
+    for (const block of findBlocks(lines)) {
+      out.push(...lines.slice(at, block.start), buildSource(block.attrs, block.lines))
+      at = block.end + 1
+    }
+    out.push(...lines.slice(at))
     return out.join('\n')
   }
 
@@ -255,6 +274,6 @@
     return props
   }
 
-  Object.assign(window.Anim, { HEX, ID, NUMBER, parseAs, parseProps, rewriteBlocks,
+  Object.assign(window.Anim, { HEX, ID, NUMBER, findBlocks, parseAs, parseAttrs, parseProps, rewriteBlocks, splitBlock,
     stripHeadingAnchors, tokenize })
 })()

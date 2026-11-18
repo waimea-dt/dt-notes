@@ -20,3 +20,4 @@ Then run **Developer: Reload Window** in VS Code. Repeat after editing the gramm
 - `language-configuration.json`: `#` comments (Ctrl+/), quote and bracket pairs
 - `preview.js`: highlighting in the Markdown preview (which uses highlight.js, not the editor's grammars): ```` ```anim ```` fences, including ones inside ```` ```markdown ```` examples, highlighted from the same grammar with highlight.js class names
 - `extension.js`: colour swatches for named colours after `fill` / `stroke` / `colour` (dark-theme values; picking a colour writes a hex code)
+- `diagnostics.js`: error and warning squiggles (and the Problems panel). Each animation is compiled by the real engine, loaded from the repo's `docs/_plugins/visualisation/`, so the marks are exactly the errors the page lists under an animation, plus its warnings. They update as you type. The engine is reloaded when its files are saved. Files outside this repo get no marks; icon names aren't checked.
