@@ -55,9 +55,49 @@
   const SIGNALS = { signal: 'signal', 'signal-reverse': 'signal-reverse' } // one-off blips along a line
   const CALLOUT_CH = 24 // callout text wraps at about this many characters
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
-  const SHAPE_TYPES = ['rect', 'circle', 'diamond', 'text', 'line', 'arrow', 'curve']
-  const RESOURCE_TYPES = ['image', 'icon']
-  const LINE_TYPES = ['line', 'arrow', 'curve'] // a curve is a line bent through via points
+  // Every shape type, in one place:
+  //   takes     the props it takes (APPLIES, prop -> types, is worked out from these)
+  //   defaults  its own starting values, on top of every shape's (baseShape)
+  //   outline   its edge, for line ends, highlights and bounds: 'box' (a rect, rounded by its
+  //             corner if it takes one), 'round' (radius r) or 'diamond'
+  //   label     where its label goes: 'centre', 'content' (text: the label is the shape, measured),
+  //             'below' (image, icon: it adds to the shape's height) or 'along' (lines)
+  //   inside    it has an inside to highlight (highlight inside)
+  //   line      it runs from / to (a curve is a line bent through via points); head: an arrowhead
+  //   resource  written type(arg): image(path), icon(name)
+  const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
+  const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
+  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
+  const SHAPES = {
+    rect: {
+      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow'],
+      defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg' }, outline: 'box', label: 'centre', inside: true,
+    },
+    circle: {
+      takes: [...BOXED_PROPS, 'size', 'radius', 'fill', 'stroke', 'linestyle', 'flow'],
+      defaults: { r: CELL / 2, fill: 'bg' }, outline: 'round', label: 'centre', inside: true,
+    },
+    diamond: {
+      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'fill', 'stroke', 'linestyle', 'flow'],
+      defaults: { w: CELL, h: CELL, fill: 'bg' }, outline: 'diamond', label: 'centre', inside: true,
+    },
+    text: { takes: [...BOXED_PROPS, 'align'], defaults: { w: 0, h: 0 }, outline: 'box', label: 'content' },
+    image: {
+      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'stroke', 'linestyle', 'flow'],
+      defaults: { w: CELL, h: CELL, stroke: 'none' }, outline: 'box', label: 'below', inside: true, resource: true,
+    },
+    icon: {
+      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'stroke'],
+      defaults: { w: CELL, h: CELL }, outline: 'box', label: 'below', inside: true, resource: true,
+    },
+    line: { takes: LINE_PROPS, label: 'along', line: true },
+    arrow: { takes: LINE_PROPS, label: 'along', line: true, head: true },
+    curve: { takes: LINE_PROPS, label: 'along', line: true },
+  }
+  const typesWhere = (test) => Object.keys(SHAPES).filter((type) => test(SHAPES[type]))
+  const SHAPE_TYPES = typesWhere((kind) => !kind.resource) // written as a word after "id:"
+  const RESOURCE_TYPES = typesWhere((kind) => kind.resource)
+  const LINE_TYPES = typesWhere((kind) => kind.line)
   const LAYOUT_TYPES = ['row', 'column'] // a group of cells, laid out side by side or one under another
 
   // ease <name>: how a change speeds up and slows down (t: 0-1 of its time -> 0-1 of the way).
@@ -94,24 +134,9 @@
   // Named colours used as a fill are tinted towards the background, so labels stay readable.
   const PLAIN_FILLS = ['fg', 'bg', 'black', 'white', 'none']
 
-  // Which properties each shape type accepts.
-  const ALL = [...SHAPE_TYPES, ...RESOURCE_TYPES]
-  const BOXED = ['rect', 'circle', 'diamond', 'text', 'image', 'icon']
-  const APPLIES = {
-    at: BOXED, x: BOXED, y: BOXED,
-    from: LINE_TYPES, to: LINE_TYPES,
-    size: ['rect', 'circle', 'diamond', 'image', 'icon'],
-    radius: ['circle'],
-    corner: ['rect'], // corner radius
-    fill: ['rect', 'circle', 'diamond'],
-    stroke: ['rect', 'circle', 'diamond', ...LINE_TYPES, 'image', 'icon'], colour: ALL, weight: ALL, font: ALL, bold: ALL, mono: ALL,
-    width: ['rect', 'diamond', 'image', 'icon'], height: ['rect', 'diamond', 'image', 'icon'],
-    angle: BOXED, scale: BOXED,
-    align: ['text'],
-    linestyle: ['rect', 'circle', 'diamond', ...LINE_TYPES, 'image'], // solid | dashed | dotted
-    flow: ['rect', 'circle', 'diamond', ...LINE_TYPES, 'image'], // dashes/dots march along the stroke
-    head: LINE_TYPES, // an arrowhead on the end
-  }
+  // Which shape types each prop applies to (from SHAPES' takes)
+  const APPLIES = {}
+  for (const [type, kind] of Object.entries(SHAPES)) for (const key of kind.takes) (APPLIES[key] ||= []).push(type)
 
   // How each look prop is applied to a shape (applyLook, in this order, after size):
   //   field  the shape field it sets
@@ -369,17 +394,19 @@
     return width
   }
 
-  // Half-width and half-height of a shape's box (text is measured).
+  // A shape's type entry (a group, or a point to place beside, has none: it's a plain box)
+  const kindOf = (shape) => SHAPES[shape.type] || {}
+
+  // Half-width and half-height of a shape's box, with its outline (round, diamond) for the edge
+  // maths. A shape whose label is its content (text) is as big as the text, measured.
   function extents(shape) {
-    switch (shape.type) {
-      case 'circle': return { hw: shape.r, hh: shape.r, round: true }
-      case 'diamond': return { hw: shape.w / 2, hh: shape.h / 2, diamond: true }
-      case 'text': {
-        const size = FONT * shape.font
-        return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
-      }
-      default: return { hw: shape.w / 2, hh: shape.h / 2 }
+    const kind = kindOf(shape)
+    if (kind.outline === 'round') return { hw: shape.r, hh: shape.r, round: true }
+    if (kind.label === 'content') {
+      const size = FONT * shape.font
+      return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
     }
+    return { hw: shape.w / 2, hh: shape.h / 2, diamond: kind.outline === 'diamond' || undefined }
   }
 
   // Half-sizes after `scale` (still in the shape's own, unrotated frame).
@@ -403,13 +430,13 @@
   // middle); align left/right anchors text to that side of its cell.
   function boxCentre(shape) {
     if (shape.cx !== undefined) return { x: shape.x + shape.cx, y: shape.y + shape.cy }
-    if (shape.type !== 'text' || shape.align === 'centre') return { x: shape.x, y: shape.y }
+    if (!APPLIES.align.includes(shape.type) || shape.align === 'centre') return { x: shape.x, y: shape.y }
     const { hw } = sized(shape)
     return { x: shape.align === 'left' ? shape.x - CELL / 2 + hw : shape.x + CELL / 2 - hw, y: shape.y }
   }
 
-  // Extra height under an image or icon taken up by its label.
-  const labelBelow = (shape) => (['image', 'icon'].includes(shape.type) && shape.label ? FONT * shape.font * 1.3 * (shape.scale ?? 1) : 0)
+  // Extra height taken up by a label below its shape (an image or icon).
+  const labelBelow = (shape) => (kindOf(shape).label === 'below' && shape.label ? FONT * shape.font * 1.3 * (shape.scale ?? 1) : 0)
 
   function placeNextTo(self, other, place, gap) {
     const a = outline(self)
@@ -697,7 +724,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
     FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

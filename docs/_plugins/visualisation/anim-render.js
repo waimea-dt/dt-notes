@@ -7,14 +7,14 @@
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
-    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED } = window.Anim
+    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
   const LABEL_LIFT = 0.07
 
   // An arrowhead's strength (0-1): arrows have one, and lines or curves given "arrow"
-  const headOf = (shape) => (shape.type === 'arrow' || shape.head ? 1 : 0)
+  const headOf = (shape) => (SHAPES[shape.type]?.head || shape.head ? 1 : 0)
 
   // ---------------------------------------------------------------------------
   // SVG rendering
@@ -79,28 +79,14 @@
     function makeNode(shape) {
       const g = svgEl('g', { class: `anim-shape anim-${shape.type}` })
       const node = { g, type: shape.type, uid: shape.uid }
-      if (shape.type === 'rect') node.body = g.appendChild(svgEl('rect'))
-      if (shape.type === 'circle') node.body = g.appendChild(svgEl('circle'))
-      if (shape.type === 'diamond') node.body = g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))
       if (LINE_TYPES.includes(shape.type)) {
         // one path for lines, arrows and curves; every line has a head, hidden unless it has one
         node.body = g.appendChild(svgEl('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' }))
         node.head = g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))
       }
-      if (shape.type === 'image') {
-        node.image = g.appendChild(svgEl('image', { href: shape.src, preserveAspectRatio: 'xMidYMid meet' }))
-        node.body = g.appendChild(svgEl('rect', { fill: 'none' }))
-      }
-      if (shape.type === 'icon') {
-        node.icon = window.lucide.createElement(lucideIcon(shape.icon))
-        attr(node.icon, 'class', 'no-zoom') // the zoom plugin also attaches to nested SVGs
-        g.appendChild(node.icon)
-      }
+      BODIES[shape.type]?.make(node, shape)
       node.label = g.appendChild(svgEl('text', { class: 'anim-label', 'dominant-baseline': 'central' }))
-      if (['image', 'icon'].includes(shape.type)) {
-        const title = g.appendChild(svgEl('title'))
-        node.title = title
-      }
+      if (kindOf(shape).resource) node.title = g.appendChild(svgEl('title')) // an image's / icon's alt text
       if (debug) node.debugId = g.appendChild(svgEl('text', { class: 'anim-debug-id' }))
       nodes.set(shape.uid, node)
       return node
@@ -129,6 +115,51 @@
       return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(bl)}, ${al.toFixed(3)})`
     }
     const paint = (el, prop, value) => { if (el.style[prop] !== value) el.style[prop] = value }
+
+    // How each boxed shape type is drawn (lines: in drawNode). make adds its elements to the node
+    // (node.body, when it has one, takes the stroke, and the fill if its type takes fill); size
+    // sets them to the shape's half-sizes each frame. edge: false, its stroke is its drawing, not an
+    // edge round it (an icon), so an inside highlight needn't clear it.
+    const setBox = (el, hw, hh) => { attr(el, 'x', -hw); attr(el, 'y', -hh); attr(el, 'width', 2 * hw); attr(el, 'height', 2 * hh) }
+    const BODIES = {
+      rect: {
+        make: (node) => { node.body = node.g.appendChild(svgEl('rect')) },
+        size: (node, s, hw, hh) => {
+          setBox(node.body, hw, hh)
+          const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
+          attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
+        },
+      },
+      circle: {
+        make: (node) => { node.body = node.g.appendChild(svgEl('circle')) },
+        size: (node, s) => attr(node.body, 'r', s.r),
+      },
+      diamond: {
+        make: (node) => { node.body = node.g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' })) },
+        size: (node, s, hw, hh) => attr(node.body, 'points', `0,${-hh} ${hw},0 0,${hh} ${-hw},0`),
+      },
+      text: { make: () => {}, size: () => {} },
+      image: {
+        make: (node, shape) => {
+          node.image = node.g.appendChild(svgEl('image', { href: shape.src, preserveAspectRatio: 'xMidYMid meet' }))
+          node.body = node.g.appendChild(svgEl('rect', { fill: 'none' }))
+        },
+        size: (node, s, hw, hh) => { setBox(node.image, hw, hh); setBox(node.body, hw, hh) },
+      },
+      icon: {
+        make: (node, shape) => {
+          node.icon = window.lucide.createElement(lucideIcon(shape.icon))
+          attr(node.icon, 'class', 'no-zoom') // the zoom plugin also attaches to nested SVGs
+          node.g.appendChild(node.icon)
+        },
+        size: (node, s, hw, hh, colours) => {
+          setBox(node.icon, hw, hh)
+          attr(node.icon, 'stroke-width', 2 * s.weight)
+          paint(node.icon, 'stroke', colours.stroke)
+        },
+        edge: false,
+      },
+    }
 
     // A shape's text. While it's being typed (typed: 0-1, the share of characters shown) the rest
     // is laid out but hidden, so the text doesn't shift as it grows, whatever its alignment.
@@ -231,7 +262,7 @@
       g.style.opacity = v.opacity
       // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
       // (the highlight colour if it has none); highlight glow (v.hlGlow) the highlight colour.
-      const glowColour = (node.type === 'text' ? colours.colour : colours.stroke)
+      const glowColour = kindOf(s).label === 'content' ? colours.colour : colours.stroke // text glows its own colour
       const halo = (k, colour) => `drop-shadow(0 0 ${0.15 * CELL * k}px ${colour})`
       const filters = []
       const bright = Math.max(v.glow || 0, v.hlGlow || 0)
@@ -310,53 +341,29 @@
       attr(g, 'transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle + (v.rot || 0)}) scale(${v.scale * s.scale})`)
       const { hw, hh } = extents(s)
 
-      if (node.type === 'rect') {
-        attr(node.body, 'x', -hw); attr(node.body, 'y', -hh)
-        attr(node.body, 'width', 2 * hw); attr(node.body, 'height', 2 * hh)
-        const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
-        attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
-      }
-      if (node.type === 'circle') attr(node.body, 'r', s.r)
-      if (node.type === 'diamond') attr(node.body, 'points', `0,${-hh} ${hw},0 0,${hh} ${-hw},0`)
-      if (['rect', 'circle', 'diamond'].includes(node.type)) {
-        paint(node.body, 'fill', colours.fill)
+      BODIES[node.type].size(node, s, hw, hh, colours)
+      if (node.body) {
+        if (APPLIES.fill.includes(node.type)) paint(node.body, 'fill', colours.fill)
         paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
         node.body.style.strokeLinecap = cap
         setFlow(node.body)
         syncGhost(node.body)
-      }
-      if (node.type === 'image') {
-        for (const el of [node.image, node.body]) {
-          attr(el, 'x', -hw); attr(el, 'y', -hh)
-          attr(el, 'width', 2 * hw); attr(el, 'height', 2 * hh)
-        }
-        paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
-        node.body.style.strokeWidth = strokeWidth
-        node.body.style.strokeDasharray = dash
-        node.body.style.strokeLinecap = cap
-        setFlow(node.body)
-        syncGhost(node.body)
-      }
-      if (node.type === 'icon') {
-        attr(node.icon, 'x', -hw); attr(node.icon, 'y', -hh)
-        attr(node.icon, 'width', 2 * hw); attr(node.icon, 'height', 2 * hh)
-        attr(node.icon, 'stroke-width', 2 * s.weight)
-        paint(node.icon, 'stroke', colours.stroke)
       }
       if (node.title && node.title.textContent !== s.label) node.title.textContent = s.label
 
-      // Label: inside rect/circle, the content of text, under image/icon
+      // Label: where its type puts it (SHAPES): in the middle, below, or (text) the shape itself
       const label = node.label
+      const place = kindOf(s).label
       attr(label, 'x', 0)
       attr(label, 'text-anchor', 'middle')
-      if (node.type === 'text') {
+      if (place === 'content') {
         const anchor = s.align === 'left' ? 'start' : s.align === 'right' ? 'end' : 'middle'
         attr(label, 'text-anchor', anchor)
         attr(label, 'x', anchor === 'start' ? -hw : anchor === 'end' ? hw : 0)
         attr(label, 'y', 0)
-      } else if (['image', 'icon'].includes(node.type)) {
+      } else if (place === 'below') {
         attr(label, 'y', hh + fontSize * 0.75)
       } else {
         attr(label, 'y', -LABEL_LIFT * fontSize) // "central" sits text a little low in a shape
@@ -703,7 +710,7 @@
     // stroke (half of it is inside the edge), a small gap, and half the highlight's own line.
     const HL_LINE = 3 // the highlight's line (anim-highlight-outline / -inside in animation.css)
     const insetOf = (s) => {
-      const stroke = s.type === 'icon' || s.stroke === 'none' ? 0 : STROKE * (s.weight ?? 1) * (s.scale ?? 1)
+      const stroke = BODIES[s.type]?.edge === false || s.stroke === 'none' ? 0 : STROKE * (s.weight ?? 1) * (s.scale ?? 1)
       return stroke / 2 + 0.04 * CELL + HL_LINE / 2
     }
 
@@ -717,7 +724,9 @@
         return `M ${-hw + r} ${-hh} H ${hw - r} A ${r} ${r} 0 0 1 ${hw} ${-hh + r} V ${hh - r} A ${r} ${r} 0 0 1 ${hw - r} ${hh}`
           + ` H ${-hw + r} A ${r} ${r} 0 0 1 ${-hw} ${hh - r} V ${-hh + r} A ${r} ${r} 0 0 1 ${-hw + r} ${-hh} Z`
       }
-      const boxed = boxedToo || s.type === 'group' || (offset > 0 && ['image', 'icon'].includes(s.type))
+      // its outline (SHAPES); a group, or an outline round a label below its shape, is a box
+      const kind = kindOf(s)
+      const boxed = boxedToo || !kind.outline || (offset > 0 && kind.label === 'below')
       if (boxed) {
         const hw = (b.x1 - b.x0) / 2 + offset
         const hh = (b.y1 - b.y0) / 2 + offset
@@ -729,20 +738,21 @@
       const { hw, hh } = extents(s)
       const w = Math.max(0, hw * k + offset)
       const h = Math.max(0, hh * k + offset)
-      if (s.type === 'circle') {
+      if (kind.outline === 'round') {
         const r = Math.max(0, s.r * k + offset)
         return { d: `M ${-r} 0 A ${r} ${r} 0 1 1 ${r} 0 A ${r} ${r} 0 1 1 ${-r} 0 Z`, transform }
       }
-      if (s.type === 'diamond') {
+      if (kind.outline === 'diamond') {
         // each side moves out by `offset`: the same diamond, scaled by (d + offset) / d, where d is
         // the distance from the centre to a side
         const d = (hw * k * hh * k) / (Math.hypot(hw * k, hh * k) || 1)
         const f = Math.max(0, (d + offset) / (d || 1))
         return { d: `M 0 ${-hh * k * f} L ${hw * k * f} 0 L 0 ${hh * k * f} L ${-hw * k * f} 0 Z`, transform }
       }
-      // rect (its corners, grown or shrunk with it), text, and an image or icon (inside)
-      const corner = s.type === 'rect' ? Math.min(s.corner || 0, hw, hh) * k : 0
-      const r = s.type === 'rect' ? corner + offset : offset > 0 ? offset : 0
+      // a box: its corners (if it has them) grown or shrunk with it, or rounded on the way out
+      const cornered = APPLIES.corner.includes(s.type)
+      const corner = cornered ? Math.min(s.corner || 0, hw, hh) * k : 0
+      const r = cornered ? corner + offset : offset > 0 ? offset : 0
       return { d: rectPath(w, h, r), transform }
     }
 

@@ -8,7 +8,7 @@
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, SIGNALS,
     parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C, CELL_STYLE, LINES,
-    wordFor, LOOKS, KEPT_STYLE, article } = window.Anim
+    wordFor, LOOKS, KEPT_STYLE, article, SHAPES, kindOf } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …) and their index labels (id.index.0, …), and the name (id.name)
@@ -25,13 +25,20 @@
 
   function baseShape(type) {
     const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
-    if (type === 'rect') Object.assign(shape, { w: CELL, h: CELL, corner: 0, fill: 'bg' })
-    if (type === 'diamond') Object.assign(shape, { w: CELL, h: CELL, fill: 'bg' })
-    if (type === 'circle') Object.assign(shape, { r: CELL / 2, fill: 'bg' })
-    if (type === 'image') Object.assign(shape, { w: CELL, h: CELL, stroke: 'none' })
-    if (type === 'icon') Object.assign(shape, { w: CELL, h: CELL })
-    if (type === 'text') Object.assign(shape, { w: 0, h: 0 })
-    return shape
+    return Object.assign(shape, SHAPES[type]?.defaults)
+  }
+
+  // What a resource type does with the argument in its ( ): image(path), icon(name)
+  const RESOURCES = {
+    image: (shape, arg, context) => {
+      if (!arg) throw new Error('image needs a path, e.g. image(_assets/goat.svg)')
+      shape.src = context.assets.get(arg) || arg
+    },
+    icon: (shape, arg) => {
+      if (!arg) throw new Error('icon needs a name, e.g. icon(laptop)')
+      if (!lucideIcon(arg)) throw new Error(`no Lucide icon called "${arg}"`)
+      shape.icon = arg
+    },
   }
 
   // The one rule for numbers. The parser keeps a number's sign as `rel`; here a signed number is
@@ -69,8 +76,8 @@
         check(shape, 'size')
         const relative = !creating && (props.size.w.rel || props.size.h.rel)
         if (relative && !props.size.one) throw new Error('a relative size takes one number (e.g. "size +1"): use "width +1" / "height +1" to change one side')
-        if (shape.type === 'circle') {
-          if (!props.size.one) throw new Error('a circle takes one size (or use radius)')
+        if (kindOf(shape).outline === 'round') { // one size: the diameter
+          if (!props.size.one) throw new Error(`${article(shape.type)} ${shape.type} takes one size (or use radius)`)
           shape.r = Math.max(0, cells(props.size.w, shape.r * 2) / 2)
         } else {
           shape.w = Math.max(0, cells(props.size.w, shape.w))
@@ -113,8 +120,9 @@
         const hl = { ...none, ...shape.hl }
         for (const item of props.highlight) {
           if (item === 'outline' && isLine) throw new Error('"highlight outline" doesn\'t fit a line: try glow or signal')
-          if (item === 'inside' && (isLine || ['text', 'group'].includes(shape.type))) {
-            throw new Error(`"highlight inside" needs a shape with an inside (rect, circle, diamond, image or icon), not ${article(shape.type)} ${shape.type === 'group' ? (shape.layout || 'group') : shape.type}`)
+          if (item === 'inside' && !kindOf(shape).inside) {
+            const types = Object.keys(SHAPES).filter((type) => SHAPES[type].inside)
+            throw new Error(`"highlight inside" needs a shape with an inside (${types.slice(0, -1).join(', ')} or ${types[types.length - 1]}), not ${article(shape.type)} ${shape.type === 'group' ? (shape.layout || 'group') : shape.type}`)
           }
           if (item === 'clear') Object.assign(hl, none)
           else if (typeof item === 'object') hl.number = lastNumber = item.number ?? lastNumber + 1
@@ -265,7 +273,7 @@
     function applyDefaults(shape) {
       const fits = (key) => !APPLIES[key] || APPLIES[key].includes(shape.type)
       const look = pick(defaults, ['size', ...Object.keys(LOOKS)].filter(fits))
-      if (look.size && shape.type === 'circle' && !look.size.one) delete look.size // a circle takes one size
+      if (look.size && kindOf(shape).outline === 'round' && !look.size.one) delete look.size // a round shape takes one size
       applyLook(shape, look, true, () => {})
     }
 
@@ -465,15 +473,7 @@
         if (isVar) Object.assign(shape, { var: true, holds: true })
         checkParts(shape, props)
         applyDefaults(shape)
-        if (type === 'image') {
-          if (!first.arg) throw new Error('image needs a path, e.g. image(_assets/goat.svg)')
-          shape.src = context.assets.get(first.arg) || first.arg
-        }
-        if (type === 'icon') {
-          if (!first.arg) throw new Error('icon needs a name, e.g. icon(laptop)')
-          if (!lucideIcon(first.arg)) throw new Error(`no Lucide icon called "${first.arg}"`)
-          shape.icon = first.arg
-        }
+        if (RESOURCES[type]) RESOURCES[type](shape, first.arg, context)
         applyProps(shape, props, true, warn, meta)
         if (isVar) setValue(shape, varValue || { label: '' })
         shape.layer = props.layer || defaults.layer || 'normal'
