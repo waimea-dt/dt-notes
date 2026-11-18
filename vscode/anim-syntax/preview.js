@@ -14,7 +14,6 @@ const CLASSES = [
   ['string', 'hljs-string'],
   ['constant.character.escape', 'hljs-string'],
   ['entity.name.tag', 'hljs-title'],
-  ['keyword.other.emphasis', 'hljs-built_in'],
   ['keyword', 'hljs-keyword'],
   ['storage.type', 'hljs-keyword'],
   ['support.type.property-name', 'hljs-attr'],

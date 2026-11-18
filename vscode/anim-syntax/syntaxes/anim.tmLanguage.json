@@ -1,5 +1,5 @@
 {
-  "$comment": "Scene lines for <animation> blocks: see docs/_plugins/visualisation/ANIMATION.md",
+  "$comment": "Scene lines for <animation> blocks: see docs/_plugins/visualisation/ANIMATION.md. Three roles: commands (keyword, and a shape type straight after id:), params (support.type.property-name: named ones like speed, and standalone ones like bold, pop, dashed) and their values (support.constant.property-value, numbers, colours, strings, ids). See CLAUDE-ANIMATION.md.",
   "name": "Anim",
   "scopeName": "source.anim",
   "patterns": [
@@ -28,13 +28,19 @@
       "include": "#ease"
     },
     {
+      "include": "#speed"
+    },
+    {
+      "include": "#align"
+    },
+    {
       "include": "#shape-type"
     },
     {
       "include": "#property"
     },
     {
-      "include": "#emphasis"
+      "include": "#flag"
     },
     {
       "include": "#value"
@@ -70,23 +76,29 @@
       ]
     },
     "line-head": {
-      "$comment": "id: at the start of a line",
-      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)",
+      "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is the arrowhead param)",
+      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(rect|circle|diamond|text|line|arrow|curve|row|column|var)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "entity.name.tag.anim"
         },
         "2": {
           "name": "punctuation.separator.key-value.anim"
+        },
+        "3": {
+          "name": "storage.type.anim"
         }
       }
     },
     "beat-line": {
-      "$comment": "lines with no id",
-      "match": "^\\s*(defaults|camera|pause|auto)(?![\\w-])",
+      "$comment": "lines with no id; defaults clear and camera reset are params",
+      "match": "^\\s*(defaults|camera|pause|auto)(?![\\w-])(?:\\s+(clear|reset)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "keyword.control.anim"
+        },
+        "2": {
+          "name": "support.type.property-name.anim"
         }
       }
     },
@@ -108,9 +120,9 @@
       }
     },
     "action": {
-      "$comment": "words that start a line's command, and into (remove 2 into v1)",
+      "$comment": "the verbs: words that start a line's command",
       "name": "keyword.control.anim",
-      "match": "(?<![\\w-])(copy|group|ungroup|delete|swap|insert|remove|into)(?![\\w-])"
+      "match": "(?<![\\w-])(copy|group|ungroup|delete|swap|insert|remove)(?![\\w-])"
     },
     "ease": {
       "$comment": "ease and its value (in and out are only values here)",
@@ -144,21 +156,52 @@
         }
       }
     },
+    "speed": {
+      "$comment": "speed and its word (normal is a value here, the layer param elsewhere)",
+      "match": "(?<![\\w-])(speed)(?:\\s+(instant|vfast|fast|normal|slow|vslow)(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "align": {
+      "match": "(?<![\\w-])(align)(?:\\s+(left|centre|right)(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
     "shape-type": {
-      "name": "storage.type.anim",
-      "match": "(?<![\\w-])(rect|circle|diamond|text|line|arrow|curve|row|column|var)(?![\\w-])"
+      "$comment": "a shape type starting a continuation line (an indented line of a long command)",
+      "match": "^\\s+(rect|circle|diamond|text|line|arrow|curve|row|column|var)(?![\\w-])",
+      "captures": {
+        "1": {
+          "name": "storage.type.anim"
+        }
+      }
     },
     "property": {
+      "$comment": "named params, which a value follows",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|align|speed|delay|stagger-reverse|stagger|highlight|callout|name|indices|zoom)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|zoom|into|above|below|left-of|right-of)(?![\\w-])"
     },
-    "emphasis": {
-      "name": "keyword.other.emphasis.anim",
-      "match": "(?<![\\w-])(pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal)(?![\\w-])"
+    "flag": {
+      "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, an arrowhead)",
+      "name": "support.type.property-name.anim",
+      "match": "(?<![\\w-])(keep-style|bold|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|arrow)(?![\\w-])"
     },
     "value": {
+      "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",
       "name": "support.constant.property-value.anim",
-      "match": "(?<![\\w-])(keep-style|bold|monospace|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|fade|pop|draw|slide|typed|outline|inside|spotlight|clear|reset|above|below|left-of|right-of|instant|vfast|fast|slow|vslow|left|centre|right|null|end)(?![\\w-])"
+      "match": "(?<![\\w-])(outline|inside|spotlight|clear|reset|null|end)(?![\\w-])"
     },
     "colour": {
       "patterns": [

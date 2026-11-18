@@ -112,7 +112,7 @@ m:
 | line style | `solid` · `dashed` · `dotted` |
 | flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |
 | angle / scale | `angle 45` (clockwise) · `scale 1.5` (not lines) |
-| font | `font 1.5` · `bold` · `monospace` |
+| font | `font 1.5` · `bold` · `mono` |
 | align | `align left` · `centre` · `right` (text) |
 | layer | `back` · `normal` · `front` |
 
@@ -328,19 +328,3 @@ a: callout clear
 defaults clear
 camera reset
 ```
-
-## Extending the engine
-
-Most features are an entry in a table, with no other code to change. Words and checks are worked out from these tables. Also add any new word to the VS Code grammar (`vscode/anim-syntax/`) and add a test to `_tests/animation.md`.
-
-| To add | Table | File |
-|---|---|---|
-| A shape type | `SHAPES` (props, defaults, outline, label place); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
-| A look prop (`fill`, `weight` …) | `LOOKS` (field, unit, hints), its word in `KEYWORDS`, and the types in `SHAPES` that take it | `anim-core.js` |
-| A verb (`delete`, `swap` …) | `LINES` (`verb: true`, what it takes), then a function in `VERBS` | `anim-core.js`, `anim-compile.js` |
-| An entrance or exit (`pop` …) | `ENTRANCES`, then its frame in `FRAMES` | `anim-core.js`, `anim-render.js` |
-| An emphasis (`pulse` …) | `EMPHASES`, then its frame in `EMPHASIS_FRAMES` | `anim-core.js`, `anim-render.js` |
-| A highlight (`outline` …) | `HIGHLIGHT_KINDS`, and an entry in `OVERLAYS` if it's drawn over the shape | `anim-core.js`, `anim-render.js` |
-| Row-edit or moving-value timing | `CHOREOGRAPHY` | `anim-core.js` |
-
-Every change's timing goes through `schedule()` in `anim-compile.js`.

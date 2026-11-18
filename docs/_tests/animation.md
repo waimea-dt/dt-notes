@@ -873,7 +873,7 @@ The first beat uses `typed`, `pop` and `delay`, so it plays in when it comes int
 <animation grid="12x3">
 
 ```anim
-prompt: text "$ ping example.com" at 2,1 align left monospace typed speed slow
+prompt: text "$ ping example.com" at 2,1 align left mono typed speed slow
 srv: rect "server" at 10,2 size 2x1 pop delay 2
 ```
 
@@ -980,7 +980,7 @@ t1: "new text" colour amber
 
 </animation>
 
-## Feature: Fonts: font, bold, monospace
+## Feature: Fonts: font, bold, mono
 
 <animation grid="12x4">
 
@@ -988,7 +988,7 @@ t1: "new text" colour amber
 f1: text "font 1" at 3,1
 f2: text "font 1.5" at 3,2.2 font 1.5
 f3: text "bold" at 8,1 bold
-f4: text "monospace" at 8,2.2 monospace
+f4: text "mono" at 8,2.2 mono
 box: rect "a bold label" at 5.5,3.5 size 3x0.8 bold font 0.8
 ```
 
@@ -2823,7 +2823,7 @@ dr: delete draw
 <animation grid="12x3">
 
 ```anim
-t1: text "$ ls -la" at 2,1 align left monospace typed speed slow
+t1: text "$ ls -la" at 2,1 align left mono typed speed slow
 t2: text "Hello, world!" at 2,2 align left typed speed slow delay 2
 ```
 

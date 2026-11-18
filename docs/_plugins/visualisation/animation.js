@@ -3,6 +3,7 @@
  * explanations: a drawing that changes between steps, with a Markdown caption for each step.
  *
  * Syntax cheat-sheet: docs/_plugins/visualisation/ANIMATION.md
+ * Engine notes (the tables, the language rules, how to extend it): CLAUDE-ANIMATION.md
  *
  * Usage in markdown (markers must be alone on their line; ignored inside code fences):
  *   <animation grid="16x9" debug>

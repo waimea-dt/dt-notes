@@ -2,6 +2,7 @@
  * anim-core.js - Part of the animation plugin (animation.js): the constants, the keyword table
  * that every scene line is read against, geometry (text sizes, attachments, line ends, curves
  * and routes) and bounds. Shared by every other part through window.Anim.
+ * The tables here (SHAPES, LOOKS, LINES, ENTRANCES, …) and how to extend them: CLAUDE-ANIMATION.md
  */
 
 ;(function () {
@@ -276,7 +277,7 @@
     scale: number('scale', 'a number (a multiple of the normal size)'),
     align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
     bold: fixed('bold', true),
-    monospace: fixed('mono', true),
+    mono: fixed('mono', true), // a monospace font
     // "arrow" here (not straight after the id, where it's the arrow shape) puts a head on a line
     arrow: fixed('head', true),
     ...words(LINE_STYLES, 'linestyle', 'line style'),
