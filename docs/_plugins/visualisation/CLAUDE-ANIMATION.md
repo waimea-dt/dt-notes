@@ -66,7 +66,7 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 | Command | `keyword.control` (verbs, actions, beat lines), `storage.type` (a shape type straight after `id:`) | `delete`, `swap`, `insert`, `remove`, `copy`, `group`, `ungroup`, `detach`, `defaults`, `camera`, `pause`, `auto`, and `clear` / `reset` on a `defaults` / `camera` line; `rect`, `text`, `row`, `var` … |
 | Param | `support.type.property-name` | Named params (`at`, `speed`, `fill`, `into`, placements) and standalone ones (`bold`, `mono`, `pop`, `dashed`, `static`, `front`, `pulse`, `keep-style`, `arrow` as an arrowhead) |
 | Value | `support.constant.property-value`, numbers, colours, strings, ids | `slow`, `left`, `spring`, `outline`, and `clear` after a param (`highlight clear`) … |
-| Literal | `constant.language` | `end` and `null`: words that stand in for a value, as a number does |
+| Literal | `constant.language` with `variable.other.constant` inside it | `end` and `null`: words that stand in for a value, as a number does. The inner scope makes themes that colour `constant.language` like an error (Catppuccin: red) show them as constants instead (peach, like numbers) |
 
 - **Numbers:** a signed number (relative on a change) is `constant.numeric.relative`, with its sign `keyword.operator.sign`. The `x` in a size (`2x0.8`) is `punctuation.separator`, like the comma in `2,1`. The grammar can't tell that a signed number is absolute when creating a shape.
 - **Context matters for some words.** `normal` is a value after `speed`, and the layer param elsewhere. `arrow` is a type after `id:`, a value after `highlight`, and a param elsewhere. `clear` / `reset` are params on `defaults` / `camera` lines.

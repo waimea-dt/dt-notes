@@ -207,8 +207,8 @@
       "match": "(?<![\\w-])(outline|inside|spotlight|clear|reset)(?![\\w-])"
     },
     "literal": {
-      "$comment": "words that stand in for a value, like a number does: end (a row's last place) and null (no value)",
-      "name": "constant.language.anim",
+      "$comment": "words that stand in for a value, like a number does: end (a row's last place) and null (no value). Also a named constant (variable.other.constant), the innermost scope, so themes that colour language constants like an error (Catppuccin: red) show them as constants (peach, like numbers and true)",
+      "name": "constant.language.anim variable.other.constant.anim",
       "match": "(?<![\\w-])(end|null)(?![\\w-])"
     },
     "colour": {
