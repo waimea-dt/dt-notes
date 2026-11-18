@@ -2279,8 +2279,8 @@ gl: glow
 ```anim
 a: circle "a" at 2,2
 b: rect "b" at 10,2
-l: arrow from a to b
-c: curve from a to b via 6,4.5
+l: arrow from a to b stroke muted
+c: curve from a to b via 6,4.5 stroke muted
 ```
 
 ---
@@ -2425,7 +2425,7 @@ d: diamond "diamond" at 11,2 size 2x1.4
 t: text "text" at 13.5,2
 tr: rect "turned" at 2.5,4.2 size 2x0.8 angle 20
 th: rect "thick" at 6,4.2 size 2x0.8 weight 3
-sc: circle "scaled" at 9,4.2 radius 0.4 scale 1.5
+sc: circle "scaled" at 9,4.2 radius 0.6 scale 1.5
 i: icon(laptop) "icon" at 12,4
 ```
 
@@ -2474,9 +2474,13 @@ i: highlight clear inside
 
 ```anim
 r: highlight outline
+rc: highlight outline
 c: highlight outline
 d: highlight outline
+tr: highlight outline
 th: highlight outline
+sc: highlight outline
+i: highlight outline
 ```
 
 </animation>
