@@ -292,11 +292,11 @@
         const pathTo = (d) => [...path.filter((p) => p.at < d), at(d)]
 
         // The head (fading in or out as it's added or taken off) sits on the end, or on the tip
-        // while drawing in; the stroke stops at its back.
+        // while drawing in; the stroke stops at its back. Erasing, it stays on the end.
         let bodyLen = total
         if (v.head) {
           const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
-          const reach = total * v.draw
+          const reach = v.erase ? total : total * v.draw
           const tip = at(reach)
           const behind = at(Math.max(0, reach - head))
           const dl = Math.hypot(tip.x - behind.x, tip.y - behind.y)
@@ -318,7 +318,8 @@
           syncGhost(node.body)
           attr(node.body, 'pathLength', '1')
           node.body.style.strokeDasharray = '1 1'
-          node.body.style.strokeDashoffset = String(1 - v.draw)
+          // the drawn part: from the start to `draw` along, or (erasing) from `1 - draw` to the end
+          node.body.style.strokeDashoffset = String(v.erase ? 1 + v.draw : 1 - v.draw)
         } else {
           attr(node.body, 'pathLength', null)
           node.body.style.strokeDasharray = dash
@@ -565,6 +566,7 @@
         } else {
           shape = a
           v = appear(tw?.exit || 'fade', 1 - t, a, 1 - raw)
+          v.erase = true // a line drawn out is erased from its start, not wound back from its end
           if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (remove)
         }
         // an arrowhead fades in or out as it's added to or taken off a line
