@@ -2860,6 +2860,20 @@ b: move 5,3
 c: move 8,3
 ```
 
+---
+
+## defaults flow-reverse, static
+
+The top line flows right to left; the bottom one is still.
+
+```anim
+defaults clear
+defaults dashed flow-reverse
+l1: line from 1,0.5 to 11,0.5
+defaults static
+l2: line from 1,3.7 to 11,3.7
+```
+
 </animation>
 
 ## Feature: Camera

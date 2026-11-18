@@ -7,7 +7,7 @@
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
-    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY } = window.Anim
+    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -446,7 +446,7 @@
 
     function interpolate(a, b, t) {
       const s = { ...b }
-      for (const key of ['x', 'y', 'w', 'h', 'r', 'corner', 'weight', 'font', 'angle', 'scale']) {
+      for (const key of LERPED) {
         if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], t)
       }
       // A line style change cross-fades from the old style to the new (see syncGhost)

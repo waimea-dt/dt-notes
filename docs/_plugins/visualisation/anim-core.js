@@ -113,6 +113,45 @@
     head: LINE_TYPES, // an arrowhead on the end
   }
 
+  // How each look prop is applied to a shape (applyLook, in this order, after size):
+  //   field  the shape field it sets
+  //   unit   for a number: CELL (given in cells) or 1 (a multiplier); min, its least value
+  //   map    for a word: the value it stores (flow-reverse -> reverse)
+  //   hints  a message for a type it doesn't apply to, pointing at the prop that does
+  //   quiet  types it has no effect on (a warning, not an error)
+  //   cell   part of a row's / column's look, given to its cells
+  //   kept   taken along by a value on the move with keep-style
+  const LOOKS = {
+    font: { field: 'font', unit: 1, min: 0.1, cell: true },
+    width: { field: 'w', unit: CELL, min: 0 },
+    height: { field: 'h', unit: CELL, min: 0 },
+    radius: { field: 'r', unit: CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
+    corner: { field: 'corner', unit: CELL, min: 0, cell: true },
+    fill: { field: 'fill', cell: true, kept: true },
+    stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use colour' } },
+    colour: { field: 'colour', cell: true, kept: true },
+    weight: { field: 'weight', unit: 1, min: 0, cell: true, quiet: ['text'] },
+    align: { field: 'align' },
+    angle: { field: 'angle', unit: 1 },
+    scale: { field: 'scale', unit: 1, min: 0 },
+    bold: { field: 'bold', cell: true },
+    mono: { field: 'mono', cell: true },
+    head: { field: 'head' },
+    linestyle: { field: 'linestyle', cell: true },
+    flow: { field: 'flow', map: FLOWS, cell: true },
+    layer: { field: 'layer' },
+  }
+  const looksWith = (flag) => Object.keys(LOOKS).filter((key) => LOOKS[key][flag])
+  // A row's or column's look, given to each of its cells (when made, and on a change to it)
+  const CELL_STYLE = looksWith('cell')
+  // What a value on the move takes with it (keep-style): not its size, or highlights
+  const KEPT_STYLE = looksWith('kept')
+  // The shape fields that blend between beats: its place, and every number in its look
+  const LERPED = ['x', 'y', ...new Set(Object.values(LOOKS).filter((look) => look.unit).map((look) => look.field))]
+
+  // "a" or "an" before a word (a rect, an image)
+  const article = (word) => (/^[aeiou]/i.test(word) ? 'an' : 'a')
+
   // Every word that can follow "id:" (or "defaults"), in one table. Each entry gives the prop it
   // sets (key) and the values that follow it:
   //   sigs   alternative value lists, tried longest first (sigs [[]]: a flag with no values)
@@ -231,8 +270,6 @@
     return words.length > 1 ? `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}` : words[0] || 'nothing'
   }
 
-  // A row's or column's look, given to each of its cells (when made, and on a change to it)
-  const CELL_STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'corner', 'linestyle', 'flow']
   const TIMING = ['speed', 'delay', 'ease']
 
   // Every kind of scene line and the props it can have, checked as its props are read (parseProps).
@@ -661,7 +698,8 @@
   }
 
   Object.assign(window.Anim, { ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
-    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEYWORDS, LAYERS, LAYOUT_TYPES, LINES, LINE_STARTS, LINE_TYPES, listProps, NORMAL_MS, TIMING, wordFor,
+    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LOOKS, NORMAL_MS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     SIGNALS, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,

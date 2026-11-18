@@ -4,11 +4,11 @@
  */
 
 ;(function () {
-  const { CELL, cellToPx, APPLIES, LINE_TYPES, FLOWS, resolveEnds, boxCentre, PLACE_GAP,
+  const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP,
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, SIGNALS,
     parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C, CELL_STYLE, LINES,
-    wordFor } = window.Anim
+    wordFor, LOOKS, KEPT_STYLE, article } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …) and their index labels (id.index.0, …), and the name (id.name)
@@ -50,28 +50,19 @@
     let uid = 0
     let lastNumber = 0 // "highlight number": the last number given, so a bare one takes the next
 
+    // A prop that doesn't apply to this shape's type is an error (with a hint where there's a
+    // prop that does)
     const check = (shape, key, word = key) => {
-      if (key === 'stroke' && shape.type === 'text') throw new Error('"stroke" doesn\'t apply to text: use colour')
-      if (key === 'radius' && shape.type === 'rect') throw new Error('"radius" is for circles: use corner for a rect\'s corners')
-      if (!APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${shape.type === 'arrow' || shape.type === 'icon' || shape.type === 'image' ? 'an' : 'a'} ${shape.type}`)
+      const hint = LOOKS[key]?.hints?.[shape.type]
+      if (hint) throw new Error(hint)
+      if (APPLIES[key] && !APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${article(shape.type)} ${shape.type}`)
     }
 
-    // Applies parsed props to a shape (a fresh one when creating, a copy when changing).
-    // Returns the curve's points (start, vias, end) when the line has `via`, otherwise null.
-    function applyProps(shape, props, creating, warn, meta) {
-      const isLine = LINE_TYPES.includes(shape.type)
-      for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, ...(props.via || []).map((v) => v.ref),
-        ...(props.travel || []).map((v) => v.ref)]) {
-        if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
-      }
-      // Relative values need something to be relative to: never when creating
+    // Applies a shape's look (size, then LOOKS): absolute when creating; on a change, a signed
+    // number is relative to the current value.
+    function applyLook(shape, props, creating, warn) {
       const now = (value) => (creating ? undefined : value)
       const cells = (n, current) => numberValue(n, now(current), { unit: CELL })
-      const times = (n, current) => numberValue(n, now(current))
-      const coord = (n, current) => numberValue(n, current, { unit: CELL, coord: true })
-
-      if (props.label !== undefined) { shape.label = props.label; if (shape.nil) shape.nil = false }
-      if (props.font) { check(shape, 'font'); shape.font = Math.max(0.1, times(props.font, shape.font)) }
       // size: absolute, or one signed number on a change (both sides by that amount). A relative
       // pair (size +1x+0) isn't allowed: width / height change one side.
       if (props.size) {
@@ -87,34 +78,34 @@
         }
       }
       if (props.size && (props.width || props.height)) throw new Error('give either "size" or "width" / "height", not both')
-      if (props.width) { check(shape, 'width'); shape.w = Math.max(0, cells(props.width, shape.w)) }
-      if (props.height) { check(shape, 'height'); shape.h = Math.max(0, cells(props.height, shape.h)) }
-      if (props.radius) { check(shape, 'radius'); shape.r = Math.max(0, cells(props.radius, shape.r)) }
-      if (props.corner) { check(shape, 'corner'); shape.corner = Math.max(0, cells(props.corner, shape.corner)) }
-      if (props.fill) { check(shape, 'fill'); shape.fill = props.fill }
-      if (props.stroke) { check(shape, 'stroke'); shape.stroke = props.stroke }
-      if (props.colour) shape.colour = props.colour
-      if (props.weight) {
-        if (shape.type === 'text') warn('"weight" has no effect on text')
-        shape.weight = Math.max(0, times(props.weight, shape.weight))
+      for (const [key, look] of Object.entries(LOOKS)) {
+        const value = props[key]
+        if (!value) continue
+        const word = wordFor(key, value)
+        check(shape, key, word)
+        if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
+        if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
+        else shape[look.field] = look.map ? look.map[value] : value
       }
-      if (props.align) { check(shape, 'align'); shape.align = props.align }
-      if (props.angle) { check(shape, 'angle'); shape.angle = times(props.angle, shape.angle) }
-      if (props.scale) { check(shape, 'scale'); shape.scale = Math.max(0, times(props.scale, shape.scale)) }
-      if (props.bold) shape.bold = true
-      if (props.mono) shape.mono = true
-      if (props.head) { check(shape, 'head', 'arrow'); shape.head = true }
-      if (props.linestyle) {
-        check(shape, 'linestyle', props.linestyle)
-        shape.linestyle = props.linestyle
-        if (shape.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
+      // flow only shows on a dashed or dotted line
+      if (props.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
+      if (props.flow && shape.flow !== 'none' && shape.linestyle === 'solid') warn(`"${props.flow}" only shows on a dashed or dotted line`)
+    }
+
+    // Applies parsed props to a shape (a fresh one when creating, a copy when changing).
+    // Returns the curve's points (start, vias, end) when the line has `via`, otherwise null.
+    function applyProps(shape, props, creating, warn, meta) {
+      const isLine = LINE_TYPES.includes(shape.type)
+      for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, ...(props.via || []).map((v) => v.ref),
+        ...(props.travel || []).map((v) => v.ref)]) {
+        if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
-      if (props.flow) {
-        check(shape, 'flow', props.flow)
-        shape.flow = FLOWS[props.flow]
-        if (shape.flow !== 'none' && shape.linestyle === 'solid') warn(`"${props.flow}" only shows on a dashed or dotted line`)
-      }
-      if (props.layer) shape.layer = props.layer
+      // Relative values need something to be relative to: never when creating
+      const now = (value) => (creating ? undefined : value)
+      const coord = (n, current) => numberValue(n, current, { unit: CELL, coord: true })
+
+      if (props.label !== undefined) { shape.label = props.label; if (shape.nil) shape.nil = false }
+      applyLook(shape, props, creating, warn)
 
       // highlight: outline / inside / spotlight / arrow / number N stay until clear
       if (props.highlight) {
@@ -123,7 +114,7 @@
         for (const item of props.highlight) {
           if (item === 'outline' && isLine) throw new Error('"highlight outline" doesn\'t fit a line: try glow or signal')
           if (item === 'inside' && (isLine || ['text', 'group'].includes(shape.type))) {
-            throw new Error(`"highlight inside" needs a shape with an inside (rect, circle, diamond, image or icon), not ${shape.type === 'arrow' ? 'an' : 'a'} ${shape.type === 'group' ? (shape.layout || 'group') : shape.type}`)
+            throw new Error(`"highlight inside" needs a shape with an inside (rect, circle, diamond, image or icon), not ${article(shape.type)} ${shape.type === 'group' ? (shape.layout || 'group') : shape.type}`)
           }
           if (item === 'clear') Object.assign(hl, none)
           else if (typeof item === 'object') hl.number = lastNumber = item.number ?? lastNumber + 1
@@ -268,21 +259,14 @@
       return buildPath([start, ...vias, { x: shape.x, y: shape.y }])
     }
 
-    // Copies the defaults that apply to this type onto a new shape.
+    // Gives a new shape the default look (defaults …) that applies to its type, as if written on
+    // its line. The line's timing defaults (speed, effect, ease, stagger, keep-style) are read
+    // where they're used.
     function applyDefaults(shape) {
-      for (const [key, value] of Object.entries(defaults)) {
-        if (['speed', 'effect', 'ease', 'stagger', 'keepStyle'].includes(key)) continue
-        if (APPLIES[key] && !APPLIES[key].includes(shape.type)) continue
-        const cells = (n) => numberValue(n, undefined, { unit: CELL })
-        if (key === 'size' && shape.type === 'circle') { if (value.one) shape.r = cells(value.w) / 2; continue }
-        if (key === 'size') { shape.w = cells(value.w); shape.h = cells(value.h); continue }
-        if (key === 'radius') { shape.r = cells(value); continue }
-        if (key === 'corner') { shape.corner = cells(value); continue }
-        if (key === 'width') { shape.w = cells(value); continue }
-        if (key === 'height') { shape.h = cells(value); continue }
-        if (['weight', 'font', 'angle', 'scale'].includes(key)) { shape[key] = numberValue(value); continue }
-        shape[key] = value
-      }
+      const fits = (key) => !APPLIES[key] || APPLIES[key].includes(shape.type)
+      const look = pick(defaults, ['size', ...Object.keys(LOOKS)].filter(fits))
+      if (look.size && shape.type === 'circle' && !look.size.one) delete look.size // a circle takes one size
+      applyLook(shape, look, true, () => {})
     }
 
     // "highlight number" with no value on a row, column or group numbers its shapes in turn rather
@@ -631,7 +615,6 @@
     }
     const valueIn = (shape) => ({ label: shape.label, nil: shape.nil })
     // keep-style: the look a value takes with it (not its size, or highlights)
-    const KEPT_STYLE = ['fill', 'stroke', 'colour']
     const keptStyle = (props, shape) => ((props.keepStyle ?? defaults.keepStyle) ? pick(shape, KEPT_STYLE) : {})
 
     // A word naming another shape (not a keyword or a value): the var or cell it names, or, with
