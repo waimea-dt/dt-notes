@@ -216,9 +216,19 @@
       ]
     },
     "number": {
-      "$comment": "numbers, signed (relative) numbers, and sizes like 2x1",
-      "name": "constant.numeric.anim",
-      "match": "(?<![\\w.])[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[xX\u00d7][+-]?(?:\\d+\\.?\\d*|\\.\\d+))?(?![\\w.])"
+      "$comment": "numbers, signed (relative) numbers, and sizes like 2x1 (the x is a separator, like the comma in 2,1)",
+      "match": "(?<![\\w.])([+-]?(?:\\d+\\.?\\d*|\\.\\d+))(?:([xX\u00d7])([+-]?(?:\\d+\\.?\\d*|\\.\\d+)))?(?![\\w.])",
+      "captures": {
+        "1": {
+          "name": "constant.numeric.anim"
+        },
+        "2": {
+          "name": "punctuation.separator.anim"
+        },
+        "3": {
+          "name": "constant.numeric.anim"
+        }
+      }
     },
     "punctuation": {
       "patterns": [
