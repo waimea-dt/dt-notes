@@ -2826,8 +2826,19 @@ dr: delete draw delay 4
 <animation grid="12x3">
 
 ```anim
-t1: text "$ ls -la" at 2,1 align left mono typed speed slow
-t2: text "Hello, world!" at 2,2 align left typed speed slow delay 2
+prompt: text "$" at 2,1 mono colour yellow
+```
+
++++
+
+```anim
+t1: text "ls -la" at 3,1 align left mono typed speed slow
+```
+
++++
+
+```anim
+t2: text "Hello, world!" at 2,2 align left bold mono typed speed slow delay 2
 ```
 
 ---
@@ -2835,7 +2846,7 @@ t2: text "Hello, world!" at 2,2 align left typed speed slow delay 2
 ## As an exit it un-types
 
 ```anim
-t1: delete typed
+t2: delete typed
 ```
 
 </animation>
