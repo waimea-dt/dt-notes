@@ -627,7 +627,8 @@
 
       for (const [uid, node] of nodes) {
         if (!uids.has(uid)) {
-          for (const el of [node.g, node.outline, node.inside, node.pointer, node.badge, node.bubble]) el?.remove()
+          node.g.remove()
+          for (const o of Object.values(node.overlays || {})) o.el.remove()
           nodes.delete(uid)
         }
       }
@@ -764,89 +765,108 @@
       return { d: rectPath(w, h, r), transform }
     }
 
-    // The highlight outline, arrow and number badge, and the callout bubble, drawn above everything
-    // in world space.
-    function drawOverlays(item, now) {
-      const node = item.node
-      // Each fades in / out with its feature, and dims with a shape outside the spotlight
-      const k = item.dimK
-      const outlineOpacity = blend(item, (s) => s.hl?.outline) * k
-      const insideOpacity = blend(item, (s) => s.hl?.inside) * k
-      const arrowOpacity = blend(item, (s) => s.hl?.arrow) * k
-      const badgeOpacity = blend(item, (s) => s.hl?.number != null) * k
-      const bubbleOpacity = blend(item, (s) => s.callout) * k
-      if (!outlineOpacity && !node.outline && !insideOpacity && !node.inside && !arrowOpacity && !node.pointer && !badgeOpacity && !node.badge && !bubbleOpacity && !node.bubble) return
-      const b = bounds(item.shape, now, { ends: item.v.ends, dx: item.v.dx, dy: item.v.dy })
-      const pad = 0.15 * CELL
+    // What a shape shows of a two-state feature mid-blend: B's, or A's while A's fades out
+    const shownValue = (item, get) => {
+      const a = item.a && get(item.a)
+      const b = item.b && get(item.b)
+      return b != null && (item.t >= 0.5 || a == null) ? b : a ?? b
+    }
 
-      // An outline is round the whole thing: a var's / row's / column's name and indices too
-      const parts = outlineOpacity || node.outline ? [...now.values()].filter((s) => s.part === item.shape.id) : []
-      const whole = mergeBoxes([b, ...parts.map((part) => bounds(part, now))])
-
-      // outline: the shape's own outline, `pad` outside it; inside: the same line just inside its
-      // stroke. Both are paths in the shape's place and turn (see highlightPath).
-      for (const [key, opacity, offset] of [['outline', outlineOpacity, pad], ['inside', insideOpacity, -insetOf(item.shape)]]) {
-        if (!opacity && !node[key]) continue
-        if (!node[key]) node[key] = highlightLayer.appendChild(svgEl('path', { class: `anim-highlight-${key}` }))
-        const outer = key === 'outline' && parts.length > 0
-        const { d, transform } = highlightPath(item.shape, item.v, offset, outer ? whole : b, outer)
-        attr(node[key], 'd', d)
-        attr(node[key], 'transform', transform)
-        node[key].style.opacity = opacity
-        if (!opacity) { node[key].remove(); node[key] = null }
-      }
-
-      // arrow: a block arrow pointing in at the top-right corner, sliding in as it fades in
-      if (arrowOpacity || node.pointer) {
-        if (!node.pointer) {
-          node.pointer = highlightLayer.appendChild(svgEl('polygon', { class: 'anim-highlight-arrow', 'stroke-linejoin': 'round' }))
+    // The overlays drawn above the shapes, in world space: the highlights (outline, inside, arrow,
+    // number) and the callout bubble. Each:
+    //   has(state)  whether a state of the shape shows it (it fades in and out between beats)
+    //   make()      its elements, made when it first shows: { el, … }, el the one that fades
+    //   draw(o, f)  places them each frame; f gives the shape's bounds b, its fade (0-1, before
+    //               dimming), the item, and `now` (every shape where it is this frame)
+    const PAD = 0.15 * CELL // an outline's gap round the shape
+    const highlightPathOf = (key, offsetOf) => ({
+      make: () => ({ el: highlightLayer.appendChild(svgEl('path', { class: `anim-highlight-${key}` })) }),
+      draw: (o, { item, b, now }) => {
+        // an outline is round the whole thing: a var's / row's / column's name and indices too
+        const parts = key === 'outline' ? [...now.values()].filter((s) => s.part === item.shape.id) : []
+        const outer = parts.length > 0
+        const box = outer ? mergeBoxes([b, ...parts.map((part) => bounds(part, now))]) : b
+        const { d, transform } = highlightPath(item.shape, item.v, offsetOf(item.shape), box, outer)
+        attr(o.el, 'd', d)
+        attr(o.el, 'transform', transform)
+      },
+    })
+    const OVERLAYS = {
+      // the shape's own outline, PAD outside it; inside: the same line just inside its stroke. Both
+      // are paths in the shape's place and turn (see highlightPath).
+      outline: { has: (s) => s.hl?.outline, ...highlightPathOf('outline', () => PAD) },
+      inside: { has: (s) => s.hl?.inside, ...highlightPathOf('inside', (s) => -insetOf(s)) },
+      // a block arrow pointing in at the top-right corner, sliding in as it fades in
+      arrow: {
+        has: (s) => s.hl?.arrow,
+        make: () => {
+          const el = highlightLayer.appendChild(svgEl('polygon', { class: 'anim-highlight-arrow', 'stroke-linejoin': 'round' }))
           // pointing along +x with its tip at 0,0 (rotated to point down-left below)
           const L = 0.9 * CELL, H = 0.50 * CELL, HW = 0.33 * CELL, SW = 0.17 * CELL
-          attr(node.pointer, 'points', `0,0 ${-H},${-HW} ${-H},${-SW} ${-L},${-SW} ${-L},${SW} ${-H},${SW} ${-H},${HW}`)
-        }
-        const back = (1 - arrowOpacity / k) * 0.4 * CELL // slides by its fade, not the dimming
-        const tip = { x: b.x1 - 0.75 * pad + back, y: b.y0 + 0.75 * pad - back }
-        attr(node.pointer, 'transform', `translate(${tip.x} ${tip.y}) rotate(135)`)
-        node.pointer.style.opacity = arrowOpacity
-        if (!arrowOpacity) { node.pointer.remove(); node.pointer = null }
-      }
+          attr(el, 'points', `0,0 ${-H},${-HW} ${-H},${-SW} ${-L},${-SW} ${-L},${SW} ${-H},${SW} ${-H},${HW}`)
+          return { el }
+        },
+        draw: (o, { b, fade }) => {
+          const back = (1 - fade) * 0.4 * CELL // slides by its fade, not the dimming
+          const tip = { x: b.x1 - 0.75 * PAD + back, y: b.y0 + 0.75 * PAD - back }
+          attr(o.el, 'transform', `translate(${tip.x} ${tip.y}) rotate(135)`)
+        },
+      },
+      // a numbered disc on the top-left corner, popping in
+      number: {
+        has: (s) => s.hl?.number != null,
+        make: () => {
+          const el = highlightLayer.appendChild(svgEl('g', { class: 'anim-highlight-number' }))
+          el.appendChild(svgEl('circle', { r: 0.28 * CELL }))
+          return { el, text: el.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' })) }
+        },
+        draw: (o, { item, b, fade }) => {
+          const n = shownValue(item, (s) => s.hl?.number)
+          const label = n == null ? '' : String(n)
+          if (o.text.textContent !== label) o.text.textContent = label
+          const size = FONT * (label.length > 2 ? 0.62 : 0.88)
+          o.text.style.fontSize = `${size}px`
+          attr(o.text, 'y', -LABEL_LIFT * size) // "central" sits text a little low
+          attr(o.el, 'transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(0.001, 0.6 + 0.4 * fade)})`)
+        },
+      },
+      // a speech bubble beside the shape (drawBubble)
+      callout: {
+        has: (s) => s.callout,
+        make: () => {
+          const el = calloutLayer.appendChild(svgEl('g', { class: 'anim-callout' }))
+          const path = el.appendChild(svgEl('path'))
+          const text = el.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' }))
+          return { el, path, text, key: null } // key: the text its lines were built for
+        },
+        draw: (o, { item, b }) => {
+          const callout = shownValue(item, (s) => s.callout)
+          if (callout) drawBubble(o, callout, b)
+        },
+      },
+    }
 
-      // number N: a numbered disc on the top-left corner, popping in
-      if (badgeOpacity || node.badge) {
-        // The number being shown: B's, or A's while A's fades out
-        const n = (item.b?.hl?.number != null && (item.t >= 0.5 || item.a?.hl?.number == null)) ? item.b.hl.number : (item.a?.hl?.number ?? item.b?.hl?.number)
-        if (!node.badge) {
-          node.badge = highlightLayer.appendChild(svgEl('g', { class: 'anim-highlight-number' }))
-          node.badge.appendChild(svgEl('circle', { r: 0.28 * CELL }))
-          node.badgeText = node.badge.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' }))
-        }
-        const label = n == null ? '' : String(n)
-        if (node.badgeText.textContent !== label) node.badgeText.textContent = label
-        const badgeFont = FONT * (label.length > 2 ? 0.62 : 0.88)
-        node.badgeText.style.fontSize = `${badgeFont}px`
-        attr(node.badgeText, 'y', -LABEL_LIFT * badgeFont) // "central" sits text a little low
-        attr(node.badge, 'transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(0.001, 0.6 + 0.4 * badgeOpacity / k)})`)
-        node.badge.style.opacity = badgeOpacity
-        if (!badgeOpacity) { node.badge.remove(); node.badge = null }
-      }
-
-      if (bubbleOpacity || node.bubble) {
-        // The text being shown: B's, or A's while A's callout fades out
-        const callout = (item.b?.callout && (item.t >= 0.5 || !item.a?.callout)) ? item.b.callout : (item.a?.callout || item.b?.callout)
-        if (!node.bubble) {
-          node.bubble = calloutLayer.appendChild(svgEl('g', { class: 'anim-callout' }))
-          node.bubblePath = node.bubble.appendChild(svgEl('path'))
-          node.bubbleText = node.bubble.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' }))
-          node.bubbleKey = null // the text's lines are (re)built on first draw
-        }
-        if (callout) drawBubble(node, callout, b)
-        node.bubble.style.opacity = bubbleOpacity
-        if (!bubbleOpacity) { node.bubble.remove(); node.bubble = null }
+    // Draws a shape's overlays: each fades in / out with its feature, and dims with a shape outside
+    // the spotlight; once faded out it's removed.
+    function drawOverlays(item, now) {
+      const node = item.node
+      node.overlays ||= {}
+      const k = item.dimK
+      const showing = Object.entries(OVERLAYS)
+        .map(([name, overlay]) => [name, overlay, blend(item, overlay.has)])
+        .filter(([name, , fade]) => fade || node.overlays[name])
+      if (!showing.length) return
+      const b = bounds(item.shape, now, { ends: item.v.ends, dx: item.v.dx, dy: item.v.dy })
+      for (const [name, overlay, fade] of showing) {
+        const o = (node.overlays[name] ||= overlay.make())
+        overlay.draw(o, { item, b, fade, now })
+        o.el.style.opacity = fade * k
+        if (!fade) { o.el.remove(); delete node.overlays[name] }
       }
     }
 
-    // A speech bubble beside bounds `b`, with a tail pointing at it.
-    function drawBubble(node, callout, b) {
+    // A speech bubble (o: the callout overlay's elements) beside bounds `b`, with a tail pointing at it.
+    function drawBubble(o, callout, b) {
       const size = FONT * 0.75
       const lineH = size * 1.25
       const lines = wrapText(callout.text, size, CALLOUT_CH * textWidth('0', size))
@@ -875,17 +895,17 @@
       // Keep the bubble inside the drawing (the tail still points at the shape)
       cx = Math.min(viewBox.x + viewBox.w - w / 2 - m, Math.max(viewBox.x + w / 2 + m, cx))
       cy = Math.min(viewBox.y + viewBox.h - h / 2 - m, Math.max(viewBox.y + h / 2 + m, cy))
-      attr(node.bubblePath, 'd', bubblePath(cx, cy, w, h, Math.min(10, h / 3), side, tip))
-      node.bubbleText.style.fontSize = `${size}px`
-      if (node.bubbleKey !== callout.text) {
-        node.bubbleKey = callout.text
-        node.bubbleText.replaceChildren(...lines.map((line) => {
+      attr(o.path, 'd', bubblePath(cx, cy, w, h, Math.min(10, h / 3), side, tip))
+      o.text.style.fontSize = `${size}px`
+      if (o.key !== callout.text) {
+        o.key = callout.text
+        o.text.replaceChildren(...lines.map((line) => {
           const span = svgEl('tspan')
           span.textContent = line
           return span
         }))
       }
-      ;[...node.bubbleText.children].forEach((span, i) => {
+      ;[...o.text.children].forEach((span, i) => {
         attr(span, 'x', cx)
         attr(span, 'y', cy + (i - (lines.length - 1) / 2) * lineH)
       })

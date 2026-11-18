@@ -8,7 +8,7 @@
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES, entranceFor,
     parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C, CELL_STYLE, LINES,
-    wordFor, LOOKS, KEPT_STYLE, article, SHAPES, kindOf } = window.Anim
+    wordFor, LOOKS, KEPT_STYLE, article, SHAPES, kindOf, HIGHLIGHT_KINDS } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …) and their index labels (id.index.0, …), and the name (id.name)
@@ -114,16 +114,13 @@
       if (props.label !== undefined) { shape.label = props.label; if (shape.nil) shape.nil = false }
       applyLook(shape, props, creating, warn)
 
-      // highlight: outline / inside / spotlight / arrow / number N stay until clear
+      // highlight: each kind (HIGHLIGHT_KINDS) stays until clear; "number" with no value is the next
       if (props.highlight) {
-        const none = { outline: false, inside: false, spotlight: false, arrow: false, glow: false, number: null }
+        const none = Object.fromEntries(Object.entries(HIGHLIGHT_KINDS).map(([kind, h]) => [kind, 'off' in h ? h.off : false]))
         const hl = { ...none, ...shape.hl }
         for (const item of props.highlight) {
-          if (item === 'outline' && isLine) throw new Error('"highlight outline" doesn\'t fit a line: try glow or signal')
-          if (item === 'inside' && !kindOf(shape).inside) {
-            const types = Object.keys(SHAPES).filter((type) => SHAPES[type].inside)
-            throw new Error(`"highlight inside" needs a shape with an inside (${types.slice(0, -1).join(', ')} or ${types[types.length - 1]}), not ${article(shape.type)} ${shape.type === 'group' ? (shape.layout || 'group') : shape.type}`)
-          }
+          const kind = HIGHLIGHT_KINDS[typeof item === 'object' ? 'number' : item]
+          if (kind?.applies && !kind.applies(shape)) throw new Error(kind.refuse(shape))
           if (item === 'clear') Object.assign(hl, none)
           else if (typeof item === 'object') hl.number = lastNumber = item.number ?? lastNumber + 1
           else hl[item] = true

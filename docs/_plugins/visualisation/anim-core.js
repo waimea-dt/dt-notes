@@ -68,7 +68,27 @@
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
-  const HIGHLIGHTS = ['outline', 'inside', 'spotlight', 'arrow', 'glow', 'clear'] // and "number N" (see KEYWORDS.highlight)
+  // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
+  // anim-render.js (glow and spotlight change the shape itself).
+  //   off      its value when off (default false); valued: it takes a value ("number 5")
+  //   applies  whether it fits a shape, with refuse(shape) the message when it doesn't
+  const HIGHLIGHT_KINDS = {
+    outline: { applies: (shape) => !isLine(shape), refuse: () => '"highlight outline" doesn\'t fit a line: try glow or signal' },
+    inside: {
+      applies: (shape) => Boolean(SHAPES[shape.type]?.inside),
+      refuse: (shape) => {
+        const types = Object.keys(SHAPES).filter((type) => SHAPES[type].inside)
+        const what = shape.type === 'group' ? shape.layout || 'group' : shape.type
+        return `"highlight inside" needs a shape with an inside (${types.slice(0, -1).join(', ')} or ${types[types.length - 1]}), not ${article(what)} ${what}`
+      },
+    },
+    spotlight: {},
+    arrow: {},
+    glow: {},
+    number: { off: null, valued: true },
+  }
+  // The words after "highlight" (number, which takes a value, is matched on its own: KEYWORDS)
+  const HIGHLIGHTS = [...Object.keys(HIGHLIGHT_KINDS).filter((kind) => !HIGHLIGHT_KINDS[kind].valued), 'clear']
   // One-off emphasis on an existing shape (rendered by EMPHASIS_FRAMES in anim-render.js); along:
   // it runs along a line, arrow or curve (on a group: each of its lines). aliases: other words for it.
   const EMPHASES = {
@@ -751,7 +771,7 @@
   }
 
   Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
-    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
