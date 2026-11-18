@@ -1,17 +1,18 @@
-/* A slightly lighter background for anim code in the Markdown preview (as animSyntax.fenceBackground
-   does in the editor): the tint is laid over the theme's own code background. */
+/* A slightly lighter background for the site's plugin blocks in the Markdown preview, as
+   animSyntax.blockBackground does in the editor. The tags stay in the preview's HTML and hold the
+   Markdown up to their closing tag, so each block is tinted as a whole. Keep the list in step with
+   animSyntax.shadedBlocks (package.json). */
 :root {
-  --anim-fence-tint: rgba(255, 255, 255, 0.04);
+  --anim-block-tint: rgba(255, 255, 255, 0.04);
 }
 
-/* an ```anim fence */
-pre:has(.anim-code) {
-  background-image: linear-gradient(var(--anim-fence-tint), var(--anim-fence-tint));
-}
-
-/* an ```anim fence inside a ```markdown example: each of its lines, across the block's width */
-.anim-line {
-  display: inline-block;
-  min-width: 100%;
-  background-color: var(--anim-fence-tint);
+animation, slides, quiz, flashcards, drag-drop, primm, web-playground,
+cards, menu, computer, img-notes, coming-soon,
+filetree, hierarchy, structure, sequence, timeline, requests,
+db-schema, db-data, erd, accessibility, calculator {
+  display: block;
+  background-color: var(--anim-block-tint);
+  border-radius: 6px;
+  padding: 0.25em 1em;
+  margin: 1em 0;
 }

@@ -1,8 +1,8 @@
 {
   "name": "dt-notes-anim-syntax",
   "displayName": "DT Notes Anim Syntax",
-  "description": "Syntax highlighting, colour swatches and error marks for <animation> scene lines (```anim fences in Markdown, and .anim files).",
-  "version": "0.15.0",
+  "description": "Syntax highlighting, colour swatches and error marks for <animation> scene lines (```anim fences in Markdown, and .anim files), and a background on the site's plugin blocks.",
+  "version": "0.16.0",
   "publisher": "dt-notes",
   "license": "MIT",
   "repository": {
@@ -28,10 +28,23 @@
     "configuration": {
       "title": "Anim",
       "properties": {
-        "animSyntax.fenceBackground": {
+        "animSyntax.blockBackground": {
           "type": "string",
           "default": "rgba(255, 255, 255, 0.04)",
-          "description": "Background tint for ```anim fences in Markdown (any CSS colour; empty for none)."
+          "description": "Background tint for plugin blocks in Markdown, such as <animation>…</animation> (any CSS colour; empty for none)."
+        },
+        "animSyntax.shadedBlocks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "animation", "slides", "quiz", "flashcards", "drag-drop", "primm", "web-playground",
+            "cards", "menu", "computer", "img-notes", "coming-soon",
+            "filetree", "hierarchy", "structure", "sequence", "timeline", "requests",
+            "db-schema", "db-data", "erd", "accessibility", "calculator"
+          ],
+          "description": "The plugin block tags to shade (a block is shaded when its closing tag is on a later line)."
         }
       }
     },

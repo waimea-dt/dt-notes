@@ -15,7 +15,13 @@ Then run **Developer: Reload Window** in VS Code. Repeat after editing the gramm
 
 ## Colours
 
-The colours come from your theme. In Markdown, ```` ```anim ```` fences get a slightly lighter background, in the editor and the preview. Set its colour with the `animSyntax.fenceBackground` setting (any CSS colour, or `""` for none); the preview's tint is `--anim-fence-tint` in `preview.css`.
+The colours come from your theme.
+
+In Markdown, the site's plugin blocks (`<animation>`, `<slides>`, `<quiz>`, `<flashcards>` …) get a slightly lighter background, from the opening tag to the closing one. That way a block, and the headings inside it, stand out from the page. The settings:
+- `animSyntax.blockBackground`: the colour (any CSS colour, or `""` for none)
+- `animSyntax.shadedBlocks`: which tags are shaded. A block is only shaded when its closing tag is on a later line.
+
+In the preview, the tint is `--anim-block-tint` in `preview.css`, and its tag list should match the setting's.
 
  A relative number (`+2`, `-1`) shows its sign as an operator. To give relative numbers a colour of their own, add a rule to your settings:
 
@@ -32,5 +38,5 @@ The colours come from your theme. In Markdown, ```` ```anim ```` fences get a sl
 - `language-configuration.json`: `#` comments (Ctrl+/), quote and bracket pairs
 - `preview.js`: highlighting in the Markdown preview (which uses highlight.js, not the editor's grammars): ```` ```anim ```` fences, including ones inside ```` ```markdown ```` examples, highlighted from the same grammar with highlight.js class names
 - `extension.js`: colour swatches for named colours after `fill` / `stroke` / `colour` (dark-theme values; picking a colour writes a hex code)
-- `shading.js`: the background tint on ```` ```anim ```` fences in the editor (including ones inside ```` ```markdown ```` examples); `preview.css` does the same in the preview
+- `shading.js`: the background tint on plugin blocks in the editor (tags in code fences don't count); `preview.css` does the same in the preview
 - `diagnostics.js`: error and warning squiggles (and the Problems panel). Each animation is compiled by the real engine, loaded from the repo's `docs/_plugins/visualisation/`, so the marks are exactly the errors the page lists under an animation, plus its warnings. They update as you type. The engine is reloaded when its files are saved. Files outside this repo get no marks; icon names aren't checked.

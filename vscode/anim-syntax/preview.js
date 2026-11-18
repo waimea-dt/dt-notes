@@ -123,16 +123,14 @@ function extendMarkdownIt(md) {
     if (!['anim', 'markdown', 'md'].includes(lang)) return fence(tokens, idx, options, env, self)
     const base = options.highlight
     const highlight = (code, l, attrs) => {
-      if (lang === 'anim') return `<div class="anim-code">${highlightAnim(code.replace(/\n$/, ''))}\n</div>`
+      if (lang === 'anim') return `<div>${highlightAnim(code.replace(/\n$/, ''))}\n</div>`
       // Markdown chunks go through the preview's own highlighter (highlight.js)
       const plain = (text) => (text && base ? unwrap(base(text, l, attrs) || '') : '') || escapeHtml(text)
       const html = splitAnim(code).map((part) => {
         if (part.md !== undefined) return plain(part.md)
         const { open, body } = part.anim
         const fenceLine = (text) => span('hljs-code', escapeHtml(text))
-        // each line of the anim fence tinted across the block's width (preview.css)
-        const lines = [fenceLine(open), ...body.map((line) => tokenize(line, TOP)), ...(part.close !== null ? [fenceLine(part.close)] : [])]
-        return lines.map((html) => `<span class="anim-line">${html}</span>`).join('\n')
+        return [fenceLine(open), ...body.map((line) => tokenize(line, TOP)), ...(part.close !== null ? [fenceLine(part.close)] : [])].join('\n')
       })
       return `<div>${html.join('\n')}</div>`
     }
