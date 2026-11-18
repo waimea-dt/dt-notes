@@ -163,17 +163,19 @@
 
     // A shape's text. While it's being typed (typed: 0-1, the share of characters shown) the rest
     // is laid out but hidden, so the text doesn't shift as it grows, whatever its alignment.
-    function setLabel(node, text, typed) {
+    // Erasing (deleted), it's untyped from the start: the first characters go first.
+    function setLabel(node, text, typed, erase) {
       const chars = [...(text || '')]
       const shown = typed === undefined ? -1 : Math.round(chars.length * clamp01(typed))
-      const key = `${shown}|${text}`
+      const key = `${shown}|${erase}|${text}`
       if (node.labelKey === key) return
       node.labelKey = key
       if (shown < 0) { node.label.textContent = text; return }
-      const before = svgEl('tspan')
-      const after = svgEl('tspan', { visibility: 'hidden' })
-      before.textContent = chars.slice(0, shown).join('')
-      after.textContent = chars.slice(shown).join('')
+      const cut = erase ? chars.length - shown : shown
+      const before = svgEl('tspan', erase ? { visibility: 'hidden' } : {})
+      const after = svgEl('tspan', erase ? {} : { visibility: 'hidden' })
+      before.textContent = chars.slice(0, cut).join('')
+      after.textContent = chars.slice(cut).join('')
       node.label.replaceChildren(before, after)
     }
 
@@ -277,7 +279,7 @@
       paint(node.label, 'fontStyle', (v.nil ?? s.nil) ? 'italic' : '') // a null value
       node.label.style.opacity = v.labelOpacity
       paint(node.label, 'fill', colours.colour) // a text shape's colour, or any shape's label
-      setLabel(node, v.label, v.typed)
+      setLabel(node, v.label, v.typed, v.erase)
 
       if (LINE_TYPES.includes(node.type)) {
         const ends = v.ends || resolveEnds(s, byId)
@@ -566,7 +568,7 @@
         } else {
           shape = a
           v = appear(tw?.exit || 'fade', 1 - t, a, 1 - raw)
-          v.erase = true // a line drawn out is erased from its start, not wound back from its end
+          v.erase = true // a drawn line or typed text is erased from its start, not wound back from its end
           if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (remove)
         }
         // an arrowhead fades in or out as it's added to or taken off a line
