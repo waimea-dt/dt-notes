@@ -41,6 +41,7 @@
     slotFade: 0.15,   // a slot fades in or out over this share of its time
     fitSplit: 0.5,    // a fitted box (SHAPES: fitted) widens over this share of a change, then its text changes; or its text changes, then it narrows
     panelFade: 0.15,  // a code block's panel (and name, line numbers) fades in this share of a typed speed, before the typing
+    spanPad: 0.16,    // a span's box is this much bigger than its cells all round (in cells), so an outline goes round them
   }
   // How a shape comes in or goes (the effect words; rendered by FRAMES in anim-render.js):
   //   applies  whether it works on a shape; when it doesn't, the shape fades, with the warning
@@ -132,6 +133,10 @@
   //             and narrows after (CHOREOGRAPHY: fitSplit), so the text never sticks out
   //   pre       its text is code: spaces kept and highlighted by its lang (anim-render.js); height,
   //             its box's height, and pad, the margin each side of the text (× the font size)
+  //   owned     its place and size come from what it belongs to (a span: its row's places), so it
+  //             can't be moved or attached: the hint the message gives instead
+  //   hug       it's already a padded marker, so a highlight outline sits on its own edge (no gap)
+  //             and goes round it alone, leaving its name outside
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
@@ -167,6 +172,14 @@
       defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', mono: true, align: 'left' }, outline: 'box', label: 'code', inside: true,
       internal: true, noun: 'code line', fitted: true, band: { pad: 0, corner: null }, pre: { height: 1.4, pad: 0.3 },
     },
+    // some of a row's / column's / code block's places as one ("s: span arr 0 2"): a box round them
+    // (fitSpans in anim-compile.js), invisible unless given a fill or stroke, for highlights, a
+    // callout and a name. Made by the span verb (LINES).
+    span: {
+      takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight'],
+      defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', corner: 0.15 * CELL, layer: 'back' }, outline: 'box', label: 'centre',
+      internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again (e.g. "s: span arr 2 4")',
+    },
   }
   const typesWhere = (test) => Object.keys(SHAPES).filter((type) => test(SHAPES[type]))
   const SHAPE_TYPES = typesWhere((kind) => !kind.resource && !kind.internal) // written as a word after "id:"
@@ -191,11 +204,12 @@
   //   bow         how far a swapped cell bows out: 'own' (its size across) or 'cell' (a grid cell)
   //   numbers     its indices keep to its cells' font size
   //   panel       a background behind it (and its indices): pad and corner, in cells
+  //   spanName    the side a span's name goes (beside its places, away from the indices)
   const LAYOUTS = {
-    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left-of', slide: true, slot: true, bow: 'own' },
-    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'above', slide: true, slot: true, bow: 'own' },
+    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left-of', spanName: 'above', slide: true, slot: true, bow: 'own' },
+    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'above', spanName: 'right-of', slide: true, slot: true, bow: 'own' },
     code: {
-      noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'above', lines: true, fit: true, typeInTurn: true,
+      noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'above', spanName: 'right-of', lines: true, fit: true, typeInTurn: true,
       slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 },
     },
   }
@@ -500,6 +514,10 @@
     insert: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell into a row / column
     remove: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell out of one
     assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "v1: a.1"
+    span: { // "s: span arr 0 2": a box round some of a row's / column's / code block's places
+      verb: true, takes: [...SHAPES.span.takes, 'layer', 'highlight', 'callout', 'name', 'effect', ...TIMING],
+      refuse: (word) => `"${word}" doesn't apply to a span: it's a box round its cells, for a fill, stroke, highlight, callout or name`,
+    },
     range: { // some of a row's / column's cells, "arr: range 0 3 fill red": how they look, not where they are
       verb: true, takes: [...CELL_STYLE, 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
       refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,

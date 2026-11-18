@@ -128,7 +128,7 @@
     "action": {
       "$comment": "the verbs: words that start a line's command, and the actions detach (like ungroup) and clear (callout clear, name clear, indices clear; highlight clear is in its own rule)",
       "name": "keyword.control.anim",
-      "match": "(?<![\\w-])(copy|group|ungroup|delete|swap|insert|remove|range|detach|clear)(?![\\w-])"
+      "match": "(?<![\\w-])(copy|group|ungroup|delete|swap|insert|remove|range|span|detach|clear)(?![\\w-])"
     },
     "ease": {
       "$comment": "ease and its value (in and out are only values here)",

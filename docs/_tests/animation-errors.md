@@ -126,6 +126,14 @@ br: rect at 1,1 bar
 bm: var 5 at 1,1 bar max 0
 cv: rect at 1,1 fill muted-bright
 cv2: rect at 1,1 fill red-vivid
+sp1: span er 0 9
+sp2: span dw 0 1
+sp3: span er 0
+sp4: span zz 0 1
+sp5: span er 0 1 at 2,2
+sp6: span er 0 1
+sp6: move 2,2
+sp6: size 2
 ```
 
 </animation>

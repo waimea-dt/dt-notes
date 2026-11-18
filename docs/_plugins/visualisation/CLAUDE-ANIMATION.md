@@ -57,7 +57,7 @@ In your summary, say that you checked, and name any exception you kept.
 
 - **Timing:** every change's timing goes through `schedule(meta, uid, props, { dur, after })` in `anim-compile.js`. It takes the longest duration and latest start when a shape changes twice in a beat.
 - **Attachments:** `besideOf` (attach, names) or `offsetFrom` (group members, cells, index labels). Test `attach.kind`, never field presence.
-- **A var's or row's parts:** build ids with `cellId` / `indexId` / `nameId`. A part has `part: owner.id`, and goes when its owner does.
+- **A var's or row's parts:** build ids with `cellId` / `indexId` / `nameId`. A part has `part: owner.id`, and goes when its owner does. A span is a part of its row too, with its own id. `fitSpans` refits it to its places in `settle`, and `covers` lists the cells it's round (a spotlight lights them).
 - **A value on the move:** use `flyValue` (the target takes the value as the flyer lands), or `fly` with `{ arrive, linger }`.
 - **Layouts:** test a layout's behaviour through `LAYOUTS[row.layout]`, never its name.
 - **Cell numbers:** a layout's cells are numbered from its `base` (code: 1, rows and columns: 0). Positions in `members` are from 0; convert with `baseOf(layout)` wherever a number is read or shown (`cellRange(row, n)`).

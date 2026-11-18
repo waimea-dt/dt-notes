@@ -3203,6 +3203,99 @@ arr: range 0 5 highlight clear
 
 </animation>
 
+## Feature: span
+
+<animation grid="14x8">
+
+```anim
+arr: row [5, 3, 8, 1, 9, 2] at 3,3 size 1 gap 0.2 indices corner 0.05
+sorted: span arr 0 2 name "sorted" highlight outline
+```
+
+---
+
+## Spans stay on their places
+
+```anim
+arr: swap 1 4
+```
+
++++
+
+```anim
+sorted: span arr 0 3                      # spanned again: it glides
+win: span arr 3 5 fill teal-bright name "window"
+```
+
++++
+
+```anim
+win: span arr 2 4                         # a sliding window
+```
+
+---
+
+## Highlights, callouts and spotlight on a span
+
+```anim
+sorted: highlight spotlight
+```
+
++++
+
+```anim
+sorted: highlight clear
+win: callout "max?" below
+```
+
+---
+
+## Inserts and removes refit it
+
+```anim
+win: callout clear
+arr: insert 7 at 0
+```
+
++++
+
+```anim
+arr: remove end
+arr: remove end
+```
+
+---
+
+## Columns and code blocks
+
+```anim
+col: column [4 8 15 16] at 12,2 gap 0.1 corner 0.05
+top: span col 0 1 name "top" stroke teal dotted
+c: code ["total = 0" "for n in nums:" "    total += n" "print(total)"] at 2,6.5 lang python numbered
+loop: span c 2 3 name "loop" highlight outline
+```
+
++++
+
+```anim
+arr: delete                                # its spans go with it
+loop: highlight arrow
+```
+
++++
+
+```anim
+top: highlight glow
+```
+
++++
+
+```anim
+loop: highlight spotlight
+```
+
+</animation>
+
 ## Feature: Bars
 
 <animation grid="13x6">

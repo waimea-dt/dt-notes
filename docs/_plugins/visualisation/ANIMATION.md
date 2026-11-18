@@ -196,6 +196,20 @@ arr: delete                        # the whole row
 - Cells hold values like a var: `arr.2: 7`, `arr.2: "x"`, `arr.2: null`, and `null` in `[ ]`.
 - `swap` `insert` `remove` take `speed`, `delay` and `ease`. Insert and remove are two moves in turn (out then close up, or open up then in), so they take about 1.6 × the speed.
 
+## Spans
+
+```anim
+sorted: span arr 0 2 name "sorted"     # a box round places 0 to 2, as one shape
+sorted: highlight outline              # one outline round them all
+win: span arr 3 5 fill amber           # a band behind them
+win: span arr 2 4                      # spanned again: it glides there
+sorted: delete
+```
+
+- For rows, columns and code blocks. Invisible unless given a `fill` or `stroke`, at the back.
+- It stays on its places through a swap, insert or remove, and goes when its row does.
+- Takes highlights (a spotlight lights its cells), a callout and a `name` (above it on a row, right of it on a column or code block).
+
 ## Variables
 
 ```anim

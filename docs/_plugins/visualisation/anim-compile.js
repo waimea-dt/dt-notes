@@ -9,7 +9,7 @@
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES, entranceFor,
     parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C, CELL_STYLE, LINES,
     wordFor, LOOKS, KEPT_STYLE, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, FONT,
-    textWidth, BARS } = window.Anim
+    textWidth, BARS, mergeBoxes } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -134,16 +134,17 @@
         shape.hl = hl
       }
       // pulse / shake / wobble / bounce / glow: one-off effects this beat, on an existing shape
-      // (and a group's members)
+      // (and a group's members, and the shapes it covers: a span's cells)
       // signal / signal-reverse: a blip along a line (a group's lines)
       if (props.emphasis) {
         const signal = EMPHASES[props.emphasis].along
         if (signal && !isLine && shape.type !== 'group') throw new Error(`"${props.emphasis}" travels along a line, arrow or curve`)
-        const targets = [shape, ...groupMembers(shape)].filter((target) => !signal || LINE_TYPES.includes(target.type))
+        const covered = (shape.covers || []).map((id) => shapes.get(id)).filter(Boolean)
+        const targets = [shape, ...groupMembers(shape), ...covered].filter((target) => !signal || LINE_TYPES.includes(target.type))
         if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
         else if (!targets.length) warn(`"${shape.id}" has no lines in it, so "${props.emphasis}" does nothing`)
         else {
-          for (const target of targets) schedule(meta, target.uid, props).effect = props.emphasis // a group's members play it too
+          for (const target of targets) schedule(meta, target.uid, props).effect = props.emphasis // a group's members (a span's cells) play it too
         }
       }
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
@@ -188,6 +189,10 @@
       }
 
       const positioned = props.at || props.x || props.y
+      const owned = kindOf(shape).owned
+      if (owned && (positioned || props.via || props.travel || props.follow || props.attach || props.detach)) {
+        throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
+      }
       if (props.travel && props.follow) throw new Error('give either "travel" or "follow", not both')
       if ((props.travel || props.follow) && (positioned || props.via)) throw new Error('"travel" and "follow" set the route, so they can\'t go with at / move / x / y / via')
       if ((props.travel || props.follow) && creating) throw new Error('"travel" and "follow" only work when moving an existing shape')
@@ -317,6 +322,7 @@
     // (several passes, for chains), and fit each group's box round its members.
     function settle(meta) {
       fitCode(meta)
+      fitSpans(meta)
       for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
       resolveAttachments(shapes)
       for (const group of shapes.values()) {
@@ -563,6 +569,76 @@
       applyStagger(row, cells.map((cell) => [cell.uid]), props, meta, warn)
     }
 
+    // "s: span arr 0 2": a box round some of a row's / column's / code block's places (SHAPES: span),
+    // as one shape for highlights, a callout and a name. It's a part of the row (it goes when the
+    // row does) and stays on its places through swaps, inserts and removes (fitSpans). Spanning an
+    // existing span again moves it to the new places, gliding there.
+    function makeSpan(id, existing, tokens, meta, warn) {
+      const example = `e.g. "${id}: span arr 0 2"`
+      const rowId = parseAs('id', tokens[1], shapes)
+      const row = rowId && shapes.get(rowId)
+      if (!row) throw new Error(`"span" expects a row, column or code block and two of its cell numbers, ${example}${tokens[1] && !rowId ? `: no shape called "${tokens[1].value}"` : ''}`)
+      if (!row.layout) throw new Error(`"span" goes round some of a row's, column's or code block's cells, and "${rowId}" isn't one`)
+      const base = baseOf(row.layout)
+      const from = parseAs('index', tokens[2])
+      const to = parseAs('index', tokens[3])
+      if (from === undefined || to === undefined) throw new Error(`"span" expects two cell numbers after the ${row.layout}, e.g. "${id}: span ${rowId} ${base} ${base + 2}"`)
+      const props = parseProps(tokens, 4, 'span', shapes)
+      const n = row.members.length
+      for (const k of [from, to]) {
+        if (k < base || k >= base + n) throw new Error(`"${rowId}" has no cell ${k} (its cells are ${cellRange(row, n)})`)
+      }
+      if (rowId === id) throw new Error('a span needs an id of its own')
+      const respan = existing?.type === 'span'
+      if (existing && !respan) {
+        warn(`"${id}" already exists, so it is replaced`)
+        removeShape(existing, props, meta, warn)
+      }
+      const shape = respan ? structuredClone(existing) : { ...baseShape('span'), id, uid: ++uid }
+      shape.span = { of: rowId, from: Math.min(from, to), to: Math.max(from, to) }
+      shape.part = rowId
+      checkParts(shape, props)
+      if (!respan) applyDefaults(shape)
+      fitSpan(shape)
+      applyProps(shape, props, !respan, warn, meta)
+      shapes.set(id, shape)
+      const record = schedule(meta, shape.uid, props)
+      if (!respan) record.enter = props.effect || defaults.effect || 'fade'
+      else if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
+      updateParts(shape, props, meta, warn)
+    }
+
+    // A span's box: round its places in its row (each cell's offset in the row and its size), and
+    // the cells it covers (for a spotlight). Places past the row's end (after a remove) are left out.
+    function fitSpan(span) {
+      const row = shapes.get(span.span.of)
+      const base = baseOf(row.layout)
+      const cells = row.members.slice(span.span.from - base, span.span.to - base + 1).map((cell) => shapes.get(cell)).filter(Boolean)
+      span.covers = cells.map((cell) => cell.id)
+      const pad = C.spanPad * CELL
+      // each cell's box at its place, measured from the row's first cell (bounds: aligned code lines too)
+      const box = cells.length ? mergeBoxes(cells.map((cell) => bounds({ ...cell, x: cell.attach.dx, y: cell.attach.dy }, shapes)))
+        : { x0: 0, y0: 0, x1: 0, y1: 0 }
+      const dx = (box.x0 + box.x1) / 2
+      const dy = (box.y0 + box.y1) / 2
+      Object.assign(span, { w: cells.length ? box.x1 - box.x0 + 2 * pad : 0, h: cells.length ? box.y1 - box.y0 + 2 * pad : 0 })
+      span.attach = offsetFrom(row.id, dx, dy)
+      Object.assign(span, { x: row.x + dx, y: row.y + dy })
+    }
+
+    // After every line: each span refitted to its places, as its row's cells move (in the time its
+    // busiest cell takes this beat)
+    function fitSpans(meta) {
+      for (const span of shapes.values()) {
+        if (!span.span || !shapes.has(span.span.of)) continue
+        const before = [span.w, span.h, span.attach.dx, span.attach.dy].join()
+        fitSpan(span)
+        if (meta && [span.w, span.h, span.attach.dx, span.attach.dy].join() !== before) {
+          retime(meta, span.uid, busiest(meta, shapes.get(span.span.of).members.map((cell) => shapes.get(cell)).filter(Boolean)))
+        }
+      }
+    }
+
     // "bar" on a row's / column's cells with no max (given, or a default): a full bar is its biggest
     // value now, the same for every cell. Adds it to `look`; `values` are the cells' values (default:
     // the row's cells).
@@ -658,7 +734,7 @@
     }
 
     // The verbs (LINES with verb: true), each run as (id, existing shape, tokens, meta, warn, word)
-    const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, swap: swapCells, insert: editCells, remove: editCells, range: changeRange }
+    const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, swap: swapCells, insert: editCells, remove: editCells, range: changeRange, span: makeSpan }
 
     // A value a var or a row's / column's cell holds: a number, "quoted" text or null (shown muted)
     function valueOf(token) {
@@ -726,7 +802,7 @@
     // at the places, so they stay put through a swap and while cells slide in and out, and the last
     // one comes as a slot opens on the end and goes as one closes.
     function checkParts(shape, props) {
-      if (props.name && !shape.var && !shape.layout) throw new Error('"name" is for a var, row or column')
+      if (props.name && !shape.var && !shape.layout && !shape.span) throw new Error('"name" is for a var, row, column or span')
       if (props.indices !== undefined && !shape.layout) throw new Error('"indices" is for a row or column')
     }
 
@@ -737,6 +813,13 @@
         shape.indices = props.indices
         syncIndices(shape, props, meta)
       }
+    }
+
+    // The side a name goes, unless given: its layout's (LAYOUTS: name), a span's by its row's layout
+    // (LAYOUTS: spanName), or left of a var
+    function nameSide(owner) {
+      if (owner.span) return LAYOUTS[shapes.get(owner.span.of)?.layout]?.spanName || 'above'
+      return LAYOUTS[owner.layout]?.name || 'left-of'
     }
 
     function setName(owner, name, props, meta, warn) {
@@ -751,7 +834,7 @@
       }
       const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: ++uid, font: 1.2, layer: owner.layer, part: owner.id }
       text.label = name.text
-      text.attach = besideOf(owner.id, name.side || old?.attach?.side || (LAYOUTS[owner.layout]?.name || 'left-of'), 0.2 * CELL)
+      text.attach = besideOf(owner.id, name.side || old?.attach?.side || nameSide(owner), 0.2 * CELL)
       Object.assign(text, attachPos(text, owner, text.attach))
       shapes.set(id, text)
       if (!old) tween(meta, text.uid).enter = 'fade'

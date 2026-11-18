@@ -152,6 +152,7 @@
     const BODIES = {
       rect: rectBody,
       codeline: rectBody, // a code line's box, which a fill shows as a band
+      span: rectBody, // a box round a row's places, which a fill or stroke shows
       circle: {
         make: (node) => { node.body = node.g.appendChild(svgEl('circle')) },
         size: (node, s) => attr(node.body, 'r', s.r),
@@ -637,8 +638,9 @@
       return s
     }
 
-    // Shapes lit by a spotlight in a state (by id): spotlit shapes, the members of spotlit groups,
-    // and lines whose ends are both on lit shapes. Null when nothing is spotlit.
+    // Shapes lit by a spotlight in a state (by id): spotlit shapes, the members of spotlit groups, the
+    // shapes a spotlit shape covers (a span's cells: covers), a layout with a panel that has a lit
+    // cell, and lines whose ends are both on lit shapes. Null when nothing is spotlit.
     function litIds(state) {
       if (![...state.values()].some((s) => s.hl?.spotlight)) return null
       const lit = new Set()
@@ -650,6 +652,12 @@
         return false
       }
       for (const shape of state.values()) if (isLit(shape)) lit.add(shape.id)
+      for (const shape of state.values()) if (shape.hl?.spotlight) shape.covers?.forEach((id) => lit.add(id))
+      // a layout's panel (LAYOUTS: panel) is the background its cells belong on, so it stays lit
+      // while any of them is (its other cells, and its name and indices, still dim)
+      for (const shape of state.values()) {
+        if (LAYOUTS[shape.layout]?.panel && shape.members.some((id) => lit.has(id))) lit.add(shape.id)
+      }
       for (const shape of state.values()) {
         if (LINE_TYPES.includes(shape.type) && shape.from.ref && shape.to.ref && lit.has(shape.from.ref) && lit.has(shape.to.ref)) lit.add(shape.id)
       }
@@ -661,6 +669,15 @@
     function litFor(state) {
       if (!litCache.has(state)) litCache.set(state, litIds(state))
       return litCache.get(state)
+    }
+
+    // The ids a glowing shape covers in a state (a span's cells: covers), worked out once per state
+    const glowCache = new WeakMap()
+    function glowFor(state) {
+      if (!glowCache.has(state)) {
+        glowCache.set(state, new Set([...state.values()].filter((s) => s.hl?.glow).flatMap((s) => s.covers || [])))
+      }
+      return glowCache.get(state)
     }
 
     const DIM = 0.2 // opacity of shapes outside the spotlight
@@ -809,6 +826,8 @@
         item.v.opacity *= item.dimK
       }
 
+      const glowA = glowFor(A)
+      const glowB = glowFor(B)
       const finalByUid = new Map([...final.values()].map((s) => [s.uid, s]))
       order(items.map(({ node, shape, uid }) => ({ node, shape: finalByUid.get(uid) || shape })))
 
@@ -830,7 +849,9 @@
           // its fill as it is, not tinted as a fill (BAR_DRAWS choose which to use)
           colours.raw = mixColour(rgba(colourCss(from.fill, 'stroke')), rgba(colourCss(to.fill, 'stroke')), t)
         }
-        item.v.hlGlow = blend(item, (s) => s.hl?.glow) // highlight glow fades in / out like the box
+        // highlight glow fades in / out like the box; a shape glows too when one covering it does
+        // (a span's cells: covers)
+        item.v.hlGlow = blend(item, (s) => s.hl?.glow || (s === item.a ? glowA : glowB).has(s.id))
         item.v.hlLine = blend(item, (s) => s.hl?.line)
         drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
@@ -953,8 +974,9 @@
     const highlightPathOf = (key, offsetOf) => ({
       make: () => ({ el: highlightLayer.appendChild(svgEl('path', { class: `anim-highlight-${key}` })) }),
       draw: (o, { item, b, now }) => {
-        // an outline is round the whole thing: a var's / row's / column's name and indices too
-        const parts = key === 'outline' ? [...now.values()].filter((s) => s.part === item.shape.id) : []
+        // an outline is round the whole thing: a var's / row's / column's name and indices too (not
+        // a shape that hugs its own edge, SHAPES: hug)
+        const parts = key === 'outline' && !kindOf(item.shape).hug ? [...now.values()].filter((s) => s.part === item.shape.id) : []
         const outer = parts.length > 0
         const box = outer ? mergeBoxes([b, ...parts.map((part) => bounds(part, now))]) : b
         const { d, transform } = highlightPath(item.shape, item.v, offsetOf(item.shape), box, outer)
@@ -965,7 +987,7 @@
     const OVERLAYS = {
       // the shape's own outline, PAD outside it; inside: the same line just inside its stroke. Both
       // are paths in the shape's place and turn (see highlightPath).
-      outline: { has: (s) => s.hl?.outline, ...highlightPathOf('outline', () => PAD) },
+      outline: { has: (s) => s.hl?.outline, ...highlightPathOf('outline', (s) => (kindOf(s).hug ? 0 : PAD)) },
       inside: { has: (s) => s.hl?.inside, ...highlightPathOf('inside', (s) => -insetOf(s)) },
       // a block arrow pointing in at the top-right corner, sliding in as it fades in
       arrow: {
