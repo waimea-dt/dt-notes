@@ -6,7 +6,7 @@
 ;(function () {
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP,
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
-    parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, SIGNALS,
+    parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES, entranceFor,
     parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C, CELL_STYLE, LINES,
     wordFor, LOOKS, KEPT_STYLE, article, SHAPES, kindOf } = window.Anim
 
@@ -134,7 +134,7 @@
       // (and a group's members)
       // signal / signal-reverse: a blip along a line (a group's lines)
       if (props.emphasis) {
-        const signal = props.emphasis in SIGNALS
+        const signal = EMPHASES[props.emphasis].along
         if (signal && !isLine && shape.type !== 'group') throw new Error(`"${props.emphasis}" travels along a line, arrow or curve`)
         const targets = [shape, ...groupMembers(shape)].filter((target) => !signal || LINE_TYPES.includes(target.type))
         if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
@@ -342,12 +342,9 @@
       }
     }
 
-    // draw only applies to lines and arrows, slide only to shapes, typed only to text; otherwise they fade
+    // An entrance or exit that doesn't apply to the shape (ENTRANCES) fades instead: say why
     function warnEffect(shape, effect, warn) {
-      const line = LINE_TYPES.includes(shape.type)
-      if (effect === 'draw' && !line) warn(`"draw" only draws lines and arrows, so this ${shape.type} fades instead`)
-      if (effect === 'slide' && line) warn(`"slide" doesn't move lines, so this ${shape.type} fades instead`)
-      if (effect === 'typed' && !shape.label) warn(`"typed" types out a shape's text, and this ${shape.type} has none, so it fades instead`)
+      if (entranceFor(effect, shape) !== effect) warn(ENTRANCES[effect].unless(shape.type))
     }
 
     // The one place a change's timing is set: it takes `dur` ms (the line's speed unless given),
@@ -980,7 +977,7 @@
       if (removing) {
         freezeEndsAttachedTo(cellId(id, n - 1)) // the last place goes
         const [gone] = list.splice(at, 1)
-        if (target) tween(meta, gone.uid).cut = true // it flies to the target instead (below)
+        if (target) tween(meta, gone.uid).exit = 'vanish' // it flies to the target instead (below)
         else Object.assign(tween(meta, gone.uid), { exit: 'fade', offset: aside(gone) })
         timing(gone.uid, 0)
         list.slice(at).forEach((cell) => timing(cell.uid, then))
@@ -1017,7 +1014,7 @@
       // A copy of a var or cell glides to just outside the opening slot (its look turning into the
       // row's on the way), then the new cell, solid from the start, slides in from there
       if (source) {
-        tween(meta, slotCell.uid).solid = true
+        tween(meta, slotCell.uid).enter = 'appear' // there from the start: the flyer is on it
         const out = aside(slotCell)
         const place = { x: row.x + slotCell.attach.dx, y: row.y + slotCell.attach.dy }
         fly(meta, source, slotCell, [{ x: source.x, y: source.y }, { x: place.x + out.x, y: place.y + out.y }], props, { arrive: then, linger: false })

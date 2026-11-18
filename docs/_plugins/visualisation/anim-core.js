@@ -39,7 +39,25 @@
     crossfade: 0.5,   // the value it brings crossfades in over this, centred on its landing
     slotFade: 0.15,   // a slot fades in or out over this share of its time
   }
-  const EFFECTS = ['fade', 'pop', 'draw', 'slide', 'typed']
+  // How a shape comes in or goes (the effect words; rendered by FRAMES in anim-render.js):
+  //   applies  whether it works on a shape; when it doesn't, the shape fades, with the warning
+  //            unless(type) gives
+  //   quiet    plays no intro of its own on the first beat (see animation.js)
+  //   internal not a word an author types: a cell a flyer brings in is there from the start
+  //            (appear), one a flyer takes away goes at once (vanish)
+  const isLine = (shape) => Boolean(SHAPES[shape.type]?.line)
+  const ENTRANCES = {
+    fade: { quiet: true },
+    pop: {},
+    draw: { applies: isLine, unless: (type) => `"draw" only draws lines and arrows, so this ${type} fades instead` },
+    slide: { applies: (shape) => !isLine(shape), unless: (type) => `"slide" doesn't move lines, so this ${type} fades instead` },
+    typed: { applies: (shape) => Boolean(shape.label), unless: (type) => `"typed" types out a shape's text, and this ${type} has none, so it fades instead` },
+    appear: { quiet: true, internal: true },
+    vanish: { quiet: true, internal: true },
+  }
+  const EFFECTS = Object.keys(ENTRANCES).filter((name) => !ENTRANCES[name].internal)
+  // The entrance a shape really gets: its own, or a fade where that doesn't apply
+  const entranceFor = (effect, shape) => (ENTRANCES[effect]?.applies?.(shape) === false ? 'fade' : effect)
   const LAYERS = { back: 0, normal: 1, front: 2 }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
   const ALIGNS = { left: 'left', centre: 'centre', right: 'right' }
@@ -51,8 +69,17 @@
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   const HIGHLIGHTS = ['outline', 'inside', 'spotlight', 'arrow', 'glow', 'clear'] // and "number N" (see KEYWORDS.highlight)
-  const EMPHASES = ['pulse', 'shake', 'wobble', 'bounce', 'glow']
-  const SIGNALS = { signal: 'signal', 'signal-reverse': 'signal-reverse' } // one-off blips along a line
+  // One-off emphasis on an existing shape (rendered by EMPHASIS_FRAMES in anim-render.js); along:
+  // it runs along a line, arrow or curve (on a group: each of its lines). aliases: other words for it.
+  const EMPHASES = {
+    pulse: {},
+    shake: {},
+    wobble: { aliases: ['wiggle'] },
+    bounce: {},
+    glow: {},
+    signal: { along: true },
+    'signal-reverse': { along: true },
+  }
   const CALLOUT_CH = 24 // callout text wraps at about this many characters
   const FLOW_SPEED = 2 * 80 // px per second (two cells)
   // Every shape type, in one place:
@@ -245,9 +272,8 @@
     ...words(EFFECTS, 'effect', 'effect'),
     ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
     // emphasis, highlights and callouts
-    ...words(EMPHASES, 'emphasis', 'emphasis'),
-    ...words(Object.keys(SIGNALS), 'emphasis', 'emphasis'),
-    wiggle: fixed('emphasis', 'wobble', { what: 'emphasis' }),
+    ...words(Object.keys(EMPHASES), 'emphasis', 'emphasis'),
+    ...Object.fromEntries(Object.entries(EMPHASES).flatMap(([name, e]) => (e.aliases || []).map((alias) => [alias, fixed('emphasis', name, { what: 'emphasis' })]))),
     highlight: {
       key: 'highlight', list: [['number', 'num'], ['number'], ['highlight']],
       // number with no value: the next in the sequence (null until compiled)
@@ -728,7 +754,7 @@
     FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
-    SIGNALS, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
+    EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

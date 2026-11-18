@@ -37,7 +37,7 @@
 
 ;(function () {
   const { escapeHtml, viewBoxFor, compile, warnOutsideGrid, PLAY_PAUSE, svgEl, createRenderer,
-    reducedMotion, CAPTION_MS, ease, easeFn, lerp, pointOnHops, clamp01, rewriteBlocks, stripHeadingAnchors } = window.Anim
+    reducedMotion, CAPTION_MS, ease, easeFn, lerp, pointOnHops, clamp01, rewriteBlocks, stripHeadingAnchors, ENTRANCES } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Widget
@@ -467,7 +467,7 @@
     // back to the start, instead of only ever being shown finished. Plain fades don't (every
     // animation would fade in as it scrolls into view), nor for viewers who prefer reduced motion.
     const hasIntro = !reducedMotion() && [...(beats[0]?.meta.tweens.values() || [])]
-      .some((tw) => (tw.enter && tw.enter !== 'fade') || tw.delay > 0)
+      .some((tw) => (tw.enter && !ENTRANCES[tw.enter]?.quiet) || tw.delay > 0)
     let introPending = hasIntro && 'IntersectionObserver' in window // drawn empty until it plays
     let intro = null // the intro's promise while it plays
     function playIntro() {

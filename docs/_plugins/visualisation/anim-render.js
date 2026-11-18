@@ -7,7 +7,7 @@
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
-    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES } = window.Anim
+    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES, entranceFor } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -434,21 +434,42 @@
       return options.sort((a, b) => a.d - b.d)[0]
     }
 
-    // Visibility for a shape that is appearing (t: 0 -> 1) or disappearing (t: 1 -> 0); `raw` is
-    // the same without easing.
-    function appear(effect, t, shape, raw = t) {
-      const v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
-      const isLine = LINE_TYPES.includes(shape.type)
-      if (effect === 'pop') { v.scale = Math.max(0.001, t); v.opacity = clamp01(t * 3) }
-      else if (effect === 'draw' && isLine) v.draw = t
-      // typed: the shape fades in quickly and its text types out at an even pace, one character
-      // at a time (and un-types on the way out)
-      else if (effect === 'typed' && shape.label) { v.opacity = clamp01(raw * 6); v.typed = raw }
-      else if (effect === 'slide' && !isLine) {
+    // Each entrance / exit (ENTRANCES in anim-core.js): how visible a shape is (v) as it appears
+    // (t: 0 -> 1) or disappears (t: 1 -> 0); `raw` is the same without easing.
+    const FRAMES = {
+      fade: (v, t) => { v.opacity = t },
+      pop: (v, t) => { v.scale = Math.max(0.001, t); v.opacity = clamp01(t * 3) },
+      draw: (v, t) => { v.draw = t },
+      // the shape fades in quickly and its text types out at an even pace, one character at a time
+      // (and un-types on the way out)
+      typed: (v, t, raw) => { v.opacity = clamp01(raw * 6); v.typed = raw },
+      // in from (out to) the nearest edge of the view
+      slide: (v, t, raw, shape) => {
         const off = offscreenOffset(shape)
         v.dx = off.dx * (1 - t); v.dy = off.dy * (1 - t)
-      } else v.opacity = t
+      },
+      appear: (v, t, raw) => { v.opacity = raw > 0 ? 1 : 0 }, // there as soon as it starts
+      vanish: (v, t, raw) => { v.opacity = raw < 1 ? 0 : 1 }, // gone as soon as it starts
+    }
+    function appear(effect, t, shape, raw = t) {
+      const v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
+      ;(FRAMES[entranceFor(effect, shape)] || FRAMES.fade)(v, t, raw, shape)
       return v
+    }
+
+    // Each one-off emphasis (EMPHASES in anim-core.js), over its time (raw: 0 -> 1, un-eased)
+    const EMPHASIS_FRAMES = {
+      pulse: (v, raw) => { v.scale = 1 + 0.25 * Math.sin(Math.PI * raw) },
+      shake: (v, raw) => { v.dx = 0.15 * CELL * Math.sin(8 * Math.PI * raw) * (1 - raw) },
+      // turns left and right twice, easing in and out
+      wobble: (v, raw) => { v.rot = 14 * Math.sin(4 * Math.PI * raw) * Math.sin(Math.PI * raw) },
+      // three hops up, like a dropped ball, each lower than the last
+      bounce: (v, raw) => { v.dy = -0.6 * CELL * Math.abs(Math.sin(3 * Math.PI * raw)) * Math.pow(1 - raw, 1.5) },
+      // brightens and glows, then fades back
+      glow: (v, raw) => { v.glow = Math.sin(Math.PI * raw) },
+      // a blip along the line at an even pace
+      signal: (v, raw) => { v.signal = { t: raw, reverse: false } },
+      'signal-reverse': (v, raw) => { v.signal = { t: raw, reverse: true } },
     }
 
     function interpolate(a, b, t) {
@@ -529,17 +550,7 @@
           v.nil = swap && t < 0.5 ? a.nil : b.nil
           v.labelOpacity = swap ? Math.abs(2 * t - 1) : 1
           // One-off effects, forwards only (going back doesn't replay them)
-          const oneoff = extra.forward && tw?.effect
-          if (oneoff === 'pulse') v.scale = 1 + 0.25 * Math.sin(Math.PI * raw)
-          if (oneoff === 'shake') v.dx = 0.15 * CELL * Math.sin(8 * Math.PI * raw) * (1 - raw)
-          // wobble: turns left and right twice, easing in and out
-          if (oneoff === 'wobble') v.rot = 14 * Math.sin(4 * Math.PI * raw) * Math.sin(Math.PI * raw)
-          // bounce: three hops up, like a dropped ball, each lower than the last
-          if (oneoff === 'bounce') v.dy = -0.6 * CELL * Math.abs(Math.sin(3 * Math.PI * raw)) * Math.pow(1 - raw, 1.5)
-          // glow: brightens and glows, then fades back
-          if (oneoff === 'glow') v.glow = Math.sin(Math.PI * raw)
-          // signal: a blip along the line at an even pace
-          if (oneoff === 'signal' || oneoff === 'signal-reverse') v.signal = { t: raw, reverse: oneoff === 'signal-reverse' }
+          if (extra.forward && tw?.effect) EMPHASIS_FRAMES[tw.effect](v, raw)
           // swap: the cell bows out to one side on its way to the other's place
           if (tw?.arc) {
             const k = Math.sin(Math.PI * clamp01(t))
@@ -549,15 +560,12 @@
         } else if (b) {
           shape = b
           v = appear(tw?.enter || 'fade', t, b, raw)
-          // a row's cell slides in from beside the row (insert); solid when a flyer brought
-          // its value there
+          // a row's cell slides in from beside the row (insert)
           if (tw?.offset) { v.dx += tw.offset.x * (1 - t); v.dy += tw.offset.y * (1 - t) }
-          if (tw?.solid) v.opacity = raw > 0 ? 1 : 0
         } else {
           shape = a
           v = appear(tw?.exit || 'fade', 1 - t, a, 1 - raw)
           if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (remove)
-          if (tw?.cut) v.opacity = raw > 0 ? 0 : 1 // a flyer takes over from it (remove … into)
         }
         // an arrowhead fades in or out as it's added to or taken off a line
         v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
