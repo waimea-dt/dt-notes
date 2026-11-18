@@ -2791,18 +2791,16 @@ camera reset ease out
 
 <animation grid="12x4">
 
-```anim
-fd: rect "fade" at 2,2
-```
-
----
-
 ## Entrances
 
++++
+
 ```anim
-pp: rect "pop" at 5,2 pop
-sl: circle "slide" at 8,2 slide
-dr: arrow from 1,3.5 to 11,3.5 draw speed slow
+no: rect "none" at 2,2
+fd: rect "fade" at 5,2 fade delay 1
+pp: rect "pop" at 8,2 pop delay 2
+sl: circle "slide" at 11,2 slide delay 3
+dr: arrow from 1,3.5 to 11,3.5 draw delay 4
 ```
 
 ---
@@ -2810,10 +2808,11 @@ dr: arrow from 1,3.5 to 11,3.5 draw speed slow
 ## Exits
 
 ```anim
-fd: delete
-pp: delete pop
-sl: delete slide
-dr: delete draw
+no: delete
+fd: delete fade delay 1
+pp: delete pop delay 2
+sl: delete slide delay 3
+dr: delete draw delay 4
 ```
 
 </animation>
