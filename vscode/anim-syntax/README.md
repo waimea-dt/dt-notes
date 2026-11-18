@@ -13,6 +13,16 @@ code --install-extension /tmp/anim-syntax.vsix --force
 
 Then run **Developer: Reload Window** in VS Code. Repeat after editing the grammar.
 
+## Colours
+
+The colours come from your theme. A relative number (`+2`, `-1`) shows its sign as an operator. To give relative numbers a colour of their own, add a rule to your settings:
+
+```json
+"editor.tokenColorCustomizations": {
+  "textMateRules": [{ "scope": "constant.numeric.relative", "settings": { "foreground": "#e2ae47" } }]
+}
+```
+
 ## Files
 
 - `syntaxes/anim.tmLanguage.json`: the anim grammar (`source.anim`)
