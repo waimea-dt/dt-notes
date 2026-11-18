@@ -1,7 +1,7 @@
 /* A slightly lighter background for the site's plugin blocks in the Markdown preview, as
-   animSyntax.blockBackground does in the editor. The tags stay in the preview's HTML and hold the
+   dtNotes.blockBackground does in the editor. The tags stay in the preview's HTML and hold the
    Markdown up to their closing tag, so each block is tinted as a whole. Keep the list in step with
-   animSyntax.shadedBlocks (package.json). */
+   dtNotes.shadedBlocks (package.json). */
 :root {
   --anim-block-tint: rgba(255, 255, 255, 0.04);
 }

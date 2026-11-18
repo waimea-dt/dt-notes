@@ -1,8 +1,8 @@
 // A background tint on the site's plugin blocks in Markdown (<animation>…</animation>, <slides>,
 // <quiz>, <flashcards> …), from the opening tag's line to the closing tag's, so a block and the
 // headings inside it stand out from the page around it. A block is shaded when it spans lines; tags
-// in code fences (examples) don't count. Settings: animSyntax.blockBackground (the colour, "" for
-// none) and animSyntax.shadedBlocks (the tag names).
+// in code fences (examples) don't count. Settings: dtNotes.blockBackground (the colour, "" for
+// none) and dtNotes.shadedBlocks (the tag names).
 const vscode = require('vscode')
 
 const FENCE = /^\s*(`{3,}|~{3,})(.*)$/
@@ -38,35 +38,50 @@ function blockRanges(document, tags) {
   return ranges
 }
 
-function activate(context) {
-  const config = () => vscode.workspace.getConfiguration('animSyntax')
+// log: the extension's output channel (View > Output > DT Notes Syntax), which records what's shaded
+function activate(context, log) {
+  const config = () => vscode.workspace.getConfiguration('dtNotes')
   let decoration = null
   const makeDecoration = () => {
     decoration?.dispose()
     const colour = config().get('blockBackground')
     decoration = colour ? vscode.window.createTextEditorDecorationType({ backgroundColor: colour, isWholeLine: true }) : null
+    log?.appendLine(`block shading: ${colour ? `tint ${colour}` : 'off (dtNotes.blockBackground is empty)'}`)
   }
+  const counts = new Map() // file -> blocks shaded, logged when it changes
   const shade = (editor) => {
-    if (!decoration || editor.document.languageId !== 'markdown') return
-    editor.setDecorations(decoration, blockRanges(editor.document, config().get('shadedBlocks') || []))
+    if (!decoration || editor?.document.languageId !== 'markdown') return
+    const ranges = blockRanges(editor.document, config().get('shadedBlocks') || [])
+    editor.setDecorations(decoration, ranges)
+    const file = editor.document.uri.fsPath
+    if (counts.get(file) !== ranges.length) {
+      counts.set(file, ranges.length)
+      log?.appendLine(`block shading: ${ranges.length} block${ranges.length === 1 ? '' : 's'} in ${file}`)
+    }
   }
   const shadeAll = () => vscode.window.visibleTextEditors.forEach(shade)
+  const shadeDocument = (document) => vscode.window.visibleTextEditors.filter((e) => e.document === document).forEach(shade)
 
+  // Editors can be on screen before or after the extension starts, and come and go: shade on
+  // every way one can appear, and once more shortly after starting
   let timer = 0
   context.subscriptions.push(
     vscode.window.onDidChangeVisibleTextEditors(shadeAll),
+    vscode.window.onDidChangeActiveTextEditor(shade),
+    vscode.workspace.onDidOpenTextDocument((document) => setTimeout(() => shadeDocument(document), WAIT_MS)),
     vscode.workspace.onDidChangeTextDocument((event) => {
       clearTimeout(timer)
-      timer = setTimeout(() => vscode.window.visibleTextEditors.filter((e) => e.document === event.document).forEach(shade), WAIT_MS)
+      timer = setTimeout(() => shadeDocument(event.document), WAIT_MS)
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('animSyntax.blockBackground')) makeDecoration()
-      if (event.affectsConfiguration('animSyntax')) shadeAll()
+      if (event.affectsConfiguration('dtNotes.blockBackground')) makeDecoration()
+      if (event.affectsConfiguration('dtNotes')) shadeAll()
     }),
     { dispose: () => decoration?.dispose() },
   )
   makeDecoration()
   shadeAll()
+  setTimeout(shadeAll, 1000)
 }
 
 module.exports = { activate, blockRanges }

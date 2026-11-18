@@ -1,8 +1,8 @@
 {
-  "name": "dt-notes-anim-syntax",
-  "displayName": "DT Notes Anim Syntax",
-  "description": "Syntax highlighting, colour swatches and error marks for <animation> scene lines (```anim fences in Markdown, and .anim files), and a background on the site's plugin blocks.",
-  "version": "0.16.0",
+  "name": "dt-notes-syntax",
+  "displayName": "DT Notes Syntax",
+  "description": "Editing help for DT Notes pages: syntax highlighting, colour swatches and error marks for <animation> scene lines (```anim fences in Markdown, and .anim files), and a background on the site's plugin blocks.",
+  "version": "1.0.0",
   "publisher": "dt-notes",
   "license": "MIT",
   "repository": {
@@ -26,14 +26,14 @@
       "./preview.css"
     ],
     "configuration": {
-      "title": "Anim",
+      "title": "DT Notes Syntax",
       "properties": {
-        "animSyntax.blockBackground": {
+        "dtNotes.blockBackground": {
           "type": "string",
           "default": "rgba(255, 255, 255, 0.04)",
           "description": "Background tint for plugin blocks in Markdown, such as <animation>…</animation> (any CSS colour; empty for none)."
         },
-        "animSyntax.shadedBlocks": {
+        "dtNotes.shadedBlocks": {
           "type": "array",
           "items": {
             "type": "string"

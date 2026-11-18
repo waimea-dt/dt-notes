@@ -1,4 +1,4 @@
-# Anim syntax for VS Code
+# DT Notes Syntax for VS Code
 
 Highlights `<animation>` scene lines (see `docs/_plugins/visualisation/ANIMATION.md`): inside ```` ```anim ```` fences in Markdown, and in `.anim` files.
 
@@ -7,8 +7,8 @@ Highlights `<animation>` scene lines (see `docs/_plugins/visualisation/ANIMATION
 From this folder:
 
 ```bash
-npx --yes @vscode/vsce@3 package --allow-missing-repository --out /tmp/anim-syntax.vsix
-code --install-extension /tmp/anim-syntax.vsix --force
+npx --yes @vscode/vsce@3 package --allow-missing-repository --out /tmp/dt-notes-syntax.vsix
+code --install-extension /tmp/dt-notes-syntax.vsix --force
 ```
 
 Then run **Developer: Reload Window** in VS Code. Repeat after editing the grammar.
@@ -18,8 +18,8 @@ Then run **Developer: Reload Window** in VS Code. Repeat after editing the gramm
 The colours come from your theme.
 
 In Markdown, the site's plugin blocks (`<animation>`, `<slides>`, `<quiz>`, `<flashcards>` …) get a slightly lighter background, from the opening tag to the closing one. That way a block, and the headings inside it, stand out from the page. The settings:
-- `animSyntax.blockBackground`: the colour (any CSS colour, or `""` for none)
-- `animSyntax.shadedBlocks`: which tags are shaded. A block is only shaded when its closing tag is on a later line.
+- `dtNotes.blockBackground`: the colour (any CSS colour, or `""` for none)
+- `dtNotes.shadedBlocks`: which tags are shaded. A block is only shaded when its closing tag is on a later line.
 
 In the preview, the tint is `--anim-block-tint` in `preview.css`, and its tag list should match the setting's.
 

@@ -59,11 +59,19 @@ const provider = {
 }
 
 function activate(context) {
-  context.subscriptions.push(vscode.languages.registerColorProvider([{ language: 'anim' }, { language: 'markdown' }], provider))
+  // What the extension does and any part that fails to start: View > Output > DT Notes Syntax
+  const log = vscode.window.createOutputChannel('DT Notes Syntax')
+  context.subscriptions.push(log)
+  // Each part starts on its own, so one that fails doesn't stop the others
+  const start = (name, fn) => {
+    try { fn() } catch (error) { log.appendLine(`${name} failed to start: ${error.stack || error}`) }
+  }
+  start('colour swatches', () => context.subscriptions.push(vscode.languages.registerColorProvider([{ language: 'anim' }, { language: 'markdown' }], provider)))
+  // a background tint on plugin blocks in Markdown (see shading.js)
+  start('block shading', () => require('./shading').activate(context, log))
   // error and warning marks from the animation engine (see diagnostics.js)
-  require('./diagnostics').activate(context)
-  // a background tint on anim fences in Markdown (see shading.js)
-  require('./shading').activate(context)
+  start('error marks', () => require('./diagnostics').activate(context))
+  log.appendLine('started')
   // anim highlighting in the Markdown preview (see preview.js)
   return { extendMarkdownIt: require('./preview').extendMarkdownIt }
 }
