@@ -1225,10 +1225,10 @@ i1: stroke green scale 1.3
 
 ## Feature: Colours
 
-<animation grid="12x4">
+<animation grid="13x9">
 
 ```anim
-pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 1,1 font 0.4
+pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,1 font 0.4
 pal.0: fill red
 pal.1: fill orange
 pal.2: fill amber
@@ -1241,10 +1241,78 @@ pal.8: fill purple
 pal.9: fill pink
 pal.10: fill magenta
 pal.11: fill theme
-st: rect "stroke" at 2,3 size 2x0.8 stroke red weight 2
-cl: rect "colour" at 5,3 size 2x0.8 colour amber
-hx: text "#f80" at 8,3 colour #f80
-mu: text "muted" at 11,3 colour muted
+br: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,2 font 0.4
+br.0: fill red-bright
+br.1: fill orange-bright
+br.2: fill amber-bright
+br.3: fill yellow-bright
+br.4: fill green-bright
+br.5: fill teal-bright
+br.6: fill cyan-bright
+br.7: fill blue-bright
+br.8: fill purple-bright
+br.9: fill pink-bright
+br.10: fill magenta-bright
+br.11: fill theme-bright
+mt: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,3 font 0.4
+mt.0: fill red-muted
+mt.1: fill orange-muted
+mt.2: fill amber-muted
+mt.3: fill yellow-muted
+mt.4: fill green-muted
+mt.5: fill teal-muted
+mt.6: fill cyan-muted
+mt.7: fill blue-muted
+mt.8: fill purple-muted
+mt.9: fill pink-muted
+mt.10: fill magenta-muted
+mt.11: fill theme-muted
+lp: text "plain " at 1,1 font 0.45 align right
+lb: text "-bright " at 1,2 font 0.45 align right
+lm: text "-muted " at 1,3 font 0.45 align right
+lrp: text "raw " at 1,4 font 0.45 align right
+lrb: text "raw -bright " at 1,5 font 0.45 align right
+lrm: text "raw -muted " at 1,6 font 0.45 align right
+rp0: line from 1.85,4 to 2.15,4 stroke red weight 12
+rp1: line from 2.85,4 to 3.15,4 stroke orange weight 12
+rp2: line from 3.85,4 to 4.15,4 stroke amber weight 12
+rp3: line from 4.85,4 to 5.15,4 stroke yellow weight 12
+rp4: line from 5.85,4 to 6.15,4 stroke green weight 12
+rp5: line from 6.85,4 to 7.15,4 stroke teal weight 12
+rp6: line from 7.85,4 to 8.15,4 stroke cyan weight 12
+rp7: line from 8.85,4 to 9.15,4 stroke blue weight 12
+rp8: line from 9.85,4 to 10.15,4 stroke purple weight 12
+rp9: line from 10.85,4 to 11.15,4 stroke pink weight 12
+rp10: line from 11.85,4 to 12.15,4 stroke magenta weight 12
+rp11: line from 12.85,4 to 13.15,4 stroke theme weight 12
+rb0: line from 1.85,5 to 2.15,5 stroke red-bright weight 12
+rb1: line from 2.85,5 to 3.15,5 stroke orange-bright weight 12
+rb2: line from 3.85,5 to 4.15,5 stroke amber-bright weight 12
+rb3: line from 4.85,5 to 5.15,5 stroke yellow-bright weight 12
+rb4: line from 5.85,5 to 6.15,5 stroke green-bright weight 12
+rb5: line from 6.85,5 to 7.15,5 stroke teal-bright weight 12
+rb6: line from 7.85,5 to 8.15,5 stroke cyan-bright weight 12
+rb7: line from 8.85,5 to 9.15,5 stroke blue-bright weight 12
+rb8: line from 9.85,5 to 10.15,5 stroke purple-bright weight 12
+rb9: line from 10.85,5 to 11.15,5 stroke pink-bright weight 12
+rb10: line from 11.85,5 to 12.15,5 stroke magenta-bright weight 12
+rb11: line from 12.85,5 to 13.15,5 stroke theme-bright weight 12
+rm0: line from 1.85,6 to 2.15,6 stroke red-muted weight 12
+rm1: line from 2.85,6 to 3.15,6 stroke orange-muted weight 12
+rm2: line from 3.85,6 to 4.15,6 stroke amber-muted weight 12
+rm3: line from 4.85,6 to 5.15,6 stroke yellow-muted weight 12
+rm4: line from 5.85,6 to 6.15,6 stroke green-muted weight 12
+rm5: line from 6.85,6 to 7.15,6 stroke teal-muted weight 12
+rm6: line from 7.85,6 to 8.15,6 stroke cyan-muted weight 12
+rm7: line from 8.85,6 to 9.15,6 stroke blue-muted weight 12
+rm8: line from 9.85,6 to 10.15,6 stroke purple-muted weight 12
+rm9: line from 10.85,6 to 11.15,6 stroke pink-muted weight 12
+rm10: line from 11.85,6 to 12.15,6 stroke magenta-muted weight 12
+rm11: line from 12.85,6 to 13.15,6 stroke theme-muted weight 12
+st: rect "stroke" at 3,8 size 2x0.8 stroke red weight 2
+cl: rect "colour" at 6,8 size 2x0.8 colour amber
+hx: text "#f80" at 9,8 colour #f80
+mu: text "muted" at 12,8 colour muted
 ```
 
 ---
@@ -1255,6 +1323,16 @@ mu: text "muted" at 11,3 colour muted
 st: fill green stroke blue
 cl: colour pink
 hx: colour teal
+```
+
++++
+
+Variants on fills, strokes and text.
+
+```anim
+st: fill green-muted stroke blue-bright
+cl: colour pink-muted
+hx: colour teal-bright
 ```
 
 </animation>
@@ -3130,8 +3208,8 @@ arr: range 0 5 highlight clear
 <animation grid="13x6">
 
 ```anim
-arr: row [5, 3, 8, 1, 9, 2] at 2,4 bar stroke none fill pink size 0.6x3 gap 0.15 indices
-hp: var 67 name "health" at 10,2 size 3x0.7 bar fill green track red corner 0.25
+arr: row [5, 3, 8, 1, 9, 2] at 2,4 bar stroke none fill pink-bright size 0.6x3 gap 0.15 indices
+hp: var 67 name "health" at 10,2 size 3x0.7 bar fill green-bright track red corner 0.25
 ```
 
 ---

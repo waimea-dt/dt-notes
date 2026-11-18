@@ -122,6 +122,8 @@ r: row [
 
 **Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg black white none` · `#hex`
 
+**Variants** of `red` … `theme`: `-bright` (more saturated, e.g. `red-bright`) · `-muted` (darker and dimmer, towards the background, e.g. `blue-muted`). A fill is tinted less when bright, more when muted.
+
 ## Relative values
 
 A signed number on a change is relative. When creating, everything is absolute.
@@ -219,7 +221,7 @@ arr: bar clear                     # plain boxes again
 
 - The fill takes up the value's share of `max`. It fills up from the bottom of a box taller than it is wide, otherwise from the left. Over `max` shows full, below 0 empty.
 - `max`: 100 unless given. A row or column uses its biggest value when `bar` is turned on, the same for every cell.
-- `track`: the colour of the rest (default `none`).
+- `track`: the colour of the rest (default `none`). The bar's `fill` shows at full strength, like a stroke; the track is tinted like any fill.
 - The value goes in the middle when there's a track. With none, it goes at the top of an upright bar and the right of a wide one, as on a bar chart.
 - For vars and cells. A value that isn't a number fills none.
 

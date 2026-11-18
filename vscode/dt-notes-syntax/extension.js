@@ -1,5 +1,5 @@
 // Colour swatches for named colours in anim scenes (.anim files and ```anim fences in Markdown).
-// VS Code's own swatches only cover hex / rgb(); this adds the scene colour names after fill / stroke / colour.
+// VS Code's own swatches only cover hex / rgb(); this adds the scene colour names after fill / stroke / colour / track.
 const vscode = require('vscode')
 
 // The site's dark-theme values (docs/_css/core/theme.css). In the browser these follow the theme.
@@ -9,7 +9,39 @@ const COLOURS = {
   magenta: '#c384c9', theme: '#68bef8', muted: '#8a8d90', fg: '#ffffff', bg: '#1f2428',
   black: '#000000', white: '#ffffff',
 }
-const NAMED = new RegExp(`\\b(fill|stroke|colour)(\\s+)(${Object.keys(COLOURS).join('|')})(?![\\w-])`, 'g')
+// The hues' variants (COLOUR_VARIANTS in anim-core.js), as a close guide: bright's saturation scaled
+// (the page scales it in oklch, so the swatch is near but not exact), muted mixed with the background
+const VARIANTS = { bright: (hex) => saturate(hex, 1.4), muted: (hex) => mixHex(hex, COLOURS.bg, 0.55) }
+const UNVARIED = ['muted', 'fg', 'bg', 'black', 'white']
+for (const hue of Object.keys(COLOURS).filter((name) => !UNVARIED.includes(name))) {
+  for (const [variant, make] of Object.entries(VARIANTS)) COLOURS[`${hue}-${variant}`] = make(COLOURS[hue])
+}
+
+// Two hex colours mixed, keeping `keep` (0-1) of the first
+function mixHex(a, b, keep) {
+  const rgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255] }
+  const [p, q] = [rgb(a), rgb(b)]
+  return `#${p.map((v, i) => Math.round(v * keep + q[i] * (1 - keep)).toString(16).padStart(2, '0')).join('')}`
+}
+
+// A hex colour with its saturation (HSL) scaled by k
+function saturate(hex, k) {
+  const n = parseInt(hex.slice(1), 16)
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => v / 255)
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  const grey = max - min
+  const s = grey ? grey / (1 - Math.abs(2 * l - 1)) : 0
+  const h = !grey ? 0 : max === r ? ((g - b) / grey + 6) % 6 : max === g ? (b - r) / grey + 2 : (r - g) / grey + 4
+  const c = (1 - Math.abs(2 * l - 1)) * Math.min(1, s * k)
+  const x = c * (1 - Math.abs((h % 2) - 1))
+  const [r1, g1, b1] = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.floor(h) % 6]
+  const to = (v) => Math.round((v + l - c / 2) * 255).toString(16).padStart(2, '0')
+  return `#${to(r1)}${to(g1)}${to(b1)}`
+}
+// the words a colour follows (the engine's colour props: KEYWORDS in anim-core.js)
+const NAMED = new RegExp(`\\b(fill|stroke|colour|track)(\\s+)(${Object.keys(COLOURS).join('|')})(?![\\w-])`, 'g')
 const FENCE = /^\s*(`{3,}|~{3,})\s*([\w-]*)/
 
 // Blanks out quoted labels and # comments (keeping columns), so names in them aren't matched.

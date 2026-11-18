@@ -52,6 +52,7 @@ In your summary, say that you checked, and name any exception you kept.
 | An emphasis (`pulse` …) | `EMPHASES` (`along`, `aliases`), then its frame in `EMPHASIS_FRAMES` | `anim-core.js`, `anim-render.js` |
 | A highlight (`outline` …) | `HIGHLIGHT_KINDS` (`off`, `applies`, `refuse`), and an entry in `OVERLAYS` if it's drawn over the shape | `anim-core.js`, `anim-render.js` |
 | A kind of bar (a var's value as a pie, a ring …) | `BARS` (`outlines` it fits; its word, written after `bar`, comes from its key), then its drawer in `BAR_DRAWS` (`make`, `draw`); the shape types it fits need `bar`, `max` and `track` in their `takes` | `anim-core.js`, `anim-render.js` |
+| A colour, or a variant of every hue (`-bright`, `-muted`) | `COLOURS` (a theme variable); `COLOUR_VARIANTS` (`chroma` or `keep`, and `fillMix`), which adds `<hue>-<variant>` for each hue not in `UNVARIED`. The grammar's colour pattern and the swatch palette in `vscode/dt-notes-syntax/extension.js` list them too | `anim-core.js` |
 | Row-edit or moving-value timing | `CHOREOGRAPHY` | `anim-core.js` |
 
 - **Timing:** every change's timing goes through `schedule(meta, uid, props, { dur, after })` in `anim-compile.js`. It takes the longest duration and latest start when a shape changes twice in a beat.

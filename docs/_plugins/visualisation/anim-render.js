@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
+  const { HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
     MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES, entranceFor, XML_NS, LAYOUTS, LOOKS, barFits } = window.Anim
@@ -78,8 +78,9 @@
   function colourCss(name, role) {
     if (!name) return 'none'
     if (HEX.test(name)) return name
-    const css = COLOURS[name.toLowerCase()] ?? 'none'
-    if (role === 'fill' && !PLAIN_FILLS.includes(name.toLowerCase())) return `color-mix(in srgb, ${css} 45%, var(--anim-bg))`
+    const key = name.toLowerCase()
+    const css = COLOURS[key] ?? 'none'
+    if (role === 'fill' && FILL_MIXES[key]) return towardsBg(css, FILL_MIXES[key])
     return css
   }
 
@@ -468,7 +469,8 @@
     // How each kind of bar (BARS in anim-core.js) is drawn, in place of the shape's fill: over its
     // track and under its edge. make(node) adds its parts under the shape's body and returns them;
     // draw(parts, s, share, hw, hh, colours) sets them each frame, share (0-1) being how full it is,
-    // colours.fill the bar's and colours.track the rest's. label(s, hw, hh), if given, is where the
+    // colours.fill its fill tinted as a fill, colours.raw the same as it is (like a stroke), and
+    // colours.track the rest's (tinted). label(s, hw, hh), if given, is where the
     // value goes (a label place: SHAPES), in place of the shape's own.
     const under = (node, tag) => node.g.insertBefore(svgEl(tag, { stroke: 'none' }), node.body)
     const tall = (hw, hh) => hh > hw // a linear bar fills up, rather than across
@@ -477,7 +479,8 @@
       // the track and a full-size box cut down to the share (clip-path inset), so a rounded corner
       // stays rounded: up from the bottom of a box taller than it is wide, otherwise from the left.
       // Its value is in the middle of a track; with none, at the end it grows towards (the top, or
-      // the right), as on a bar chart.
+      // the right), as on a bar chart. The bar is its fill colour as it is (stronger than a tinted
+      // fill), over the tinted track.
       linear: {
         make: (node) => [under(node, 'rect'), under(node, 'rect')],
         label: (s, hw, hh) => (hasTrack(s) ? 'centre' : tall(hw, hh) ? 'top' : 'right'),
@@ -485,7 +488,7 @@
           const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
           for (const el of [track, fill]) { setBox(el, hw, hh); attr(el, 'rx', corner); attr(el, 'ry', corner) }
           paint(track, 'fill', colours.track)
-          paint(fill, 'fill', colours.fill)
+          paint(fill, 'fill', colours.raw)
           const cut = `${(100 * (1 - share)).toFixed(2)}%`
           paint(fill, 'clipPath', tall(hw, hh) ? `inset(${cut} 0 0 0)` : `inset(0 ${cut} 0 0)`)
         },
@@ -824,6 +827,8 @@
         if (item.v.bar !== undefined) {
           const track = (s) => rgba(colourCss(hasBar(s) ? s.track : 'none', 'fill'))
           colours.track = mixColour(track(from), track(to), t)
+          // its fill as it is, not tinted as a fill (BAR_DRAWS choose which to use)
+          colours.raw = mixColour(rgba(colourCss(from.fill, 'stroke')), rgba(colourCss(to.fill, 'stroke')), t)
         }
         item.v.hlGlow = blend(item, (s) => s.hl?.glow) // highlight glow fades in / out like the box
         item.v.hlLine = blend(item, (s) => s.hl?.line)

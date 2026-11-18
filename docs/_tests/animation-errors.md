@@ -124,6 +124,8 @@ ec: range 1 2 bar
 defaults range 0 1
 br: rect at 1,1 bar
 bm: var 5 at 1,1 bar max 0
+cv: rect at 1,1 fill muted-bright
+cv2: rect at 1,1 fill red-vivid
 ```
 
 </animation>

@@ -247,8 +247,37 @@
     white: '#fff',
     none: 'none',
   }
-  // Named colours used as a fill are tinted towards the background, so labels stay readable.
+  // Named colours used as a fill are tinted towards the background, so labels stay readable: a fill
+  // keeps FILL_MIX % of its colour (a variant: its own fillMix). These are never tinted.
   const PLAIN_FILLS = ['fg', 'bg', 'black', 'white', 'none']
+  const FILL_MIX = 45
+
+  // Variants of each hue, written <hue>-<variant> (red-bright, blue-muted), added to COLOURS. Each
+  // is made one of two ways:
+  //   chroma   its saturation scaled, as a multiple of the hue's own (oklch, so its lightness is
+  //            kept); a browser without relative colours shows the hue itself
+  //   keep     mixed with the background, keeping this % of the hue, as a fill is (FILL_MIX): darker
+  //            and dimmer on a dark theme, paler on a light one
+  // and fillMix is the % of it a fill keeps (in place of FILL_MIX).
+  // The greys and none (UNVARIED) have no variants: there's nothing to saturate.
+  const COLOUR_VARIANTS = {
+    bright: { chroma: 1.4, fillMix: 70 },
+    muted: { keep: 55, fillMix: 45 },
+  }
+  const UNVARIED = [...PLAIN_FILLS, 'muted']
+  const RELATIVE_COLOURS = Boolean(window.CSS?.supports?.('color', 'oklch(from red l c h)'))
+  // A colour mixed towards the background, keeping `keep` % of it (a muted variant, and every tinted
+  // fill: colourCss in anim-render.js). A hue as a variant: that, or its saturation scaled.
+  const towardsBg = (css, keep) => `color-mix(in srgb, ${css} ${keep}%, ${COLOURS.bg})`
+  const variantOf = (css, { chroma, keep }) => (keep !== undefined ? towardsBg(css, keep)
+    : RELATIVE_COLOURS ? `oklch(from ${css} l calc(c * ${chroma}) h)` : css)
+  const FILL_MIXES = Object.fromEntries(Object.keys(COLOURS).filter((name) => !PLAIN_FILLS.includes(name)).map((name) => [name, FILL_MIX]))
+  for (const hue of Object.keys(COLOURS).filter((name) => !UNVARIED.includes(name))) {
+    for (const [variant, spec] of Object.entries(COLOUR_VARIANTS)) {
+      COLOURS[`${hue}-${variant}`] = variantOf(COLOURS[hue], spec)
+      FILL_MIXES[`${hue}-${variant}`] = spec.fillMix
+    }
+  }
 
   // Which shape types each prop applies to (from SHAPES' takes)
   const APPLIES = {}
@@ -339,7 +368,7 @@
     : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] })
   const at = { key: 'at', sigs: POINT, build: buildPoint, help: '"x,y", a shape id, or a placement and a shape id (e.g. "below a")' }
   const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
-  const colour = (key) => ({ key, sigs: [['colour']], help: 'a colour (e.g. blue, #f80 or none)' })
+  const colour = (key) => ({ key, sigs: [['colour']], help: `a colour (e.g. blue, ${Object.keys(COLOUR_VARIANTS).map((variant) => `blue-${variant}`).join(', ')}, #f80 or none)` })
   const fixed = (key, value, extra = {}) => ({ key, sigs: [[]], build: () => value, ...extra })
   const words = (list, key, what) => Object.fromEntries(list.map((w) => [w, fixed(key, w, { what })]))
   const buildStagger = (v, reverse) => {
@@ -887,7 +916,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
