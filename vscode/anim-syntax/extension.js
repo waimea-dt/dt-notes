@@ -62,6 +62,8 @@ function activate(context) {
   context.subscriptions.push(vscode.languages.registerColorProvider([{ language: 'anim' }, { language: 'markdown' }], provider))
   // error and warning marks from the animation engine (see diagnostics.js)
   require('./diagnostics').activate(context)
+  // a background tint on anim fences in Markdown (see shading.js)
+  require('./shading').activate(context)
   // anim highlighting in the Markdown preview (see preview.js)
   return { extendMarkdownIt: require('./preview').extendMarkdownIt }
 }

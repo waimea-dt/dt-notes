@@ -1,0 +1,17 @@
+/* A slightly lighter background for anim code in the Markdown preview (as animSyntax.fenceBackground
+   does in the editor): the tint is laid over the theme's own code background. */
+:root {
+  --anim-fence-tint: rgba(255, 255, 255, 0.04);
+}
+
+/* an ```anim fence */
+pre:has(.anim-code) {
+  background-image: linear-gradient(var(--anim-fence-tint), var(--anim-fence-tint));
+}
+
+/* an ```anim fence inside a ```markdown example: each of its lines, across the block's width */
+.anim-line {
+  display: inline-block;
+  min-width: 100%;
+  background-color: var(--anim-fence-tint);
+}
