@@ -9,7 +9,7 @@
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES, entranceFor,
     parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C, CELL_STYLE, LINES,
     wordFor, LOOKS, KEPT_STYLE, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, FONT,
-    textWidth } = window.Anim
+    textWidth, BARS } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -95,10 +95,10 @@
         const word = wordFor(key, value)
         check(shape, key, word)
         if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
-        const problem = look.check?.(value)
+        const problem = look.check?.(value, shape)
         if (problem) warn(problem)
         if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
-        else shape[look.field] = look.map ? look.map[value] : value
+        else shape[look.field] = look.map && value in look.map ? look.map[value] : value
       }
       // flow only shows on a dashed or dotted line
       if (props.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
@@ -533,6 +533,45 @@
       else if (props.stagger) warn(`"stagger" works on a row, column or group, and "${id}" isn't one`)
     }
 
+    // "arr: range 0 3 fill red": a change to some of a row's / column's cells, each changed as if on
+    // its own line (stagger: in cell order). Only a look, highlights, emphasis and callouts: the cells
+    // stay in the row (LINES: range).
+    function changeRange(id, row, tokens, meta, warn) {
+      if (!row) throw new Error(`no shape called "${id}"`)
+      if (!row.layout) throw new Error(`"range" picks some of a row's or column's cells, and "${id}" isn't one`)
+      const base = baseOf(row.layout)
+      const from = parseAs('index', tokens[1])
+      const to = parseAs('index', tokens[2])
+      if (from === undefined || to === undefined) throw new Error(`"range" expects two cell numbers, e.g. "${id}: range ${base} ${base + 2} fill red"`)
+      const props = parseProps(tokens, 3, 'range', shapes)
+      const n = row.members.length
+      for (const k of [from, to]) {
+        if (k < base || k >= base + n) throw new Error(`"${id}" has no cell ${k} (its cells are ${cellRange(row, n)})`)
+      }
+      const [lo, hi] = from <= to ? [from, to] : [to, from]
+      const cells = row.members.slice(lo - base, hi - base + 1).map((cell) => shapes.get(cell)).filter(Boolean)
+      const own = { ...props }
+      delete own.stagger
+      withRowMax(row, own)
+      if (takeBareNumber(own)) numberEach(cells, own, meta, warn)
+      for (const cell of cells) {
+        const changed = structuredClone(cell)
+        applyProps(changed, own, false, warn, meta)
+        shapes.set(changed.id, changed)
+        schedule(meta, changed.uid, props)
+      }
+      applyStagger(row, cells.map((cell) => [cell.uid]), props, meta, warn)
+    }
+
+    // "bar" on a row's / column's cells with no max (given, or a default): a full bar is its biggest
+    // value now, the same for every cell. Adds it to `look`; `values` are the cells' values (default:
+    // the row's cells).
+    function withRowMax(row, look, values = row.members.map((id) => shapes.get(id)).filter(Boolean)) {
+      if (!BARS[look.bar ?? defaults.bar] || look.max || defaults.max) return
+      const biggest = Math.max(...values.map((value) => (value.nil ? NaN : parseFloat(value.label))).filter(Number.isFinite))
+      if (biggest > 0) look.max = { v: biggest, rel: false }
+    }
+
     // Making a shape (or a copy, or a group) has no members to stagger
     function noStagger(props, warn) {
       if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
@@ -619,7 +658,7 @@
     }
 
     // The verbs (LINES with verb: true), each run as (id, existing shape, tokens, meta, warn, word)
-    const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, swap: swapCells, insert: editCells, remove: editCells }
+    const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, swap: swapCells, insert: editCells, remove: editCells, range: changeRange }
 
     // A value a var or a row's / column's cell holds: a number, "quoted" text or null (shown muted)
     function valueOf(token) {
@@ -667,7 +706,9 @@
       setValue(changed, valueIn(source))
       shapes.set(changed.id, changed)
       const fade = C.crossfade * speedOf(props)
-      schedule(meta, changed.uid, props, { dur: fade, after: arrive - fade / 2 })
+      // lands: the flyer has already shown the value on the way, so the target takes it as it lands
+      // rather than blending to it (a bar would fill a second time under the flyer)
+      schedule(meta, changed.uid, props, { dur: fade, after: arrive - fade / 2 }).lands = true
       fly(meta, source, changed, hops, props, { arrive })
     }
 
@@ -832,6 +873,7 @@
       // The cells, laid out from the first one (at 0,0 for now)
       const gap = props.gap ? props.gap.v * CELL : 0
       const look = pick(props, ['size', 'width', 'height', ...CELL_STYLE])
+      withRowMax(null, look, values)
       const cells = values.map((value, k) => {
         const cell = { ...baseShape(LAYOUTS[layout].cell), id: ids[k], uid: ++uid, holds: true, x: 0, y: 0 }
         applyDefaults(cell)
@@ -879,6 +921,7 @@
       const look = pick(props, staggered ? [...CELL_STYLE, 'highlight'] : CELL_STYLE)
       if (!Object.keys(look).length) return
       for (const key of Object.keys(look)) delete props[key]
+      if (group.layout) withRowMax(group, look)
       // cells added to a row / column later take its look as it is now
       if (group.cell) applyProps(group.cell, pick(look, CELL_STYLE.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
       const used = new Set()
@@ -1171,8 +1214,8 @@
       }
 
       // The slot's place in the row (a removed cell's from before, a new cell's from after the
-      // layout), and its time: both parts, start to end (LAYOUTS: slot)
-      if (!kind.slot) return
+      // layout), and its time: both parts, start to end (LAYOUTS: slot; none for bars, BARS: slot)
+      if (!kind.slot || BARS[slotCell.bar]?.slot === false) return
       const slot = {
         uid: ++uid, ref: id, across, closing: removing, then: C.then / (1 + C.then),
         dx: slotCell.attach.dx, dy: slotCell.attach.dy, w: slotCell.w, h: slotCell.h, corner: slotCell.corner || 0,
@@ -1217,7 +1260,8 @@
 
   // One record per shape per beat: how its change animates (duration and delay in ms, the route
   // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect, and
-  // `offset`: how far it slides as it enters or leaves, as a row's cell does).
+  // `offset`: how far it slides as it enters or leaves, as a row's cell does). Set only where used:
+  // `lands`, its new value arrives on a flyer, so it's taken halfway through (as it lands), not blended.
   function tween(meta, uid) {
     let record = meta.tweens.get(uid)
     if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))

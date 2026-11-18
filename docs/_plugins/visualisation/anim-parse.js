@@ -5,7 +5,7 @@
 
 ;(function () {
   const { escapeHtml, HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, COLOURS, SPEEDS, EASES, RESERVED,
-    KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LINE_STARTS, LINES, listProps } = window.Anim
+    KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LINE_STARTS, LINES, listProps, BAR_KINDS } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Markdown -> source markup (beforeEach)
@@ -201,6 +201,7 @@
       case 'colour': return COLOURS[word] !== undefined || HEX.test(word) ? word : undefined
       case 'speed': return word in SPEEDS ? SPEEDS[word] : NUMBER.test(word) && !/^[+-]/.test(word) ? parseFloat(word) * 1000 : undefined
       case 'ease': return word in EASES ? word : undefined
+      case 'bar': return BAR_KINDS.includes(word) ? word : undefined // a kind of bar written after "bar"
       // a language (Prism's name, e.g. python, js, cpp, csharp): any word that isn't a keyword
       case 'lang': return /^[a-z][\w+#-]*$/.test(word) && !RESERVED.has(word) ? word : undefined
     }

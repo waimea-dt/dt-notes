@@ -119,7 +119,8 @@
   //   outline   its edge, for line ends, highlights and bounds: 'box' (a rect, rounded by its
   //             corner if it takes one), 'round' (radius r) or 'diamond'
   //   label     where its label goes: 'centre', 'content' (text: the label is the shape, measured),
-  //             'below' (image, icon: it adds to the shape's height) or 'along' (lines)
+  //             'below' (image, icon: it adds to the shape's height) or 'along' (lines). A bar
+  //             (BAR_DRAWS: label) can put it elsewhere: 'top' or 'right', inside that edge of the box
   //   inside    it has an inside to highlight (highlight inside)
   //   line      it runs from / to (a curve is a line bent through via points); head: an arrowhead
   //   resource  written type(arg): image(path), icon(name)
@@ -136,7 +137,7 @@
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
   const SHAPES = {
     rect: {
-      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow'],
+      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow', 'bar', 'max', 'track'],
       defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg' }, outline: 'box', label: 'centre', inside: true,
     },
     circle: {
@@ -261,7 +262,33 @@
   //   quiet  types it has no effect on (a warning, not an error)
   //   cell   part of a row's / column's look, given to its cells
   //   kept   taken along by a value on the move with keep-style
-  //   check  check(value): a warning when the value can't be shown as asked (null if it can)
+  //   check  check(value, shape): a warning when the value can't be shown as asked (null if it can);
+  //          shape is left out on a defaults line
+  //   default  its value on a shape that hasn't been given one (read where it's used)
+  // bar: a var's or cell's value shown as the share of its shape that its value is of max (a value
+  // over max shows full, below 0 empty). The kinds of bar (BARS: drawn by BAR_DRAWS in
+  // anim-render.js), each for the outlines it fits (SHAPES: outline); a shape it doesn't fit shows
+  // its value plainly, with a warning.
+  //   default  the kind "bar" on its own gives (the others are written after it: "bar <kind>")
+  //   outlines the outlines it can be drawn in
+  //   slot     false: a row's / column's insert and remove show no slot (LAYOUTS: slot) for its cells,
+  //            where an empty outline would look like a bar
+  // (where its value goes is its drawer's choice, BAR_DRAWS: label, as it depends on the shape's size)
+  const BARS = {
+    // a box filled part-way: up from the bottom of a box taller than it is wide, otherwise from the left
+    linear: { default: true, outlines: ['box'], slot: false },
+  }
+  const BAR_DEFAULT = Object.keys(BARS).find((kind) => BARS[kind].default)
+  const BAR_KINDS = Object.keys(BARS).filter((kind) => !BARS[kind].default) // written after "bar"
+  // Whether a shape's bar can be drawn: it has one, holds a value, and the kind fits its outline
+  const barFits = (kind, shape) => Boolean(BARS[kind]?.outlines.includes(SHAPES[shape.type]?.outline))
+  function barCheck(kind, shape) {
+    if (!shape || !BARS[kind]) return null
+    if (!shape.holds) return '"bar" shows the value of a var or a row\'s / column\'s cell, and this has none'
+    if (!barFits(kind, shape)) return `this bar doesn't fit ${article(nounOf(shape))} ${nounOf(shape)}, so its value shows plainly`
+    return null
+  }
+  const maxCheck = (value) => (!value.rel && value.v <= 0 ? '"max" must be more than 0, so the bar stays empty' : null)
   const LOOKS = {
     font: { field: 'font', unit: 1, min: 0.1, cell: true },
     width: { field: 'w', unit: CELL, min: 0 },
@@ -282,6 +309,11 @@
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
     layer: { field: 'layer' },
+    // a var's or cell's value as a bar (bar clear: back to a plain box)
+    bar: { field: 'bar', map: { clear: false }, cell: true, check: barCheck }, // a kind (BARS), or false
+    // a full bar's value (a row's or column's: its biggest when its bar is turned on, unless given)
+    max: { field: 'max', unit: 1, min: 0, cell: true, check: maxCheck, default: 100 },
+    track: { field: 'track', cell: true },
   }
   const looksWith = (flag) => Object.keys(LOOKS).filter((key) => LOOKS[key][flag])
   // A row's or column's look, given to each of its cells (when made, and on a change to it)
@@ -348,6 +380,11 @@
     bold: fixed('bold', true),
     mono: fixed('mono', true), // a monospace font
     lang: { key: 'lang', sigs: [['lang']], help: 'a language, e.g. "lang python" or "lang js"' },
+    // a var's or cell's value as a bar, max its full value, track the colour of the rest
+    // (a kind of bar, BARS, other than the default, goes after it: "bar <kind>")
+    bar: { key: 'bar', sigs: [['clear'], ['bar'], []], build: (v) => v[0] ?? BAR_DEFAULT, help: `nothing (show the value as a bar)${BAR_KINDS.map((kind) => `, ${kind}`).join('')} or clear` },
+    max: number('max', 'a number (the value of a full bar)'),
+    track: colour('track'),
     // "arrow" here (not straight after the id, where it's the arrow shape) puts a head on a line
     arrow: fixed('head', true),
     ...words(LINE_STYLES, 'linestyle', 'line style'),
@@ -434,6 +471,10 @@
     insert: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell into a row / column
     remove: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell out of one
     assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "v1: a.1"
+    range: { // some of a row's / column's cells, "arr: range 0 3 fill red": how they look, not where they are
+      verb: true, takes: [...CELL_STYLE, 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
+      refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,
+    },
     layout: { // "arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
       takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices'],
       refuse: (word) => `"${word}" doesn't apply to a row or column`,
@@ -451,7 +492,7 @@
   const EDIT_WORDS = ['end', 'into']
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...EDIT_WORDS, 'pause', 'auto', 'defaults', 'camera',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...EDIT_WORDS, ...BAR_KINDS, 'pause', 'auto', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -846,7 +887,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
     LAYOUTS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

@@ -3081,6 +3081,152 @@ camera reset speed slow
 
 </animation>
 
+## Feature: range
+
+<animation grid="12x4">
+
+```anim
+arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.2 indices
+```
+
+---
+
+## A look on some cells
+
+```anim
+arr: range 0 2 fill green
+```
+
++++
+
+```anim
+arr: range 4 1 fill amber          # either way round
+```
+
+---
+
+## Highlights and emphasis, staggered
+
+```anim
+arr: range 3 5 highlight outline stagger 0.2
+```
+
++++
+
+```anim
+arr: range 1 4 pulse stagger 0.1
+```
+
++++
+
+```anim
+arr: range 0 5 highlight clear
+```
+
+</animation>
+
+## Feature: Bars
+
+<animation grid="13x6">
+
+```anim
+arr: row [5, 3, 8, 1, 9, 2] at 2,4 bar stroke none fill pink size 0.6x3 gap 0.15 indices
+hp: var 67 name "health" at 10,2 size 3x0.7 bar fill green track red corner 0.25
+```
+
+---
+
+## Swapping bars, a new value, hidden values
+
+```anim
+arr: swap 0 3
+hp: 30
+```
+
++++
+
+```anim
+arr.2: 4
+hp: 100
+```
+
++++
+
+```anim
+arr: colour none
+hp: colour none
+```
+
+---
+
+## A value on the move
+
+```anim
+t: var 0 at 10,4 size 3x0.5 bar max 9 fill blue name "avg"
+```
+
++++
+
+```anim
+t: arr.3
+```
+
+---
+
+## Some cells, a new max, and back to boxes
+
+```anim
+arr: range 0 2 fill amber
+hp: max 200
+```
+
++++
+
+```anim
+arr: bar clear
+hp: track none
+```
+
+</animation>
+
+## Feature: Horizontal bars
+
+A column of wide bars is a bar chart: the bars grow from the left, with their values at the right.
+
+<animation grid="10x6">
+
+```anim
+votes: column [12 7 15 4 9] at 4,1.5 bar stroke none fill teal size 4x0.7 gap 0.15 name "Votes" indices
+```
+
+---
+
+## Changes
+
+```anim
+votes.3: 14
+```
+
++++
+
+```anim
+votes: swap 2 3
+```
+
++++
+
+```anim
+votes: range 0 1 fill amber
+```
+
++++
+
+```anim
+votes: remove 4
+```
+
+</animation>
+
 ## Errors
 
 Bad lines are listed under the animation and skipped; the rest still draws.

@@ -7,14 +7,31 @@
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
-    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES, entranceFor, XML_NS, LAYOUTS } = window.Anim
+    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES, entranceFor, XML_NS, LAYOUTS, LOOKS, barFits } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
   const LABEL_LIFT = 0.07
+  // A label at the top of its box (label place 'top') is centred this share of its font size below
+  // the box's top edge; one at its right (label place 'right') ends this share in from its right edge
+  const TOP_PAD = 0.75
+  const RIGHT_PAD = 0.3
 
   // An arrowhead's strength (0-1): arrows have one, and lines or curves given "arrow"
   const headOf = (shape) => (SHAPES[shape.type]?.head || shape.head ? 1 : 0)
+
+  // A var's or cell's bar (LOOKS: bar, BARS): whether it shows one (a kind that fits its outline),
+  // and the share of it its value fills (held to 0-1; a value that isn't a number fills none), or 1,
+  // all of it, when it has no bar, so turning one on or off blends.
+  const hasBar = (shape) => Boolean(shape?.bar && shape.holds && barFits(shape.bar, shape))
+  function barShare(shape, label = shape.label, nil = shape.nil) {
+    if (!hasBar(shape)) return 1
+    const max = shape.max ?? LOOKS.max.default
+    const value = nil ? NaN : parseFloat(label)
+    return max > 0 && Number.isFinite(value) ? clamp01(value / max) : 0
+  }
+  // The kind of bar drawn for a blend of two shapes: the one it's going to, or the one it had
+  const barKindOf = (...shapes) => shapes.find(hasBar)?.bar
 
   // ---------------------------------------------------------------------------
   // SVG rendering
@@ -406,7 +423,9 @@
         node.band.style.opacity = v.hlLine
       }
       if (node.body) {
-        if (APPLIES.fill.includes(node.type)) paint(node.body, 'fill', colours.fill)
+        const bar = v.bar !== undefined
+        if (APPLIES.fill.includes(node.type)) paint(node.body, 'fill', bar ? 'none' : colours.fill)
+        drawBars(node, s, v, hw, hh, colours)
         paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
         node.body.style.strokeDasharray = dash
@@ -416,9 +435,10 @@
       }
       if (node.title && node.title.textContent !== s.label) node.title.textContent = s.label
 
-      // Label: where its type puts it (SHAPES): in the middle, below, or (text) the shape itself
+      // Label: where its type puts it (SHAPES): in the middle, below, or (text) the shape itself; or
+      // where its bar puts it (BAR_DRAWS: label)
       const label = node.label
-      const place = kindOf(s).label
+      const place = (v.barKind && BAR_DRAWS[v.barKind].label?.(s, hw, hh)) || kindOf(s).label
       attr(label, 'x', 0)
       attr(label, 'text-anchor', 'middle')
       if (place === 'content') {
@@ -432,10 +452,57 @@
         attr(label, 'y', -LABEL_LIFT * fontSize)
       } else if (place === 'below') {
         attr(label, 'y', hh + fontSize * 0.75)
+      } else if (place === 'top') {
+        // inside the top of the box, or in the middle of one too short for that
+        attr(label, 'y', Math.min(-hh + TOP_PAD * fontSize, 0) - LABEL_LIFT * fontSize)
+      } else if (place === 'right') {
+        attr(label, 'text-anchor', 'end')
+        attr(label, 'x', hw - RIGHT_PAD * fontSize)
+        attr(label, 'y', -LABEL_LIFT * fontSize)
       } else {
         attr(label, 'y', -LABEL_LIFT * fontSize) // "central" sits text a little low in a shape
       }
       if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); node.debugId.textContent = s.id }
+    }
+
+    // How each kind of bar (BARS in anim-core.js) is drawn, in place of the shape's fill: over its
+    // track and under its edge. make(node) adds its parts under the shape's body and returns them;
+    // draw(parts, s, share, hw, hh, colours) sets them each frame, share (0-1) being how full it is,
+    // colours.fill the bar's and colours.track the rest's. label(s, hw, hh), if given, is where the
+    // value goes (a label place: SHAPES), in place of the shape's own.
+    const under = (node, tag) => node.g.insertBefore(svgEl(tag, { stroke: 'none' }), node.body)
+    const tall = (hw, hh) => hh > hw // a linear bar fills up, rather than across
+    const hasTrack = (s) => colourCss(s.track) !== 'none'
+    const BAR_DRAWS = {
+      // the track and a full-size box cut down to the share (clip-path inset), so a rounded corner
+      // stays rounded: up from the bottom of a box taller than it is wide, otherwise from the left.
+      // Its value is in the middle of a track; with none, at the end it grows towards (the top, or
+      // the right), as on a bar chart.
+      linear: {
+        make: (node) => [under(node, 'rect'), under(node, 'rect')],
+        label: (s, hw, hh) => (hasTrack(s) ? 'centre' : tall(hw, hh) ? 'top' : 'right'),
+        draw: ([track, fill], s, share, hw, hh, colours) => {
+          const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
+          for (const el of [track, fill]) { setBox(el, hw, hh); attr(el, 'rx', corner); attr(el, 'ry', corner) }
+          paint(track, 'fill', colours.track)
+          paint(fill, 'fill', colours.fill)
+          const cut = `${(100 * (1 - share)).toFixed(2)}%`
+          paint(fill, 'clipPath', tall(hw, hh) ? `inset(${cut} 0 0 0)` : `inset(0 ${cut} 0 0)`)
+        },
+      },
+    }
+
+    // A shape's bar (v.bar: how full, v.barKind: its kind), its parts made once per kind and hidden
+    // while that kind isn't showing.
+    function drawBars(node, s, v, hw, hh, colours) {
+      for (const [kind, parts] of Object.entries(node.bars || {})) {
+        if (kind !== v.barKind) parts.forEach((el) => paint(el, 'display', 'none'))
+      }
+      if (!v.barKind) return
+      node.bars ||= {}
+      const parts = (node.bars[v.barKind] ||= BAR_DRAWS[v.barKind].make(node))
+      parts.forEach((el) => paint(el, 'display', ''))
+      BAR_DRAWS[v.barKind].draw(parts, s, clamp01(v.bar), hw, hh, colours)
     }
 
     // signal: a glowing blip running along a line once (signal: { t: 0-1, reverse }), its tail
@@ -652,6 +719,10 @@
           v.erase = true // a drawn line or typed text is erased from its start, not wound back from its end
           if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (remove)
         }
+        // a bar grows or shrinks to its new value (or turns on or off) with the change; a value that
+        // lands from a flyer (tween: lands), which showed it on the way, is taken as it lands
+        v.barKind = a && b ? barKindOf(b, a) : barKindOf(shape)
+        if (v.barKind) v.bar = !(a && b) ? barShare(shape) : tw?.lands ? barShare(t < 0.5 ? a : b) : lerp(barShare(a), barShare(b), t)
         // an arrowhead fades in or out as it's added to or taken off a line
         v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
         v.label ??= shape.label
@@ -707,6 +778,9 @@
         const shape = { ...interpolate(flyer.from, flyer.to, k), ...pointOnHops(flyer.hops, u, easing) }
         const opacity = flyer.move < 1 ? 1 - clamp01((raw - flyer.move) / (1 - flyer.move)) : raw < 1 ? 1 : 0
         const v = { opacity, scale: 1, draw: 1, dx: 0, dy: 0, head: 0, label: flyer.from.label, nil: flyer.from.nil, labelOpacity: 1 }
+        // the value it carries, as a bar from its source's to its target's
+        v.barKind = barKindOf(flyer.to, flyer.from)
+        if (v.barKind) v.bar = lerp(barShare(flyer.from), barShare(flyer.to, flyer.from.label, flyer.from.nil), k)
         items.push({ uid: flyer.uid, shape, v, node: nodes.get(flyer.uid) || makeNode(shape), a: flyer.from, b: flyer.to, t: k, flyer: true })
       }
 
@@ -740,11 +814,16 @@
         const from = item.a || item.b
         const to = item.b || item.a
         const t = item.a && item.b ? clamp01(item.t) : 1
-        const ink = (s) => (s.nil ? 'muted' : s.colour) // a null value is muted
+        const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : s.colour) // a null value is muted (colour none still hides it)
         const colours = {
           fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
           stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),
           colour: mixColour(rgba(colourCss(ink(from), 'stroke')), rgba(colourCss(ink(to), 'stroke')), t),
+        }
+        // a bar's track: none on a shape without a bar, so it fades in and out as the bar turns on and off
+        if (item.v.bar !== undefined) {
+          const track = (s) => rgba(colourCss(hasBar(s) ? s.track : 'none', 'fill'))
+          colours.track = mixColour(track(from), track(to), t)
         }
         item.v.hlGlow = blend(item, (s) => s.hl?.glow) // highlight glow fades in / out like the box
         item.v.hlLine = blend(item, (s) => s.hl?.line)

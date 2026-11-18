@@ -180,6 +180,7 @@ arr: insert 8 at end               # onto the end
 arr: remove 2                      # slides out, the rest close up
 arr: remove end                    # off the end
 arr.2: fill amber                  # one cell
+arr: range 0 2 fill amber          # cells 0 to 2 (a look, highlight, emphasis or callout)
 arr: fill green                    # every cell
 arr: delete                        # the whole row
 ```
@@ -205,6 +206,22 @@ v1: null
 ```
 
 - A var is a rect (size, fill and the rest work), whose value goes straight after `var`.
+
+## Bars
+
+```anim
+arr: row [5 3 8 1 9] at 2,6 bar stroke none fill pink size 0.5x3 gap 0.1
+hp: var 67 name "health" at 2,1 size 5x0.5 bar fill green track red
+hp: 30                             # the bar shrinks to match
+hp: max 200                        # a full bar's value
+arr: bar clear                     # plain boxes again
+```
+
+- The fill takes up the value's share of `max`. It fills up from the bottom of a box taller than it is wide, otherwise from the left. Over `max` shows full, below 0 empty.
+- `max`: 100 unless given. A row or column uses its biggest value when `bar` is turned on, the same for every cell.
+- `track`: the colour of the rest (default `none`).
+- The value goes in the middle when there's a track. With none, it goes at the top of an upright bar and the right of a wide one, as on a bar chart.
+- For vars and cells. A value that isn't a number fills none.
 
 ## Moving values
 

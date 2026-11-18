@@ -14,23 +14,44 @@ Loaded in this order (`docs/index.html`), sharing `window.Anim`. Each part takes
 | `anim-render.js` | Draws a beat, or a blend between two, into the SVG |
 | `animation.js` | The widget: controls, captions, playback, camera, intro |
 
-The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`).
+The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`, `lands`).
 
 ## Extending
 
+**The rule: build every feature by using and extending the engine's structures, never by working around them.** This is not a style preference. The user should never have to ask whether a change follows it, so check your own work against it before you say a feature is done.
+
 Most features are an entry in a table, with no other code to change. Words, checks and error messages are worked out from these tables.
 
-**No one-offs.** Never special-case a type, layout or word by name (`type === 'codeline'`, `layout === 'code'`). When something behaves differently, give it a field in its table (documented in the table's comment), and read the field. Numbers that tune how things look or move go in `CHOREOGRAPHY` or the table entry, not inline. If a feature seems to need a special case, add the field that describes it instead.
+- **Find the structure first.** Before writing any code, find the table, function or path that already does this kind of thing (the "To add" table below, `schedule`, `parseProps`, `applyProps`, `resolveAttachments`, `flyValue`, `cellId` …) and go through it.
+- **Extend it if it doesn't quite fit.** Add a field to the table (documented in the table's comment), widen a function's arguments, or add a table if a new kind of thing has several variants (for example `BARS` and `BAR_DRAWS` for bar kinds). Don't write a parallel path next to it.
+- **No one-offs.** Never special-case a type, layout or word by name (`type === 'codeline'`, `layout === 'code'`). When something behaves differently, give it a field in its table and read the field.
+- **No hand-kept lists or magic strings.** A list of allowed props belongs in `LINES` (`takes` / `refuses` / `refuse`), not in a local array checked by hand. A value's meaning comes from its table (`BARS[kind]`, `LOOKS[key].map`), not from comparing against a literal like `'on'`.
+- **No inline tuning numbers.** Numbers that tune how things look or move go in `CHOREOGRAPHY`, the table entry, or a named, commented constant. Defaults go in the table too (`LOOKS: default`, `SHAPES: defaults`).
+- **Errors and messages come from the shared paths.** Use `parseProps`, `LINES` and `wordFor`, so a message names the word as it was typed. If you find yourself digging through the tokens to rebuild a message, the feature is probably on the wrong path (a verb parsed as a prop, say).
+- **Plan for the next variant.** If a feature will plausibly get siblings (another kind of bar, layout or highlight), make the first one an entry in a table, so the next is an entry too.
+
+**Only when it's truly unavoidable:** if a special case really can't be expressed through the structures, keep it as small as possible, comment it in place with the reason, and tell the user about it when you hand the change over.
+
+**Before you finish, review your own diff** and fix anything it turns up:
+- `===` against a type, layout, kind or keyword name
+- string literals that stand for a table's values
+- local arrays of prop names
+- numbers not taken from a table or named constant
+- code that duplicates something an existing function does
+- a new feature with no table entry, or a table whose comment doesn't explain the new field
+
+In your summary, say that you checked, and name any exception you kept.
 
 | To add | Table | File |
 |---|---|---|
 | A shape type | `SHAPES` (props, defaults, outline, label place, inside, noun, band, pre, internal); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
 | A layout (`row`, `column`, `code`) | `LAYOUTS` (cell type, across, base, name side, lines, fit, typeInTurn, slide, slot, bow, numbers, panel) | `anim-core.js` |
-| A look prop (`fill`, `weight` …) | `LOOKS` (field, unit, min, hints, quiet, check), its word in `KEYWORDS`, and the types in `SHAPES` that take it | `anim-core.js` |
+| A look prop (`fill`, `weight` …) | `LOOKS` (field, unit, min, map, hints, quiet, check, default), its word in `KEYWORDS`, and the types in `SHAPES` that take it | `anim-core.js` |
 | A verb (`delete`, `swap` …) | `LINES` (`verb: true`, `takes` / `refuses`), then a function in `VERBS` | `anim-core.js`, `anim-compile.js` |
 | An entrance or exit (`pop` …) | `ENTRANCES` (`applies`, `unless`, `quiet`), then its frame in `FRAMES` | `anim-core.js`, `anim-render.js` |
 | An emphasis (`pulse` …) | `EMPHASES` (`along`, `aliases`), then its frame in `EMPHASIS_FRAMES` | `anim-core.js`, `anim-render.js` |
 | A highlight (`outline` …) | `HIGHLIGHT_KINDS` (`off`, `applies`, `refuse`), and an entry in `OVERLAYS` if it's drawn over the shape | `anim-core.js`, `anim-render.js` |
+| A kind of bar (a var's value as a pie, a ring …) | `BARS` (`outlines` it fits; its word, written after `bar`, comes from its key), then its drawer in `BAR_DRAWS` (`make`, `draw`); the shape types it fits need `bar`, `max` and `track` in their `takes` | `anim-core.js`, `anim-render.js` |
 | Row-edit or moving-value timing | `CHOREOGRAPHY` | `anim-core.js` |
 
 - **Timing:** every change's timing goes through `schedule(meta, uid, props, { dur, after })` in `anim-compile.js`. It takes the longest duration and latest start when a shape changes twice in a beat.

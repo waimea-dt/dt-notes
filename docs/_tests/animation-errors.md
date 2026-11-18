@@ -116,6 +116,14 @@ ec: highlight line
 er: highlight line
 hlr: rect at 1,1 highlight line
 er: numbered indices
+er: range 0 5 fill red
+dw: range 0 1 fill red
+er: range 0 1 move 2,2
+er: range 0 fill red
+ec: range 1 2 bar
+defaults range 0 1
+br: rect at 1,1 bar
+bm: var 5 at 1,1 bar max 0
 ```
 
 </animation>
