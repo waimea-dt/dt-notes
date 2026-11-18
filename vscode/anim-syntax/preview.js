@@ -18,7 +18,7 @@ const CLASSES = [
   ['keyword', 'hljs-keyword'],
   ['storage.type', 'hljs-keyword'],
   ['support.type.property-name', 'hljs-attr'],
-  ['support.constant.property-value', 'hljs-literal'],
+  ['constant.language', 'hljs-literal'], // end, null (plain values are left uncoloured, as in the editor)
   ['constant.other.color', 'hljs-symbol'],
   ['support.constant.color', 'hljs-symbol'],
   ['constant.numeric', 'hljs-number'],

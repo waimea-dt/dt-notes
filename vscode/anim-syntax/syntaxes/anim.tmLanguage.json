@@ -46,6 +46,9 @@
       "include": "#value"
     },
     {
+      "include": "#literal"
+    },
+    {
       "include": "#colour"
     },
     {
@@ -91,14 +94,14 @@
       }
     },
     "beat-line": {
-      "$comment": "lines with no id; defaults clear and camera reset are params",
+      "$comment": "lines with no id; defaults clear and camera reset are commands too (elsewhere clear is a value: highlight clear)",
       "match": "^\\s*(defaults|camera|pause|auto)(?![\\w-])(?:\\s+(clear|reset)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "keyword.control.anim"
         },
         "2": {
-          "name": "support.type.property-name.anim"
+          "name": "keyword.control.anim"
         }
       }
     },
@@ -120,9 +123,9 @@
       }
     },
     "action": {
-      "$comment": "the verbs: words that start a line's command",
+      "$comment": "the verbs: words that start a line's command, and detach (an action, like ungroup)",
       "name": "keyword.control.anim",
-      "match": "(?<![\\w-])(copy|group|ungroup|delete|swap|insert|remove)(?![\\w-])"
+      "match": "(?<![\\w-])(copy|group|ungroup|delete|swap|insert|remove|detach)(?![\\w-])"
     },
     "ease": {
       "$comment": "ease and its value (in and out are only values here)",
@@ -191,7 +194,7 @@
     "property": {
       "$comment": "named params, which a value follows",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|detach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|zoom|into|above|below|left-of|right-of)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|zoom|into|above|below|left-of|right-of)(?![\\w-])"
     },
     "flag": {
       "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, an arrowhead)",
@@ -201,7 +204,12 @@
     "value": {
       "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",
       "name": "support.constant.property-value.anim",
-      "match": "(?<![\\w-])(outline|inside|spotlight|clear|reset|null|end)(?![\\w-])"
+      "match": "(?<![\\w-])(outline|inside|spotlight|clear|reset)(?![\\w-])"
+    },
+    "literal": {
+      "$comment": "words that stand in for a value, like a number does: end (a row's last place) and null (no value)",
+      "name": "constant.language.anim",
+      "match": "(?<![\\w-])(end|null)(?![\\w-])"
     },
     "colour": {
       "patterns": [
