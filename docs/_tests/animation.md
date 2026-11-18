@@ -2225,6 +2225,114 @@ st: delete
 
 </animation>
 
+## Feature: code
+
+<animation grid="16x7">
+
+A code block: its lines in [ ] (one per line, the closing "]" lined up with the id), highlighted by Prism. Lines are numbered from 1, like line numbers.
+
+```anim
+c: code [
+    "total = 0",
+    "for n in [5, 3, 8]:",
+    "    total += n"
+] at 2,2 lang python name "sum.py" numbered
+nums: row [5 3 8] at 12,2 name "nums"
+total: var 0 at 12,4 name "total"
+```
+
+---
+
+## Highlighting a line
+
+```anim
+c.2: highlight line
+nums.0: fill amber
+```
+
++++
+
+```anim
+c.2: highlight clear
+c.3: highlight line
+total: 5
+```
+
++++
+
+A text can be highlighted too, and a fill on a line works as well.
+
+```anim
+note: text "adds each number" at 12,5.5 highlight line
+c.3: highlight clear
+c.1: fill teal
+```
+
+---
+
+## Changing lines
+
+A longer line widens the block.
+
+```anim
+c.1: fill none
+note: delete
+c: insert "print(total)  # 16" at end
+```
+
++++
+
+```anim
+c.1: "total = 100" speed slow
+```
+
++++
+
+```anim
+c: swap 1 2
+```
+
++++
+
+```anim
+c: remove 1
+c: font 0.8
+```
+
+---
+
+## One line, typed
+
+A single line goes in quotes. Typed, a block's lines type out one after another.
+
+```anim
+s: code "console.log(\"Hello, world!\")" lang js at 2,6 typed
+```
+
++++
+
+```anim
+s: "console.log(42)"
+```
+
++++
+
+```anim
+p: code [
+    "def greet(name):",
+    "    return f\"Hi {name}\""
+] at 10,5.5 lang python typed speed 2
+```
+
++++
+
+```anim
+p: delete typed
+c: delete
+```
+
+</animation>
+
 ## Feature: Emphasis
 
 <animation grid="12x3">

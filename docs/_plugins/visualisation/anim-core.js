@@ -39,10 +39,12 @@
     flyMove: 0.8,     // a flyer moves for this share of its time, then fades out where it landed
     crossfade: 0.5,   // the value it brings crossfades in over this, centred on its landing
     slotFade: 0.15,   // a slot fades in or out over this share of its time
+    fitSplit: 0.5,    // a fitted box (SHAPES: fitted) widens over this share of a change, then its text changes; or its text changes, then it narrows
+    panelFade: 0.15,  // a code block's panel (and name, line numbers) fades in this share of a typed speed, before the typing
   }
   // How a shape comes in or goes (the effect words; rendered by FRAMES in anim-render.js):
   //   applies  whether it works on a shape; when it doesn't, the shape fades, with the warning
-  //            unless(type) gives
+  //            unless(noun) gives (noun: the shape's name, nounOf)
   //   quiet    plays no intro of its own on the first beat (see animation.js)
   //   internal not a word an author types: a cell a flyer brings in is there from the start
   //            (appear), one a flyer takes away goes at once (vanish)
@@ -50,9 +52,9 @@
   const ENTRANCES = {
     fade: { quiet: true },
     pop: {},
-    draw: { applies: isLine, unless: (type) => `"draw" only draws lines and arrows, so this ${type} fades instead` },
-    slide: { applies: (shape) => !isLine(shape), unless: (type) => `"slide" doesn't move lines, so this ${type} fades instead` },
-    typed: { applies: (shape) => Boolean(shape.label), unless: (type) => `"typed" types out a shape's text, and this ${type} has none, so it fades instead` },
+    draw: { applies: isLine, unless: (noun) => `"draw" only draws lines and arrows, so this ${noun} fades instead` },
+    slide: { applies: (shape) => !isLine(shape), unless: (noun) => `"slide" doesn't move lines, so this ${noun} fades instead` },
+    typed: { applies: (shape) => Boolean(shape.label), unless: (noun) => `"typed" types out a shape's text, and this ${noun} has none, so it fades instead` },
     appear: { quiet: true, internal: true },
     vanish: { quiet: true, internal: true },
   }
@@ -78,9 +80,17 @@
     inside: {
       applies: (shape) => Boolean(SHAPES[shape.type]?.inside),
       refuse: (shape) => {
-        const types = Object.keys(SHAPES).filter((type) => SHAPES[type].inside)
+        const types = Object.keys(SHAPES).filter((type) => SHAPES[type].inside && !SHAPES[type].internal)
         const what = shape.type === 'group' ? shape.layout || 'group' : shape.type
         return `"highlight inside" needs a shape with an inside (${types.slice(0, -1).join(', ')} or ${types[types.length - 1]}), not ${article(what)} ${what}`
+      },
+    },
+    // a band behind a shape's text, in the highlight colour (shapes with a band: SHAPES)
+    line: {
+      applies: (shape) => Boolean(SHAPES[shape.type]?.band),
+      refuse: () => {
+        const nouns = Object.keys(SHAPES).filter((type) => SHAPES[type].band).map((type) => `${article(nounOf({ type }))} ${nounOf({ type })}`)
+        return `"highlight line" is for ${nouns.join(' or ')} (e.g. "c.2: highlight line", on a code block's line 2)`
       },
     },
     spotlight: {},
@@ -113,6 +123,14 @@
   //   inside    it has an inside to highlight (highlight inside)
   //   line      it runs from / to (a curve is a line bent through via points); head: an arrowhead
   //   resource  written type(arg): image(path), icon(name)
+  //   internal  not a word an author types: a code block's lines (codeline) are made by "code"
+  //   noun      its name in messages, when that isn't its type ("a code line")
+  //   band      it takes "highlight line", a band behind its text: pad, the band's extra width
+  //             each side, and corner (both × the font size; corner null: the shape's own corner)
+  //   fitted    its box is sized by its layout (LAYOUTS: fit): it widens before its text changes
+  //             and narrows after (CHOREOGRAPHY: fitSplit), so the text never sticks out
+  //   pre       its text is code: spaces kept and highlighted by its lang (anim-render.js); height,
+  //             its box's height, and pad, the margin each side of the text (× the font size)
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
@@ -129,7 +147,7 @@
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, fill: 'bg' }, outline: 'diamond', label: 'centre', inside: true,
     },
-    text: { takes: [...BOXED_PROPS, 'align'], defaults: { w: 0, h: 0 }, outline: 'box', label: 'content' },
+    text: { takes: [...BOXED_PROPS, 'align'], defaults: { w: 0, h: 0 }, outline: 'box', label: 'content', band: { pad: 0.2, corner: 0.15 } },
     image: {
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, stroke: 'none' }, outline: 'box', label: 'below', inside: true, resource: true,
@@ -141,12 +159,46 @@
     line: { takes: LINE_PROPS, label: 'along', line: true },
     arrow: { takes: LINE_PROPS, label: 'along', line: true, head: true },
     curve: { takes: LINE_PROPS, label: 'along', line: true },
+    // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
+    // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
+    codeline: {
+      takes: [...BOXED_PROPS, 'align', 'fill', 'stroke', 'corner', 'linestyle', 'flow', 'lang'],
+      defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', mono: true, align: 'left' }, outline: 'box', label: 'code', inside: true,
+      internal: true, noun: 'code line', fitted: true, band: { pad: 0, corner: null }, pre: { height: 1.4, pad: 0.3 },
+    },
   }
   const typesWhere = (test) => Object.keys(SHAPES).filter((type) => test(SHAPES[type]))
-  const SHAPE_TYPES = typesWhere((kind) => !kind.resource) // written as a word after "id:"
+  const SHAPE_TYPES = typesWhere((kind) => !kind.resource && !kind.internal) // written as a word after "id:"
   const RESOURCE_TYPES = typesWhere((kind) => kind.resource)
   const LINE_TYPES = typesWhere((kind) => kind.line)
-  const LAYOUT_TYPES = ['row', 'column'] // a group of cells, laid out side by side or one under another
+  // A shape's name in messages: its noun, or its type
+  const nounOf = (shape) => SHAPES[shape.type]?.noun || shape.type
+
+  // Every layout: a group of cells (the type after "id:"), in one place:
+  //   noun        its name in messages; item, what its cells are called ("line", "cell")
+  //   cell        the shape type of its cells
+  //   across      cells side by side (a row), or one under another
+  //   base        the number of its first cell: 0 like indices, or 1 like line numbers
+  //   name        the side its name goes, unless one is given
+  //   lines       its values are "quoted" lines: one alone, or in [ ] (no count of empty cells),
+  //               and it's as big as they are (no size)
+  //   fit         every cell takes the size of the biggest, refitted as they change (fitCode); its
+  //               box is fitted like its cells' (SHAPES: fitted)
+  //   typeInTurn  typed (and delete typed) types its cells one after another
+  //   slide       insert / remove slide a cell in and out from beside it (or it fades in place)
+  //   slot        a muted outline marks the space a cell leaves or lands in
+  //   bow         how far a swapped cell bows out: 'own' (its size across) or 'cell' (a grid cell)
+  //   numbers     its indices keep to its cells' font size
+  //   panel       a background behind it (and its indices): pad and corner, in cells
+  const LAYOUTS = {
+    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left-of', slide: true, slot: true, bow: 'own' },
+    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'above', slide: true, slot: true, bow: 'own' },
+    code: {
+      noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'above', lines: true, fit: true, typeInTurn: true,
+      slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 },
+    },
+  }
+  const LAYOUT_TYPES = Object.keys(LAYOUTS)
 
   // ease <name>: how a change speeds up and slows down (t: 0-1 of its time -> 0-1 of the way).
   // spring overshoots, then settles exactly on 1.
@@ -156,6 +208,21 @@
     in: (t) => t * t * t,
     out: (t) => 1 - Math.pow(1 - t, 3),
     spring: (t) => (t >= 1 ? 1 : 1 - Math.exp(-5 * t) * Math.cos(2.5 * Math.PI * t)),
+  }
+
+  // lang: a language Prism hasn't loaded shows as plain code. Without Prism (in the editor), any
+  // language is taken. Each language is listed once, by its first name (aliases share a grammar).
+  function langWarning(lang) {
+    const languages = window.Prism?.languages
+    if (!languages || languages[lang]) return null
+    const seen = new Set()
+    const known = Object.keys(languages).filter((name) => {
+      const grammar = languages[name]
+      if (typeof grammar !== 'object' || seen.has(grammar)) return false
+      seen.add(grammar)
+      return true
+    })
+    return `no highlighting for "${lang}", so it shows as plain code (the site has: ${known.join(', ')})`
   }
 
   // Named colours map to the site's theme variables, so light and dark themes both work.
@@ -194,6 +261,7 @@
   //   quiet  types it has no effect on (a warning, not an error)
   //   cell   part of a row's / column's look, given to its cells
   //   kept   taken along by a value on the move with keep-style
+  //   check  check(value): a warning when the value can't be shown as asked (null if it can)
   const LOOKS = {
     font: { field: 'font', unit: 1, min: 0.1, cell: true },
     width: { field: 'w', unit: CELL, min: 0 },
@@ -209,6 +277,7 @@
     scale: { field: 'scale', unit: 1, min: 0 },
     bold: { field: 'bold', cell: true },
     mono: { field: 'mono', cell: true },
+    lang: { field: 'lang', cell: true, check: langWarning }, // a code block's language (Prism's name for it)
     head: { field: 'head' },
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
@@ -278,6 +347,7 @@
     align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
     bold: fixed('bold', true),
     mono: fixed('mono', true), // a monospace font
+    lang: { key: 'lang', sigs: [['lang']], help: 'a language, e.g. "lang python" or "lang js"' },
     // "arrow" here (not straight after the id, where it's the arrow shape) puts a head on a line
     arrow: fixed('head', true),
     ...words(LINE_STYLES, 'linestyle', 'line style'),
@@ -299,7 +369,7 @@
       key: 'highlight', list: [['number', 'num'], ['number'], ['highlight']],
       // number with no value: the next in the sequence (null until compiled)
       build: (v, sig) => (sig[0] === 'number' ? { number: sig.length === 2 ? v[1].v : null } : v[0]),
-      help: 'outline, inside, spotlight, arrow, glow, number (N) or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)',
+      help: 'outline, inside, line, spotlight, arrow, glow, number (N) or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)',
     },
     callout: {
       key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],
@@ -314,6 +384,7 @@
       help: 'quoted text (e.g. name "total"), optionally then a side (above, below, left-of, right-of), or clear',
     },
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
+    numbered: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear', what: 'indices' },
     // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
     // with it, rather than taking on the look of where it goes
     'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"' }),
@@ -388,6 +459,7 @@
   // ---------------------------------------------------------------------------
 
   const SVG_NS = 'http://www.w3.org/2000/svg'
+  const XML_NS = 'http://www.w3.org/XML/1998/namespace' // xml:space
   const svgEl = (tag, attrs = {}) => {
     const el = document.createElementNS(SVG_NS, tag)
     for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value)
@@ -418,8 +490,9 @@
   const textWidths = new Map()
   let measurer = null
   const MONO_FONT = 'var(--font-family-mono)'
-  function textWidth(text, size, bold = false, mono = false) {
-    const key = `${size}|${bold ? 'b' : ''}|${mono ? 'm' : ''}|${text}`
+  // `pre` keeps runs of spaces (a code line's indent), which other text collapses.
+  function textWidth(text, size, bold = false, mono = false, pre = false) {
+    const key = `${size}|${bold ? 'b' : ''}|${mono ? 'm' : ''}|${pre ? 'p' : ''}|${text}`
     if (textWidths.has(key)) return textWidths.get(key)
     if (!measurer && document.body) {
       const holder = svgEl('svg', { width: 0, height: 0, 'aria-hidden': 'true' })
@@ -433,6 +506,8 @@
       measurer.style.fontSize = `${size}px`
       measurer.style.fontWeight = bold ? '700' : ''
       measurer.style.fontFamily = mono ? MONO_FONT : 'var(--font-family)'
+      if (pre) measurer.setAttributeNS(XML_NS, 'xml:space', 'preserve')
+      else measurer.removeAttributeNS(XML_NS, 'space')
       measurer.textContent = text
       width = measurer.getComputedTextLength()
     }
@@ -772,7 +847,7 @@
   }
 
   Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, EASES, FLOWS,
-    FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LAYOUTS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,

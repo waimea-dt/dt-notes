@@ -34,6 +34,9 @@
       "include": "#align"
     },
     {
+      "include": "#lang"
+    },
+    {
       "include": "#shape-type"
     },
     {
@@ -80,7 +83,7 @@
     },
     "line-head": {
       "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is the arrowhead param)",
-      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(rect|circle|diamond|text|line|arrow|curve|row|column|var)(?![\\w-]))?",
+      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(rect|circle|diamond|text|line|arrow|curve|row|column|code|var)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "entity.name.tag.anim"
@@ -140,8 +143,8 @@
       }
     },
     "highlight": {
-      "$comment": "highlight and its words (box, spotlight, arrow, number N, clear), so arrow here isn't a shape type",
-      "match": "(?<![\\w-])(highlight)((?:\\s+(?:outline|inside|spotlight|arrow|glow|clear|number(?:\\s+[+-]?(?:\\d+\\.?\\d*|\\.\\d+))?)(?![\\w-]))*)",
+      "$comment": "highlight and its words (outline, inside, line, spotlight, arrow, number N, clear), so arrow and line here aren't shape types",
+      "match": "(?<![\\w-])(highlight)((?:\\s+(?:outline|inside|line|spotlight|arrow|glow|clear|number(?:\\s+[+-]?(?:\\d+\\.?\\d*|\\.\\d+))?)(?![\\w-]))*)",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"
@@ -154,7 +157,7 @@
             },
             {
               "name": "support.constant.property-value.anim",
-              "match": "(?<![\\w-])(outline|inside|spotlight|arrow|glow|number)(?![\\w-])"
+              "match": "(?<![\\w-])(outline|inside|line|spotlight|arrow|glow|number)(?![\\w-])"
             },
             {
               "include": "#number"
@@ -166,6 +169,18 @@
     "speed": {
       "$comment": "speed and its word (normal is a value here, the layer param elsewhere)",
       "match": "(?<![\\w-])(speed)(?:\\s+(instant|vfast|fast|normal|slow|vslow)(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "lang": {
+      "$comment": "lang and a code block's language (any word: Prism's name for it)",
+      "match": "(?<![\\w-])(lang)(?:\\s+([A-Za-z][\\w+#-]*))?",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"
@@ -188,7 +203,7 @@
     },
     "shape-type": {
       "$comment": "a shape type starting a continuation line (an indented line of a long command)",
-      "match": "^\\s+(rect|circle|diamond|text|line|arrow|curve|row|column|var)(?![\\w-])",
+      "match": "^\\s+(rect|circle|diamond|text|line|arrow|curve|row|column|code|var)(?![\\w-])",
       "captures": {
         "1": {
           "name": "storage.type.anim"
@@ -198,7 +213,7 @@
     "property": {
       "$comment": "named params, which a value follows",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|zoom|into|above|below|left-of|right-of)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|zoom|into|above|below|left-of|right-of)(?![\\w-])"
     },
     "flag": {
       "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, an arrowhead)",

@@ -8,14 +8,18 @@
     placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS,
     parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES, entranceFor,
     parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CHOREOGRAPHY: C, CELL_STYLE, LINES,
-    wordFor, LOOKS, KEPT_STYLE, article, SHAPES, kindOf, HIGHLIGHT_KINDS } = window.Anim
+    wordFor, LOOKS, KEPT_STYLE, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, FONT,
+    textWidth } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
-  // id.1, …) and their index labels (id.index.0, …), and the name (id.name)
+  // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
+  // (id.name). Cells are numbered from the layout's base (LAYOUTS): `k` is a cell's number as
+  // written, and its place in the row is k - base.
   const cellId = (id, k) => `${id}.${k}`
   const indexId = (id, k) => `${id}.index.${k}`
   const nameId = (id) => `${id}.name`
-  const cellRange = (id, n) => (n ? `${cellId(id, 0)} to ${cellId(id, n - 1)}` : 'none')
+  const baseOf = (layout) => LAYOUTS[layout]?.base || 0
+  const cellRange = (row, n) => (n ? `${cellId(row.id, baseOf(row.layout))} to ${cellId(row.id, baseOf(row.layout) + n - 1)}` : 'none')
 
   const pick = (props, keys) => Object.fromEntries(Object.entries(props).filter(([key]) => keys.includes(key)))
 
@@ -62,7 +66,7 @@
     const check = (shape, key, word = key) => {
       const hint = LOOKS[key]?.hints?.[shape.type]
       if (hint) throw new Error(hint)
-      if (APPLIES[key] && !APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${article(shape.type)} ${shape.type}`)
+      if (APPLIES[key] && !APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${article(nounOf(shape))} ${nounOf(shape)}`)
     }
 
     // Applies a shape's look (size, then LOOKS): absolute when creating; on a change, a signed
@@ -91,6 +95,8 @@
         const word = wordFor(key, value)
         check(shape, key, word)
         if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
+        const problem = look.check?.(value)
+        if (problem) warn(problem)
         if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
         else shape[look.field] = look.map ? look.map[value] : value
       }
@@ -309,17 +315,25 @@
 
     // After every line: put attached shapes and group members where their refs now are
     // (several passes, for chains), and fit each group's box round its members.
-    function settle() {
+    function settle(meta) {
+      fitCode(meta)
       for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
       resolveAttachments(shapes)
       for (const group of shapes.values()) {
         if (group.type !== 'group') continue
         // a row / column emptied by remove: nothing, at its first cell's place
         if (!group.members.length) { if (group.layout) Object.assign(group, { w: 0, h: 0, cx: 0, cy: 0 }); continue }
-        const b = unionBounds(group.members.map((id) => shapes.get(id)).filter(Boolean), shapes)
+        const members = group.members.map((id) => shapes.get(id)).filter(Boolean)
+        // a layout with a panel (LAYOUTS) takes its indices in too: the panel goes behind them
+        const panel = LAYOUTS[group.layout]?.panel
+        const indices = panel ? [...shapes.values()].filter((s) => s.part === group.id && s.id.startsWith(indexId(group.id, ''))) : []
+        const b = unionBounds([...members, ...indices], shapes)
         if (group.layout) {
           // a row / column is placed by its first cell: its box is its cells' (cx, cy: to its middle)
+          const before = [group.w, group.h, group.cx, group.cy].join()
           Object.assign(group, { w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - group.x, cy: (b.y0 + b.y1) / 2 - group.y })
+          // its panel grows and shrinks with it, in the time its cells take
+          if (panel && meta && [group.w, group.h, group.cx, group.cy].join() !== before) retime(meta, group.uid, busiest(meta, members))
           continue
         }
         group.w = 2 * Math.max(group.x - b.x0, b.x1 - group.x)
@@ -341,7 +355,8 @@
 
     // An entrance or exit that doesn't apply to the shape (ENTRANCES) fades instead: say why
     function warnEffect(shape, effect, warn) {
-      if (entranceFor(effect, shape) !== effect) warn(ENTRANCES[effect].unless(shape.type))
+      if (shape.type === 'group') return // its members show it (or say why not)
+      if (entranceFor(effect, shape) !== effect) warn(ENTRANCES[effect].unless(nounOf(shape)))
     }
 
     // The one place a change's timing is set: it takes `dur` ms (the line's speed unless given),
@@ -431,6 +446,7 @@
 
       if (defaultsLine) {
         const props = parseProps(tokens, 0, 'defaults', shapes)
+        for (const [key, look] of Object.entries(LOOKS)) { const problem = props[key] && look.check?.(props[key]); if (problem) warn(problem) }
         if (props.reset) { defaults = {}; delete props.reset }
         const before = JSON.stringify(defaults)
         defaults = { ...defaults, ...props }
@@ -494,6 +510,12 @@
       const newValue = existing.holds && first?.kind === 'word' ? valueOf(first) : undefined
       const props = parseProps(tokens, newValue ? 1 : 0, 'change', shapes)
       if (newValue && props.label !== undefined) throw new Error('give one value: a number, "quoted" text or null')
+      // "s: "print(y)"": a one-line code block's text is its line's
+      if (LAYOUTS[existing.layout]?.lines && props.label !== undefined) {
+        const { item, base } = LAYOUTS[existing.layout]
+        if (existing.members.length !== 1) throw new Error(`"${id}" has ${existing.members.length} ${item}s, so say which one, e.g. "${cellId(id, base)}: "x = 1""`)
+        return runLine(`${existing.members[0]}: ${match[2]}`, meta, warn)
+      }
       checkParts(existing, props)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
       const order = existing.type === 'group' ? staggerOrder(existing) : null
@@ -524,7 +546,10 @@
       if (existing.layout && where) throw new Error(`"delete" deletes the whole ${existing.layout}: to take one cell out, "${id}: remove ${where}"`)
       const props = parseProps(tokens, 1, 'delete', shapes)
       const order = staggerOrder(existing) // taken before its members go
+      const lines = LAYOUTS[existing.layout]?.typeInTurn ? existing.members.map((m) => shapes.get(m)).filter(Boolean) : []
+      const parts = [...shapes.values()].filter((s) => s.part === id)
       removeShape(existing, props, meta, warn)
+      if (lines.length && (props.effect || defaults.effect) === 'typed') typeInTurn(existing, lines, parts, props, meta, true)
       applyStagger(existing, order, props, meta, warn)
     }
 
@@ -685,7 +710,7 @@
       }
       const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: ++uid, font: 1.2, layer: owner.layer, part: owner.id }
       text.label = name.text
-      text.attach = besideOf(owner.id, name.side || old?.attach?.side || (owner.layout === 'column' ? 'above' : 'left-of'), 0.2 * CELL)
+      text.attach = besideOf(owner.id, name.side || old?.attach?.side || (LAYOUTS[owner.layout]?.name || 'left-of'), 0.2 * CELL)
       Object.assign(text, attachPos(text, owner, text.attach))
       shapes.set(id, text)
       if (!old) tween(meta, text.uid).enter = 'fade'
@@ -696,9 +721,10 @@
     // new ones fading in `add` ms in and old ones out `remove` ms in.
     function syncIndices(row, props, meta, { add = 0, remove = 0 } = {}) {
       const n = row.indices ? row.members.length : 0
-      const across = row.layout === 'row'
+      const { across, numbers } = LAYOUTS[row.layout]
+      const base = baseOf(row.layout)
       for (let k = 0; ; k++) {
-        const id = indexId(row.id, k)
+        const id = indexId(row.id, k + base)
         const old = shapes.get(id)
         if (k >= n) {
           if (!old) break
@@ -709,8 +735,9 @@
         }
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
         // cell slides in or out of it; at the back, so a sliding cell passes over it
-        const text = old || { ...baseShape('text'), id, uid: ++uid, label: String(k), font: 0.88, colour: 'muted', layer: 'back', part: row.id }
-        const cell = shapes.get(cellId(row.id, k))
+        const text = old || { ...baseShape('text'), id, uid: ++uid, label: String(k + base), font: 0.88, colour: 'muted', layer: 'back', part: row.id }
+        const cell = shapes.get(cellId(row.id, k + base))
+        if (numbers) text.font = 0.88 * cell.font // line numbers keep to the code's size
         const place = { ...cell, x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }
         const p = placeNextTo(text, place, across ? 'below' : 'left-of', (across ? 0.1 : 0.2) * CELL)
         text.attach = offsetFrom(row.id, p.x - row.x, p.y - row.y)
@@ -739,6 +766,7 @@
     // quoted text, commas optional), or a bare count makes that many empty cells; size, gap and
     // the look apply to every cell.
     function createLayout(id, layout, tokens, existing, meta, warn) {
+      if (LAYOUTS[layout].lines) return createLines(id, layout, tokens, existing, meta, warn)
       const example = `e.g. "${id}: ${layout} [5 3 8 1] at 2,3" (words in quotes: ["A" "B"]), or a number of empty cells: "${id}: ${layout} 4 at 2,3"`
       const count = tokens[1]?.kind === 'word' && NUMBER.test(tokens[1].value) ? tokens[1].value : null
       if (count !== null && !/^\d+$/.test(count)) throw new Error(`a ${layout}'s number of cells is a whole number, e.g. "${id}: ${layout} 4", not "${count}"`)
@@ -757,12 +785,44 @@
       if (!values.length) throw new Error(`a ${layout} needs at least one value, ${example}`)
       const props = parseProps(tokens, j + 1, 'layout', shapes)
       if (props.label !== undefined) throw new Error(count === null ? `a ${layout}'s values all go inside its [ ]` : `a ${layout} of ${count} empty cells has no labels: give its values in [ ] instead`)
+      makeLayout(id, layout, values, props, existing, meta, warn)
+    }
 
+    // A layout of lines (LAYOUTS: lines), "c: code "print(x)" lang python at 2,1", or its lines in
+    // [ ]: a column of code lines, c.1, c.2, … (numbered from 1), each as wide as the longest (fitCode).
+    function createLines(id, layout, tokens, existing, meta, warn) {
+      const { noun, item } = LAYOUTS[layout]
+      const example = `e.g. "${id}: ${layout} "print(x)" lang python at 2,1", or its ${item}s in [ ]: "${id}: ${layout} ["x = 1" "print(x)"] at 2,1"`
+      const values = []
+      let j = 1
+      if (tokens[1]?.kind === 'str') {
+        values.push({ label: tokens[1].value })
+        j = 2
+      } else {
+        if (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[') throw new Error(`a ${noun}'s ${item}s go in quotes straight after "${layout}", ${example}`)
+        for (j = 2; j < tokens.length && tokens[j].kind !== 'bracket'; j++) {
+          if (tokens[j].kind !== 'str') throw new Error(`a ${noun}'s ${item}s are "quoted" text, not "${tokens[j].value ?? tokens[j].name}" (is a "]" missing?)`)
+          values.push({ label: tokens[j].value })
+        }
+        if (tokens[j]?.value !== ']') throw new Error(`the "[" of a ${noun} has no closing "]"`)
+        if (!values.length) throw new Error(`a ${noun} needs at least one ${item}, ${example}`)
+        j++
+      }
+      const props = parseProps(tokens, j, 'layout', shapes)
+      if (props.label !== undefined) throw new Error(`a ${noun} takes one "quoted" ${item}, or its ${item}s in [ ], ${example}`)
+      const sized = ['size', 'width', 'height'].find((key) => props[key])
+      if (sized) throw new Error(`a ${noun} is as big as its ${item}s, so it takes no "${sized}" (use font to make it bigger or smaller)`)
+      makeLayout(id, layout, values, props, existing, meta, warn)
+    }
+
+    // Makes a row / column / code block from its cells' values and the line's props.
+    function makeLayout(id, layout, values, props, existing, meta, warn) {
       if (existing) {
         warn(`"${id}" already exists, so it is replaced`)
         removeShape(existing, props, meta, warn)
       }
-      const ids = values.map((_, k) => cellId(id, k))
+      const base = baseOf(layout)
+      const ids = values.map((_, k) => cellId(id, k + base))
       for (const cellId of ids) {
         if (!shapes.has(cellId)) continue
         warn(`"${cellId}" already exists, so it is replaced by a cell of "${id}"`)
@@ -773,7 +833,7 @@
       const gap = props.gap ? props.gap.v * CELL : 0
       const look = pick(props, ['size', 'width', 'height', ...CELL_STYLE])
       const cells = values.map((value, k) => {
-        const cell = { ...baseShape('rect'), id: ids[k], uid: ++uid, holds: true, x: 0, y: 0 }
+        const cell = { ...baseShape(LAYOUTS[layout].cell), id: ids[k], uid: ++uid, holds: true, x: 0, y: 0 }
         applyDefaults(cell)
         applyProps(cell, look, true, warn, meta)
         setValue(cell, value)
@@ -784,6 +844,7 @@
       const blank = { ...structuredClone(cells[0]), label: '', nil: false }
       delete blank.id
       delete blank.uid
+      if (LAYOUTS[layout].fit) fitLines(cells)
       layoutCells({ id, layout, gap }, cells)
       cells.forEach((cell) => Object.assign(cell, { x: cell.attach.dx, y: cell.attach.dy }))
       if (takeBareNumber(props)) numberEach(cells, props, meta, warn)
@@ -802,6 +863,7 @@
       }
       if (props.effect) warnEffect(cells[0], props.effect, warn)
       updateParts(row, props, meta, warn)
+      if (LAYOUTS[layout].typeInTurn && (props.effect || defaults.effect) === 'typed') typeInTurn(row, cells, [...shapes.values()].filter((s) => s.part === id), props, meta)
       applyStagger(row, cells.map((cell) => [cell.uid]), { ...props, at: null, x: null, y: null }, meta, warn) // placing it isn't a move
     }
 
@@ -818,7 +880,7 @@
       if (!Object.keys(look).length) return
       for (const key of Object.keys(look)) delete props[key]
       // cells added to a row / column later take its look as it is now
-      if (group.cell) applyProps(group.cell, pick(look, CELL_STYLE.filter((key) => !APPLIES[key] || APPLIES[key].includes('rect'))), false, () => {}, meta)
+      if (group.cell) applyProps(group.cell, pick(look, CELL_STYLE.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
       const used = new Set()
       for (const member of groupMembers(group)) {
         if (member.type === 'group') continue
@@ -863,20 +925,21 @@
     function swapCells(id, row, tokens, meta, warn) {
       if (!row) throw new Error(`no shape called "${id}"`)
       if (!row.layout) throw new Error(`"swap" swaps two cells of a row or column, and "${id}" isn't one`)
+      const base = baseOf(row.layout)
       const i = parseAs('index', tokens[1])
       const j = parseAs('index', tokens[2])
-      if (i === undefined || j === undefined) throw new Error(`"swap" expects two cell numbers, e.g. "${id}: swap 0 3"`)
+      if (i === undefined || j === undefined) throw new Error(`"swap" expects two cell numbers, e.g. "${id}: swap ${base} ${base + 3}"`)
       const props = parseProps(tokens, 3, 'swap', shapes)
       const [a, b] = [i, j].map((k) => {
         const cell = row.members.includes(cellId(id, k)) && shapes.get(cellId(id, k))
-        if (!cell) throw new Error(`"${cellId(id, k)}" isn't a cell of "${id}" (its cells are ${cellRange(id, row.members.length)})`)
+        if (!cell) throw new Error(`"${cellId(id, k)}" isn't a cell of "${id}" (its cells are ${cellRange(row, row.members.length)})`)
         return cell
       })
       if (i === j) return warn('a cell swapped with itself stays where it is')
 
       // Neighbours just pass each other; further apart, they clear the cells in between
-      const across = row.layout === 'row'
-      const lift = C.swapLift[Math.abs(i - j) > 1 ? 'far' : 'near'] * Math.max(...[a, b].map((cell) => (across ? cell.h : cell.w)))
+      const { across } = LAYOUTS[row.layout]
+      const lift = C.swapLift[Math.abs(i - j) > 1 ? 'far' : 'near'] * Math.max(...[a, b].map((cell) => bowOf(row, cell)))
       const moves = [[a, b], [b, a]].map(([cell, other]) => {
         const moved = structuredClone(cell)
         moved.id = other.id
@@ -891,18 +954,93 @@
       }
     }
 
+    // How far a swapped cell bows out from its row or column, before the lift (LAYOUTS: bow): its
+    // size across it, or a grid cell (a code line, whose box is as wide as the block)
+    const bowOf = (row, cell) => (LAYOUTS[row.layout].bow === 'cell' ? CELL : LAYOUTS[row.layout].across ? cell.h : cell.w)
+
     // Lays a row's / column's cells out in order from its first cell: ids id.0, id.1, … and their
     // offsets in it.
     function layoutCells(row, cells) {
-      const across = row.layout === 'row'
+      const { across } = LAYOUTS[row.layout]
       let offset = 0
       cells.forEach((cell, k) => {
         const before = cells[k - 1]
         if (before) offset += (across ? (before.w + cell.w) / 2 : (before.h + cell.h) / 2) + (row.gap || 0)
-        cell.id = cellId(row.id, k)
+        cell.id = cellId(row.id, k + baseOf(row.layout))
         cell.attach = offsetFrom(row.id, across ? offset : 0, across ? 0 : offset)
       })
       row.members = cells.map((cell) => cell.id)
+    }
+
+    // A fitted layout's cells (LAYOUTS: fit) all take the size of the biggest, so a fill or highlight
+    // makes even bands: a code line's text's width (spaces kept) plus a margin each side, and its
+    // height (SHAPES: pre). Changed in place.
+    function fitLines(cells) {
+      const size = (cell) => FONT * cell.font
+      const pre = (cell) => kindOf(cell).pre
+      const w = Math.max(...cells.map((cell) => textWidth(cell.label, size(cell), cell.bold, cell.mono, true) + 2 * pre(cell).pad * size(cell)))
+      const h = Math.max(...cells.map((cell) => pre(cell).height * size(cell)))
+      for (const cell of cells) Object.assign(cell, { w, h })
+    }
+
+    // After every line: a code block whose lines have changed (a longer line, a new font, a line
+    // inserted or removed) is refitted, its lines resized and moved to match, in the time its
+    // busiest line takes this beat. Its line numbers move with them.
+    function fitCode(meta) {
+      for (const row of shapes.values()) {
+        if (!LAYOUTS[row.layout]?.fit || !row.members.length) continue
+        const cells = row.members.map((id) => shapes.get(id)).filter(Boolean)
+        const before = cells.map((cell) => [cell.w, cell.h, cell.attach.dx, cell.attach.dy].join())
+        fitLines(cells)
+        layoutCells(row, cells)
+        const changed = cells.filter((cell, k) => [cell.w, cell.h, cell.attach.dx, cell.attach.dy].join() !== before[k])
+        if (!changed.length) continue
+        const timing = busiest(meta, cells)
+        changed.forEach((cell) => retime(meta, cell.uid, timing))
+        if (row.indices) {
+          syncIndices(row, {}, meta)
+          for (let k = 0; k < cells.length; k++) {
+            const index = shapes.get(indexId(row.id, k + baseOf(row.layout)))
+            if (index) retime(meta, index.uid, timing)
+          }
+        }
+      }
+    }
+
+    // The timing of the busiest of some shapes this beat: the longest change, from the earliest
+    // start (or the line's speed, if none of them changes)
+    function busiest(meta, list) {
+      const records = list.map((shape) => meta.tweens.get(shape.uid)).filter((record) => record?.dur)
+      if (!records.length) return { dur: speedOf({}), delay: 0 }
+      return { dur: Math.max(...records.map((record) => record.dur)), delay: Math.min(...records.map((record) => record.delay)) }
+    }
+
+    // Gives a shape that changes along with others (a refitted line, a panel) their timing. One
+    // already changing this beat keeps its own; a new one takes its place as it comes in.
+    function retime(meta, uid, { dur, delay }) {
+      const record = tween(meta, uid)
+      if (record.enter || record.dur) return
+      Object.assign(record, { dur, delay })
+    }
+
+    // typed on a code block: its panel, name and line numbers (`parts`) fade in quickly, then its
+    // lines type out one after another, in the line's time (each line's share by its length, so the
+    // typing keeps an even pace). Deleted (`leaving`), the lines untype the same way, then the rest
+    // fades.
+    function typeInTurn(row, cells, parts, props, meta, leaving = false) {
+      const total = speedOf(props)
+      const fade = C.panelFade * total
+      const chars = cells.map((cell) => [...cell.label].length)
+      const all = chars.reduce((a, b) => a + b, 0) || 1
+      const start = delayOf(props)
+      let after = leaving ? 0 : fade
+      cells.forEach((cell, k) => {
+        const record = tween(meta, cell.uid)
+        record.dur = (total * chars[k]) / all
+        record.delay = start + after
+        after += record.dur
+      })
+      for (const shape of [row, ...parts]) Object.assign(tween(meta, shape.uid), { dur: fade, delay: start + (leaving ? total : 0) })
     }
 
     // "arr: remove 2" / "arr: remove end" / "arr: insert 7 at 3" / "arr: insert 8 at end": a cell
@@ -915,12 +1053,19 @@
       if (!row) throw new Error(`no shape called "${id}"`)
       const removing = word === 'remove'
       if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} a row or column, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
-      const example = removing ? `"${id}: remove 2" or "${id}: remove end into v1"` : `"${id}: insert 7 at 3" or "${id}: insert v1 at end"`
+      const kind = LAYOUTS[row.layout]
+      const example = removing ? `"${id}: remove 2" or "${id}: remove end into v1"` : kind.lines ? `"${id}: insert "x = 1" at 2" or "${id}: insert "x = 1" at end"` : `"${id}: insert 7 at 3" or "${id}: insert v1 at end"`
       const cells = row.members.map((m) => shapes.get(m)).filter(Boolean)
       const n = cells.length
-      const range = cellRange(id, n)
-      // a cell number, or end: the last cell (remove), or after it (insert)
-      const place = (token) => (token?.kind === 'word' && token.lower === 'end' ? (removing ? n - 1 : n) : parseAs('index', token))
+      const base = baseOf(row.layout)
+      const range = cellRange(row, n)
+      // a cell number, or end: the last cell (remove), or after it (insert); as a place in the row
+      // (from 0), and as written
+      const place = (token) => {
+        if (token?.kind === 'word' && token.lower === 'end') return removing ? n - 1 : n
+        const k = parseAs('index', token)
+        return k === undefined ? undefined : k - base
+      }
 
       // The operands: where, and what goes in (a value, or a copy of a var's or cell's), or the var
       // or cell the removed value goes into
@@ -954,8 +1099,8 @@
       if (props.keepStyle && !source && !target) throw new Error(`"keep-style" goes with a var's or cell's value, e.g. "${id}: ${removing ? 'remove end into v1' : 'insert v1 at 0'} keep-style"`)
 
       if (removing && !n) throw new Error(`"${id}" has no cells left to remove`)
-      if (removing && at >= n) throw new Error(`"${id}" has no cell ${at} (its cells are ${range})`)
-      if (!removing && at > n) throw new Error(`"insert … at" goes from 0 to ${n} (or end), and "${id}" has ${n} cell${n === 1 ? '' : 's'}`)
+      if (removing && (at < 0 || at >= n)) throw new Error(`"${id}" has no cell ${at + base} (its cells are ${range})`)
+      if (!removing && (at < 0 || at > n)) throw new Error(`"insert … at" goes from ${base} to ${n + base} (or end), and "${id}" has ${n} ${kind.item}${n === 1 ? '' : 's'}`)
       if (target && target.uid === cells[at].uid) throw new Error(`"${target.id}" is the cell being removed, so it can't be removed into`)
 
       const speed = speedOf(props)
@@ -963,8 +1108,9 @@
       // mostly gone, or the arriving one's slot has mostly opened
       const then = C.then * speed
       const timing = (uid, after) => schedule(meta, uid, props, { after })
-      const across = row.layout === 'row'
-      const aside = (cell) => (across ? { x: 0, y: C.aside * cell.h } : { x: -C.aside * cell.w, y: 0 }) // where a cell comes from / goes to
+      const { across } = kind
+      // where a cell comes from / goes to: beside the row (LAYOUTS: slide), or its own place
+      const aside = (cell) => (!kind.slide ? { x: 0, y: 0 } : across ? { x: 0, y: C.aside * cell.h } : { x: -C.aside * cell.w, y: 0 })
 
       // A slot (a muted outline) marks the space while it opens or closes (drawn only during the beat): left
       // where a cell goes out, closing as the cells after it close up; or opening as the cells move
@@ -990,6 +1136,13 @@
         slotCell = cell
       }
       for (const cell of cells) shapes.delete(cell.id)
+      if (kind.fit && list.length) {
+        // the block widens for a longer line as the others move aside, or narrows once the
+        // longest has gone
+        const widths = new Map(list.map((cell) => [cell.uid, cell.w]))
+        fitLines(list)
+        list.filter((cell) => widths.get(cell.uid) !== cell.w && cell.uid !== slotCell?.uid).forEach((cell) => timing(cell.uid, removing ? then : 0))
+      }
       layoutCells(row, list)
       for (const cell of list) {
         Object.assign(cell, { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy })
@@ -1018,7 +1171,8 @@
       }
 
       // The slot's place in the row (a removed cell's from before, a new cell's from after the
-      // layout), and its time: both parts, start to end
+      // layout), and its time: both parts, start to end (LAYOUTS: slot)
+      if (!kind.slot) return
       const slot = {
         uid: ++uid, ref: id, across, closing: removing, then: C.then / (1 + C.then),
         dx: slotCell.attach.dx, dy: slotCell.attach.dy, w: slotCell.w, h: slotCell.h, corner: slotCell.corner || 0,
@@ -1044,7 +1198,8 @@
 
   // Joins a scene's lines into commands: a line indented more than the line that started the
   // current command continues it (as if joined with a space), so a long command can be laid out
-  // one property per line. Comments are removed and blank lines skipped first; `li` is the line
+  // one property per line, or a row's values one per line (a line starting "]" continues it too,
+  // so the closing bracket can line up with the id). Comments are removed and blank lines skipped first; `li` is the line
   // the command starts on (for error messages).
   function logicalLines(scene) {
     const out = []
@@ -1053,7 +1208,8 @@
       const text = stripComment(raw).trimEnd()
       if (!text.trim()) return
       const indent = text.length - text.trimStart().length
-      if (current && indent > current.indent) current.text += ` ${text.trim()}`
+      // a line starting "]" closes a row's / column's / code block's values laid out a line each
+      if (current && (indent > current.indent || text.trimStart().startsWith(']'))) current.text += ` ${text.trim()}`
       else out.push((current = { text: text.trim(), li, indent }))
     })
     return out
@@ -1099,14 +1255,18 @@
         const meta = { tweens: new Map(), pause: null, auto: false }
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
         logicalLines(beat.scene).forEach(({ text, li }) => {
+          // each warning once per line (a row's look, say, is checked on every cell)
+          const given = new Set()
           const warn = (message) => {
+            if (given.has(message)) return
+            given.add(message)
             warnings.push(`${where(li)}: ${message}`)
             issues.push({ error: false, step: si, beat: bi, line: li, message })
           }
           try {
             if (runTimingLine(text, meta)) return
             compiler.runLine(text, meta, warn)
-            compiler.settle()
+            compiler.settle(meta)
           } catch (error) {
             errors.push(`${where(li)}: ${error.message} — "${text}"`)
             issues.push({ error: true, step: si, beat: bi, line: li, message: error.message })

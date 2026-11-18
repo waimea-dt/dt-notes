@@ -69,6 +69,11 @@
         pointer-events: none;
     }
 
+    /* A code line's tokens take the colour code.css gives them (Prism's token classes) as their fill */
+    .anim-codeline .anim-label .token {
+        fill: currentColor;
+    }
+
     /* Labels on lines get a background halo so crossing lines don't hide them */
     .anim-halo {
         paint-order: stroke;
@@ -444,6 +449,16 @@
     fill: none;
     stroke: var(--color-important);
     stroke-width: 3px;
+}
+
+/* a code block's background, as the site's code blocks */
+.markdown-section .animation .anim-panel {
+    fill: var(--code-bg-color);
+}
+
+/* highlight line: a band behind a text or a code line */
+.markdown-section .animation .anim-highlight-line {
+    fill: color-mix(in srgb, var(--color-important) 18%, transparent);
 }
 
 /* the slot a row's / column's cell leaves or lands in (delete, insert, push, pop): a plain muted

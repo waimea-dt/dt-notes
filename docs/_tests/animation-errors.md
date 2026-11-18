@@ -99,6 +99,23 @@ er3: row [1 2] at 1,4 "x"
 vv: er.0 fill red
 er: swap 0 1 fill red
 er: insert 3 at 0 keep-style
+ec: code ["a" "b"] at 1,1
+ec: remove 0
+ec: insert "x" at 4
+ec: swap 0 1
+ec: "x"
+ec: code 4 at 1,1
+ec2: code ["a" 5] at 1,1
+ec3: code "a" size 2 at 1,1
+ec4: code ["a" at 1,1
+ec5: code [] at 1,1
+ec6: code "a" lang pyhton at 1,1
+ec7: text "a" lang python at 1,1
+ec8: row [1 2] at 1,5 lang python
+ec: highlight line
+er: highlight line
+hlr: rect at 1,1 highlight line
+er: numbered indices
 ```
 
 </animation>

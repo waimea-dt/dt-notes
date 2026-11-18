@@ -73,6 +73,10 @@ a: delete                  # delete
 m:
     rect "Long command"    # indented more = same command
     at 4,5
+r: row [
+    5,
+    3
+]                          # a line starting "]" too
 ```
 
 - Ids: letters, digits, `_ - .`, starting with a letter. Not a keyword.
@@ -224,12 +228,35 @@ v1: var 0 at 5,3 name "total"      # left of a var or row, above a column
 arr: row [5 3 8] at 3,4 name "arr" indices
 v1: name "sum" above               # rename, or another side
 v1: name clear
-arr: indices                       # show them; indices clear hides them
+arr: indices                       # show them (or numbered); indices clear hides them
 ```
 
 - For vars, rows and columns. Both are text shapes that move with their owner and go when it's deleted: `v1.name`, `arr.index.0` … (style them like any shape, e.g. `arr.name: bold`).
 - `highlight outline` goes round the whole thing, name and indices too (to pick out the data, highlight cells or change colours).
 - Indices (small, muted) sit below a row's cells, left of a column's. They stay with the places through a swap, and the last one comes and goes with insert and remove.
+
+## Code
+
+```anim
+s: code "print(\"Hi\")" lang python at 2,1   # one line
+c: code [
+    "total = 0",
+    "for n in nums:",
+    "    total += n"
+] at 2,3 lang python name "sum.py" numbered  # lines c.1 … c.3
+c.2: highlight line                # highlight clear
+c.1: "total = 100"
+s: "print(42)"                     # a one-line block
+c: insert "print(total)" at end
+c: remove 1
+c: swap 1 2
+c: font 0.8
+c: code [ … ] at 2,3 typed         # lines type in turn
+```
+
+- Lines count from 1. Leading spaces are kept. `at` is the left edge.
+- `lang`: `python` `js` `java` `kotlin` `c` `cpp` `csharp` `sql` `css` `markup` `json` `yaml` (none: plain).
+- Otherwise like a column.
 
 ## Stagger
 
@@ -264,6 +291,7 @@ One-off; they don't replay going back. `signal` is for lines (on a group: each o
 ```anim
 a: highlight outline       # follows the shape, just outside it (not lines)
 a: highlight inside        # just inside its stroke (not text, lines or groups)
+t: highlight line          # a band behind a text or a code line (c.2)
 a: highlight arrow
 a: highlight glow
 a: highlight number        # the next number: 1, then 2, …

@@ -201,6 +201,8 @@
       case 'colour': return COLOURS[word] !== undefined || HEX.test(word) ? word : undefined
       case 'speed': return word in SPEEDS ? SPEEDS[word] : NUMBER.test(word) && !/^[+-]/.test(word) ? parseFloat(word) * 1000 : undefined
       case 'ease': return word in EASES ? word : undefined
+      // a language (Prism's name, e.g. python, js, cpp, csharp): any word that isn't a keyword
+      case 'lang': return /^[a-z][\w+#-]*$/.test(word) && !RESERVED.has(word) ? word : undefined
     }
     return undefined
   }

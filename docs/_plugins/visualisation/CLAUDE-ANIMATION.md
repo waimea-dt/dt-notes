@@ -1,6 +1,6 @@
 # Animation Engine: Notes for Claude
 
-How the `<animation>` plugin is built, the rules its scene language follows, and where to add things. The author-facing syntax is in `ANIMATION.md` (keep that one for humans: syntax and examples, no internals).
+How the `<animation>` plugin is built, the rules its scene language follows, and where to add things. The author-facing syntax is in `ANIMATION.md`: a minimal reference for humans. Syntax and short examples only, with a `#` comment where a line needs one; no internals, design reasons or timing details.
 
 ## Parts
 
@@ -20,10 +20,13 @@ The flow: each beat's lines run in order against a live `shapes` map, and the ma
 
 Most features are an entry in a table, with no other code to change. Words, checks and error messages are worked out from these tables.
 
+**No one-offs.** Never special-case a type, layout or word by name (`type === 'codeline'`, `layout === 'code'`). When something behaves differently, give it a field in its table (documented in the table's comment), and read the field. Numbers that tune how things look or move go in `CHOREOGRAPHY` or the table entry, not inline. If a feature seems to need a special case, add the field that describes it instead.
+
 | To add | Table | File |
 |---|---|---|
-| A shape type | `SHAPES` (props, defaults, outline, label place, inside); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
-| A look prop (`fill`, `weight` …) | `LOOKS` (field, unit, min, hints, quiet), its word in `KEYWORDS`, and the types in `SHAPES` that take it | `anim-core.js` |
+| A shape type | `SHAPES` (props, defaults, outline, label place, inside, noun, band, pre, internal); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
+| A layout (`row`, `column`, `code`) | `LAYOUTS` (cell type, across, base, name side, lines, fit, typeInTurn, slide, slot, bow, numbers, panel) | `anim-core.js` |
+| A look prop (`fill`, `weight` …) | `LOOKS` (field, unit, min, hints, quiet, check), its word in `KEYWORDS`, and the types in `SHAPES` that take it | `anim-core.js` |
 | A verb (`delete`, `swap` …) | `LINES` (`verb: true`, `takes` / `refuses`), then a function in `VERBS` | `anim-core.js`, `anim-compile.js` |
 | An entrance or exit (`pop` …) | `ENTRANCES` (`applies`, `unless`, `quiet`), then its frame in `FRAMES` | `anim-core.js`, `anim-render.js` |
 | An emphasis (`pulse` …) | `EMPHASES` (`along`, `aliases`), then its frame in `EMPHASIS_FRAMES` | `anim-core.js`, `anim-render.js` |
@@ -34,6 +37,10 @@ Most features are an entry in a table, with no other code to change. Words, chec
 - **Attachments:** `besideOf` (attach, names) or `offsetFrom` (group members, cells, index labels). Test `attach.kind`, never field presence.
 - **A var's or row's parts:** build ids with `cellId` / `indexId` / `nameId`. A part has `part: owner.id`, and goes when its owner does.
 - **A value on the move:** use `flyValue` (the target takes the value as the flyer lands), or `fly` with `{ arrive, linger }`.
+- **Layouts:** test a layout's behaviour through `LAYOUTS[row.layout]`, never its name.
+- **Cell numbers:** a layout's cells are numbered from its `base` (code: 1, rows and columns: 0). Positions in `members` are from 0; convert with `baseOf(layout)` wherever a number is read or shown (`cellRange(row, n)`).
+- **Code blocks:** `code` is a layout of `codeline` cells (an `internal` SHAPES type, never typed after `id:`). `fitLines` sizes every line to the longest; `fitCode`, run from `settle(meta)` after every line, refits a block that changed. Anything that changes along with others (a refitted line, a panel's box) is timed by `retime(meta, uid, busiest(meta, shapes))`. The panel is drawn from the group's box, which takes in its indices, in a layer under every shape. Highlighting happens only at render (`codeSpans`, Prism's tokens as nested tspans coloured by code.css), so compiling never needs Prism; the `lang` look's `check` warns only when Prism is loaded.
+- **Warnings** are given once per line, so a check on each of a row's cells says it once.
 
 For every new word:
 
@@ -50,7 +57,7 @@ For every new word:
   - A word that can only mean one thing stands alone: `pop`, `dashed`, `front`, `bold`, `mono`, `pulse`, `keep-style`.
   - Enumerations whose words would be ambiguous alone keep their label. For example, `speed normal` (`normal` is also a layer), `ease in`, `align left`.
 - **Don't add verbose forms** (no `by fade`, `family mono`). Keep one form per meaning.
-- **One spelling per word, British only:** `colour`, `centre`. No US spellings, and avoid new aliases. `wiggle` is the only one.
+- **One spelling per word, British only:** `colour`, `centre`. No US spellings, and avoid new aliases. `wiggle` and `numbered` (for `indices`) are the only ones.
 - **Reversed variants** are `<word>-reverse`: `flow-reverse`, `follow-reverse`, `signal-reverse`, `stagger-reverse`.
 - **Signed numbers** are relative on a change (`move +2,0`) and absolute when creating.
 - **Turning things off** uses the word's own off form: `clear`, `delete`, `ungroup`, `detach`, `static`, `solid`, `reset`.

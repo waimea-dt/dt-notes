@@ -7,7 +7,7 @@
   const { HEX, COLOURS, PLAIN_FILLS, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
-    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES, entranceFor } = window.Anim
+    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES, entranceFor, XML_NS, LAYOUTS } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -68,6 +68,7 @@
 
   function createRenderer(svg, viewBox, debug) {
     const layers = [0, 1, 2].map(() => svg.appendChild(svgEl('g')))
+    const panelLayer = svg.insertBefore(svgEl('g', { class: 'anim-panels' }), layers[0]) // under every shape
     const slotLayer = svg.insertBefore(svgEl('g', { class: 'anim-slots' }), layers[1]) // under the cells
     const slotNodes = new Map() // slot uid -> rect
     const highlightLayer = svg.appendChild(svgEl('g', { class: 'anim-highlights' }))
@@ -86,6 +87,7 @@
       }
       BODIES[shape.type]?.make(node, shape)
       node.label = g.appendChild(svgEl('text', { class: 'anim-label', 'dominant-baseline': 'central' }))
+      if (kindOf(shape).pre) node.label.setAttributeNS(XML_NS, 'xml:space', 'preserve') // keeps a code line's indent
       if (kindOf(shape).resource) node.title = g.appendChild(svgEl('title')) // an image's / icon's alt text
       if (debug) node.debugId = g.appendChild(svgEl('text', { class: 'anim-debug-id' }))
       nodes.set(shape.uid, node)
@@ -121,15 +123,17 @@
     // sets them to the shape's half-sizes each frame. edge: false, its stroke is its drawing, not an
     // edge round it (an icon), so an inside highlight needn't clear it.
     const setBox = (el, hw, hh) => { attr(el, 'x', -hw); attr(el, 'y', -hh); attr(el, 'width', 2 * hw); attr(el, 'height', 2 * hh) }
-    const BODIES = {
-      rect: {
-        make: (node) => { node.body = node.g.appendChild(svgEl('rect')) },
-        size: (node, s, hw, hh) => {
-          setBox(node.body, hw, hh)
-          const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
-          attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
-        },
+    const rectBody = {
+      make: (node) => { node.body = node.g.appendChild(svgEl('rect')) },
+      size: (node, s, hw, hh) => {
+        setBox(node.body, hw, hh)
+        const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
+        attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
       },
+    }
+    const BODIES = {
+      rect: rectBody,
+      codeline: rectBody, // a code line's box, which a fill shows as a band
       circle: {
         make: (node) => { node.body = node.g.appendChild(svgEl('circle')) },
         size: (node, s) => attr(node.body, 'r', s.r),
@@ -161,17 +165,52 @@
       },
     }
 
+    // A code line's text, highlighted by Prism (lang: Prism's name for the language) as nested
+    // tspans with Prism's token classes, which the site's code.css colours (animation.css makes
+    // them fill with that colour). While typing, the characters from `cut` on are hidden (erasing:
+    // those before it); with no cut, all show.
+    function codeSpans(text, lang, cut, erase) {
+      const grammar = lang && window.Prism?.languages?.[lang]
+      const stream = grammar ? window.Prism.tokenize(text, grammar) : [text]
+      const top = []
+      let at = 0 // characters so far
+      const add = (parent, child) => (parent ? parent.appendChild(child) : top.push(child))
+      const build = (item, parent) => {
+        if (Array.isArray(item)) return item.forEach((part) => build(part, parent))
+        if (typeof item !== 'string') {
+          const classes = ['token', item.type, ...[].concat(item.alias || [])]
+          const span = svgEl('tspan', { class: classes.join(' ') })
+          add(parent, span)
+          return build(item.content, span)
+        }
+        const chars = [...item]
+        const start = at
+        at += chars.length
+        if (cut === undefined) return add(parent, document.createTextNode(item))
+        const k = Math.max(0, Math.min(chars.length, cut - start))
+        ;[[chars.slice(0, k), !erase], [chars.slice(k), erase]].forEach(([part, shown]) => {
+          if (!part.length) return
+          const span = svgEl('tspan', shown ? {} : { visibility: 'hidden' })
+          span.textContent = part.join('')
+          add(parent, span)
+        })
+      }
+      build(stream, null)
+      return top
+    }
+
     // A shape's text. While it's being typed (typed: 0-1, the share of characters shown) the rest
     // is laid out but hidden, so the text doesn't shift as it grows, whatever its alignment.
     // Erasing (deleted), it's untyped from the start: the first characters go first.
-    function setLabel(node, text, typed, erase) {
+    function setLabel(node, text, typed, erase, lang) {
       const chars = [...(text || '')]
       const shown = typed === undefined ? -1 : Math.round(chars.length * clamp01(typed))
-      const key = `${shown}|${erase}|${text}`
+      const key = `${shown}|${erase}|${lang}|${text}`
       if (node.labelKey === key) return
       node.labelKey = key
-      if (shown < 0) { node.label.textContent = text; return }
       const cut = erase ? chars.length - shown : shown
+      if (kindOf(node).pre) { node.label.replaceChildren(...codeSpans(text || '', lang, shown < 0 ? undefined : cut, erase)); return }
+      if (shown < 0) { node.label.textContent = text; return }
       const before = svgEl('tspan', erase ? { visibility: 'hidden' } : {})
       const after = svgEl('tspan', erase ? {} : { visibility: 'hidden' })
       before.textContent = chars.slice(0, cut).join('')
@@ -183,7 +222,18 @@
     function drawNode(node, s, v, colours, byId) {
       const { g } = node
       if (node.type === 'group') {
-        // A group is invisible (its highlight box is drawn in drawOverlays)
+        // A group is invisible (its highlight box is drawn in drawOverlays), but a layout with a
+        // panel (LAYOUTS: a code block) has a background behind its box, which takes in its indices
+        const panel = LAYOUTS[s.layout]?.panel
+        if (panel) {
+          node.panel ||= panelLayer.appendChild(svgEl('rect', { class: 'anim-panel' }))
+          const c = boxCentre(s)
+          const pad = panel.pad * CELL
+          attr(node.panel, 'x', c.x - s.w / 2 - pad); attr(node.panel, 'y', c.y - s.h / 2 - pad)
+          attr(node.panel, 'width', Math.max(0, s.w + 2 * pad)); attr(node.panel, 'height', Math.max(0, s.h + 2 * pad))
+          attr(node.panel, 'rx', panel.corner * CELL)
+          node.panel.style.opacity = v.opacity
+        }
         if (node.debugId) { attr(node.debugId, 'x', s.x); attr(node.debugId, 'y', s.y); node.debugId.textContent = s.id }
         return
       }
@@ -279,7 +329,8 @@
       paint(node.label, 'fontStyle', (v.nil ?? s.nil) ? 'italic' : '') // a null value
       node.label.style.opacity = v.labelOpacity
       paint(node.label, 'fill', colours.colour) // a text shape's colour, or any shape's label
-      setLabel(node, v.label, v.typed, v.erase)
+      if (kindOf(node).pre) paint(node.label, 'color', colours.colour) // for tokens code.css doesn't colour
+      setLabel(node, v.label, v.typed, v.erase, s.lang)
 
       if (LINE_TYPES.includes(node.type)) {
         const ends = v.ends || resolveEnds(s, byId)
@@ -345,6 +396,15 @@
       const { hw, hh } = extents(s)
 
       BODIES[node.type].size(node, s, hw, hh, colours)
+      // highlight line: a band behind the text (SHAPES: band), fading in and out with it
+      const band = kindOf(node).band
+      if (band && (v.hlLine || node.band)) {
+        node.band ||= g.insertBefore(svgEl('rect', { class: 'anim-highlight-line' }), node.label)
+        setBox(node.band, hw + band.pad * fontSize, hh)
+        const corner = band.corner === null ? Math.min(s.corner || 0, hw, hh) : band.corner * fontSize
+        attr(node.band, 'rx', corner); attr(node.band, 'ry', corner)
+        node.band.style.opacity = v.hlLine
+      }
       if (node.body) {
         if (APPLIES.fill.includes(node.type)) paint(node.body, 'fill', colours.fill)
         paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
@@ -366,6 +426,10 @@
         attr(label, 'text-anchor', anchor)
         attr(label, 'x', anchor === 'start' ? -hw : anchor === 'end' ? hw : 0)
         attr(label, 'y', 0)
+      } else if (place === 'code') {
+        attr(label, 'text-anchor', 'start')
+        attr(label, 'x', -hw + kindOf(s).pre.pad * fontSize)
+        attr(label, 'y', -LABEL_LIFT * fontSize)
       } else if (place === 'below') {
         attr(label, 'y', hh + fontSize * 0.75)
       } else {
@@ -475,10 +539,25 @@
       'signal-reverse': (v, raw) => { v.signal = { t: raw, reverse: true } },
     }
 
+    // A fitted box (SHAPES: fitted, and a fit layout's box, so a code block's panel) widens over the
+    // first part of its change and its text changes after; or its text changes first and it narrows
+    // after (CHOREOGRAPHY: fitSplit). So longer text never sticks out of it. fitPhase: the box's
+    // progress; textPhase: the text's.
+    const fitted = (s) => Boolean(kindOf(s).fitted || LAYOUTS[s.layout]?.fit)
+    const split = CHOREOGRAPHY.fitSplit
+    const first = (t) => clamp01(t / split)
+    const second = (t) => clamp01((t - split) / (1 - split))
+    const fitPhase = (a, b, t) => (b.w > a.w ? first(t) : b.w < a.w ? second(t) : t)
+    const textPhase = (a, b, t) => (b.w > a.w ? second(t) : b.w < a.w ? first(t) : t)
+
     function interpolate(a, b, t) {
       const s = { ...b }
-      for (const key of LERPED) {
-        if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], t)
+      // a layout with a panel (LAYOUTS) blends its box's offset too, so the panel follows its cells
+      const keys = LAYOUTS[b.layout]?.panel ? [...LERPED, 'cx', 'cy'] : LERPED
+      const across = fitted(b) ? fitPhase(a, b, t) : t
+      for (const key of keys) {
+        const k = key === 'w' || key === 'cx' ? across : t
+        if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], k)
       }
       // A line style change cross-fades from the old style to the new (see syncGhost)
       if (a.linestyle !== b.linestyle && t < 1) {
@@ -549,9 +628,11 @@
           if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw, easing) : pointOnPath(tw.path, t))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
-          v.label = swap && t < 0.5 ? a.label : b.label
-          v.nil = swap && t < 0.5 ? a.nil : b.nil
-          v.labelOpacity = swap ? Math.abs(2 * t - 1) : 1
+          // code text changes while its box is at its wider (see fitPhase)
+          const u = kindOf(b).fitted ? textPhase(a, b, t) : t
+          v.label = swap && u < 0.5 ? a.label : b.label
+          v.nil = swap && u < 0.5 ? a.nil : b.nil
+          v.labelOpacity = swap ? Math.abs(2 * u - 1) : 1
           // One-off effects, forwards only (going back doesn't replay them)
           if (extra.forward && tw?.effect) EMPHASIS_FRAMES[tw.effect](v, raw)
           // swap: the cell bows out to one side on its way to the other's place
@@ -632,6 +713,7 @@
       for (const [uid, node] of nodes) {
         if (!uids.has(uid)) {
           node.g.remove()
+          node.panel?.remove()
           for (const o of Object.values(node.overlays || {})) o.el.remove()
           nodes.delete(uid)
         }
@@ -665,6 +747,7 @@
           colour: mixColour(rgba(colourCss(ink(from), 'stroke')), rgba(colourCss(ink(to), 'stroke')), t),
         }
         item.v.hlGlow = blend(item, (s) => s.hl?.glow) // highlight glow fades in / out like the box
+        item.v.hlLine = blend(item, (s) => s.hl?.line)
         drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
       }
