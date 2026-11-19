@@ -134,6 +134,20 @@ sp5: span er 0 1 at 2,2
 sp6: span er 0 1
 sp6: move 2,2
 sp6: size 2
+eg: grid [[1 2] [3 4 5]] at 1,1
+eg2: grid [1 2] at 1,1
+eg3: grid 4 at 1,1
+eg4: grid [[1 2] [3 at 1,1
+eg5: grid [[]] at 1,1
+eg.1: move 2,2
+eg.col.0: delete
+eg.1: indices
+eg: swap 0 1
+eg.0: remove 0
+eg6: group [eg.0]
+sg1: span eg 0.0 5.0
+sg2: span eg 0 1
+sg3: span er end 9
 ```
 
 </animation>

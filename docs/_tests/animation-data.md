@@ -339,6 +339,115 @@ loop: highlight spotlight
 
 </animation>
 
+## Feature: grid and table
+
+<animation grid="16x9">
+
+```anim
+g: grid [
+    [1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [9, 0, 1, 2]
+] at 2,2 gap 0.1 name "g" indices
+t: table [
+    ["A", "B", "C"],
+    [1, 2, 3],
+    [5, 6, 7]
+] at 10,2 size 1.2x0.8
+```
+
+---
+
+## Rows, columns and cells
+
+```anim
+g.1: fill amber                   # row 1
+g.col.2: highlight outline        # column 2
+g.2.3: 42                         # a cell
+```
+
++++
+
+```anim
+t.head: fill blue                 # the headings
+t.0: fill green                   # the first row after them
+t.col.1: highlight outline        # a column, its heading too
+```
+
++++
+
+```anim
+g: fill none
+g.col.2: highlight clear
+t: fill none
+t.col.1: highlight clear
+```
+
+---
+
+## Range and span
+
+```anim
+g: range 0.1 1.2 fill teal                  # a block: row.column to row.column
+s: span g.2 1 end stroke red name "tail"    # within a row
+```
+
++++
+
+```anim
+b: span g 0.0 1.end highlight outline       # rows 0 to 1
+t.col.2: range 0 1 fill amber               # within a column
+```
+
++++
+
+```anim
+s: delete
+b: span t head.0 end.0 stroke pink          # a table's head.column
+```
+
+---
+
+## Indices, stagger, spotlight and moving values
+
+```anim
+t: indices                        # its rows (not the heading) and columns
+g.col.3: pulse stagger 0.1
+```
+
++++
+
+```anim
+v: var 0 at 8,7 name "v"
+v: g.1.2
+t.1: highlight spotlight
+```
+
++++
+
+```anim
+t.1: highlight clear
+e: grid 3x2 at 2,7 size 0.8       # empty: 3 across, 2 down
+e.1.1: "x"
+```
+
+---
+
+## Moving it, and delete
+
+```anim
+g: move 3,5 speed slow            # its rows, columns, indices and spans go with it
+```
+
++++
+
+```anim
+g: delete pop stagger 0.03
+t: delete
+```
+
+</animation>
+
 ## Feature: var
 
 <animation grid="12x4">

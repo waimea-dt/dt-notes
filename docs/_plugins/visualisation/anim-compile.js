@@ -15,9 +15,15 @@
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
   // (id.name). Cells are numbered from the layout's base (LAYOUTS): `k` is a cell's number as
   // written, and its place in the row is k - base.
+  // A grid's / table's (LAYOUTS: views) rows and columns are named like a row's cells, after the
+  // view's word if it has one (g.1, g.col.2), and its heading t.head; their cells like a row's
+  // (g.1.2, t.head.2). Their indices take the same last parts (g.index.1, g.index.col.2).
   const cellId = (id, k) => `${id}.${k}`
   const indexId = (id, k) => `${id}.index.${k}`
   const nameId = (id) => `${id}.name`
+  const viewKey = (view, k) => (view.word ? `${view.word}.${k}` : String(k))
+  const viewId = (id, view, k) => `${id}.${viewKey(view, k)}`
+  const headId = (id, head) => `${id}.${head.word}`
   const baseOf = (layout) => LAYOUTS[layout]?.base || 0
   const cellRange = (row, n) => (n ? `${cellId(row.id, baseOf(row.layout))} to ${cellId(row.id, baseOf(row.layout) + n - 1)}` : 'none')
 
@@ -140,7 +146,8 @@
         const signal = EMPHASES[props.emphasis].along
         if (signal && !isLine && shape.type !== 'group') throw new Error(`"${props.emphasis}" travels along a line, arrow or curve`)
         const covered = (shape.covers || []).map((id) => shapes.get(id)).filter(Boolean)
-        const targets = [shape, ...groupMembers(shape), ...covered].filter((target) => !signal || LINE_TYPES.includes(target.type))
+        // a grid's row or column covers its members too, so each is taken once
+        const targets = [...new Set([shape, ...groupMembers(shape), ...covered])].filter((target) => !signal || LINE_TYPES.includes(target.type))
         if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
         else if (!targets.length) warn(`"${shape.id}" has no lines in it, so "${props.emphasis}" does nothing`)
         else {
@@ -189,9 +196,12 @@
       }
 
       const positioned = props.at || props.x || props.y
+      // a shape placed by what it belongs to (SHAPES: owned), or a grid's row or column (a view),
+      // laid out in its grid, can't be moved on its own
       const owned = kindOf(shape).owned
-      if (owned && (positioned || props.via || props.travel || props.follow || props.attach || props.detach)) {
-        throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
+      if ((owned || shape.view) && (positioned || props.via || props.travel || props.follow || props.attach || props.detach)) {
+        throw new Error(shape.view ? `"${shape.id}" is laid out in "${shape.part}", so it can't be moved on its own: move "${shape.part}"`
+          : `${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
       }
       if (props.travel && props.follow) throw new Error('give either "travel" or "follow", not both')
       if ((props.travel || props.follow) && (positioned || props.via)) throw new Error('"travel" and "follow" set the route, so they can\'t go with at / move / x / y / via')
@@ -547,23 +557,96 @@
       return parseAs('index', token)
     }
 
+    // A grid's lines from the top, as views: its heading (if it has one), then its rows
+    const gridLines = (grid) => [...(grid.heading ? [grid.heading] : []), ...grid.views.row]
+
+    // A place in a grid (LAYOUTS: views), "row.column" ("1.2", "end.0", a table's "head.3"), as its
+    // line from the top (gridLines) and its column, both from 0. Undefined if it isn't one; an error
+    // if the grid has no such row or column.
+    function gridPlaceOf(grid, token) {
+      const parts = token?.kind === 'word' ? token.lower.split('.') : []
+      if (parts.length !== 2) return undefined
+      const kind = LAYOUTS[grid.layout]
+      const base = baseOf(grid.layout)
+      const lines = gridLines(grid)
+      const across = shapes.get(lines[0]).members.length
+      const offset = grid.heading ? 1 : 0 // a table's rows come after its heading
+      const number = (part, n) => (part === 'end' ? n - 1 : /^\d+$/.test(part) ? Number(part) - base : undefined)
+      const r = kind.head && parts[0] === kind.head.word ? 0 : number(parts[0], grid.views.row.length) + offset
+      const c = number(parts[1], across)
+      if (Number.isNaN(r) || c === undefined) return undefined
+      const rows = grid.views.row.length ? `${base} to ${base + grid.views.row.length - 1}` : 'none'
+      if (r < 0 || r >= lines.length) throw new Error(`"${grid.id}" has no row ${parts[0]} (its rows are ${rows}${grid.heading ? `, and its heading is ${kind.head.word}` : ''})`)
+      if (c < 0 || c >= across) throw new Error(`"${grid.id}" has no column ${parts[1]} (its columns are ${base} to ${base + across - 1})`)
+      return { r, c }
+    }
+
+    // Two places in a layout, written after a verb at tokens[i] and [i + 1] (a row's "0 2" or
+    // "3 end", a grid's "1.2 3.4"), either way round: the cells between them (a grid's: the block
+    // they're the corners of), in order, and the places, lowest first (as a span keeps them).
+    // `example` is the line as it might be written, for the message when they're missing.
+    function cellsBetween(row, tokens, i, word, example) {
+      if (LAYOUTS[row.layout].views) {
+        const [a, b] = [tokens[i], tokens[i + 1]].map((token) => gridPlaceOf(row, token))
+        if (!a || !b) throw new Error(`"${word}" expects two of a ${LAYOUTS[row.layout].noun}'s cells, as row.column, e.g. ${example('0.0', '1.2')}`)
+        const from = { r: Math.min(a.r, b.r), c: Math.min(a.c, b.c) }
+        const to = { r: Math.max(a.r, b.r), c: Math.max(a.c, b.c) }
+        return { from, to, cells: placedCells(row, { from, to }) }
+      }
+      const base = baseOf(row.layout)
+      const [a, b] = [tokens[i], tokens[i + 1]].map((token) => placeOf(row, token))
+      if (a === undefined || b === undefined) throw new Error(`"${word}" expects two cell numbers, e.g. ${example(base, base + 2)}`)
+      const n = row.members.length
+      for (const k of [a, b]) {
+        if (k < base || k >= base + n) throw new Error(`"${row.id}" has no cell ${k} (its cells are ${cellRange(row, n)})`)
+      }
+      const [from, to] = a <= b ? [a, b] : [b, a]
+      return { from, to, cells: placedCells(row, { from, to }) }
+    }
+
+    // The cells at some places of a layout (as cellsBetween gives them): a row's from one number to
+    // another, a grid's in the block between two corners. Places past the end (after a remove) are
+    // left out.
+    function placedCells(row, { from, to }) {
+      const ids = LAYOUTS[row.layout].views
+        ? gridLines(row).slice(from.r, to.r + 1).flatMap((line) => shapes.get(line).members.slice(from.c, to.c + 1))
+        : row.members.slice(from - baseOf(row.layout), to - baseOf(row.layout) + 1)
+      return ids.map((cell) => shapes.get(cell)).filter(Boolean)
+    }
+
+    // Where a shape is laid out relative to `frame`, from their offset attachments: a cell in its
+    // row, or a grid's cell in one of its rows or columns (both laid out in the grid). Each is
+    // followed up to the first shape they're both laid out in.
+    function offsetIn(shape, frame) {
+      const chain = (start) => {
+        const out = new Map()
+        let dx = 0
+        let dy = 0
+        for (let s = start, depth = 0; s && depth < 16; depth++) {
+          out.set(s.id, { dx, dy })
+          if (s.attach?.kind !== 'offset') break
+          dx += s.attach.dx
+          dy += s.attach.dy
+          s = shapes.get(s.attach.ref)
+        }
+        return out
+      }
+      const mine = chain(shape)
+      for (const [id, d] of chain(frame)) {
+        const m = mine.get(id)
+        if (m) return { x: m.dx - d.dx, y: m.dy - d.dy }
+      }
+      return { x: shape.x - frame.x, y: shape.y - frame.y }
+    }
+
     // "arr: range 0 3 fill red": a change to some of a row's / column's cells, each changed as if on
     // its own line (stagger: in cell order). Only a look, highlights, emphasis and callouts: the cells
     // stay in the row (LINES: range).
     function changeRange(id, row, tokens, meta, warn) {
       if (!row) throw new Error(`no shape called "${id}"`)
       if (!row.layout) throw new Error(`"range" picks some of a row's or column's cells, and "${id}" isn't one`)
-      const base = baseOf(row.layout)
-      const from = placeOf(row, tokens[1])
-      const to = placeOf(row, tokens[2])
-      if (from === undefined || to === undefined) throw new Error(`"range" expects two cell numbers, e.g. "${id}: range ${base} ${base + 2} fill red"`)
+      const { cells } = cellsBetween(row, tokens, 1, 'range', (a, b) => `"${id}: range ${a} ${b} fill red"`)
       const props = parseProps(tokens, 3, 'range', shapes)
-      const n = row.members.length
-      for (const k of [from, to]) {
-        if (k < base || k >= base + n) throw new Error(`"${id}" has no cell ${k} (its cells are ${cellRange(row, n)})`)
-      }
-      const [lo, hi] = from <= to ? [from, to] : [to, from]
-      const cells = row.members.slice(lo - base, hi - base + 1).map((cell) => shapes.get(cell)).filter(Boolean)
       const own = { ...props }
       delete own.stagger
       withRowMax(row, own)
@@ -587,15 +670,8 @@
       const row = rowId && shapes.get(rowId)
       if (!row) throw new Error(`"span" expects a row, column or code block and two of its cell numbers, ${example}${tokens[1] && !rowId ? `: no shape called "${tokens[1].value}"` : ''}`)
       if (!row.layout) throw new Error(`"span" goes round some of a row's, column's or code block's cells, and "${rowId}" isn't one`)
-      const base = baseOf(row.layout)
-      const from = placeOf(row, tokens[2])
-      const to = placeOf(row, tokens[3])
-      if (from === undefined || to === undefined) throw new Error(`"span" expects two cell numbers after the ${row.layout}, e.g. "${id}: span ${rowId} ${base} ${base + 2}"`)
+      const { from, to } = cellsBetween(row, tokens, 2, 'span', (a, b) => `"${id}: span ${rowId} ${a} ${b}"`)
       const props = parseProps(tokens, 4, 'span', shapes)
-      const n = row.members.length
-      for (const k of [from, to]) {
-        if (k < base || k >= base + n) throw new Error(`"${rowId}" has no cell ${k} (its cells are ${cellRange(row, n)})`)
-      }
       if (rowId === id) throw new Error('a span needs an id of its own')
       const respan = existing?.type === 'span'
       if (existing && !respan) {
@@ -603,7 +679,7 @@
         removeShape(existing, props, meta, warn)
       }
       const shape = respan ? structuredClone(existing) : { ...baseShape('span'), id, uid: ++uid }
-      shape.span = { of: rowId, from: Math.min(from, to), to: Math.max(from, to) }
+      shape.span = { of: rowId, from, to }
       shape.part = rowId
       checkParts(shape, props)
       if (!respan) applyDefaults(shape)
@@ -620,12 +696,11 @@
     // the cells it covers (for a spotlight). Places past the row's end (after a remove) are left out.
     function fitSpan(span) {
       const row = shapes.get(span.span.of)
-      const base = baseOf(row.layout)
-      const cells = row.members.slice(span.span.from - base, span.span.to - base + 1).map((cell) => shapes.get(cell)).filter(Boolean)
+      const cells = placedCells(row, span.span)
       span.covers = cells.map((cell) => cell.id)
       const pad = C.spanPad * CELL
       // each cell's box at its place, measured from the row's first cell (bounds: aligned code lines too)
-      const box = cells.length ? mergeBoxes(cells.map((cell) => bounds({ ...cell, x: cell.attach.dx, y: cell.attach.dy }, shapes)))
+      const box = cells.length ? mergeBoxes(cells.map((cell) => bounds({ ...cell, ...offsetIn(cell, row) }, shapes)))
         : { x0: 0, y0: 0, x1: 0, y1: 0 }
       const dx = (box.x0 + box.x1) / 2
       const dy = (box.y0 + box.y1) / 2
@@ -665,6 +740,7 @@
     // row's name and indices too)
     function deleteShape(id, existing, tokens, meta, warn) {
       if (!existing) throw new Error(`no shape called "${id}"`)
+      refuseView(existing, 'delete')
       const where = tokens[1]?.kind === 'word' && (/^\d+$/.test(tokens[1].value) || tokens[1].lower === 'end') ? tokens[1].value : null
       if (existing.layout && where) throw new Error(`"delete" deletes the whole ${existing.layout}: to take one cell out, "${id}: remove ${where}"`)
       const props = parseProps(tokens, 1, 'delete', shapes)
@@ -716,6 +792,7 @@
       noStagger(props, warn)
       const list = members.map((m) => shapes.get(m))
       for (const m of list) {
+        if (m.view) throw new Error(`"${m.id}" is laid out in "${m.part}", so it can't go in a group: group "${m.part}"`)
         if (LINE_TYPES.includes(m.type) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
       }
       const b = unionBounds(list, shapes)
@@ -734,7 +811,7 @@
     // "g: ungroup": the group goes, its shapes stay where they are
     function ungroup(id, existing, tokens, meta) {
       if (!existing) throw new Error(`no shape called "${id}"`)
-      if (existing.type !== 'group') throw new Error(`"${id}" isn't a group`)
+      if (existing.type !== 'group' || existing.view) throw new Error(`"${id}" isn't a group`)
       parseProps(tokens, 1, 'ungroup', shapes)
       for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
       shapes.delete(id)
@@ -811,7 +888,20 @@
     // one comes as a slot opens on the end and goes as one closes.
     function checkParts(shape, props) {
       if (props.name && !shape.var && !shape.layout && !shape.span) throw new Error('"name" is for a var, row, column or span')
-      if (props.indices !== undefined && !shape.layout) throw new Error('"indices" is for a row or column')
+      if (props.indices !== undefined && !shape.layout) throw new Error('"indices" is for a row, column, grid or table')
+      if (props.indices !== undefined && shape.view) throw new Error(`a grid's indices number all its rows and columns, so they go on the whole grid: "${shape.part}: indices"`)
+    }
+
+    // A grid's row or column (a view) belongs to its grid, so it can't be deleted or edited on its own
+    function refuseView(shape, word) {
+      if (shape.view) throw new Error(`"${shape.id}" is part of "${shape.part}", so "${word}" doesn't work on it on its own`)
+    }
+
+    // A row edit (swap, insert, remove): not on a grid's row or column, nor yet on a grid
+    function refuseGridEdit(row, word) {
+      refuseView(row, word)
+      const { views, noun } = LAYOUTS[row.layout]
+      if (views) throw new Error(`"${word}" doesn't work on ${article(noun)} ${noun} yet`)
     }
 
     function updateParts(shape, props, meta, warn) {
@@ -852,26 +942,21 @@
     // Adds or removes index texts so a row / column has one per cell (none without "indices"),
     // new ones fading in `add` ms in and old ones out `remove` ms in.
     function syncIndices(row, props, meta, { add = 0, remove = 0 } = {}) {
-      const n = row.indices ? row.members.length : 0
-      const { across, numbers } = LAYOUTS[row.layout]
-      const base = baseOf(row.layout)
-      for (let k = 0; ; k++) {
-        const id = indexId(row.id, k + base)
+      const marks = row.indices ? indexMarks(row) : []
+      const { numbers } = LAYOUTS[row.layout]
+      const kept = new Set()
+      for (const mark of marks) {
+        const id = indexId(row.id, mark.key)
+        kept.add(id)
         const old = shapes.get(id)
-        if (k >= n) {
-          if (!old) break
-          shapes.delete(id)
-          tween(meta, old.uid).exit = 'fade'
-          schedule(meta, old.uid, props, { after: remove })
-          continue
-        }
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
         // cell slides in or out of it; at the back, so a sliding cell passes over it
-        const text = old || { ...baseShape('text'), id, uid: ++uid, label: String(k + base), font: 0.88, colour: 'muted', layer: 'back', part: row.id }
-        const cell = shapes.get(cellId(row.id, k + base))
-        if (numbers) text.font = 0.88 * cell.font // line numbers keep to the code's size
-        const place = { ...cell, x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }
-        const p = placeNextTo(text, place, across ? 'below' : 'left-of', (across ? 0.1 : 0.2) * CELL)
+        const text = old || { ...baseShape('text'), id, uid: ++uid, label: mark.label, font: 0.88, colour: 'muted', layer: 'back', part: row.id }
+        if (numbers) text.font = 0.88 * mark.of.font // line numbers keep to the code's size
+        const place = { ...mark.of, ...offsetIn(mark.of, row) }
+        place.x += row.x
+        place.y += row.y
+        const p = placeNextTo(text, place, mark.index.side, mark.index.gap * CELL)
         text.attach = offsetFrom(row.id, p.x - row.x, p.y - row.y)
         Object.assign(text, p)
         if (old) continue
@@ -879,12 +964,29 @@
         tween(meta, text.uid).enter = 'fade'
         schedule(meta, text.uid, props, { after: add })
       }
+      // the ones with nothing left to number (or all of them, with indices clear)
+      for (const old of [...shapes.values()].filter((s) => s.part === row.id && s.id.startsWith(indexId(row.id, '')) && !kept.has(s.id))) {
+        shapes.delete(old.id)
+        tween(meta, old.uid).exit = 'fade'
+        schedule(meta, old.uid, props, { after: remove })
+      }
+    }
+
+    // What a layout's indices number, in order: each with its id's last part (key), its label, the
+    // shape it goes beside (of) and where (LAYOUTS: index). A row's / column's cells, or a grid's
+    // rows and columns (LAYOUTS: views; a table's heading isn't numbered).
+    function indexMarks(row) {
+      const kind = LAYOUTS[row.layout]
+      const base = baseOf(row.layout)
+      const mark = (ids, key, index) => ids.map((id, k) => ({ key: key(k + base), label: String(k + base), of: shapes.get(id), index }))
+      if (!kind.views) return mark(row.members, (k) => k, kind.index)
+      return Object.entries(kind.views).flatMap(([name, view]) => mark(row.views[name], (k) => viewKey(view, k), view.index))
     }
 
     // Removes a shape (and a group's members), with the line's exit effect and timing.
     function removeShape(target, props, meta, warn) {
       if (!target) return
-      if (target.type === 'group') target.members.forEach((m) => removeShape(shapes.get(m), props, meta, warn))
+      if (target.type === 'group' && !target.view) target.members.forEach((m) => removeShape(shapes.get(m), props, meta, warn)) // a view's cells are its grid's
       for (const part of [...shapes.values()].filter((s) => s.part === target.id)) removeShape(part, props, meta, warn) // its name, indices
       leaveGroup(target)
       freezeEndsAttachedTo(target.id)
@@ -899,6 +1001,7 @@
     // the look apply to every cell.
     function createLayout(id, layout, tokens, existing, meta, warn) {
       if (LAYOUTS[layout].lines) return createLines(id, layout, tokens, existing, meta, warn)
+      if (LAYOUTS[layout].views) return createGrid(id, layout, tokens, existing, meta, warn)
       const example = `e.g. "${id}: ${layout} [5 3 8 1] at 2,3" (words in quotes: ["A" "B"]), or a number of empty cells: "${id}: ${layout} 4 at 2,3"`
       const count = tokens[1]?.kind === 'word' && NUMBER.test(tokens[1].value) ? tokens[1].value : null
       if (count !== null && !/^\d+$/.test(count)) throw new Error(`a ${layout}'s number of cells is a whole number, e.g. "${id}: ${layout} 4", not "${count}"`)
@@ -947,26 +1050,126 @@
       makeLayout(id, layout, values, props, existing, meta, warn)
     }
 
-    // Makes a row / column / code block from its cells' values and the line's props.
+    // A grid or table (LAYOUTS: views): its rows of values in [ ], each in [ ] like a row's
+    // ("g: grid [[1 2 3] [4 5 6]]", commas optional), or a number of empty cells across and down
+    // ("g: grid 4x3"). Shorter rows are filled out with empty cells. A table's first row is its
+    // headings.
+    function createGrid(id, layout, tokens, existing, meta, warn) {
+      const { noun } = LAYOUTS[layout]
+      const example = `e.g. "${id}: ${layout} [[1 2 3] [4 5 6]] at 2,2" (words in quotes: ["A" "B"]), or a number of empty cells across and down: "${id}: ${layout} 4x3 at 2,2"`
+      const count = (token) => (token?.kind === 'word' && /^\d+$/.test(token.value) ? +token.value : null)
+      const rows = []
+      let j
+      if (count(tokens[1]) !== null) {
+        const [across, down] = [count(tokens[1]), count(tokens[2])]
+        if (down === null) throw new Error(`a ${noun}'s number of cells is across x down, e.g. "${id}: ${layout} 4x3"`)
+        if (!across || !down) throw new Error(`a ${noun} needs at least one cell`)
+        for (let r = 0; r < down; r++) rows.push(Array.from({ length: across }, () => ({ label: '' })))
+        j = 3
+      } else {
+        if (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[') throw new Error(`a ${noun}'s rows go in [ ] straight after "${layout}", ${example}`)
+        for (j = 2; tokens[j]?.value === '['; j++) {
+          const values = []
+          for (j++; j < tokens.length && tokens[j].kind !== 'bracket'; j++) {
+            const value = valueOf(tokens[j])
+            if (!value) throw new Error(`a ${noun}'s values are numbers, "quoted" text or null, not "${tokens[j].value ?? tokens[j].name}" (is a "]" missing?)`)
+            values.push(value)
+          }
+          if (tokens[j]?.value !== ']') throw new Error(`a row of a ${noun} has no closing "]"`)
+          if (!values.length) throw new Error(`a row of a ${noun} needs at least one value, ${example}`)
+          rows.push(values)
+        }
+        if (tokens[j]?.value !== ']') throw new Error(tokens[j] ? `a ${noun}'s rows each go in [ ], ${example}` : `the "[" of a ${noun} has no closing "]"`)
+        if (!rows.length) throw new Error(`a ${noun} needs at least one row, ${example}`)
+        j++
+      }
+      const across = Math.max(...rows.map((values) => values.length))
+      if (rows.some((values) => values.length < across)) warn(`the rows of "${id}" aren't all ${across} long, so the short ones are filled out with empty cells`)
+      for (const values of rows) while (values.length < across) values.push({ label: '' })
+      const props = parseProps(tokens, j, 'layout', shapes)
+      if (props.label !== undefined) throw new Error(`a ${noun}'s values all go inside its [ ]`)
+      makeLayout(id, layout, rows, props, existing, meta, warn)
+    }
+
+    // Where each of a layout's cells goes, from its values (a grid's: its rows of values), in order:
+    // its value, its id, and for a grid its line from the top (gridLines) and column, from 0.
+    // Also the ids of a grid's views (each view's, a row's for each line and a column's for each
+    // column, and a table's heading) and the cells in each, by id.
+    function placesFor(id, layout, values) {
+      const kind = LAYOUTS[layout]
+      const base = baseOf(layout)
+      if (!kind.views) return { places: values.map((value, k) => ({ value, id: cellId(id, k + base) })) }
+      const heading = kind.head ? headId(id, kind.head) : null
+      const body = values.slice(heading ? 1 : 0)
+      const views = {
+        row: body.map((_, k) => viewId(id, kind.views.row, k + base)),
+        col: values[0].map((_, k) => viewId(id, kind.views.col, k + base)),
+      }
+      const lines = [...(heading ? [heading] : []), ...views.row]
+      const places = values.flatMap((row, r) => row.map((value, c) => ({ value, id: cellId(lines[r], c + base), r, c })))
+      const cellsOf = new Map([...lines.map((line, r) => [line, places.filter((p) => p.r === r).map((p) => p.id)]),
+        ...views.col.map((col, c) => [col, places.filter((p) => p.c === c).map((p) => p.id)])])
+      return { places, views, heading, cellsOf }
+    }
+
+    // Lays a grid's cells out from its first one: each column as wide as its widest cell and each
+    // row as tall as its tallest, `gap` apart.
+    function layoutGrid(grid, cells, places) {
+      const widths = []
+      const heights = []
+      places.forEach(({ r, c }, k) => {
+        widths[c] = Math.max(widths[c] || 0, cells[k].w)
+        heights[r] = Math.max(heights[r] || 0, cells[k].h)
+      })
+      const start = (sizes, n) => sizes.slice(0, n).reduce((sum, size) => sum + size + grid.gap, 0) + (sizes[n] - sizes[0]) / 2
+      places.forEach(({ r, c }, k) => { cells[k].attach = offsetFrom(grid.id, start(widths, c), start(heights, r)) })
+    }
+
+    // A grid's rows and columns (and a table's heading): groups of its cells (LAYOUTS: views) that
+    // don't own them, so a look, highlight, range or span works on one as on a row or column. Each
+    // is part of the grid, laid out in it at its first cell, and covers its cells (a spotlight or
+    // glow on it lights them).
+    function makeViews(grid, { views, heading, cellsOf }, props, meta) {
+      const kind = LAYOUTS[grid.layout]
+      const made = [...(heading ? [[heading, kind.views.row.layout]] : []), // laid out like its rows
+        ...Object.entries(kind.views).flatMap(([name, view]) => views[name].map((id) => [id, view.layout]))]
+      for (const [id, layout] of made) {
+        const members = cellsOf.get(id)
+        const first = shapes.get(members[0])
+        const b = unionBounds(members.map((cell) => shapes.get(cell)), shapes)
+        const view = {
+          ...baseShape('group'), id, uid: ++uid, layout, members, covers: members, view: true, part: grid.id,
+          attach: offsetFrom(grid.id, first.attach.dx, first.attach.dy), x: first.x, y: first.y,
+          w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - first.x, cy: (b.y0 + b.y1) / 2 - first.y,
+        }
+        shapes.set(id, view)
+        schedule(meta, view.uid, props).enter = 'fade'
+      }
+    }
+
+    // Makes a row / column / code block from its cells' values (a grid / table: its rows of values)
+    // and the line's props.
     function makeLayout(id, layout, values, props, existing, meta, warn) {
       if (existing) {
         warn(`"${id}" already exists, so it is replaced`)
         removeShape(existing, props, meta, warn)
       }
-      const base = baseOf(layout)
-      const ids = values.map((_, k) => cellId(id, k + base))
-      for (const cellId of ids) {
-        if (!shapes.has(cellId)) continue
-        warn(`"${cellId}" already exists, so it is replaced by a cell of "${id}"`)
-        removeShape(shapes.get(cellId), props, meta, warn)
+      const kind = LAYOUTS[layout]
+      const laid = placesFor(id, layout, values)
+      const { places } = laid
+      const ids = places.map((place) => place.id)
+      for (const taken of [...ids, ...(laid.cellsOf?.keys() || [])]) {
+        if (!shapes.has(taken)) continue
+        warn(`"${taken}" already exists, so it is replaced by ${laid.cellsOf?.has(taken) ? 'a row or column' : 'a cell'} of "${id}"`)
+        removeShape(shapes.get(taken), props, meta, warn)
       }
 
       // The cells, laid out from the first one (at 0,0 for now)
       const gap = props.gap ? props.gap.v * CELL : 0
       const look = pick(props, ['size', 'width', 'height', ...CELL_STYLE])
-      withRowMax(null, look, values)
-      const cells = values.map((value, k) => {
-        const cell = { ...baseShape(LAYOUTS[layout].cell), id: ids[k], uid: ++uid, holds: true, x: 0, y: 0 }
+      withRowMax(null, look, places.map((place) => place.value))
+      const cells = places.map(({ value }, k) => {
+        const cell = { ...baseShape(kind.cell), id: ids[k], uid: ++uid, holds: true, x: 0, y: 0 }
         applyDefaults(cell)
         applyProps(cell, look, true, warn, meta)
         setValue(cell, value)
@@ -977,8 +1180,11 @@
       const blank = { ...structuredClone(cells[0]), label: '', nil: false }
       delete blank.id
       delete blank.uid
-      if (LAYOUTS[layout].fit) fitLines(cells)
-      layoutCells({ id, layout, gap }, cells)
+      // a table's headings start with their own look (LAYOUTS: head)
+      if (laid.heading) for (const cell of cells.filter((_, k) => places[k].r === 0)) applyProps(cell, kind.head.look, false, warn, meta)
+      if (kind.fit) fitLines(cells)
+      if (kind.views) layoutGrid({ id, gap }, cells, places)
+      else layoutCells({ id, layout, gap }, cells)
       cells.forEach((cell) => Object.assign(cell, { x: cell.attach.dx, y: cell.attach.dy }))
       if (takeBareNumber(props)) numberEach(cells, props, meta, warn)
       const b = unionBounds(cells, shapes)
@@ -986,6 +1192,7 @@
         ...baseShape('group'), id, uid: ++uid, layout, members: ids, gap, cell: blank,
         w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2,
       }
+      if (kind.views) Object.assign(row, { views: laid.views, heading: laid.heading })
       applyProps(row, pick(props, ['at', 'x', 'y', 'highlight', 'callout']), true, warn, meta)
       shapes.set(id, row)
       schedule(meta, row.uid, props).enter = 'fade'
@@ -994,6 +1201,7 @@
         shapes.set(cell.id, cell)
         schedule(meta, cell.uid, props).enter = props.effect || defaults.effect || 'fade'
       }
+      if (kind.views) makeViews(row, laid, props, meta)
       if (props.effect) warnEffect(cells[0], props.effect, warn)
       updateParts(row, props, meta, warn)
       if (LAYOUTS[layout].typeInTurn && (props.effect || defaults.effect) === 'typed') typeInTurn(row, cells, [...shapes.values()].filter((s) => s.part === id), props, meta)
@@ -1059,6 +1267,7 @@
     function swapCells(id, row, tokens, meta, warn) {
       if (!row) throw new Error(`no shape called "${id}"`)
       if (!row.layout) throw new Error(`"swap" swaps two cells of a row or column, and "${id}" isn't one`)
+      refuseGridEdit(row, 'swap')
       const base = baseOf(row.layout)
       const i = placeOf(row, tokens[1])
       const j = placeOf(row, tokens[2])
@@ -1187,6 +1396,7 @@
       if (!row) throw new Error(`no shape called "${id}"`)
       const removing = word === 'remove'
       if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} a row or column, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
+      refuseGridEdit(row, word)
       const kind = LAYOUTS[row.layout]
       const example = removing ? `"${id}: remove 2" or "${id}: remove end into v1"` : kind.lines ? `"${id}: insert "x = 1" at 2" or "${id}: insert "x = 1" at end"` : `"${id}: insert 7 at 3" or "${id}: insert v1 at end"`
       const cells = row.members.map((m) => shapes.get(m)).filter(Boolean)

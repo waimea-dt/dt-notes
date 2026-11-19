@@ -49,6 +49,9 @@
       "include": "#value"
     },
     {
+      "include": "#place"
+    },
+    {
       "include": "#literal"
     },
     {
@@ -83,7 +86,7 @@
     },
     "line-head": {
       "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is the arrowhead param)",
-      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(rect|circle|diamond|text|line|arrow|curve|row|column|code|var)(?![\\w-]))?",
+      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(rect|circle|diamond|text|line|arrow|curve|row|column|code|grid|table|var)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "entity.name.tag.anim"
@@ -203,7 +206,7 @@
     },
     "shape-type": {
       "$comment": "a shape type starting a continuation line (an indented line of a long command)",
-      "match": "^\\s+(rect|circle|diamond|text|line|arrow|curve|row|column|code|var)(?![\\w-])",
+      "match": "^\\s+(rect|circle|diamond|text|line|arrow|curve|row|column|code|grid|table|var)(?![\\w-])",
       "captures": {
         "1": {
           "name": "storage.type.anim"
@@ -224,6 +227,33 @@
       "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",
       "name": "support.constant.property-value.anim",
       "match": "(?<![\\w-])(outline|inside|spotlight)(?![\\w-])"
+    },
+    "place": {
+      "$comment": "a place in a grid or table, row.column, with end (the last) or head (a table's headings) on a side: 1.end, end.0, head.2 (span t head.0 end.0). Its numbers and words show as a number and end do; one of plain numbers (1.2) is a number",
+      "match": "(?<![\\w.-])(?:(\\d+)(\\.)(end)|(end|head)(\\.)(?:(\\d+)|(end)))(?![\\w.-])",
+      "captures": {
+        "1": {
+          "name": "constant.numeric.anim"
+        },
+        "2": {
+          "name": "punctuation.separator.anim"
+        },
+        "3": {
+          "name": "constant.language.anim variable.other.constant.anim"
+        },
+        "4": {
+          "name": "constant.language.anim variable.other.constant.anim"
+        },
+        "5": {
+          "name": "punctuation.separator.anim"
+        },
+        "6": {
+          "name": "constant.numeric.anim"
+        },
+        "7": {
+          "name": "constant.language.anim variable.other.constant.anim"
+        }
+      }
     },
     "literal": {
       "$comment": "words that stand in for a value, like a number does: end (a row's last place) and null (no value). Also a named constant (variable.other.constant), the innermost scope, so themes that colour language constants like an error (Catppuccin: red) show them as constants (peach, like numbers and true)",

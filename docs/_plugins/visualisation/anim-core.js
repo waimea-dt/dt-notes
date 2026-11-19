@@ -205,13 +205,30 @@
   //   numbers     its indices keep to its cells' font size
   //   panel       a background behind it (and its indices): pad and corner, in cells
   //   spanName    the side a span's name goes (beside its places, away from the indices)
+  //   index       where an index goes beside what it numbers: side, and gap (in cells)
+  //   views       its values are rows, in [ ] ([[1 2] [3 4]]), laid out in a grid of cells: g.1.2 is
+  //               row 1's cell 2. Its rows and columns are views: groups of its cells that don't own
+  //               them (the grid does), laid out as the layout they're given. Each view: word, what
+  //               goes before its number in its id (g.col.2; none: g.1), and index, where its
+  //               indices go. A place in it is written "row.column" (span g 1.2 3.4).
+  //   head        its first row is its headings, a view of its own (t.head; word, its id's last
+  //               part), not counted with the rows (t.0 is the first row after it) or numbered;
+  //               look, the props its cells start with
+  const INDEX_BELOW = { side: 'below', gap: 0.1 }
+  const INDEX_LEFT = { side: 'left-of', gap: 0.2 }
+  const GRID_VIEWS = {
+    row: { layout: 'row', index: INDEX_LEFT }, // numbered down the left, as a column's cells are
+    col: { layout: 'column', word: 'col', index: INDEX_BELOW }, // numbered along the bottom, as a row's cells are
+  }
   const LAYOUTS = {
-    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left-of', spanName: 'above', slide: true, slot: true, bow: 'own' },
-    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'above', spanName: 'right-of', slide: true, slot: true, bow: 'own' },
+    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left-of', spanName: 'above', slide: true, slot: true, bow: 'own', index: INDEX_BELOW },
+    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'above', spanName: 'right-of', slide: true, slot: true, bow: 'own', index: INDEX_LEFT },
     code: {
       noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'above', spanName: 'right-of', lines: true, fit: true, typeInTurn: true,
-      slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 },
+      slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 }, index: INDEX_LEFT,
     },
+    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', views: GRID_VIEWS },
+    table: { noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', views: GRID_VIEWS, head: { word: 'head', look: { bold: true } } },
   }
   const LAYOUT_TYPES = Object.keys(LAYOUTS)
 
@@ -370,6 +387,12 @@
   // "a" or "an" before a word (a rect, an image)
   const article = (word) => (/^[aeiou]/i.test(word) ? 'an' : 'a')
 
+  // "a row, column, code block, grid or table", for messages
+  const LAYOUT_NOUNS = (() => {
+    const nouns = LAYOUT_TYPES.map((layout, k) => `${k ? '' : `${article(LAYOUTS[layout].noun)} `}${LAYOUTS[layout].noun}`)
+    return `${nouns.slice(0, -1).join(', ')} or ${nouns[nouns.length - 1]}`
+  })()
+
   // Every word that can follow "id:" (or "defaults"), in one table. Each entry gives the prop it
   // sets (key) and the values that follow it:
   //   sigs   alternative value lists, tried longest first (sigs [[]]: a flag with no values)
@@ -525,7 +548,7 @@
     },
     layout: { // "arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
       takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices'],
-      refuse: (word) => `"${word}" doesn't apply to a row or column`,
+      refuse: (word) => `"${word}" doesn't apply to ${LAYOUT_NOUNS}`,
     },
     camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
@@ -936,7 +959,7 @@
   }
 
   Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
-    LAYOUTS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LAYOUTS, LAYOUT_NOUNS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,

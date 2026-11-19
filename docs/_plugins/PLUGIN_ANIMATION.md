@@ -45,7 +45,7 @@ In your summary, say that you checked, and name any exception you kept.
 | To add | Table | File |
 |---|---|---|
 | A shape type | `SHAPES` (props, defaults, outline, label place, inside, noun, band, pre, internal); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
-| A layout (`row`, `column`, `code`) | `LAYOUTS` (cell type, across, base, name side, lines, fit, typeInTurn, slide, slot, bow, numbers, panel) | `anim-core.js` |
+| A layout (`row`, `column`, `code`, `grid`, `table`) | `LAYOUTS` (cell type, across, base, name side, lines, fit, typeInTurn, slide, slot, bow, numbers, panel, index, views, head) | `anim-core.js` |
 | A look prop (`fill`, `weight` …) | `LOOKS` (field, unit, min, map, hints, quiet, check, default), its word in `KEYWORDS`, and the types in `SHAPES` that take it | `anim-core.js` |
 | A verb (`delete`, `swap` …) | `LINES` (`verb: true`, `takes` / `refuses`), then a function in `VERBS` | `anim-core.js`, `anim-compile.js` |
 | An entrance or exit (`pop` …) | `ENTRANCES` (`applies`, `unless`, `quiet`), then its frame in `FRAMES` | `anim-core.js`, `anim-render.js` |
@@ -60,7 +60,10 @@ In your summary, say that you checked, and name any exception you kept.
 - **A var's or row's parts:** build ids with `cellId` / `indexId` / `nameId`. A part has `part: owner.id`, and goes when its owner does. A span is a part of its row too, with its own id. `fitSpans` refits it to its places in `settle`, and `covers` lists the cells it's round (a spotlight lights them).
 - **A value on the move:** use `flyValue` (the target takes the value as the flyer lands), or `fly` with `{ arrive, linger }`.
 - **Layouts:** test a layout's behaviour through `LAYOUTS[row.layout]`, never its name.
-- **Cell numbers:** a layout's cells are numbered from its `base` (code: 1, rows and columns: 0). Positions in `members` are from 0; convert with `baseOf(layout)` wherever a number is read or shown (`cellRange(row, n)`). Read a cell number written after a verb with `placeOf` (a number or `end`).
+- **Cell numbers:** a layout's cells are numbered from its `base` (code: 1, rows and columns: 0). Positions in `members` are from 0; convert with `baseOf(layout)` wherever a number is read or shown (`cellRange(row, n)`). Read a cell number written after a verb with `placeOf` (a number or `end`), and two of them (a row's `0 2`, a grid's `1.2 3.4`) with `cellsBetween`, which gives the cells and the places a span keeps; `placedCells` turns places back into cells.
+- **Grids and tables** (`LAYOUTS: views`): the grid owns every cell (its `members`, row by row, each attached at an offset from it). Its rows and columns, and a table's heading, are views: groups with a row or column layout, `view: true`, `part` the grid and `covers` its cells, which don't own their members. So looks, highlights, range, span and stagger work on a view through the same paths as on a row, and a view can't be moved, deleted, grouped or edited on its own (`refuseView`). The grid keeps the views' ids (`views.row`, `views.col`, `heading`); `gridLines` lists them from the top. Ids are built with `viewId` / `headId` (`g.1`, `g.col.2`, `t.head`), cells with `cellId` on those (`g.1.2`). `placesFor` lays out a layout's cells from its values, `layoutGrid` places a grid's, and `makeViews` makes the views.
+- **Offsets in a layout:** measure a cell's place in its row (or a grid's row or column) with `offsetIn(cell, frame)`, never `cell.attach.dx` (a grid's cells are attached to the grid, not to its views).
+- **Indices:** `indexMarks` lists what a layout's indices number (a row's cells; a grid's views), each beside its shape on the side its `LAYOUTS: index` gives. `syncIndices` adds, moves and removes them to match.
 - **Code blocks:** `code` is a layout of `codeline` cells (an `internal` SHAPES type, never typed after `id:`). `fitLines` sizes every line to the longest; `fitCode`, run from `settle(meta)` after every line, refits a block that changed. Anything that changes along with others (a refitted line, a panel's box) is timed by `retime(meta, uid, busiest(meta, shapes))`. The panel is drawn from the group's box, which takes in its indices, in a layer under every shape. Highlighting happens only at render (`codeSpans`, Prism's tokens as nested tspans coloured by code.css), so compiling never needs Prism; the `lang` look's `check` warns only when Prism is loaded.
 - **Warnings** are given once per line, so a check on each of a row's cells says it once.
 
@@ -74,7 +77,7 @@ For every new word:
    - `animation-examples.md`: whole example animations
    - `animation-shapes.md`: shapes, looks (colours, line styles, layers …), emphasis and highlights
    - `animation-motion.md`: placing and moving, copy / attach / group, timing and effects, the camera
-   - `animation-data.md`: rows and columns, spans, vars and moving values, bars, code blocks
+   - `animation-data.md`: rows and columns, range, spans, grids and tables, vars and moving values, bars, code blocks
 
    A new page also goes in the menu on `animation.md`, the links at the top of each page, and `docs/_tests/_sidebar.md`.
 

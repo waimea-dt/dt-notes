@@ -211,10 +211,43 @@ tail: span arr 3 end                   # place 3 to the last
 sorted: delete
 ```
 
-- For rows, columns and code blocks. Invisible unless given a `fill` or `stroke`, at the back.
+- For rows, columns, code blocks, grids and tables. Invisible unless given a `fill` or `stroke`, at the back.
 - `end` is the last place as the line is read: the span doesn't grow with an insert.
 - It stays on its places through a swap, insert or remove, and goes when its row does.
 - Takes highlights (a spotlight lights its cells), a callout and a `name` (above it on a row, right of it on a column or code block).
+
+## Grids and tables
+
+```anim
+g: grid [
+    [1, 2, 3, 4],
+    [5, 6, 7, 8]
+] at 2,2                           # cells g.0.0 … g.1.3 (row.column)
+t: table [
+    ["A", "B", "C"],               # the headings
+    [1, 2, 3],
+    [4, 5, 6]
+] at 8,2
+e: grid 4x3 at 2,6                 # empty: 4 across, 3 down
+g.1: fill amber                    # row 1
+g.col.2: highlight outline         # column 2
+g.1.2: 7                           # a cell
+t.head: fill blue                  # the headings (t.head.0 …)
+t.0: bold                          # the first row after them
+t.col.1: fill green                # a column, its heading too
+g: range 0.1 1.2 fill teal         # a block, corner to corner
+s: span g 0.0 1.end                # rows 0 and 1 (end: the last)
+s2: span t head.0 end.0            # a table's column 0, heading too
+g.1: range 0 2 fill green          # a row or column acts as a row / column
+s3: span g.col.2 0 1
+g: indices                         # rows down the left, columns along the bottom
+```
+
+- Rows and columns count from 0. A table's `t.0` is the first row after its headings.
+- Values as in a row. Short rows are filled out with empty cells.
+- `size`, `gap`, looks, `name` and `indices` go on the whole grid. A table's headings start bold.
+- A row or column takes looks, highlights, emphasis, callouts, `stagger`, `range`, `span` and a `name`. It moves and goes with its grid.
+- A place in a grid is `row.column`: a number, or `end`, each side (a table's row can also be `head`).
 
 ## Variables
 
@@ -270,7 +303,7 @@ v1: name clear
 arr: indices                       # show them (or numbered); indices clear hides them
 ```
 
-- For vars, rows and columns. Both are text shapes that move with their owner and go when it's deleted: `v1.name`, `arr.index.0` … (style them like any shape, e.g. `arr.name: bold`).
+- For vars, rows, columns, grids and tables. Both are text shapes that move with their owner and go when it's deleted: `v1.name`, `arr.index.0` …, a grid's `g.index.1` (row 1) and `g.index.col.2` (style them like any shape, e.g. `arr.name: bold`).
 - `highlight outline` goes round the whole thing, name and indices too (to pick out the data, highlight cells or change colours).
 - Indices (small, muted) sit below a row's cells, left of a column's. They stay with the places through a swap, and the last one comes and goes with insert and remove.
 
