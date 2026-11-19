@@ -539,6 +539,14 @@
       else if (props.stagger) warn(`"stagger" works on a row, column or group, and "${id}" isn't one`)
     }
 
+    // A cell's number as written after a verb ("swap 0 3", "range 3 end"): a whole number, or end,
+    // the last cell (after: the place after it, where an insert goes on the end). Undefined if it's
+    // neither.
+    function placeOf(row, token, { after = false } = {}) {
+      if (token?.kind === 'word' && token.lower === 'end') return baseOf(row.layout) + row.members.length - (after ? 0 : 1)
+      return parseAs('index', token)
+    }
+
     // "arr: range 0 3 fill red": a change to some of a row's / column's cells, each changed as if on
     // its own line (stagger: in cell order). Only a look, highlights, emphasis and callouts: the cells
     // stay in the row (LINES: range).
@@ -546,8 +554,8 @@
       if (!row) throw new Error(`no shape called "${id}"`)
       if (!row.layout) throw new Error(`"range" picks some of a row's or column's cells, and "${id}" isn't one`)
       const base = baseOf(row.layout)
-      const from = parseAs('index', tokens[1])
-      const to = parseAs('index', tokens[2])
+      const from = placeOf(row, tokens[1])
+      const to = placeOf(row, tokens[2])
       if (from === undefined || to === undefined) throw new Error(`"range" expects two cell numbers, e.g. "${id}: range ${base} ${base + 2} fill red"`)
       const props = parseProps(tokens, 3, 'range', shapes)
       const n = row.members.length
@@ -580,8 +588,8 @@
       if (!row) throw new Error(`"span" expects a row, column or code block and two of its cell numbers, ${example}${tokens[1] && !rowId ? `: no shape called "${tokens[1].value}"` : ''}`)
       if (!row.layout) throw new Error(`"span" goes round some of a row's, column's or code block's cells, and "${rowId}" isn't one`)
       const base = baseOf(row.layout)
-      const from = parseAs('index', tokens[2])
-      const to = parseAs('index', tokens[3])
+      const from = placeOf(row, tokens[2])
+      const to = placeOf(row, tokens[3])
       if (from === undefined || to === undefined) throw new Error(`"span" expects two cell numbers after the ${row.layout}, e.g. "${id}: span ${rowId} ${base} ${base + 2}"`)
       const props = parseProps(tokens, 4, 'span', shapes)
       const n = row.members.length
@@ -1052,8 +1060,8 @@
       if (!row) throw new Error(`no shape called "${id}"`)
       if (!row.layout) throw new Error(`"swap" swaps two cells of a row or column, and "${id}" isn't one`)
       const base = baseOf(row.layout)
-      const i = parseAs('index', tokens[1])
-      const j = parseAs('index', tokens[2])
+      const i = placeOf(row, tokens[1])
+      const j = placeOf(row, tokens[2])
       if (i === undefined || j === undefined) throw new Error(`"swap" expects two cell numbers, e.g. "${id}: swap ${base} ${base + 3}"`)
       const props = parseProps(tokens, 3, 'swap', shapes)
       const [a, b] = [i, j].map((k) => {
@@ -1188,8 +1196,7 @@
       // a cell number, or end: the last cell (remove), or after it (insert); as a place in the row
       // (from 0), and as written
       const place = (token) => {
-        if (token?.kind === 'word' && token.lower === 'end') return removing ? n - 1 : n
-        const k = parseAs('index', token)
+        const k = placeOf(row, token, { after: !removing })
         return k === undefined ? undefined : k - base
       }
 

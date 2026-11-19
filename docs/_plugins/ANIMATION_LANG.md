@@ -179,12 +179,14 @@ arr: row [5 3 8 1] at 3,4          # cells arr.0 … arr.3
 col: column ["A" "B" "C"] at 12,2 gap 0.2
 mem: row 8 at 2,6                  # 8 empty cells
 arr: swap 0 3                      # two cells change places
+arr: swap 0 end                    # end: the last cell
 arr: insert 7 at 3                 # a space opens, 7 slides in
 arr: insert 8 at end               # onto the end
 arr: remove 2                      # slides out, the rest close up
 arr: remove end                    # off the end
 arr.2: fill amber                  # one cell
 arr: range 0 2 fill amber          # cells 0 to 2 (a look, highlight, emphasis or callout)
+arr: range 3 end bold              # cell 3 to the last
 arr: fill green                    # every cell
 arr: delete                        # the whole row
 ```
@@ -205,10 +207,12 @@ sorted: span arr 0 2 name "sorted"     # a box round places 0 to 2, as one shape
 sorted: highlight outline              # one outline round them all
 win: span arr 3 5 fill amber           # a band behind them
 win: span arr 2 4                      # spanned again: it glides there
+tail: span arr 3 end                   # place 3 to the last
 sorted: delete
 ```
 
 - For rows, columns and code blocks. Invisible unless given a `fill` or `stroke`, at the back.
+- `end` is the last place as the line is read: the span doesn't grow with an insert.
 - It stays on its places through a swap, insert or remove, and goes when its row does.
 - Takes highlights (a spotlight lights its cells), a callout and a `name` (above it on a row, right of it on a column or code block).
 

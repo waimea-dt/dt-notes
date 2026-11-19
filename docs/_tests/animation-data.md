@@ -212,6 +212,12 @@ arr: range 0 2 fill green
 arr: range 4 1 fill amber          # either way round
 ```
 
++++
+
+```anim
+arr: range 3 end fill teal         # end: the last cell
+```
+
 ---
 
 ## Highlights and emphasis, staggered
@@ -262,6 +268,12 @@ win: span arr 3 5 fill teal-bright name "window"
 
 ```anim
 win: span arr 2 4                         # a sliding window
+```
+
++++
+
+```anim
+win: span arr 3 end                       # end: the last place
 ```
 
 ---
