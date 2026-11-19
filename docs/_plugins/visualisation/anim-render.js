@@ -547,9 +547,10 @@
       node.blipHead.style.opacity = d <= total ? 1 : 0
     }
 
-    // Puts each node in its layer, in creation order.
+    // Puts each node in its layer, in creation order, with any raised while it moves (a swap's
+    // `raise`) on top of its layer.
     function order(list) {
-      list.sort((a, b) => LAYERS[a.shape.layer] - LAYERS[b.shape.layer] || a.shape.uid - b.shape.uid)
+      list.sort((a, b) => LAYERS[a.shape.layer] - LAYERS[b.shape.layer] || Boolean(a.raised) - Boolean(b.raised) || a.shape.uid - b.shape.uid)
       // Moves only the nodes that are out of place: re-appending every node each frame is costly
       const prev = layers.map(() => null)
       list.forEach(({ node, shape }) => {
@@ -830,7 +831,7 @@
       const glowA = glowFor(A)
       const glowB = glowFor(B)
       const finalByUid = new Map([...final.values()].map((s) => [s.uid, s]))
-      order(items.map(({ node, shape, uid }) => ({ node, shape: finalByUid.get(uid) || shape })))
+      order(items.map(({ node, shape, uid, t }) => ({ node, shape: finalByUid.get(uid) || shape, raised: meta.tweens.get(uid)?.raise && t > 0 && t < 1 })))
 
       for (const item of items) {
         // colours: blended from A's to B's over the shape's progress (entering / leaving: their own)

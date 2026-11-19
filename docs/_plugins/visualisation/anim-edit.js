@@ -150,8 +150,10 @@
       for (const k of [i, j]) if (k < 0 || k >= axis.units.length) throw new Error(axis.missing(k + base))
       if (i === j) return warn(`a ${noun} swapped with itself stays where it is`)
 
-      // Each bows out to the left of the way it goes (a row's: over going right, under coming back).
-      // Neighbours just pass each other; further apart, they clear the ones in between.
+      // Each bows out to the left of the way it goes (a row's: over going right, under coming back),
+      // and the one going over passes in front, so units of several cells (a grid's columns) pass
+      // whole rather than through each other. Neighbours just pass each other; further apart, they
+      // clear the ones in between.
       const [a, b] = [axis.units[i], axis.units[j]]
       const way = { x: b[0].attach.dx - a[0].attach.dx, y: b[0].attach.dy - a[0].attach.dy }
       const length = Math.hypot(way.x, way.y)
@@ -160,7 +162,9 @@
         const moved = structuredClone(cell)
         moved.id = other[k].id
         moved.attach = offsetFrom(id, other[k].attach.dx, other[k].attach.dy)
-        tween(meta, moved.uid).arc = { x: (sign * lift * way.y) / length, y: (-sign * lift * way.x) / length }
+        const record = tween(meta, moved.uid)
+        record.arc = { x: (sign * lift * way.y) / length, y: (-sign * lift * way.x) / length }
+        if (sign > 0) record.raise = true
         return moved
       }))
       for (const moved of moves) {

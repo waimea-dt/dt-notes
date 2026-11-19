@@ -816,7 +816,9 @@
   // One record per shape per beat: how its change animates (duration and delay in ms, the route
   // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect, and
   // `offset`: how far it slides as it enters or leaves, as a row's cell does). Set only where used:
-  // `lands`, its new value arrives on a flyer, so it's taken halfway through (as it lands), not blended.
+  // `lands`, its new value arrives on a flyer, so it's taken halfway through (as it lands), not
+  // blended; `arc`, how far it bows out on the way (a swap); `raise`, it's drawn on top of its layer
+  // while it moves (the unit a swap passes in front).
   function tween(meta, uid) {
     let record = meta.tweens.get(uid)
     if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))
