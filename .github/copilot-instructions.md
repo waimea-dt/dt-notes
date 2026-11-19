@@ -5,7 +5,7 @@ Apply these rules when creating new or editing existing plugin files in this rep
 ## Scope
 
 - Primary scope: files under docs/_plugins and docs/_css.
-- Secondary scope: matching docs/tests pages and docs/tests/_sidebar.md entries.
+- Secondary scope: matching docs/_tests pages and docs/_tests/_sidebar.md entries.
 
 ## Code Conventions
 
@@ -34,7 +34,7 @@ Apply these rules when creating new or editing existing plugin files in this rep
 
 - Keep each plugin feature in one JS file under the correct docs/_plugins subfolder.
 - Keep corresponding styles in the matching docs/_css subfolder.
-- Add or update test pages in docs/tests for plugin changes.
+- Add or update test pages in docs/_tests for plugin changes.
 
 ## Code Style
 
@@ -59,6 +59,6 @@ Apply these rules when creating new or editing existing plugin files in this rep
 1. JS plugin file created or updated in docs/_plugins.
 2. Matching CSS created or updated in docs/_css.
 3. Script and stylesheet links present in docs/index.html.
-4. Test/demo page present in docs/tests.
-5. docs/tests/_sidebar.md updated.
+4. Test/demo page present in docs/_tests.
+5. docs/_tests/_sidebar.md updated.
 6. Review existing plugins for current usage and remove outdated or unused plugins and their references (but get confirmation first).
