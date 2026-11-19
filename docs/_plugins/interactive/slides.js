@@ -21,6 +21,9 @@
  *   Note:               speaker notes (markdown) - everything after it to the end of the slide
  *   Click the deck for focus, then press `s` to open the speaker view.
  *   </slides>
+ *
+ * The VS Code extension (vscode/dt-notes-syntax, preview-pane.js) previews a deck with this file,
+ * moving it with `preview-show` events and following its `preview-position` ones (followPreview).
  */
 
 ;(function () {
@@ -235,7 +238,10 @@
     if (!decks.length) return
 
     // Mark now so a repeat doneEach doesn't queue the same decks while reveal.js downloads
-    decks.forEach((deck) => deck.setAttribute('data-initialized', 'true'))
+    decks.forEach((deck) => {
+      deck.setAttribute('data-initialized', 'true')
+      followPreview(deck)
+    })
 
     window.DocsifyUtils.withLibraries(['reveal'], decks, startDeck)
   }
@@ -267,6 +273,31 @@
       deck.setAttribute('data-slides-ready', 'true')
       refreshEditors(reveal.getCurrentSlide())
       reveal.on('slidechanged', (event) => refreshEditors(event.currentSlide))
+      previewStarts.get(deck)?.(reveal)
+    })
+  }
+
+  // The VS Code preview pane (vscode/dt-notes-syntax, preview-pane.js): a `preview-show` event
+  // ({ position: a slide's index }) goes to that slide with all its steps shown, and moving to
+  // another slide sends a `preview-position` event. A show that comes before reveal.js has
+  // started waits for it.
+  const previewStarts = new WeakMap() // deck -> connect(reveal), once it's started
+  function followPreview(deck) {
+    let reveal = null
+    let pending = null
+    const show = (slide) => {
+      reveal.slide(slide, 0)
+      const steps = reveal.getCurrentSlide()?.querySelectorAll('.fragment').length || 0
+      if (steps) reveal.slide(slide, 0, steps - 1)
+    }
+    deck.addEventListener('preview-show', ({ detail }) => {
+      if (reveal) show(detail.position)
+      else pending = detail.position
+    })
+    previewStarts.set(deck, (started) => {
+      reveal = started
+      if (pending != null) show(pending)
+      reveal.on('slidechanged', ({ indexh }) => deck.dispatchEvent(new CustomEvent('preview-position', { bubbles: true, detail: { position: indexh } })))
     })
   }
 

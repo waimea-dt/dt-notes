@@ -1,9 +1,10 @@
 {
   "name": "dt-notes-syntax",
   "displayName": "DT Notes Syntax",
-  "description": "Editing help for DT Notes pages: syntax highlighting, colour swatches, error marks and a live preview pane for <animation> blocks (```anim fences in Markdown, and .anim files), and a background on the site's plugin blocks.",
-  "version": "1.7.1",
+  "description": "Editing help for DT Notes pages: a live preview of animations, slides and flash cards, plus highlighting, error marks and colour swatches for animation scenes.",
+  "version": "1.8.1",
   "publisher": "dt-notes",
+  "icon": "icon.png",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -19,13 +20,13 @@
   "activationEvents": [
     "onLanguage:anim",
     "onLanguage:markdown",
-    "onCommand:dtNotes.previewAnimation"
+    "onCommand:dtNotes.previewBlock"
   ],
   "contributes": {
     "commands": [
       {
-        "command": "dtNotes.previewAnimation",
-        "title": "Preview Animation",
+        "command": "dtNotes.previewBlock",
+        "title": "Preview Block",
         "category": "DT Notes",
         "icon": "$(play-circle)"
       }
@@ -33,14 +34,14 @@
     "menus": {
       "editor/title": [
         {
-          "command": "dtNotes.previewAnimation",
+          "command": "dtNotes.previewBlock",
           "when": "editorLangId == markdown || editorLangId == anim",
           "group": "navigation"
         }
       ],
       "commandPalette": [
         {
-          "command": "dtNotes.previewAnimation",
+          "command": "dtNotes.previewBlock",
           "when": "editorLangId == markdown || editorLangId == anim"
         }
       ]

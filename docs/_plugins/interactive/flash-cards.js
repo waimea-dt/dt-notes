@@ -16,6 +16,9 @@
  *
  * Attributes:
  *   shuffle - if present, cards are shown in a randomised order.
+ *
+ * The VS Code extension (vscode/dt-notes-syntax, preview-pane.js) previews cards with this file,
+ * moving them with `preview-show` events and following their `preview-position` ones.
  */
 (function () {
 
@@ -77,24 +80,44 @@
             const cardInstruct = document.createElement('p')
             cardInstruct.textContent = `Move LEFT / RIGHT. Click or UP to flip`
 
-            const changeCard = (offset) => {
+            const cardNumbered = (num) => cardList.querySelector(`li[data-card-num="${num}"]`)
+
+            // The card shown, and its side, as a `preview-position` event for the VS Code preview
+            // pane: { card (from 0), back }
+            const tellPreview = () => {
+                const currentNum = parseInt(cardList.dataset.currentCard)
+                const back = Boolean(cardNumbered(currentNum)?.classList.contains('revealed'))
+                cardList.dispatchEvent(new CustomEvent('preview-position', { bubbles: true, detail: { position: { card: currentNum - 1, back } } }))
+            }
+
+            // tell: whether the preview pane hears of it (not when it asked for it)
+            const changeCard = (offset, tell = true) => {
                 const currentNum = parseInt(cardList.dataset.currentCard)
                 const targetNum  = clamp(currentNum + offset, 1, numCards)
 
-                cardList.querySelector(`li[data-card-num="${currentNum}"]`)?.classList.add('hidden')
-                cardList.querySelector(`li[data-card-num="${currentNum}"]`)?.classList.remove('revealed')
-                cardList.querySelector(`li[data-card-num="${targetNum}"]`)?.classList.remove('hidden')
+                cardNumbered(currentNum)?.classList.add('hidden')
+                cardNumbered(currentNum)?.classList.remove('revealed')
+                cardNumbered(targetNum)?.classList.remove('hidden')
 
                 cardList.dataset.currentCard = targetNum
                 cardList.style.setProperty('--current-card', targetNum)
                 cardInfo.innerHTML = `Card ${targetNum} of ${numCards}`
                 cardList.dataset.finalCard = targetNum < numCards ? 'false' : 'true'
+                if (tell) tellPreview()
             }
 
             const revealCurrentCard = () => {
                 const currentNum = parseInt(cardList.dataset.currentCard)
-                cardList.querySelector(`li[data-card-num="${currentNum}"]`)?.classList.toggle('revealed')
+                cardNumbered(currentNum)?.classList.toggle('revealed')
+                tellPreview()
             }
+
+            // The preview pane's `preview-show` event ({ position: { card, back } }): that card,
+            // on that side
+            cardList.addEventListener('preview-show', ({ detail: { position } }) => {
+                changeCard(position.card + 1 - parseInt(cardList.dataset.currentCard), false)
+                cardNumbered(parseInt(cardList.dataset.currentCard))?.classList.toggle('revealed', position.back)
+            })
 
             cards.forEach(function (card, i) {
 
@@ -127,7 +150,10 @@
 
 
 
-                card.addEventListener('click', () => card.classList.toggle('revealed'))
+                card.addEventListener('click', () => {
+                    card.classList.toggle('revealed')
+                    tellPreview()
+                })
                 card.addEventListener('mousedown', (e) => { if (e.detail > 1) e.preventDefault() })
 
                 // Add swipe gesture support

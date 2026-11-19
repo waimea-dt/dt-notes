@@ -27,6 +27,7 @@ body {
 
     .dtn-preview-options { display: flex; gap: 1em; }
     label { cursor: pointer; white-space: nowrap; }
+    [hidden] { display: none; } /* the site's label styles would show it */
   }
 
   /* the pane's width, not the site's content column (Docsify's core sets a width) */
