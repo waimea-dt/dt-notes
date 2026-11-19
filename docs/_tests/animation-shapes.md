@@ -347,7 +347,7 @@ i1: stroke green scale 1.3
 <animation grid="13x11">
 
 ```anim
-pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,1 font 0.4
+pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,1 font 0.4 size 0.7 gap 0.3 corner 0.5
 pal.0: fill red
 pal.1: fill orange
 pal.2: fill amber
@@ -360,7 +360,7 @@ pal.8: fill purple
 pal.9: fill pink
 pal.10: fill magenta
 pal.11: fill theme
-br: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,2 font 0.4
+br: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,2 font 0.4 size 0.7 gap 0.3 corner 0.5
 br.0: fill red-bright
 br.1: fill orange-bright
 br.2: fill amber-bright
@@ -373,7 +373,7 @@ br.8: fill purple-bright
 br.9: fill pink-bright
 br.10: fill magenta-bright
 br.11: fill theme-bright
-mt: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,3 font 0.4
+mt: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,3 font 0.4 size 0.7 gap 0.3 corner 0.5
 mt.0: fill red-muted
 mt.1: fill orange-muted
 mt.2: fill amber-muted
@@ -386,65 +386,65 @@ mt.8: fill purple-muted
 mt.9: fill pink-muted
 mt.10: fill magenta-muted
 mt.11: fill theme-muted
-lp: text "plain " at 1,1 font 0.45 align right
-lb: text "-bright " at 1,2 font 0.45 align right
-lm: text "-muted " at 1,3 font 0.45 align right
-lrp: text "raw " at 1,4 font 0.45 align right
-lrb: text "raw -bright " at 1,5 font 0.45 align right
-lrm: text "raw -muted " at 1,6 font 0.45 align right
-rp0: line from 1.85,4 to 2.15,4 stroke red weight 12
-rp1: line from 2.85,4 to 3.15,4 stroke orange weight 12
-rp2: line from 3.85,4 to 4.15,4 stroke amber weight 12
-rp3: line from 4.85,4 to 5.15,4 stroke yellow weight 12
-rp4: line from 5.85,4 to 6.15,4 stroke green weight 12
-rp5: line from 6.85,4 to 7.15,4 stroke teal weight 12
-rp6: line from 7.85,4 to 8.15,4 stroke cyan weight 12
-rp7: line from 8.85,4 to 9.15,4 stroke blue weight 12
-rp8: line from 9.85,4 to 10.15,4 stroke purple weight 12
-rp9: line from 10.85,4 to 11.15,4 stroke pink weight 12
-rp10: line from 11.85,4 to 12.15,4 stroke magenta weight 12
-rp11: line from 12.85,4 to 13.15,4 stroke theme weight 12
-rb0: line from 1.85,5 to 2.15,5 stroke red-bright weight 12
-rb1: line from 2.85,5 to 3.15,5 stroke orange-bright weight 12
-rb2: line from 3.85,5 to 4.15,5 stroke amber-bright weight 12
-rb3: line from 4.85,5 to 5.15,5 stroke yellow-bright weight 12
-rb4: line from 5.85,5 to 6.15,5 stroke green-bright weight 12
-rb5: line from 6.85,5 to 7.15,5 stroke teal-bright weight 12
-rb6: line from 7.85,5 to 8.15,5 stroke cyan-bright weight 12
-rb7: line from 8.85,5 to 9.15,5 stroke blue-bright weight 12
-rb8: line from 9.85,5 to 10.15,5 stroke purple-bright weight 12
-rb9: line from 10.85,5 to 11.15,5 stroke pink-bright weight 12
-rb10: line from 11.85,5 to 12.15,5 stroke magenta-bright weight 12
-rb11: line from 12.85,5 to 13.15,5 stroke theme-bright weight 12
-rm0: line from 1.85,6 to 2.15,6 stroke red-muted weight 12
-rm1: line from 2.85,6 to 3.15,6 stroke orange-muted weight 12
-rm2: line from 3.85,6 to 4.15,6 stroke amber-muted weight 12
-rm3: line from 4.85,6 to 5.15,6 stroke yellow-muted weight 12
-rm4: line from 5.85,6 to 6.15,6 stroke green-muted weight 12
-rm5: line from 6.85,6 to 7.15,6 stroke teal-muted weight 12
-rm6: line from 7.85,6 to 8.15,6 stroke cyan-muted weight 12
-rm7: line from 8.85,6 to 9.15,6 stroke blue-muted weight 12
-rm8: line from 9.85,6 to 10.15,6 stroke purple-muted weight 12
-rm9: line from 10.85,6 to 11.15,6 stroke pink-muted weight 12
-rm10: line from 11.85,6 to 12.15,6 stroke magenta-muted weight 12
-rm11: line from 12.85,6 to 13.15,6 stroke theme-muted weight 12
-lo: text "other " at 1,7 font 0.45 align right
-lro: text "raw other " at 1,8 font 0.45 align right
-oth: row ["muted" "fg" "bg" "bg-shape" "black" "white" "none"] at 2,7 font 0.4
-oth.0: fill muted
-oth.1: fill fg colour bg
-oth.2: fill bg
-oth.3: fill bg-shape
-oth.4: fill black colour white
-oth.5: fill white colour black
-oth.6: fill none
-ro0: line from 1.85,8 to 2.15,8 stroke muted weight 12
-ro1: line from 2.85,8 to 3.15,8 stroke fg weight 12
-ro2: line from 3.85,8 to 4.15,8 stroke bg weight 12
-ro3: line from 4.85,8 to 5.15,8 stroke bg-shape weight 12
-ro4: line from 5.85,8 to 6.15,8 stroke black weight 12
-ro5: line from 6.85,8 to 7.15,8 stroke white weight 12
-ro6: line from 7.85,8 to 8.15,8 stroke none weight 12
+lp: text "plain" at 1,1 font 0.45 align right
+lb: text "-bright" at 1,2 font 0.45 align right
+lm: text "-muted" at 1,3 font 0.45 align right
+lrp: text "raw" at 1,4 font 0.45 align right
+lrb: text "raw -bright" at 1,5 font 0.45 align right
+lrm: text "raw -muted" at 1,6 font 0.45 align right
+rp0:  line from  2.00,4 to  2.01,4 stroke red weight 15
+rp1:  line from  3.00,4 to  3.01,4 stroke orange weight 15
+rp2:  line from  4.00,4 to  4.01,4 stroke amber weight 15
+rp3:  line from  5.00,4 to  5.01,4 stroke yellow weight 15
+rp4:  line from  6.00,4 to  6.01,4 stroke green weight 15
+rp5:  line from  7.00,4 to  7.01,4 stroke teal weight 15
+rp6:  line from  8.00,4 to  8.01,4 stroke cyan weight 15
+rp7:  line from  9.00,4 to  9.01,4 stroke blue weight 15
+rp8:  line from 10.00,4 to 10.01,4 stroke purple weight 15
+rp9:  line from 11.00,4 to 11.01,4 stroke pink weight 15
+rp10: line from 12.00,4 to 12.01,4 stroke magenta weight 15
+rp11: line from 13.00,4 to 13.01,4 stroke theme weight 15
+rb0:  line from  2.00,5 to  2.01,5 stroke red-bright weight 15
+rb1:  line from  3.00,5 to  3.01,5 stroke orange-bright weight 15
+rb2:  line from  4.00,5 to  4.01,5 stroke amber-bright weight 15
+rb3:  line from  5.00,5 to  5.01,5 stroke yellow-bright weight 15
+rb4:  line from  6.00,5 to  6.01,5 stroke green-bright weight 15
+rb5:  line from  7.00,5 to  7.01,5 stroke teal-bright weight 15
+rb6:  line from  8.00,5 to  8.01,5 stroke cyan-bright weight 15
+rb7:  line from  9.00,5 to  9.01,5 stroke blue-bright weight 15
+rb8:  line from 10.00,5 to 10.01,5 stroke purple-bright weight 15
+rb9:  line from 11.00,5 to 11.01,5 stroke pink-bright weight 15
+rb10: line from 12.00,5 to 12.01,5 stroke magenta-bright weight 15
+rb11: line from 13.00,5 to 13.01,5 stroke theme-bright weight 15
+rm0:  line from  2.00,6 to  2.01,6 stroke red-muted weight 15
+rm1:  line from  3.00,6 to  3.01,6 stroke orange-muted weight 15
+rm2:  line from  4.00,6 to  4.01,6 stroke amber-muted weight 15
+rm3:  line from  5.00,6 to  5.01,6 stroke yellow-muted weight 15
+rm4:  line from  6.00,6 to  6.01,6 stroke green-muted weight 15
+rm5:  line from  7.00,6 to  7.01,6 stroke teal-muted weight 15
+rm6:  line from  8.00,6 to  8.01,6 stroke cyan-muted weight 15
+rm7:  line from  9.00,6 to  9.01,6 stroke blue-muted weight 15
+rm8:  line from 10.00,6 to 10.01,6 stroke purple-muted weight 15
+rm9:  line from 11.00,6 to 11.01,6 stroke pink-muted weight 15
+rm10: line from 12.00,6 to 12.01,6 stroke magenta-muted weight 15
+rm11: line from 13.00,6 to 13.01,6 stroke theme-muted weight 15
+lo: text "other" at 1,7 font 0.45 align right
+lro: text "raw other" at 1,8 font 0.45 align right
+oth: row ["none" "bg" "bg-shape" "black" "white" "fg" "muted"] at 2,7 font 0.4 size 0.7 gap 0.3 corner 0.5
+oth.0: fill none
+oth.1: fill bg
+oth.2: fill bg-shape
+oth.3: fill black colour white
+oth.4: fill white colour black
+oth.5: fill fg colour bg
+oth.6: fill muted
+ro0: line from 2.00,8 to 2.01,8 stroke none weight 15
+ro1: line from 3.00,8 to 3.01,8 stroke bg weight 15
+ro2: line from 4.00,8 to 4.01,8 stroke bg-shape weight 15
+ro3: line from 5.00,8 to 5.01,8 stroke black weight 15
+ro4: line from 6.00,8 to 6.01,8 stroke white weight 15
+ro5: line from 7.00,8 to 7.01,8 stroke fg weight 15
+ro6: line from 8.00,8 to 8.01,8 stroke muted weight 15
 st: rect "stroke" at 3,10 size 2x0.8 stroke red weight 2
 cl: rect "colour" at 6,10 size 2x0.8 colour amber
 hx: text "#f80" at 9,10 colour #f80
@@ -469,6 +469,11 @@ Variants on fills, strokes and text.
 st: fill green-muted stroke blue-bright
 cl: colour pink-muted
 hx: colour teal-bright
+pal: stroke black colour black
+br: stroke black colour black
+mt: stroke black colour black
+oth: stroke black colour black
+oth.3: colour white
 ```
 
 </animation>
