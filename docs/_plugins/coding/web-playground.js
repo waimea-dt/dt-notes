@@ -453,22 +453,18 @@
             }
         }
 
-        let containerResizeObserver = null
-        let removeResizeFallback = null
-        if (typeof ResizeObserver !== 'undefined') {
-            containerResizeObserver = new ResizeObserver(() => {
-                syncHorizontalSplit()
-            })
-            containerResizeObserver.observe(container)
-        } else {
-            // Fallback for older browsers without ResizeObserver support.
-            window.addEventListener('resize', syncHorizontalSplit)
-            removeResizeFallback = () => window.removeEventListener('resize', syncHorizontalSplit)
-        }
+        // Leaving the page also changes the container's size (to nothing), so this observer is
+        // where the widget cleans up after itself
+        const resizeObserver = new ResizeObserver(() => {
+            if (container.isConnected) return syncHorizontalSplit()
+            hSplit?.destroy()
+            resizeObserver.disconnect()
+        })
+        resizeObserver.observe(container)
 
         syncHorizontalSplit()
 
-        return { editors, iframe, hSplitRef: () => hSplit, containerResizeObserver, removeResizeFallback }
+        return { editors, iframe }
     }
 
     function initPlayground(container, hiddenBlocks, ownBlocksByPlayground) {
@@ -496,31 +492,7 @@
         else if (container.hasAttribute('max-css')) initialMaxLang = 'css'
         else if (container.hasAttribute('max-js')) initialMaxLang = 'js'
 
-        const { editors, iframe, hSplitRef, containerResizeObserver, removeResizeFallback } = buildWidget(container, contents, contentObjs, initialMaxLang, width)
-
-        // Ensure observer is disconnected if the widget is removed from the DOM.
-        if (containerResizeObserver) {
-            const cleanupObserver = new MutationObserver(() => {
-                if (!document.body.contains(container)) {
-                    const hSplit = hSplitRef()
-                    if (hSplit) hSplit.destroy()
-                    containerResizeObserver.disconnect()
-                    if (removeResizeFallback) removeResizeFallback()
-                    cleanupObserver.disconnect()
-                }
-            })
-            cleanupObserver.observe(document.body, { childList: true, subtree: true })
-        } else if (removeResizeFallback) {
-            const cleanupFallback = new MutationObserver(() => {
-                if (!document.body.contains(container)) {
-                    const hSplit = hSplitRef()
-                    if (hSplit) hSplit.destroy()
-                    removeResizeFallback()
-                    cleanupFallback.disconnect()
-                }
-            })
-            cleanupFallback.observe(document.body, { childList: true, subtree: true })
-        }
+        const { editors, iframe } = buildWidget(container, contents, contentObjs, initialMaxLang, width)
 
         // Initial render so the preview is populated immediately on load.
         renderPreview(iframe, editors, contentObjs)
