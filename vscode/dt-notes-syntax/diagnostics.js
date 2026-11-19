@@ -9,14 +9,18 @@ const path = require('path')
 const vm = require('vm')
 
 const ENGINE = path.join('docs', '_plugins', 'visualisation')
-const PARTS = ['anim-core', 'anim-parse', 'anim-compile'] // in load order; rendering isn't needed
+// The engine's parts, in load order, as the site's page loads them (so a new part needs no change here)
+const PAGE = path.join('..', '..', 'index.html') // from the engine's folder
+const PART = /_plugins\/visualisation\/(anim-[\w-]+)\.js/g
+const partsOf = (dir) => [...fs.readFileSync(path.join(dir, PAGE), 'utf8').matchAll(PART)].map((m) => m[1])
 const WAIT_MS = 300 // after the last keystroke
 
 // The engine's parts loaded into a sandbox with just enough of a browser to load: text is
 // estimated rather than measured, and every icon name is accepted (Lucide isn't loaded).
 const engines = new Map() // engine dir -> { stamp, Anim }
 function loadEngine(dir) {
-  const stamp = PARTS.map((part) => fs.statSync(path.join(dir, `${part}.js`)).mtimeMs).join('|')
+  const parts = partsOf(dir)
+  const stamp = [PAGE, ...parts.map((part) => `${part}.js`)].map((file) => fs.statSync(path.join(dir, file)).mtimeMs).join('|')
   const cached = engines.get(dir)
   if (cached?.stamp === stamp) return cached.Anim
   const element = () => ({ setAttribute() {}, appendChild: (child) => child, style: {} })
@@ -29,7 +33,7 @@ function loadEngine(dir) {
   }
   sandbox.window = sandbox
   vm.createContext(sandbox)
-  for (const part of PARTS) {
+  for (const part of parts) {
     const file = path.join(dir, `${part}.js`)
     vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: file })
   }

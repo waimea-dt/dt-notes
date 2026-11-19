@@ -10,9 +10,14 @@ Loaded in this order (`docs/index.html`), sharing `window.Anim`. Each part takes
 |---|---|
 | `anim-core.js` | Constants, the tables (below), the keyword table, geometry, bounds |
 | `anim-parse.js` | Markdown -> source markup (Docsify `beforeEach`); scene lines -> tokens -> props (`parseProps`) |
-| `anim-compile.js` | Scene lines -> one snapshot of every shape per beat (`state`), plus how each change plays (`meta`: tweens, flyers, slots) |
+| `anim-compile.js` | Scene lines -> one snapshot of every shape per beat (`state`), plus how each change plays (`meta`: tweens, flyers, slots). The compiler's core: props, positions and routes, groups, timing (`schedule`), `runLine`, the camera |
+| `anim-layout.js` | Compiler part: rows, columns, code blocks, grids and tables; their views, spans, ranges, names and indices |
+| `anim-values.js` | Compiler part: the values vars and cells hold, and flyers |
+| `anim-edit.js` | Compiler part: swap, insert and remove |
 | `anim-render.js` | Draws a beat, or a blend between two, into the SVG |
 | `animation.js` | The widget: controls, captions, playback, camera, intro |
+
+**Compiler parts:** `createCompiler` (anim-compile.js) holds the shared state and core functions. Each part file pushes a factory onto `COMPILER_PARTS`: given `cx` (the state: `shapes`, `defaults`, `newUid`, `context`, and the core's functions), it returns `functions` (added to `cx`), `verbs` (merged into `VERBS`) and `link`, which fills in the other parts' functions it uses (its `let` list) once every part is made. A new part goes in `docs/index.html` after `anim-compile.js`; the VS Code extension reads the parts from there. Keep `defaults` the same object (change it in place) and make uids with `newUid()`.
 
 The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`, `lands`).
 
@@ -111,7 +116,7 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 - **Numbers:** a signed number (relative on a change) is `constant.numeric.relative`, with its sign `keyword.operator.sign`. The `x` in a size (`2x0.8`) is `punctuation.separator`, like the comma in `2,1`. The grammar can't tell that a signed number is absolute when creating a shape.
 - **Context matters for some words.** `normal` is a value after `speed`, and the layer param elsewhere. `arrow` is a type after `id:`, a value after `highlight`, and a param elsewhere. Actions are commands wherever they appear: `clear`, `reset`, `detach`.
 - **The Markdown preview** (`preview.js`) highlights from the same grammar, mapping scopes to highlight.js classes.
-- **Error marks** (`diagnostics.js`) come from the engine itself, not the grammar. The extension loads `anim-core`, `anim-parse` and `anim-compile` from the repo into a Node sandbox (no DOM), so keep those three loadable without a browser. It relies on these engine functions: `findBlocks` (blocks with their tag lines), `splitBlock` (steps and beats, with `sceneLines` mapping each scene line to its block line), `parseAttrs`, `viewBoxFor`, and the `issues` that `compile` returns (`{ error, step, beat, line, message }`). A mark goes on the last quoted word in the message that's on the line, so quote the offending word as typed.
+- **Error marks** (`diagnostics.js`) come from the engine itself, not the grammar. The extension loads every `anim-*.js` part that `docs/index.html` lists, in order, from the repo into a Node sandbox (no DOM), so keep them loadable without a browser (nothing touches the DOM until it's called). It relies on these engine functions: `findBlocks` (blocks with their tag lines), `splitBlock` (steps and beats, with `sceneLines` mapping each scene line to its block line), `parseAttrs`, `viewBoxFor`, and the `issues` that `compile` returns (`{ error, step, beat, line, message }`). A mark goes on the last quoted word in the message that's on the line, so quote the offending word as typed.
 - **To install after a grammar change:** run, from `vscode/dt-notes-syntax/`, `npx --yes @vscode/vsce@3 package --allow-missing-repository --out "$TEMP/dt-notes-syntax.vsix"`. Then `code --install-extension "$TEMP/dt-notes-syntax.vsix" --force`, then reload the window.
 
 ## Checking a change
