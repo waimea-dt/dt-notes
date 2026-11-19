@@ -638,10 +638,9 @@
       event.preventDefault()
     })
 
-    // A theme change re-resolves the colours (theme variables) and redraws
+    // A theme change redraws, with the colours (theme variables) re-resolved (anim-render.js)
     const onThemeChange = () => {
       if (!widget.isConnected) return window.removeEventListener('docsify-theme-change', onThemeChange)
-      renderer.clearColours()
       if (!running) showStatic(introPending ? -1 : current)
     }
     window.addEventListener('docsify-theme-change', onThemeChange)

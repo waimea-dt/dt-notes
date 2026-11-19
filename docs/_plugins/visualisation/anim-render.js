@@ -55,8 +55,8 @@
   }
 
   // Parses a computed colour to [r, g, b, a] (0-255, alpha 0-1). rgb() and color(srgb …) are read
-  // directly; anything else (the theme's oklch palette, lab, …) is converted by painting one pixel
-  // on a canvas and reading it back as sRGB.
+  // directly; anything else (a hex colour, the theme's oklch palette, lab, …) is converted by
+  // painting one pixel on a canvas and reading it back as sRGB.
   let pixel = null
   function parseColour(text) {
     if (!text || text === 'none') return null
@@ -84,6 +84,39 @@
     if (role === 'fill' && FILL_MIXES[key]) return towardsBg(css, FILL_MIXES[key])
     return css
   }
+
+  // Colours are blended in JavaScript every frame, like positions: each CSS colour (theme
+  // variables, color-mix tints) is resolved to RGBA through hidden probes in an animation's SVG
+  // (where its variables are set) and cached for every animation on the page. Reading a computed
+  // style restyles the whole page, which the site's :has() selectors make slow, so the first lookup
+  // resolves every named colour at once (all probes set, then all read: one restyle). The cache is
+  // cleared when the theme changes.
+  const colourCache = new Map()
+  const namedColours = () => Object.keys(COLOURS).flatMap((name) => [colourCss(name, 'fill'), colourCss(name, 'stroke')])
+  function resolveColours(host, list) {
+    const probes = [...new Set(list)].map((css) => {
+      const probe = host.appendChild(svgEl('rect', { width: 0, height: 0 }))
+      probe.style.display = 'none'
+      probe.style.fill = css
+      return [css, probe]
+    })
+    for (const [css, probe] of probes) colourCache.set(css, parseColour(getComputedStyle(probe).fill))
+    for (const [, probe] of probes) probe.remove()
+  }
+  let warmed = false // whether every named colour is in the cache
+  function rgbaOf(host, css) {
+    if (!css || css === 'none') return null
+    if (!colourCache.has(css)) {
+      if (HEX.test(css)) colourCache.set(css, parseColour(css)) // read directly: no restyle
+      else {
+        resolveColours(host, warmed ? [css] : [...namedColours().filter((c) => c !== 'none' && !HEX.test(c)), css])
+        warmed = true
+      }
+    }
+    return colourCache.get(css)
+  }
+  // before any animation redraws for the new theme (each one's listener is added later)
+  window.addEventListener?.('docsify-theme-change', () => { colourCache.clear(); warmed = false })
 
   function createRenderer(svg, viewBox, debug) {
     const layers = [0, 1, 2].map(() => svg.appendChild(svgEl('g')))
@@ -113,20 +146,7 @@
       return node
     }
 
-    // Colours are blended in JavaScript every frame, like positions: each CSS colour (theme
-    // variables, color-mix tints) is resolved to RGBA once through a hidden probe and cached; the
-    // cache is cleared when the theme changes.
-    const probe = svg.appendChild(svgEl('rect', { width: 0, height: 0 }))
-    probe.style.display = 'none'
-    const colourCache = new Map()
-    function rgba(css) {
-      if (!css || css === 'none') return null
-      if (!colourCache.has(css)) {
-        probe.style.fill = css
-        colourCache.set(css, parseColour(getComputedStyle(probe).fill))
-      }
-      return colourCache.get(css)
-    }
+    const rgba = (css) => rgbaOf(svg, css)
     // A colour part-way from a to b (either may be null = none: it fades in or out)
     function mixColour(a, b, t) {
       if (!a && !b) return 'none'
@@ -1136,7 +1156,7 @@
       return `${d} L ${x0} ${y0 + r} Q ${x0} ${y0} ${x0 + r} ${y0} Z`
     }
 
-    return { render, clearColours: () => colourCache.clear() }
+    return { render }
   }
 
   function drawDebugGrid(svg, view) {
