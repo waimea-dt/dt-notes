@@ -2,7 +2,7 @@
  * anim-core.js - Part of the animation plugin (animation.js): the constants, the keyword table
  * that every scene line is read against, geometry (text sizes, attachments, line ends, curves
  * and routes) and bounds. Shared by every other part through window.Anim.
- * The tables here (SHAPES, LOOKS, LINES, ENTRANCES, …) and how to extend them: CLAUDE-ANIMATION.md
+ * The tables here (SHAPES, LOOKS, LINES, ENTRANCES, …) and how to extend them: docs/_plugins/PLUGIN_ANIMATION.md
  */
 
 ;(function () {

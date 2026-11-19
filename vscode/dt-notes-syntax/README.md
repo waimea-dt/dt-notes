@@ -1,6 +1,6 @@
 # DT Notes Syntax for VS Code
 
-Highlights `<animation>` scene lines (see `docs/_plugins/visualisation/ANIMATION.md`): inside ```` ```anim ```` fences in Markdown, and in `.anim` files.
+Highlights `<animation>` scene lines (see `docs/_plugins/ANIMATION_LANG.md`): inside ```` ```anim ```` fences in Markdown, and in `.anim` files.
 
 ## Install or update
 

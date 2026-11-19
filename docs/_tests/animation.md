@@ -1,6 +1,6 @@
 # Animation
 
-Step-by-step animated explanations from `<animation>` blocks. Full syntax: `docs/_plugins/visualisation/ANIMATION.md`.
+Step-by-step animated explanations from `<animation>` blocks. Full syntax: `docs/_plugins/ANIMATION_LANG.md`.
 
 Click an animation to give it focus, then use ← / → to step and `F` for full screen.
 

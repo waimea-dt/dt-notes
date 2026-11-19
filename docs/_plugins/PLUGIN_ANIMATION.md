@@ -1,6 +1,6 @@
 # Animation Engine: Notes for Claude
 
-How the `<animation>` plugin is built, the rules its scene language follows, and where to add things. The author-facing syntax is in `ANIMATION.md`: a minimal reference for humans. Syntax and short examples only, with a `#` comment where a line needs one; no internals, design reasons or timing details.
+How the `<animation>` plugin is built, the rules its scene language follows, and where to add things. The author-facing syntax is in `ANIMATION_LANG.md`: a minimal reference for humans. Syntax and short examples only, with a `#` comment where a line needs one; no internals, design reasons or timing details.
 
 ## Parts
 
@@ -68,7 +68,7 @@ For every new word:
 
 1. Add it to the VS Code grammar, `vscode/dt-notes-syntax/syntaxes/anim.tmLanguage.json`, in the right role (see Highlighting).
 2. Bump the version in `vscode/dt-notes-syntax/package.json`.
-3. Add it to `ANIMATION.md`.
+3. Add it to `ANIMATION_LANG.md`.
 4. Add a test to the test page for its topic: one animation per feature, in the cheat-sheet's order, and a line in the error-test block (`animation-errors.md`) for each new error. The pages, listed on `docs/_tests/animation.md`:
    - `animation.md`: the block itself (steps and beats, the grid, comments, playback)
    - `animation-examples.md`: whole example animations

@@ -1,5 +1,5 @@
 {
-  "$comment": "Injects the anim grammar into ```anim fenced code blocks in Markdown. Markdown examples (```markdown / ```md fences, e.g. in ANIMATION.md) are highlighted as Markdown too, so ```anim fences nested in them are highlighted.",
+  "$comment": "Injects the anim grammar into ```anim fenced code blocks in Markdown. Markdown examples (```markdown / ```md fences, e.g. in ANIMATION_LANG.md) are highlighted as Markdown too, so ```anim fences nested in them are highlighted.",
   "scopeName": "markdown.anim.codeblock",
   "injectionSelector": "L:text.html.markdown",
   "patterns": [
