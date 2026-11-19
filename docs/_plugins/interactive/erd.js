@@ -797,28 +797,21 @@
      * Process ERD elements after Docsify renders the page
      */
     function processERD() {
-        document.querySelectorAll('.markdown-section erd:not(.erd-initialized)').forEach((el, index) => {
-            el.classList.add('erd-initialized')
+        const widgets = [...document.querySelectorAll('.markdown-section erd:not(.erd-initialized)')]
+        widgets.forEach(el => el.classList.add('erd-initialized'))
+        window.DocsifyUtils.withLibraries(['codemirror'], widgets, el => new ERDComponent(el, takeSQL(el)))
+    }
 
-            // Get SQL from stored data if available
-            const dataId = el.getAttribute('data-id')
-            let sql = ''
-            if (dataId && erdData.has(dataId)) {
-                sql = erdData.get(dataId)
-                erdData.delete(dataId)
-            } else {
-                // Fallback to extracting from element content
-                const preElement = el.querySelector('pre code')
-                if (preElement) {
-                    sql = preElement.textContent.trim()
-                } else {
-                    sql = el.textContent.trim()
-                }
-            }
-
-            // Create component
-            new ERDComponent(el, sql)
-        })
+    // The SQL stored for an <erd> in beforeEach, else its own content
+    function takeSQL(el) {
+        const dataId = el.getAttribute('data-id')
+        if (dataId && erdData.has(dataId)) {
+            const sql = erdData.get(dataId)
+            erdData.delete(dataId)
+            return sql
+        }
+        const preElement = el.querySelector('pre code')
+        return (preElement || el).textContent.trim()
     }
 
     function docsifyERD(hook, vm) {

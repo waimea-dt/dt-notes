@@ -17,8 +17,13 @@ This guide is for writing new Docsify plugins in this project.
 - escapeHtml: For untrusted text inserted into HTML.
 - parseBoolean / parsePositiveInt: For attribute parsing.
 - randomHex / clamp / sleep / generateId and other general helpers.
-- loadScript(src) / loadScripts(srcs): Load a heavy CDN library only when a page needs it. Call it after
-  finding blocks to process (return early if none), then check the blocks are still connected before using it.
+- CDN libraries used by only some pages load on demand, never from index.html. Each is listed once in
+  `LIBRARIES` in utils.js (URLs, pinned versions, scripts / styles / ES module); add a new one there.
+  - withLibraries(names, elements, init): the usual pattern. Find the blocks, mark them processed, then
+    `withLibraries(['codemirror'], blocks, initBlock)` loads the libraries and inits each block still on the page.
+  - loadLibrary(name) / loadLibraries(...names): the promise underneath, e.g. for an ES module's exports.
+  - Where the widget works without the library, build it straight away and add the library's part when it
+    arrives (js-runner's editor, drag-drop's dragging).
 
 ## Structure Pattern
 

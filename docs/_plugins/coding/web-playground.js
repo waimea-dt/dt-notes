@@ -5,8 +5,8 @@
  * a side-by-side (or stacked on small screens) editor + live preview.
  * All editors are visible at once so students can see the effect of their edits immediately.
  *
- * Requires codemirror.js and the xml, css, javascript, htmlmixed modes and
- * closetag addon to be loaded in index.html before this script runs.
+ * CodeMirror and Split.js are loaded on demand (DocsifyUtils.withLibraries), only on pages
+ * with a playground.
  *
  * Usage in markdown:
  *   <web-playground data-height="40em" data-width="30%" show-css max-html>
@@ -472,17 +472,6 @@
     }
 
     function initPlayground(container, hiddenBlocks, ownBlocksByPlayground) {
-        if (container.dataset.initialized) return
-        container.dataset.initialized = 'true'
-
-        // Hidden playgrounds render nothing; their id=NAME blocks were already
-        // registered in beforeEach for use by later playgrounds.
-        if (container.hasAttribute('hidden')) {
-            container.innerHTML = ''
-            container.style.display = 'none'
-            return
-        }
-
         const height = container.dataset.height ?? '80vh'
         const width = container.dataset.width ?? '50%'
 
@@ -624,9 +613,20 @@
         }
 
         hook.doneEach(function () {
+            const shown = []
             document.querySelectorAll('web-playground:not([data-initialized])').forEach(el => {
-                initPlayground(el, hiddenBlocks, ownBlocksByPlayground)
+                el.dataset.initialized = 'true'
+                // Hidden playgrounds render nothing; their id=NAME blocks were already
+                // registered in beforeEach for use by later playgrounds.
+                if (!el.hasAttribute('hidden')) return shown.push(el)
+                el.innerHTML = ''
+                el.style.display = 'none'
             })
+
+            // This page's blocks, kept now: the next page's beforeEach replaces them
+            const blocks = hiddenBlocks
+            const ownBlocks = ownBlocksByPlayground
+            window.DocsifyUtils.withLibraries(['codemirror', 'split'], shown, el => initPlayground(el, blocks, ownBlocks))
         })
     }
 

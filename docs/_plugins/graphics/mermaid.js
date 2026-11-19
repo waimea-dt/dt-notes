@@ -16,27 +16,15 @@
  *   ```
  */
 (function () {
-    const MERMAID_URL = 'https://unpkg.com/mermaid@11.0.2/dist/mermaid.esm.min.mjs'
     const MERMAID_THEME = { dark: 'dark', light: 'default' }
 
-    const { getTheme, renderErrorBox, registerPlugin } = window.DocsifyUtils
+    const { getTheme, renderErrorBox, registerPlugin, loadLibrary } = window.DocsifyUtils
 
     // Diagram source per element, kept so diagrams can be redrawn when the theme changes
     const sources = new WeakMap()
-    let mermaidPromise = null
     let renderCount = 0
 
-    function loadMermaid() {
-        if (!mermaidPromise) {
-            mermaidPromise = import(MERMAID_URL)
-                .then(module => module.default)
-                .catch(error => {
-                    mermaidPromise = null // allow a retry on the next page visit
-                    throw error
-                })
-        }
-        return mermaidPromise
-    }
+    const loadMermaid = () => loadLibrary('mermaid').then(module => module.default)
 
     function configure(mermaid) {
         mermaid.initialize({

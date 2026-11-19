@@ -24,13 +24,12 @@
     // Main Processing Function
     // -------------------------------------------------------------------------
 
-    const SCRATCHBLOCKS_URL = 'https://cdn.jsdelivr.net/npm/scratchblocks@3.7.1/build/scratchblocks.min.js'
     const SCRATCH_SELECTOR = 'pre[data-lang="scratch"], pre[data-lang="scratch-inline"], code.language-scratch'
 
     function processScratchBlocks() {
         if (!document.querySelector(SCRATCH_SELECTOR)) return
 
-        window.DocsifyUtils.loadScript(SCRATCHBLOCKS_URL)
+        window.DocsifyUtils.loadLibrary('scratchblocks')
             .then(renderScratchBlocks)
             .catch(error => console.warn('scratchblocks library failed to load', error))
     }

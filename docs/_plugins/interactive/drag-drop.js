@@ -214,11 +214,9 @@
             this.render()
             this.resetItems()
             this.bindEvents()
-            this.setupDragAndDrop()
-        }
 
-        get dragEnabled() {
-            return typeof window.Sortable !== 'undefined'
+            // The up/down buttons work straight away; dragging is added once Sortable has loaded
+            window.DocsifyUtils.withLibraries(['sortable'], [el], () => this.setupDragAndDrop())
         }
 
         get hasReferenceList() {
@@ -404,7 +402,7 @@
         }
 
         setupDragAndDrop() {
-            if (!this.dragEnabled || !this.listEl) return
+            if (!this.listEl) return
 
             this.sortable = window.Sortable.create(this.listEl, {
                 animation: 150,

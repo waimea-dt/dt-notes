@@ -10,7 +10,7 @@
  *
  * Features:
  *   - ```js run and ```javascript run fences
- *   - Editable CodeMirror editor (falls back to a plain code block)
+ *   - Editable CodeMirror editor, loaded on demand (the plain code block runs until it arrives)
  *   - console.log / info / warn / error output, plus uncaught errors
  *   - Top-level await supported
  *   - 5 second timeout for runaway code
@@ -87,8 +87,6 @@
     }
 
     function createEditor(container, pre, code) {
-        if (!window.CodeMirror) return () => code.textContent
-
         const original = code.textContent.replace(/\n$/, '')
         const editor = window.DocsifyUtils.createEditor(editorEl => pre.parentNode.insertBefore(editorEl, pre), 'javascript', {
             value: original,
@@ -118,7 +116,12 @@
         const code = pre?.querySelector('code')
         if (!code) return
 
-        const getCode = createEditor(container, pre, code)
+        // Runs the plain code block until CodeMirror (loaded on demand) replaces it with an editor
+        let getCode = () => code.textContent
+        window.DocsifyUtils.withLibraries(['codemirror'], [container], () => {
+            getCode = createEditor(container, pre, code)
+        })
+
         const { button, output, outputCode } = buildControls()
         container.append(button, output)
 

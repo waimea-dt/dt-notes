@@ -72,8 +72,6 @@
         })
     }
 
-    const KOTLIN_PLAYGROUND_URL = 'https://cdn.jsdelivr.net/npm/kotlin-playground@1.34.0'
-
     function initKotlinRunnerBlocks(root = document) {
         const kotlinCodeSelector = '.kotlin-run pre code.lang-kotlin, .kotlin-run pre code.language-kotlin'
         const kotlinContainers = []
@@ -98,7 +96,7 @@
         kotlinContainers.forEach(container => { if (container) container.dataset.persistType = 'kotlin' })
 
         // Kotlin Playground is loaded on demand - only pages with runnable Kotlin pay for it
-        window.DocsifyUtils.loadScript(KOTLIN_PLAYGROUND_URL).then(function () {
+        window.DocsifyUtils.loadLibrary('kotlin').then(function () {
             // The page may have changed while the library was downloading
             if (!kotlinCodeBlocks[0].isConnected) return
             return KotlinPlayground('.kotlin-runner-target').then(function () {

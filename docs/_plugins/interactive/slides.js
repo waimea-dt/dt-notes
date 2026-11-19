@@ -142,59 +142,28 @@
     return html.replace(DECK_BLOCK, (deck) => deck.replace(HEADING_ANCHOR, '<$1>$2</$1>'))
   }
 
+  // Re-centres slides when their size changes: late content (images, editors and widgets that
+  // other plugins build once their libraries load) or a resized deck. Sizes, not DOM changes, are
+  // watched, so a running animation or sim inside a slide doesn't re-layout the deck every frame.
   function watchDeckLayout(deck, reveal) {
     const slidesRoot = deck.querySelector('.slides')
     if (!slidesRoot || typeof reveal?.layout !== 'function') return
 
     let rafId = 0
-    const scheduleLayout = function () {
-      if (rafId) cancelAnimationFrame(rafId)
+    const resizeObserver = new ResizeObserver(function () {
+      if (rafId) return
       rafId = requestAnimationFrame(function () {
         rafId = 0
         reveal.layout()
       })
-    }
-
-    // Catch late content growth (images/async plugin hydration).
-    scheduleLayout()
-    setTimeout(scheduleLayout, 80)
-    setTimeout(scheduleLayout, 220)
-
-    const mutationObserver = new MutationObserver(function () {
-      scheduleLayout()
     })
-    mutationObserver.observe(slidesRoot, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
+    resizeObserver.observe(slidesRoot)
+    slidesRoot.querySelectorAll('section').forEach((section) => resizeObserver.observe(section))
+
+    registerDeckCleanup(deck, function () {
+      cancelAnimationFrame(rafId)
+      resizeObserver.disconnect()
     })
-
-    const loadHandler = function (event) {
-      const target = event.target
-      if (!target || !(target instanceof Element)) return
-      if (target.matches('img, svg, video, iframe, canvas')) {
-        scheduleLayout()
-      }
-    }
-    deck.addEventListener('load', loadHandler, true)
-
-    let resizeObserver = null
-    if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(function () {
-        scheduleLayout()
-      })
-      resizeObserver.observe(slidesRoot)
-    }
-
-    const cleanup = function () {
-      if (rafId) cancelAnimationFrame(rafId)
-      mutationObserver.disconnect()
-      if (resizeObserver) resizeObserver.disconnect()
-      deck.removeEventListener('load', loadHandler, true)
-    }
-
-    registerDeckCleanup(deck, cleanup)
   }
 
   function cleanupDeckWatchers() {
@@ -212,11 +181,6 @@
   const NOTES_WINDOW_NAME = 'reveal.js - Notes'
   let sharedNotes = null // created once reveal.js has loaded (see initDecks)
   let notesDeck = null
-
-  const REVEAL_SCRIPTS = [
-    'https://cdn.jsdelivr.net/npm/reveal.js@6.0.2/dist/reveal.js',
-    'https://cdn.jsdelivr.net/npm/reveal.js@6.0.2/dist/plugin/notes.js',
-  ]
 
   function openSpeakerView(reveal) {
     if (notesDeck && notesDeck !== reveal) window.open('', NOTES_WINDOW_NAME)?.close()
@@ -273,16 +237,11 @@
     // Mark now so a repeat doneEach doesn't queue the same decks while reveal.js downloads
     decks.forEach((deck) => deck.setAttribute('data-initialized', 'true'))
 
-    window.DocsifyUtils.loadScripts(REVEAL_SCRIPTS)
-      .then(() => {
-        if (!sharedNotes && typeof RevealNotes !== 'undefined') sharedNotes = RevealNotes()
-        // The page may have changed while reveal.js was downloading
-        decks.filter((deck) => deck.isConnected).forEach(startDeck)
-      })
-      .catch((error) => console.error('Failed to load reveal.js', error))
+    window.DocsifyUtils.withLibraries(['reveal'], decks, startDeck)
   }
 
   function startDeck(deck) {
+    if (!sharedNotes && typeof RevealNotes !== 'undefined') sharedNotes = RevealNotes()
     const reveal = new Reveal(deck, {
       embedded: true,
       url: getReceiverUrl(deck),

@@ -22,10 +22,8 @@
  * Also enables real-time syntax error highlighting in the editor via
  * CodeMirror's lint addon (bracket matching, string tracking, etc.)
  *
- * Requires in index.html (in this order):
- *   <script src="https://unpkg.com/@antonz/runno@0.6.1/dist/runno.js"></script>
- *   <script src="https://unpkg.com/@antonz/codapi@0.20.0/dist/engine/wasi.js"></script>
- *   <script src="https://unpkg.com/@antonz/codapi@0.20.0/dist/snippet.js"></script>
+ * CodeMirror and codapi are loaded on demand (DocsifyUtils.loadLibraries), only on pages with
+ * runnable SQL.
  */
 
 (function () {
@@ -215,55 +213,54 @@
         })
 
         hook.doneEach(function () {
-            // Register the linter once (will no-op on subsequent page loads)
-            if (!CodeMirror.helpers.lint?.sql) {
-                CodeMirror.registerHelper('lint', 'sql', sqlLint)
+            const snippets = [...document.querySelectorAll('codapi-snippet[sandbox="sqlite"][editor="external"]:not([data-initialized])')]
+            if (!snippets.length) return
+
+            // Marked now so a repeat doneEach doesn't queue the same snippets while the libraries load
+            snippets.forEach(snippet => { snippet.dataset.initialized = 'true' })
+
+            window.DocsifyUtils.withLibraries(['codemirror', 'codapi'], snippets, initSnippet)
+        })
+
+        function initSnippet(snippet) {
+            if (!CodeMirror.helpers.lint?.sql) CodeMirror.registerHelper('lint', 'sql', sqlLint)
+
+            // Find the wrapper div and the pre inside it
+            const wrapper = snippet.previousElementSibling
+            if (!wrapper || !wrapper.classList.contains('codapi-runner')) return
+
+            const pre = wrapper.querySelector('pre')
+            if (!pre) return
+
+            const code = pre.querySelector('code')
+            if (!code) return
+
+            const visibleCode = code.textContent
+            const hiddenCode = getHiddenCode(snippet.dataset.depends)
+
+            if (hiddenCode) {
+                code.textContent = hiddenCode + '\n' + visibleCode
             }
 
-            document.querySelectorAll('codapi-snippet[sandbox="sqlite"][editor="external"]').forEach(snippet => {
-                // Skip if already initialized
-                if (snippet.dataset.initialized === 'true') return
-
-                // Find the wrapper div and the pre inside it
-                const wrapper = snippet.previousElementSibling
-                if (!wrapper || !wrapper.classList.contains('codapi-runner')) return
-
-                const pre = wrapper.querySelector('pre')
-                if (!pre) return
-
-                const code = pre.querySelector('code')
-                if (!code) return
-
-                const visibleCode = code.textContent
-                const hiddenCode = getHiddenCode(snippet.dataset.depends)
-
-                if (hiddenCode) {
-                    code.textContent = hiddenCode + '\n' + visibleCode
-                }
-
-                // Create CodeMirror editor
-                const cm = window.DocsifyUtils.createEditor(function (editorEl) {
-                    wrapper.insertBefore(editorEl, pre)
-                }, 'text/x-sqlite', {
-                    value:   visibleCode,
-                    lint:    true,
-                    gutters: ['CodeMirror-lint-markers'],
-                })
-
-                // Sync CodeMirror changes to the <code> element (for Codapi to pick up)
-                cm.on('change', function () {
-                    code.textContent = hiddenCode ? hiddenCode + '\n' + cm.getValue() : cm.getValue()
-                })
-
-                // Hide the original <pre> block
-                pre.style.display = 'none'
-
-                window.DocsifyPersist?.bindEditor(cm, { el: snippet, type: 'sql', original: visibleCode })
-
-                // Mark as initialized
-                snippet.dataset.initialized = 'true'
+            // Create CodeMirror editor
+            const cm = window.DocsifyUtils.createEditor(function (editorEl) {
+                wrapper.insertBefore(editorEl, pre)
+            }, 'text/x-sqlite', {
+                value:   visibleCode,
+                lint:    true,
+                gutters: ['CodeMirror-lint-markers'],
             })
-        })
+
+            // Sync CodeMirror changes to the <code> element (for Codapi to pick up)
+            cm.on('change', function () {
+                code.textContent = hiddenCode ? hiddenCode + '\n' + cm.getValue() : cm.getValue()
+            })
+
+            // Hide the original <pre> block
+            pre.style.display = 'none'
+
+            window.DocsifyPersist?.bindEditor(cm, { el: snippet, type: 'sql', original: visibleCode })
+        }
 
         function getHiddenCode(idName, visited = new Set()) {
             if (!idName || visited.has(idName)) return ''

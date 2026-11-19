@@ -40,9 +40,11 @@
  *   parsePositiveInt(value, fallback)   - Parse a positive integer attribute string
  *   generateId(prefix)                  - Generate a short random ID
  *   registerPlugin(fn, prepend)         - Register a Docsify plugin function
- *   loadScript(src)                     - Load a script once on demand (cached promise)
- *   loadScripts(srcs)                   - Load several scripts in order, on demand
+ *   loadLibrary(name)                   - Load a CDN library from LIBRARIES on demand (cached promise)
+ *   loadLibraries(...names)             - Load several libraries at once
+ *   withLibraries(names, els, init)     - Load libraries, then init each element still on the page
  *   createEditor(place, mode, options)  - Create a CodeMirror editor with the site's shared settings
+ *                                         (after loadLibrary('codemirror'))
  *   resolveScope(root)                  - Use root if it is a queryable node, else document
  *   parseHeaderConfig(el, defaults)     - Parse header/title/sub-title attributes from a plugin element
  */
@@ -530,39 +532,150 @@
     }
 
     // -------------------------------------------------------------------------
-    // On-demand script loading
+    // Libraries (loaded on demand)
     // -------------------------------------------------------------------------
 
-    const scriptPromises = new Map()
+    const JSDELIVR   = 'https://cdn.jsdelivr.net/npm/'
+    const UNPKG      = 'https://unpkg.com/'
+
+    const CODEMIRROR = `${JSDELIVR}codemirror@5.65.21/`
+    const CODAPI     = `${UNPKG}@antonz/codapi@0.20.0/dist/`
+    const REVEAL     = `${JSDELIVR}reveal.js@6.0.2/dist/`
 
     /**
-     * Load a script by URL the first time a page needs it. Docsify never reloads
-     * the page, so later calls (and concurrent ones) share the same promise.
-     * A failed load is forgotten so the next page visit can retry.
+     * The CDN libraries plugins use, by name - the one place their URLs and versions live.
+     * Only pages that use a library download it (see loadLibrary).
+     *   scripts - classic scripts, run in the order listed
+     *   styles  - stylesheets, placed before the site's own CSS so it can restyle them
+     *   module  - an ES module; loadLibrary resolves to its exports
      */
-    function loadScript(src) {
-        if (!scriptPromises.has(src)) {
+    const LIBRARIES = {
+        codemirror: {
+            styles: [
+                'lib/codemirror.css',
+                'theme/material-darker.css',
+                'addon/lint/lint.css'
+            ].map(file => CODEMIRROR + file),
+            scripts: [
+                'lib/codemirror.js',
+                'mode/python/python.js',
+                'mode/sql/sql.js',
+                'mode/xml/xml.js',
+                'mode/css/css.js',
+                'mode/javascript/javascript.js',
+                'mode/htmlmixed/htmlmixed.js',
+                'addon/edit/matchbrackets.js',
+                'addon/edit/closetag.js',
+                'addon/edit/closebrackets.js',
+                'addon/selection/active-line.js',
+                'addon/lint/lint.js',
+            ].map(file => CODEMIRROR + file),
+        },
+        // Python and SQLite in the browser (WASI), behind <codapi-snippet> elements
+        codapi: {
+            scripts: [
+                `${UNPKG}@antonz/runno@0.6.1/dist/runno.js`,
+                `${CODAPI}engine/wasi.js`,
+                `${CODAPI}snippet.js`
+            ],
+        },
+        split: {
+            scripts: [
+                `${JSDELIVR}split.js@1.6.5/dist/split.min.js`
+            ]
+        },
+        sortable: {
+            scripts: [
+                `${JSDELIVR}sortablejs@1.15.2/Sortable.min.js`
+            ]
+        },
+        reveal: {
+            styles: [`${REVEAL}reveal.css`, `${REVEAL}theme/dracula.css`],
+            scripts: [`${REVEAL}reveal.js`, `${REVEAL}plugin/notes.js`],
+        },
+        kotlin: { scripts: [`${JSDELIVR}kotlin-playground@1.34.0`] },
+        scratchblocks: { scripts: [`${JSDELIVR}scratchblocks@3.7.1/build/scratchblocks.min.js`] },
+        mermaid: { module: `${UNPKG}mermaid@11.0.2/dist/mermaid.esm.min.mjs` },
+        excalidraw: { module: `${JSDELIVR}@excalidraw/excalidraw@0.18.1/+esm` },
+    }
+
+    // Adds a <script> or <link> once per URL. Docsify never reloads the page, so later (and
+    // concurrent) requests share the first one's promise; a failed load is forgotten so the
+    // next page visit can retry.
+    const elementPromises = new Map()
+    function addOnce(url, create) {
+        if (!elementPromises.has(url)) {
             const promise = new Promise((resolve, reject) => {
-                const script = document.createElement('script')
-                script.src = src
-                script.onload = () => resolve()
-                script.onerror = () => {
-                    scriptPromises.delete(src)
-                    script.remove()
-                    reject(new Error(`Failed to load script: ${src}`))
+                const element = create()
+                element.onload = () => resolve()
+                element.onerror = () => {
+                    elementPromises.delete(url)
+                    element.remove()
+                    reject(new Error(`Failed to load ${url}`))
                 }
-                document.head.appendChild(script)
             })
-            scriptPromises.set(src, promise)
+            elementPromises.set(url, promise)
         }
-        return scriptPromises.get(src)
+        return elementPromises.get(url)
+    }
+
+    // async = false: scripts download in parallel but run in the order they were added
+    function loadScript(src) {
+        return addOnce(src, () => {
+            const script = Object.assign(document.createElement('script'), { src, async: false })
+            document.head.appendChild(script)
+            return script
+        })
+    }
+
+    function loadStyle(href) {
+        return addOnce(href, () => {
+            const link = Object.assign(document.createElement('link'), { rel: 'stylesheet', href })
+            document.head.insertBefore(link, document.querySelector('link[rel="stylesheet"][href^="_css/"]'))
+            return link
+        })
     }
 
     /**
-     * Load several scripts strictly in order (for libraries with dependencies).
+     * Load a library from LIBRARIES (its styles, scripts or module) the first time a page needs
+     * it. Resolves to a module's exports, otherwise to nothing (the library sets its globals).
      */
-    async function loadScripts(srcs) {
-        for (const src of srcs) await loadScript(src)
+    const libraryPromises = new Map()
+    function loadLibrary(name) {
+        const library = LIBRARIES[name]
+        if (!library) return Promise.reject(new Error(`Unknown library: ${name}`))
+        if (!libraryPromises.has(name)) {
+            const promise = Promise.all([
+                ...(library.styles ?? []).map(loadStyle),
+                ...(library.scripts ?? []).map(loadScript),
+            ])
+                .then(() => library.module && import(library.module))
+                .catch(error => {
+                    libraryPromises.delete(name)
+                    throw error
+                })
+            libraryPromises.set(name, promise)
+        }
+        return libraryPromises.get(name)
+    }
+
+    /**
+     * Load several libraries at once; resolves when all have loaded.
+     */
+    function loadLibraries(...names) {
+        return Promise.all(names.map(loadLibrary))
+    }
+
+    /**
+     * Load libraries, then call init(element) for each element still on the page (the page may
+     * have changed while they downloaded). Mark the elements as processed before calling this,
+     * so a repeat doneEach doesn't queue them again.
+     */
+    function withLibraries(names, elements, init) {
+        if (!elements.length) return Promise.resolve()
+        return loadLibraries(...names)
+            .then(() => elements.filter(element => element.isConnected).forEach(init))
+            .catch(error => console.error(`Failed to load ${names.join(', ')}`, error))
     }
 
     // -------------------------------------------------------------------------
@@ -662,8 +775,9 @@
         generateId,
         closeSingleTags,
         registerPlugin,
-        loadScript,
-        loadScripts,
+        loadLibrary,
+        loadLibraries,
+        withLibraries,
         createEditor,
         resolveScope,
         parseHeaderConfig,

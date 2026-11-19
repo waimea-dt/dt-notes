@@ -10,61 +10,63 @@
  * Also enables real-time syntax error highlighting in the editor via
  * CodeMirror's lint addon (bracket matching, string tracking, etc.)
  *
- * Requires in index.html (in this order, before snippet.js):
- *   <script src="https://unpkg.com/@antonz/runno@0.6.1/dist/runno.js"></script>
- *   <script src="https://unpkg.com/@antonz/codapi@0.20.0/dist/engine/wasi.js"></script>
- *   <script src="https://unpkg.com/@antonz/codapi@0.20.0/dist/snippet.js"></script>
+ * CodeMirror and codapi are loaded on demand (DocsifyUtils.loadLibraries), only on pages with
+ * runnable Python.
  */
 
 (function () {
 
-    function ensurePythonLintRegistered() {
-        if (!window.CodeMirror) return false
+    function registerPythonLint() {
         if (!CodeMirror.helpers.lint?.python) {
             CodeMirror.registerHelper('lint', 'python', pythonLint)
         }
-        return true
     }
 
     function initPythonRunnerBlocks(root = document, hiddenBlocks = {}) {
-        if (!ensurePythonLintRegistered()) return
+        const snippets = [...root.querySelectorAll('codapi-snippet[sandbox="python"][editor="external"]:not([data-python-runner-initialized])')]
+        if (!snippets.length) return
 
-        root.querySelectorAll('codapi-snippet[sandbox="python"][editor="external"]:not([data-python-runner-initialized])').forEach(snippet => {
-            snippet.dataset.pythonRunnerInitialized = 'true'
+        // Marked now so a repeat call doesn't queue the same snippets while the libraries load
+        snippets.forEach(snippet => { snippet.dataset.pythonRunnerInitialized = 'true' })
 
-            // The <pre> may be a direct previous sibling, or inside a wrapper div
-            const prev = snippet.previousElementSibling
-            const pre = prev && prev.tagName === 'PRE'
-                ? prev
-                : prev && prev.querySelector('pre')
-            if (!pre) return
+        window.DocsifyUtils.withLibraries(['codemirror', 'codapi'], snippets, snippet => initSnippet(snippet, hiddenBlocks))
+    }
 
-            const code = pre.querySelector('code')
-            if (!code) return
+    function initSnippet(snippet, hiddenBlocks) {
+        registerPythonLint()
 
-            // Look up any named hidden code for this snippet
-            const dependsName = snippet.dataset.depends
-            const hiddenCode = dependsName ? (hiddenBlocks[dependsName] ?? '') : ''
-            const visibleCode = code.textContent
+        // The <pre> may be a direct previous sibling, or inside a wrapper div
+        const prev = snippet.previousElementSibling
+        const pre = prev && prev.tagName === 'PRE'
+            ? prev
+            : prev && prev.querySelector('pre')
+        if (!pre) return
 
-            // Prepend hidden code to what the runner sees, but not what the editor shows
-            if (hiddenCode) code.textContent = hiddenCode + '\n' + visibleCode
+        const code = pre.querySelector('code')
+        if (!code) return
 
-            const cm = window.DocsifyUtils.createEditor(function (editorEl) {
-                pre.parentNode.insertBefore(editorEl, pre)
-            }, 'text/x-python', {
-                value:   visibleCode,
-                lint:    true,
-                gutters: ['CodeMirror-lint-markers'],
-            })
+        // Look up any named hidden code for this snippet
+        const dependsName = snippet.dataset.depends
+        const hiddenCode = dependsName ? (hiddenBlocks[dependsName] ?? '') : ''
+        const visibleCode = code.textContent
 
-            pre.style.display = 'none'
-            cm.on('change', () => {
-                code.textContent = hiddenCode ? hiddenCode + '\n' + cm.getValue() : cm.getValue()
-            })
+        // Prepend hidden code to what the runner sees, but not what the editor shows
+        if (hiddenCode) code.textContent = hiddenCode + '\n' + visibleCode
 
-            window.DocsifyPersist?.bindEditor(cm, { el: snippet, type: 'python', original: visibleCode })
+        const cm = window.DocsifyUtils.createEditor(function (editorEl) {
+            pre.parentNode.insertBefore(editorEl, pre)
+        }, 'text/x-python', {
+            value:   visibleCode,
+            lint:    true,
+            gutters: ['CodeMirror-lint-markers'],
         })
+
+        pre.style.display = 'none'
+        cm.on('change', () => {
+            code.textContent = hiddenCode ? hiddenCode + '\n' + cm.getValue() : cm.getValue()
+        })
+
+        window.DocsifyPersist?.bindEditor(cm, { el: snippet, type: 'python', original: visibleCode })
     }
 
     // -------------------------------------------------------------------------

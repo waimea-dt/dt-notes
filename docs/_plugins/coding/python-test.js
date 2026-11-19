@@ -35,8 +35,8 @@
  *   ```
  *
  * Requirements:
- *   - codapi WASI engine + runno (loaded in index.html)
- *   - CodeMirror for editable test panel
+ *   - codapi WASI engine + runno (loaded on demand)
+ *   - CodeMirror for editable test panel (loaded on demand)
  *   - Prism.js for syntax highlighting
  */
 
@@ -83,7 +83,9 @@
 
         // Initialize coverage functionality after page render
         hook.doneEach(function () {
-            document.querySelectorAll('.python-test-container').forEach(container => {
+            const containers = [...document.querySelectorAll('.python-test-container:not([data-initialized])')]
+            containers.forEach(container => { container.dataset.initialized = 'true' })
+            window.DocsifyUtils.withLibraries(['codemirror', 'codapi'], containers, container => {
                 const originalPre = container.querySelector('.python-test-original pre')
                 const originalCode = originalPre?.querySelector('code')
                 if (!originalCode) return
