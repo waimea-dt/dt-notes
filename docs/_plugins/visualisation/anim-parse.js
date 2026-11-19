@@ -255,7 +255,7 @@
       const token = tokens[i]
       if (token.kind === 'str') { allow('label', 'quoted text'); set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
-      if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${LAYOUT_NOUNS}, straight after its type (e.g. "row [5 3 8]")`)
+      if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${LAYOUT_NOUNS}, straight after its type, e.g. "row [5 3 8]"`)
       const word = token.lower
       const entry = KEYWORDS[word]
       if (entry?.modes && !entry.modes.includes(kind)) throw new Error(`"${word}" only goes ${entry.where}`)
@@ -272,7 +272,7 @@
     }
 
     // in a row / column, gap is the space between its cells
-    if (props.gap && kind !== 'layout' && props.at?.kind !== 'place' && !props.attach) throw new Error('"gap" only works with above / below / left-of / right-of, or attach (or between the cells of a row / column)')
+    if (props.gap && kind !== 'layout' && props.at?.kind !== 'place' && !props.attach) throw new Error(`"gap" only works with above / below / left-of / right-of, or attach (or between the cells of ${LAYOUT_NOUNS})`)
     if (props.at && (props.x || props.y)) throw new Error('the position is given twice (at/move and x/y)')
     return props
   }

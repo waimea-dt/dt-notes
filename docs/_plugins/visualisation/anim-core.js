@@ -49,17 +49,20 @@
   //   quiet    plays no intro of its own on the first beat (see animation.js)
   //   internal not a word an author types: a cell a flyer brings in is there from the start
   //            (appear), one a flyer takes away goes at once (vanish)
+  //   default  the one a shape gets when none is given (on its line or a defaults line)
+  //   inTurn   a layout that types in turn (LAYOUTS: typeInTurn) brings its cells in one after another
   const isLine = (shape) => Boolean(SHAPES[shape.type]?.line)
   const ENTRANCES = {
-    fade: { quiet: true },
+    fade: { quiet: true, default: true },
     pop: {},
     draw: { applies: isLine, unless: (noun) => `"draw" only draws lines and arrows, so this ${noun} fades instead` },
     slide: { applies: (shape) => !isLine(shape), unless: (noun) => `"slide" doesn't move lines, so this ${noun} fades instead` },
-    typed: { applies: (shape) => Boolean(shape.label), unless: (noun) => `"typed" types out a shape's text, and this ${noun} has none, so it fades instead` },
+    typed: { inTurn: true, applies: (shape) => Boolean(shape.label), unless: (noun) => `"typed" types out a shape's text, and this ${noun} has none, so it fades instead` },
     appear: { quiet: true, internal: true },
     vanish: { quiet: true, internal: true },
   }
   const EFFECTS = Object.keys(ENTRANCES).filter((name) => !ENTRANCES[name].internal)
+  const DEFAULT_EFFECT = Object.keys(ENTRANCES).find((name) => ENTRANCES[name].default)
   // The entrance a shape really gets: its own, or a fade where that doesn't apply
   const entranceFor = (effect, shape) => (ENTRANCES[effect]?.applies?.(shape) === false ? 'fade' : effect)
   const LAYERS = { back: 0, normal: 1, front: 2 }
@@ -82,7 +85,7 @@
       applies: (shape) => Boolean(SHAPES[shape.type]?.inside),
       refuse: (shape) => {
         const types = Object.keys(SHAPES).filter((type) => SHAPES[type].inside && !SHAPES[type].internal)
-        const what = shape.type === 'group' ? shape.layout || 'group' : shape.type
+        const what = isGroup(shape) ? shape.layout || GROUP : shape.type
         return `"highlight inside" needs a shape with an inside (${types.slice(0, -1).join(', ')} or ${types[types.length - 1]}), not ${article(what)} ${what}`
       },
     },
@@ -91,7 +94,7 @@
       applies: (shape) => Boolean(SHAPES[shape.type]?.band),
       refuse: () => {
         const nouns = Object.keys(SHAPES).filter((type) => SHAPES[type].band).map((type) => `${article(nounOf({ type }))} ${nounOf({ type })}`)
-        return `"highlight line" is for ${nouns.join(' or ')} (e.g. "c.2: highlight line", on a code block's line 2)`
+        return `"highlight line" is for ${nouns.join(' or ')}, e.g. "c.2: highlight line" (a code block's line 2)`
       },
     },
     spotlight: {},
@@ -123,7 +126,7 @@
   //             'below' (image, icon: it adds to the shape's height) or 'along' (lines). A bar
   //             (BAR_DRAWS: label) can put it elsewhere: 'top' or 'right', inside that edge of the box
   //   inside    it has an inside to highlight (highlight inside)
-  //   line      it runs from / to (a curve is a line bent through via points); head: an arrowhead
+  //   line      it runs from / to; head: it has an arrowhead; bends: it's bent through via points
   //   resource  written type(arg): image(path), icon(name)
   //   internal  not a word an author types: a code block's lines (codeline) are made by "code"
   //   noun      its name in messages, when that isn't its type ("a code line")
@@ -164,7 +167,7 @@
     },
     line: { takes: LINE_PROPS, label: 'along', line: true },
     arrow: { takes: LINE_PROPS, label: 'along', line: true, head: true },
-    curve: { takes: LINE_PROPS, label: 'along', line: true },
+    curve: { takes: LINE_PROPS, label: 'along', line: true, bends: true },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
     codeline: {
@@ -178,7 +181,7 @@
     span: {
       takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight'],
       defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', corner: 0.15 * CELL, layer: 'back' }, outline: 'box', label: 'centre',
-      internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again (e.g. "s: span arr 2 4")',
+      internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again, e.g. "s: span arr 2 4"',
     },
   }
   const typesWhere = (test) => Object.keys(SHAPES).filter((type) => test(SHAPES[type]))
@@ -388,7 +391,7 @@
     head: { field: 'head' },
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
-    layer: { field: 'layer' },
+    layer: { field: 'layer', default: 'normal' },
     // a var's or cell's value as a bar (bar clear: back to a plain box)
     bar: { field: 'bar', map: { clear: false }, cell: true, check: barCheck }, // a kind (BARS), or false
     // a full bar's value (a row's or column's: its biggest when its bar is turned on, unless given)
@@ -406,11 +409,16 @@
   // "a" or "an" before a word (a rect, an image)
   const article = (word) => (/^[aeiou]/i.test(word) ? 'an' : 'a')
 
-  // "a row, column, code block, grid or table", for messages
-  const LAYOUT_NOUNS = (() => {
-    const nouns = LAYOUT_TYPES.map((layout, k) => `${k ? '' : `${article(LAYOUTS[layout].noun)} `}${LAYOUTS[layout].noun}`)
-    return `${nouns.slice(0, -1).join(', ')} or ${nouns[nouns.length - 1]}`
-  })()
+  // Words as a list for messages, with "a" or "an" before the first: "a row, column or group"
+  const nounList = (nouns) => `${article(nouns[0])} ${nouns.length > 1 ? `${nouns.slice(0, -1).join(', ')} or ` : ''}${nouns[nouns.length - 1]}`
+  // The layouts' names: "a row, column, code block, grid or table"
+  const LAYOUT_NAMES = LAYOUT_TYPES.map((layout) => LAYOUTS[layout].noun)
+  const LAYOUT_NOUNS = nounList(LAYOUT_NAMES)
+
+  // A group of shapes: a group, a layout, or a grid's row or column (it has no SHAPES entry, and
+  // isn't drawn)
+  const GROUP = 'group'
+  const isGroup = (shape) => shape?.type === GROUP
 
   // Every word that can follow "id:" (or "defaults"), in one table. Each entry gives the prop it
   // sets (key) and the values that follow it:
@@ -423,9 +431,9 @@
   const POINT = [['num', 'num'], ['placement', 'id'], ['id']]
   const buildPoint = (v, sig) => (sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
     : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] })
-  const at = { key: 'at', sigs: POINT, build: buildPoint, help: '"x,y", a shape id, or a placement and a shape id (e.g. "below a")' }
+  const at = { key: 'at', sigs: POINT, build: buildPoint, help: '"x,y", a shape id, or a placement and a shape id, e.g. "below a"' }
   const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
-  const colour = (key) => ({ key, sigs: [['colour']], help: `a colour (e.g. blue, ${Object.keys(COLOUR_VARIANTS).map((variant) => `blue-${variant}`).join(', ')}, #f80 or none)` })
+  const colour = (key) => ({ key, sigs: [['colour']], help: `a colour, e.g. blue, ${Object.keys(COLOUR_VARIANTS).map((variant) => `blue-${variant}`).join(', ')}, #f80 or none` })
   const fixed = (key, value, extra = {}) => ({ key, sigs: [[]], build: () => value, ...extra })
   const words = (list, key, what) => Object.fromEntries(list.map((w) => [w, fixed(key, w, { what })]))
   const buildStagger = (v, reverse) => {
@@ -442,12 +450,12 @@
     y: number('y'),
     from: { key: 'from', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id' },
     to: { key: 'to', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id' },
-    via: { ...at, key: 'via', repeat: true, help: '"x,y", a shape id, or a placement and a shape id (e.g. "via above b")' },
+    via: { ...at, key: 'via', repeat: true, help: '"x,y", a shape id, or a placement and a shape id, e.g. "via above b"' },
     gap: number('gap'),
     travel: { key: 'travel', list: [['num', 'num'], ['id']], build: buildPoint, help: 'shape ids and/or x,y points, e.g. "travel r1 r2 b"' },
     follow: { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: false }), help: 'a line or arrow id' },
     'follow-reverse': { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: true }), help: 'a line or arrow id', what: 'follow' },
-    attach: { key: 'attach', sigs: [['placement', 'id'], ['id']], build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : { side: 'centre', ref: v[0] }), help: 'a shape id, optionally after a side (e.g. "attach right-of a")' },
+    attach: { key: 'attach', sigs: [['placement', 'id'], ['id']], build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : { side: 'centre', ref: v[0] }), help: 'a shape id, optionally after a side, e.g. "attach right-of a"' },
     detach: fixed('detach', true),
     // size and look
     size: { key: 'size', sigs: [['num', 'num'], ['num']], build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }), help: '"w,h", "wxh" or one number' },
@@ -540,6 +548,7 @@
 
   // Every kind of scene line and the props it can have, checked as its props are read (parseProps).
   //   verb     typed straight after "id:" (the others are known by the line's shape)
+  //   takesOut a row edit that takes cells out (remove), rather than putting them in (insert)
   //   takes    the props it takes (left out: any), with `what` naming it in the message
   //   refuses  props it doesn't take, with `refuse(word)` the message
   const LINES = {
@@ -555,7 +564,7 @@
     delete: { verb: true, takes: [...TIMING, 'effect', 'stagger'] }, // a shape
     swap: { verb: true, takes: TIMING }, // two of a row's / column's cells
     insert: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell into a row / column
-    remove: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell out of one
+    remove: { verb: true, takesOut: true, takes: [...TIMING, 'keepStyle'] }, // a cell out of one
     assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "v1: a.1"
     span: { // "s: span arr 0 2": a box round some of a row's / column's / code block's places
       verb: true, takes: [...SHAPES.span.takes, 'layer', 'highlight', 'callout', 'name', 'effect', ...TIMING],
@@ -579,10 +588,10 @@
   // Words that start a line (after "id:") rather than describe it: the verbs, and var
   const LINE_STARTS = [...Object.keys(LINES).filter((kind) => LINES[kind].verb), 'var']
   // Words inside a row edit: "insert 7 at end", "remove 2 into v1"
-  const EDIT_WORDS = ['end', 'into']
+  const EDIT_WORDS = { end: 'end', into: 'into' }
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...EDIT_WORDS, ...BAR_KINDS, 'pause', 'auto', 'defaults', 'camera',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), ...BAR_KINDS, 'pause', 'auto', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -926,7 +935,7 @@
       const ys = pts.map((p) => p.y)
       return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) }
     }
-    if (shape.type === 'group' && depth < 8) {
+    if (isGroup(shape) && depth < 8) {
       const members = (shape.members || []).map((id) => byId.get(id)).filter(Boolean)
       if (members.length) return unionBounds(members, byId, depth + 1)
     }
@@ -978,7 +987,7 @@
   }
 
   Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
-    LAYOUTS, LAYOUT_NOUNS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,

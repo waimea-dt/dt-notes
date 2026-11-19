@@ -34,7 +34,7 @@
       const shape = shapes.get(token.value)
       if (!use) return token.value
       if (!shape) throw new Error(`unknown word "${token.value}" (and no var or cell has that name to ${use})`)
-      if (!shape.holds) throw new Error(`"${token.value}" doesn't hold a value, so there's nothing to ${use}: use a var or a row's / column's cell`)
+      if (!shape.holds) throw new Error(`"${token.value}" doesn't hold a value, so there's nothing to ${use}: use a var or a cell, e.g. v1 or arr.2`)
       return shape
     }
 

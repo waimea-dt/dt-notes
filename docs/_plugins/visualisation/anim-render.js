@@ -4,10 +4,11 @@
  */
 
 ;(function () {
-  const { PARTS, HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
-    reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
-    CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
-    MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES, entranceFor, XML_NS, LAYOUTS, LOOKS, barFits } = window.Anim
+  const { PARTS, HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE,
+    PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS,
+    bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
+    linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
+    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -240,7 +241,7 @@
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
     function drawNode(node, s, v, colours, byId) {
       const { g } = node
-      if (node.type === 'group') {
+      if (isGroup(node)) {
         // A group is invisible (its highlight box is drawn in drawOverlays), but a layout with a
         // panel (LAYOUTS: a code block) has a background behind its box, which takes in its indices
         const panel = LAYOUTS[s.layout]?.panel

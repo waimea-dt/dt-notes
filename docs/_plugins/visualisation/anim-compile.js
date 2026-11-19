@@ -8,7 +8,8 @@
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
-    LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS } = window.Anim
+    LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
+    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -149,7 +150,7 @@
     // along a line (a group's lines).
     function applyEmphasis(shape, props, creating, warn, meta) {
       const signal = EMPHASES[props.emphasis].along
-      if (signal && !LINE_TYPES.includes(shape.type) && shape.type !== 'group') throw new Error(`"${props.emphasis}" travels along a line, arrow or curve`)
+      if (signal && !LINE_TYPES.includes(shape.type) && !isGroup(shape)) throw new Error(`"${props.emphasis}" travels along a line, arrow or curve`)
       const covered = (shape.covers || []).map((id) => shapes.get(id)).filter(Boolean)
       // a grid's row or column covers its members too, so each is taken once
       const targets = [...new Set([shape, ...groupMembers(shape), ...covered])].filter((target) => !signal || LINE_TYPES.includes(target.type))
@@ -180,8 +181,8 @@
         const current = creating ? undefined : resolveEnds(shape, shapes)[key]
         shape[key] = { x: coord(end.x, current?.x), y: coord(end.y, current?.y) }
       }
-      if (creating && (!shape.from || !shape.to)) throw new Error(`${shape.type === 'curve' ? 'a curve' : 'a line'} needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"`)
-      if (props.via && shape.type !== 'curve') throw new Error('"via" bends a curve, so it can\'t be used on a line: use "curve" instead (e.g. "c: curve from a to b via 5,2")')
+      if (creating && (!shape.from || !shape.to)) throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"`)
+      if (props.via && !kindOf(shape).bends) throw new Error('"via" bends a curve, so it can\'t be used on a line: use "curve" instead, e.g. "c: curve from a to b via 5,2"')
       if (props.via) {
         // Via points (replacing any it had): a shape id stays on that shape, a placement is fixed
         // where it is now, and a signed number is relative to the point before.
@@ -197,7 +198,7 @@
           return { x: p.x, y: p.y }
         })
       }
-      if (creating && shape.type === 'curve' && !shape.via?.length) warn('a curve with no "via" points is a straight line')
+      if (creating && kindOf(shape).bends && !shape.via?.length) warn('a curve with no "via" points is a straight line')
       return null
     }
 
@@ -342,9 +343,20 @@
 
     // A group's members (recursively), as shapes.
     function groupMembers(shape) {
-      if (shape.type !== 'group') return []
+      if (!isGroup(shape)) return []
       return shape.members.flatMap((id) => { const m = shapes.get(id); return m ? [m, ...groupMembers(m)] : [] })
     }
+
+    // What a line's shape comes in (or goes) with, and its layer: given, a default, or the usual
+    const effectOf = (props) => props.effect || defaults.effect || DEFAULT_EFFECT
+    const layerOf = (props) => props.layer || defaults.layer || LOOKS.layer.default
+    // Whether a layout that types in turn does here (ENTRANCES: inTurn)
+    const inTurn = (props) => Boolean(ENTRANCES[props.effect || defaults.effect]?.inTurn)
+    // Messages given in many places
+    const noShape = (id) => new Error(`no shape called "${id}"`)
+    const replaced = (id, warn) => warn(`"${id}" already exists, so it is replaced`)
+    // "a row, column, code block, grid, table or group": what stagger works on
+    const GROUPS = nounList([...LAYOUT_NAMES, GROUP])
 
     // A shape's parts (PARTS), or those of one role
     const partsOf = (owner, role) => [...shapes.values()].filter((s) => s.part === owner.id && (!role || s.role === role))
@@ -367,7 +379,7 @@
       for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
       resolveAttachments(shapes)
       for (const group of shapes.values()) {
-        if (group.type !== 'group') continue
+        if (!isGroup(group)) continue
         // a row / column emptied by remove: nothing, at its first cell's place
         if (!group.members.length) { if (group.layout) Object.assign(group, { w: 0, h: 0, cx: 0, cy: 0 }); continue }
         const members = group.members.map((id) => shapes.get(id)).filter(Boolean)
@@ -402,7 +414,7 @@
 
     // An entrance or exit that doesn't apply to the shape (ENTRANCES) fades instead: say why
     function warnEffect(shape, effect, warn) {
-      if (shape.type === 'group') return // its members show it (or say why not)
+      if (isGroup(shape)) return // its members show it (or say why not)
       if (entranceFor(effect, shape) !== effect) warn(ENTRANCES[effect].unless(nounOf(shape)))
     }
 
@@ -520,12 +532,12 @@
 
       // "l: arrow …" on a line or curve that already exists, with no new ends, puts a head on it
       // (rather than replacing it with an arrow shape): read as a change, where "arrow" is the flag
-      const addsHead = type === 'arrow' && existing && LINE_TYPES.includes(existing.type)
+      const addsHead = SHAPES[type]?.head && existing && LINE_TYPES.includes(existing.type)
         && !tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
       if (type && !addsHead) {
         const props = parseProps(tokens, varValue ? 2 : 1, 'create', shapes)
         if (isVar && props.label !== undefined) throw new Error(`a var's value goes straight after "var", e.g. "${id}: var 67" or "${id}: var "Dog""`)
-        if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
+        if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
         const shape = { ...baseShape(type), id, uid: newUid() }
         if (isVar) Object.assign(shape, { var: true, holds: true })
         checkParts(shape, props)
@@ -533,14 +545,14 @@
         if (RESOURCES[type]) RESOURCES[type](shape, first.arg, context)
         applyProps(shape, props, true, warn, meta)
         if (isVar) setValue(shape, varValue || { label: '' })
-        shape.layer = props.layer || defaults.layer || 'normal'
+        shape.layer = layerOf(props)
         if (existing) {
           // Lines attached to the old shape attach to its replacement (same id).
-          warn(`"${id}" already exists, so it is replaced`)
+          replaced(id, warn)
           schedule(meta, existing.uid, props).exit = 'fade'
         }
         shapes.set(id, shape)
-        schedule(meta, shape.uid, props).enter = props.effect || defaults.effect || 'fade'
+        schedule(meta, shape.uid, props).enter = effectOf(props)
         if (props.effect) warnEffect(shape, props.effect, warn)
         updateParts(shape, props, meta, warn)
         return
@@ -565,7 +577,7 @@
       }
       checkParts(existing, props)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
-      const order = existing.type === 'group' ? staggerOrder(existing) : null
+      const order = isGroup(existing) ? staggerOrder(existing) : null
       if (order && takeBareNumber(props)) numberEach(existing.members.map((m) => shapes.get(m)), props, meta, warn)
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
       const shape = structuredClone(existing)
@@ -577,27 +589,27 @@
       schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }) // travel: speed per hop
       updateParts(shape, props, meta, warn)
       if (order) applyStagger(shape, order, props, meta, warn)
-      else if (props.stagger) warn(`"stagger" works on a row, column or group, and "${id}" isn't one`)
+      else if (props.stagger) warn(`"stagger" works on ${GROUPS}, and "${id}" isn't one`)
     }
 
     // Making a shape (or a copy, or a group) has no members to stagger
     function noStagger(props, warn) {
-      if (props.stagger) warn('"stagger" works on a change to a row, column or group (or making a row / column)')
+      if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
     }
 
     // "a: delete": a shape goes, with the line's exit effect (a group's members and a var's or
     // row's name and indices too)
     function deleteShape(id, existing, tokens, meta, warn) {
-      if (!existing) throw new Error(`no shape called "${id}"`)
+      if (!existing) throw noShape(id)
       refuseView(existing, 'delete')
-      const where = tokens[1]?.kind === 'word' && (/^\d+$/.test(tokens[1].value) || tokens[1].lower === 'end') ? tokens[1].value : null
+      const where = tokens[1]?.kind === 'word' && (/^\d+$/.test(tokens[1].value) || tokens[1].lower === EDIT_WORDS.end) ? tokens[1].value : null
       if (existing.layout && where) throw new Error(`"delete" deletes the whole ${existing.layout}: to take one cell out, "${id}: remove ${where}"`)
       const props = parseProps(tokens, 1, 'delete', shapes)
       const order = staggerOrder(existing) // taken before its members go
       const lines = LAYOUTS[existing.layout]?.typeInTurn ? existing.members.map((m) => shapes.get(m)).filter(Boolean) : []
       const parts = partsOf(existing)
       removeShape(existing, props, meta, warn)
-      if (lines.length && (props.effect || defaults.effect) === 'typed') typeInTurn(existing, lines, parts, props, meta, true)
+      if (lines.length && inTurn(props)) typeInTurn(existing, lines, parts, props, meta, true)
       applyStagger(existing, order, props, meta, warn)
     }
 
@@ -607,7 +619,7 @@
       const srcId = parseAs('id', tokens[1], shapes)
       if (!srcId) throw new Error(`"copy" expects a shape id${tokens[1] ? `: no shape called "${tokens[1].value}"` : ''}`)
       const src = shapes.get(srcId)
-      if (src.type === 'group') throw new Error('a group can\'t be copied: copy its shapes instead')
+      if (isGroup(src)) throw new Error('a group can\'t be copied: copy its shapes instead')
       const props = parseProps(tokens, 2, 'copy', shapes)
       noStagger(props, warn)
       const fresh = { attach: null, hl: null, callout: null }
@@ -616,7 +628,7 @@
       const path = applyProps(shape, props, false, warn, meta)
       if (path) tween(meta, shape.uid).path = path
       if (existing) {
-        warn(`"${id}" already exists, so it is replaced`)
+        replaced(id, warn)
         schedule(meta, existing.uid, props).exit = 'fade'
       }
       shapes.set(id, shape)
@@ -645,7 +657,7 @@
         if (LINE_TYPES.includes(m.type) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
       }
       const b = unionBounds(list, shapes)
-      const group = { ...baseShape('group'), id, uid: newUid(), members, x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0 }
+      const group = { ...baseShape(GROUP), id, uid: newUid(), members, x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0 }
       for (const m of list) {
         if (LINE_TYPES.includes(m.type)) continue // follows the shapes its ends are attached to
         leaveGroup(m)
@@ -659,8 +671,8 @@
 
     // "g: ungroup": the group goes, its shapes stay where they are
     function ungroup(id, existing, tokens, meta) {
-      if (!existing) throw new Error(`no shape called "${id}"`)
-      if (existing.type !== 'group' || bound(existing)) throw new Error(`"${id}" isn't a group`)
+      if (!existing) throw noShape(id)
+      if (!isGroup(existing) || bound(existing)) throw new Error(`"${id}" isn't a group`)
       parseProps(tokens, 1, 'ungroup', shapes)
       for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
       shapes.delete(id)
@@ -671,12 +683,12 @@
     // Removes a shape (and a group's members), with the line's exit effect and timing.
     function removeShape(target, props, meta, warn) {
       if (!target) return
-      if (target.type === 'group' && !bound(target)) target.members.forEach((m) => removeShape(shapes.get(m), props, meta, warn)) // a view's cells are its grid's
+      if (isGroup(target) && !bound(target)) target.members.forEach((m) => removeShape(shapes.get(m), props, meta, warn)) // a view's cells are its grid's
       for (const part of partsOf(target)) removeShape(part, props, meta, warn) // its name, indices, views, spans
       leaveGroup(target)
       freezeEndsAttachedTo(target.id)
       shapes.delete(target.id)
-      schedule(meta, target.uid, props).exit = props.effect || defaults.effect || 'fade'
+      schedule(meta, target.uid, props).exit = effectOf(props)
       if (props.effect) warnEffect(target, props.effect, warn)
     }
 
@@ -697,7 +709,7 @@
       if (group.cell) applyProps(group.cell, pick(look, CELL_STYLE.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
       const used = new Set()
       for (const member of groupMembers(group)) {
-        if (member.type === 'group') continue
+        if (isGroup(member)) continue
         const own = pick(look, Object.keys(look).filter((key) => key === 'highlight' || APPLIES[key].includes(member.type)))
         if (!Object.keys(own).length) continue
         Object.keys(own).forEach((key) => used.add(key))
@@ -713,7 +725,7 @@
     // A row's / column's / group's members in stagger order: cells by number, a group's members as
     // listed. Each entry is a member's uid and those of any shapes in it.
     function staggerOrder(group) {
-      if (group.type !== 'group') return []
+      if (!isGroup(group)) return []
       return group.members.map((id) => shapes.get(id)).filter(Boolean).map((m) => [m.uid, ...groupMembers(m).map((s) => s.uid)])
     }
 
@@ -723,11 +735,11 @@
       const stagger = props.stagger ?? defaults.stagger
       if (!stagger) return
       if (!order.length) {
-        if (props.stagger) warn(`"stagger" works on a row, column or group, and "${group.id}" isn't one`)
+        if (props.stagger) warn(`"stagger" works on ${GROUPS}, and "${group.id}" isn't one`)
         return
       }
       if (props.stagger && (props.at || props.x || props.y || props.via || props.travel || props.follow)) {
-        warn('a row, column or group moves as one, so its move isn\'t staggered')
+        warn(`${GROUPS} moves as one, so its move isn't staggered`)
       }
       const list = stagger.reverse ? [...order].reverse() : order
       list.forEach((uids, k) => uids.forEach((uid) => schedule(meta, uid, props, { dur: 0, after: k * stagger.gap * 1000 })))
@@ -753,7 +765,7 @@
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let assignValue, checkParts, createLayout, fitCode, fitSpans, holderRef, refuseView, setValue,
       typeInTurn, updateParts, valueOf, withRowMax
-    const cx = { shapes, defaults, newUid, context, bound, partsOf, applyDefaults, applyProps, applyStagger, busiest, delayOf,
+    const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))

@@ -6,14 +6,16 @@
 
 ;(function () {
   const { CELL, placeNextTo, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
-    offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId, nameId,
-    viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE } = window.Anim
+    offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
+    nameId, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, EDIT_WORDS,
+    LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyDefaults, bound, partsOf, applyProps, applyStagger, busiest, delayOf, numberEach, removeShape, retime, schedule,
-      setValue, speedOf, takeBareNumber, valueOf, warnEffect
+    let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, effectOf, inTurn, layerOf, noShape,
+      numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf, takeBareNumber,
+      valueOf, warnEffect
 
     // A cell's number as written after a verb ("swap 0 3", "range 3 end"): a whole number, or end,
     // the last cell (after: the place after it, where an insert goes on the end). Undefined if it's
@@ -24,7 +26,7 @@
 
     // The same, for one of n things numbered from base
     function numberOf(token, n, base, after = false) {
-      if (token?.kind === 'word' && token.lower === 'end') return base + n - (after ? 0 : 1)
+      if (token?.kind === 'word' && token.lower === EDIT_WORDS.end) return base + n - (after ? 0 : 1)
       return parseAs('index', token)
     }
 
@@ -46,7 +48,7 @@
       const lines = gridLines(grid)
       const across = shapes.get(lines[0]).members.length
       const offset = grid.heading ? 1 : 0 // a table's rows come after its heading
-      const number = (part, n) => (part === 'end' ? n - 1 : /^\d+$/.test(part) ? Number(part) - base : undefined)
+      const number = (part, n) => (part === EDIT_WORDS.end ? n - 1 : /^\d+$/.test(part) ? Number(part) - base : undefined)
       const r = kind.head && parts[0] === kind.head.word ? 0 : number(parts[0], grid.views.row.length) + offset
       const c = number(parts[1], across)
       if (Number.isNaN(r) || c === undefined) return undefined
@@ -124,8 +126,8 @@
     // its own line (stagger: in cell order). Only a look, highlights, emphasis and callouts: the cells
     // stay in the row (LINES: range).
     function changeRange(id, row, tokens, meta, warn) {
-      if (!row) throw new Error(`no shape called "${id}"`)
-      if (!row.layout) throw new Error(`"range" picks some of a row's or column's cells, and "${id}" isn't one`)
+      if (!row) throw noShape(id)
+      if (!row.layout) throw new Error(`"range" picks some of the cells of ${LAYOUT_NOUNS}, and "${id}" isn't one`)
       const { cells } = cellsBetween(row, tokens, 1, 'range', (a, b) => `"${id}: range ${a} ${b} fill red"`)
       const props = parseProps(tokens, 3, 'range', shapes)
       const own = { ...props }
@@ -149,14 +151,14 @@
       const example = `e.g. "${id}: span arr 0 2"`
       const rowId = parseAs('id', tokens[1], shapes)
       const row = rowId && shapes.get(rowId)
-      if (!row) throw new Error(`"span" expects a row, column or code block and two of its cell numbers, ${example}${tokens[1] && !rowId ? `: no shape called "${tokens[1].value}"` : ''}`)
-      if (!row.layout) throw new Error(`"span" goes round some of a row's, column's or code block's cells, and "${rowId}" isn't one`)
+      if (!row) throw new Error(`"span" expects ${LAYOUT_NOUNS} and two of its places, ${example}${tokens[1] && !rowId ? `: no shape called "${tokens[1].value}"` : ''}`)
+      if (!row.layout) throw new Error(`"span" goes round some of the cells of ${LAYOUT_NOUNS}, and "${rowId}" isn't one`)
       const { from, to } = cellsBetween(row, tokens, 2, 'span', (a, b) => `"${id}: span ${rowId} ${a} ${b}"`)
       const props = parseProps(tokens, 4, 'span', shapes)
       if (rowId === id) throw new Error('a span needs an id of its own')
       const respan = existing?.type === 'span'
       if (existing && !respan) {
-        warn(`"${id}" already exists, so it is replaced`)
+        replaced(id, warn)
         removeShape(existing, props, meta, warn)
       }
       const shape = respan ? structuredClone(existing) : { ...baseShape('span'), id, uid: newUid() }
@@ -168,7 +170,7 @@
       applyProps(shape, props, !respan, warn, meta)
       shapes.set(id, shape)
       const record = schedule(meta, shape.uid, props)
-      if (!respan) record.enter = props.effect || defaults.effect || 'fade'
+      if (!respan) record.enter = effectOf(props)
       else if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
       updateParts(shape, props, meta, warn)
     }
@@ -219,8 +221,8 @@
     // at the places, so they stay put through a swap and while cells slide in and out, and the last
     // one comes as a slot opens on the end and goes as one closes.
     function checkParts(shape, props) {
-      if (props.name && !shape.var && !shape.layout && !shape.span) throw new Error('"name" is for a var, row, column or span')
-      if (props.indices !== undefined && !shape.layout) throw new Error('"indices" is for a row, column, grid or table')
+      if (props.name && !shape.var && !shape.layout && !shape.span) throw new Error(`"name" is for ${nounList(['var', ...LAYOUT_NAMES, 'span'])}`)
+      if (props.indices !== undefined && !shape.layout) throw new Error(`"indices" is for ${LAYOUT_NOUNS}`)
       if (props.indices !== undefined && bound(shape)) throw new Error(`a grid's indices number all its rows and columns, so they go on the whole grid: "${shape.part}: indices"`)
     }
 
@@ -462,7 +464,7 @@
         const cells = members.map((cell) => shapes.get(cell))
         const first = cells[0]
         const b = unionBounds(cells, shapes)
-        const view = old ? structuredClone(old) : { ...baseShape('group'), id, uid: newUid(), layout, part: grid.id, role: 'view' }
+        const view = old ? structuredClone(old) : { ...baseShape(GROUP), id, uid: newUid(), layout, part: grid.id, role: 'view' }
         Object.assign(view, {
           members, covers: members, attach: offsetFrom(grid.id, first.attach.dx, first.attach.dy), x: first.x, y: first.y,
           w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - first.x, cy: (b.y0 + b.y1) / 2 - first.y,
@@ -514,7 +516,7 @@
     // and the line's props.
     function makeLayout(id, layout, values, props, existing, meta, warn) {
       if (existing) {
-        warn(`"${id}" already exists, so it is replaced`)
+        replaced(id, warn)
         removeShape(existing, props, meta, warn)
       }
       const kind = LAYOUTS[layout]
@@ -535,7 +537,7 @@
         applyDefaults(cell)
         applyProps(cell, look, true, warn, meta)
         setValue(cell, value)
-        cell.layer = props.layer || defaults.layer || 'normal'
+        cell.layer = layerOf(props)
         return cell
       })
       // a blank cell in the row's look, for cells added later (insert)
@@ -551,7 +553,7 @@
       if (takeBareNumber(props)) numberEach(cells, props, meta, warn)
       const b = unionBounds(cells, shapes)
       const row = {
-        ...baseShape('group'), id, uid: newUid(), layout, members: ids, gap, cell: blank,
+        ...baseShape(GROUP), id, uid: newUid(), layout, members: ids, gap, cell: blank,
         w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2,
       }
       Object.assign(row, pick(frame, ['views', 'heading'])) // a grid's
@@ -561,12 +563,12 @@
       for (const cell of cells) {
         Object.assign(cell, { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy })
         shapes.set(cell.id, cell)
-        schedule(meta, cell.uid, props).enter = props.effect || defaults.effect || 'fade'
+        schedule(meta, cell.uid, props).enter = effectOf(props)
       }
       arrangement.sync(row, props, meta, warn)
       if (props.effect) warnEffect(cells[0], props.effect, warn)
       updateParts(row, props, meta, warn)
-      if (LAYOUTS[layout].typeInTurn && (props.effect || defaults.effect) === 'typed') typeInTurn(row, cells, partsOf(row), props, meta)
+      if (LAYOUTS[layout].typeInTurn && inTurn(props)) typeInTurn(row, cells, partsOf(row), props, meta)
       applyStagger(row, cells.map((cell) => [cell.uid]), { ...props, at: null, x: null, y: null }, meta, warn) // placing it isn't a move
     }
 
@@ -645,8 +647,9 @@
         typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },
       link: () => {
-        ({ applyDefaults, bound, partsOf, applyProps, applyStagger, busiest, delayOf, numberEach, removeShape, retime,
-          schedule, setValue, speedOf, takeBareNumber, valueOf, warnEffect } = cx)
+        ({ applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, effectOf, inTurn, layerOf,
+          noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
+          takeBareNumber, valueOf, warnEffect } = cx)
       },
     }
   })

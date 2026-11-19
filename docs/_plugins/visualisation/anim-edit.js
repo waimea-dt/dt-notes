@@ -5,15 +5,15 @@
  */
 
 ;(function () {
-  const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, LAYOUTS, BARS, cellId, baseOf, cellRange, tween,
-    baseShape } = window.Anim
+  const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, LAYOUTS, BARS, cellId, baseOf, cellRange,
+    tween, baseShape, LAYOUT_NOUNS, LINES, EDIT_WORDS } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
-      holderRef, keptStyle, layoutCells, layoutGrid, numberOf, readList, refuseView, schedule, setValue,
-      speedOf, syncIndices, transpose, valueIn, valueOf
+      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numberOf, readList, refuseView, schedule,
+      setValue, speedOf, syncIndices, transpose, valueIn, valueOf
 
     // What a swap, insert or remove moves as one (a unit), read from the line at tokens[1] by its
     // arrangement (EDITS: axis): one of a row's / column's / code block's cells; a grid's rows, or
@@ -138,8 +138,8 @@
     // rows, two columns ("g: swap col 1 3") or two cells ("g: swap 1.2 0.0") swap the same way, each
     // cell with the one in the same place in the other.
     function swapCells(id, row, tokens, meta, warn) {
-      if (!row) throw new Error(`no shape called "${id}"`)
-      if (!row.layout) throw new Error(`"swap" swaps two cells of a row or column, and "${id}" isn't one`)
+      if (!row) throw noShape(id)
+      if (!row.layout) throw new Error(`"swap" swaps two cells of ${LAYOUT_NOUNS}, and "${id}" isn't one`)
       refuseView(row, 'swap')
       const axis = editAxis(row, tokens)
       const { base, noun, next } = axis
@@ -171,7 +171,11 @@
 
     // How far a swapped cell bows out from its row or column, before the lift (LAYOUTS: bow): its
     // size across the way it goes, or a grid cell (a code line, whose box is as wide as the block)
-    const bowOf = (row, cell, way) => (LAYOUTS[row.layout].bow === 'cell' ? CELL : Math.abs(way.x) >= Math.abs(way.y) ? cell.h : cell.w)
+    const BOWS = {
+      own: (cell, way) => (Math.abs(way.x) >= Math.abs(way.y) ? cell.h : cell.w),
+      cell: () => CELL,
+    }
+    const bowOf = (row, cell, way) => BOWS[LAYOUTS[row.layout].bow](cell, way)
 
     // "arr: remove 2" / "arr: remove end" / "arr: insert 7 at 3" / "arr: insert 8 at end": a cell
     // leaves or arrives, sliding out below a row (left of a column) as it fades, and the cells
@@ -181,9 +185,9 @@
     // the cell's value out into one. A grid's rows and columns (editAxis) come and go the same way:
     // "g: insert [1 2 3] at 1", "g: remove col end" (a table's new column: its heading first).
     function editCells(id, row, tokens, meta, warn, word) {
-      if (!row) throw new Error(`no shape called "${id}"`)
-      const removing = word === 'remove'
-      if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} a row or column, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
+      if (!row) throw noShape(id)
+      const removing = Boolean(LINES[word].takesOut)
+      if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} ${LAYOUT_NOUNS}, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
       refuseView(row, word)
       const axis = editAxis(row, tokens)
       const edit = readEdit(row, axis, tokens, removing, word, warn)
@@ -211,7 +215,7 @@
         edit.at = place(tokens[next])
         if (edit.at === undefined) throw new Error(`"remove" expects a ${noun} number or end, e.g. ${example}`)
         next++
-        if (tokens[next]?.kind === 'word' && tokens[next].lower === 'into') {
+        if (tokens[next]?.kind === 'word' && tokens[next].lower === EDIT_WORDS.into) {
           if (!into) throw new Error(`"into" takes one cell's value, so it doesn't go with a ${kind.noun}'s ${noun}`)
           if (!holderRef(tokens[next + 1])) throw new Error(`"into" expects a var or cell, e.g. ${example}`)
           edit.target = holderRef(tokens[next + 1], 'remove into')
@@ -354,8 +358,8 @@
       verbs: { swap: swapCells, insert: editCells, remove: editCells },
       link: () => {
         ({ applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines,
-          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, numberOf, readList, refuseView,
-          schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf } = cx)
+          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numberOf, readList,
+          refuseView, schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf } = cx)
       },
     }
   })
