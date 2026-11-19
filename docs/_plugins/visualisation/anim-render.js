@@ -205,57 +205,82 @@
       },
     }
 
+    // A label's text is built once as nodes, then only its text nodes' data changes from frame to
+    // frame: adding or removing nodes restyles the whole page (the site's :has() rules), while
+    // changing a text node's data doesn't. Each run of text is a leaf: { text, a } when it all
+    // shows, or { text, a, b } while typing, a and b being the text of two tspans, the part before
+    // the cut and the part after it, one shown and one hidden. A plain label is one leaf (text:
+    // null, the whole label); a code line's are the strings among Prism's tokens.
+    function buildLabel(label, code, lang, typing, erase) {
+      const leaves = []
+      const tspanText = (parent, shown) => parent.appendChild(svgEl('tspan', shown ? {} : { visibility: 'hidden' })).appendChild(document.createTextNode(''))
+      const leaf = (parent, text) => {
+        if (!typing) leaves.push({ text, a: parent.appendChild(document.createTextNode('')) })
+        else leaves.push({ text, a: tspanText(parent, !erase), b: tspanText(parent, erase) })
+      }
+      label.replaceChildren()
+      if (code === null) leaf(label, null)
+      else codeTokens(code, lang, label, leaf)
+      return leaves
+    }
+
     // A code line's text, highlighted by Prism (lang: Prism's name for the language) as nested
     // tspans with Prism's token classes, which the site's code.css colours (animation.css makes
-    // them fill with that colour). While typing, the characters from `cut` on are hidden (erasing:
-    // those before it); with no cut, all show.
-    function codeSpans(text, lang, cut, erase) {
+    // them fill with that colour). leaf(parent, text) adds each string between the tokens.
+    function codeTokens(text, lang, parent, leaf) {
       const grammar = lang && window.Prism?.languages?.[lang]
-      const stream = grammar ? window.Prism.tokenize(text, grammar) : [text]
-      const top = []
-      let at = 0 // characters so far
-      const add = (parent, child) => (parent ? parent.appendChild(child) : top.push(child))
-      const build = (item, parent) => {
-        if (Array.isArray(item)) return item.forEach((part) => build(part, parent))
-        if (typeof item !== 'string') {
-          const classes = ['token', item.type, ...[].concat(item.alias || [])]
-          const span = svgEl('tspan', { class: classes.join(' ') })
-          add(parent, span)
-          return build(item.content, span)
-        }
-        const chars = [...item]
-        const start = at
-        at += chars.length
-        if (cut === undefined) return add(parent, document.createTextNode(item))
-        const k = Math.max(0, Math.min(chars.length, cut - start))
-        ;[[chars.slice(0, k), !erase], [chars.slice(k), erase]].forEach(([part, shown]) => {
-          if (!part.length) return
-          const span = svgEl('tspan', shown ? {} : { visibility: 'hidden' })
-          span.textContent = part.join('')
-          add(parent, span)
-        })
+      const walk = (item, into) => {
+        if (Array.isArray(item)) return item.forEach((part) => walk(part, into))
+        if (typeof item === 'string') return leaf(into, item)
+        const classes = ['token', item.type, ...[].concat(item.alias || [])]
+        walk(item.content, into.appendChild(svgEl('tspan', { class: classes.join(' ') })))
       }
-      build(stream, null)
-      return top
+      walk(grammar ? window.Prism.tokenize(text, grammar) : [text], parent)
     }
+
+    // Sets a text node's data, only when it changes
+    const setData = (node, text) => { if (node.data !== text) node.data = text }
 
     // A shape's text. While it's being typed (typed: 0-1, the share of characters shown) the rest
     // is laid out but hidden, so the text doesn't shift as it grows, whatever its alignment.
-    // Erasing (deleted), it's untyped from the start: the first characters go first.
-    function setLabel(node, text, typed, erase, lang) {
-      const chars = [...(text || '')]
-      const shown = typed === undefined ? -1 : Math.round(chars.length * clamp01(typed))
+    // Erasing (deleted), it's untyped from the start: the first characters go first. A plain
+    // label's nodes are rebuilt only when typing starts or stops; a code line's when its text does.
+    function setLabel(node, label, typed, erasing, lang) {
+      const text = label ?? ''
+      const typing = typed !== undefined
+      const erase = Boolean(erasing)
+      const chars = [...text]
+      const shown = typing ? Math.round(chars.length * clamp01(typed)) : -1
       const key = `${shown}|${erase}|${lang}|${text}`
       if (node.labelKey === key) return
       node.labelKey = key
+      const code = kindOf(node).pre ? text : null
+      const build = `${typing}|${typing && erase}|${code === null ? '' : `${lang}|${code}`}`
+      if (node.labelBuild !== build) {
+        node.labelBuild = build
+        node.leaves = buildLabel(node.label, code, lang, typing, erase)
+      }
+      // the characters before the cut are the first part of each leaf: shown while typing, hidden
+      // while erasing
       const cut = erase ? chars.length - shown : shown
-      if (kindOf(node).pre) { node.label.replaceChildren(...codeSpans(text || '', lang, shown < 0 ? undefined : cut, erase)); return }
-      if (shown < 0) { node.label.textContent = text; return }
-      const before = svgEl('tspan', erase ? { visibility: 'hidden' } : {})
-      const after = svgEl('tspan', erase ? {} : { visibility: 'hidden' })
-      before.textContent = chars.slice(0, cut).join('')
-      after.textContent = chars.slice(cut).join('')
-      node.label.replaceChildren(before, after)
+      let at = 0 // characters so far
+      for (const leaf of node.leaves) {
+        const part = leaf.text ?? text
+        if (!leaf.b) { setData(leaf.a, part); continue }
+        const partChars = [...part]
+        const k = Math.max(0, Math.min(partChars.length, cut - at))
+        setData(leaf.a, partChars.slice(0, k).join(''))
+        setData(leaf.b, partChars.slice(k).join(''))
+        at += partChars.length
+      }
+    }
+
+    // An element's text (debug ids, alt text, a number badge), changing its text node's data rather
+    // than replacing it (see buildLabel)
+    function setText(el, text) {
+      const node = el.firstChild
+      if (node?.nodeType === Node.TEXT_NODE && !node.nextSibling) setData(node, text)
+      else el.textContent = text
     }
 
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
@@ -274,7 +299,7 @@
           attr(node.panel, 'rx', panel.corner * CELL)
           node.panel.style.opacity = v.opacity
         }
-        if (node.debugId) { attr(node.debugId, 'x', s.x); attr(node.debugId, 'y', s.y); node.debugId.textContent = s.id }
+        if (node.debugId) { attr(node.debugId, 'x', s.x); attr(node.debugId, 'y', s.y); setText(node.debugId, s.id) }
         return
       }
       const strokeWidth = STROKE * s.weight
@@ -427,7 +452,7 @@
         attr(node.label, 'text-anchor', 'middle')
         node.label.classList.add('anim-halo')
         attr(g, 'transform', v.scale === 1 && !v.rot ? '' : `translate(${mx} ${my}) rotate(${v.rot || 0}) scale(${v.scale}) translate(${-mx} ${-my})`)
-        if (node.debugId) { attr(node.debugId, 'x', path[0].x); attr(node.debugId, 'y', path[0].y); node.debugId.textContent = s.id }
+        if (node.debugId) { attr(node.debugId, 'x', path[0].x); attr(node.debugId, 'y', path[0].y); setText(node.debugId, s.id) }
         return
       }
 
@@ -456,7 +481,7 @@
         setFlow(node.body)
         syncGhost(node.body)
       }
-      if (node.title && node.title.textContent !== s.label) node.title.textContent = s.label
+      if (node.title) setText(node.title, s.label ?? '')
 
       // Label: where its type puts it (SHAPES): in the middle, below, or (text) the shape itself; or
       // where its bar puts it (BAR_DRAWS: label)
@@ -485,7 +510,7 @@
       } else {
         attr(label, 'y', -LABEL_LIFT * fontSize) // "central" sits text a little low in a shape
       }
-      if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); node.debugId.textContent = s.id }
+      if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); setText(node.debugId, s.id) }
     }
 
     // How each kind of bar (BARS in anim-core.js) is drawn, in place of the shape's fill: over its
@@ -1038,7 +1063,7 @@
         draw: (o, { item, b, fade }) => {
           const n = shownValue(item, (s) => s.hl?.number)
           const label = n == null ? '' : String(n)
-          if (o.text.textContent !== label) o.text.textContent = label
+          setText(o.text, label)
           const size = FONT * (label.length > 2 ? 0.62 : 0.88)
           o.text.style.fontSize = `${size}px`
           attr(o.text, 'y', -LABEL_LIFT * size) // "central" sits text a little low
