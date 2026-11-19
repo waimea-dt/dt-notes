@@ -239,7 +239,7 @@
         {
           "name": "support.constant.color.anim",
           "$comment": "the named colours, and the hues' variants (hue-bright, hue-muted: COLOUR_VARIANTS in anim-core.js)",
-          "match": "(?<![\\w-])((?:red|orange|amber|yellow|green|teal|cyan|blue|purple|pink|magenta|theme)(?:-(?:bright|muted))?|muted|fg|bg|black|white|none)(?![\\w-])"
+          "match": "(?<![\\w-])((?:red|orange|amber|yellow|green|teal|cyan|blue|purple|pink|magenta|theme)(?:-(?:bright|muted))?|muted|fg|bg-shape|bg|black|white|none)(?![\\w-])"
         }
       ]
     },

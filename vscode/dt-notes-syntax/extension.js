@@ -6,13 +6,13 @@ const vscode = require('vscode')
 const COLOURS = {
   red: '#e64848', orange: '#de8269', amber: '#e2ae47', yellow: '#d8dd47', green: '#6eb26d',
   teal: '#24b6a1', cyan: '#1bb0ce', blue: '#64a2e7', purple: '#9b92e5', pink: '#da7d9b',
-  magenta: '#c384c9', theme: '#68bef8', muted: '#8a8d90', fg: '#ffffff', bg: '#1f2428',
+  magenta: '#c384c9', theme: '#68bef8', muted: '#8a8d90', fg: '#ffffff', bg: '#1f2428', 'bg-shape': '#171b1e',
   black: '#000000', white: '#ffffff',
 }
 // The hues' variants (COLOUR_VARIANTS in anim-core.js), as a close guide: bright's saturation scaled
 // (the page scales it in oklch, so the swatch is near but not exact), muted mixed with the background
 const VARIANTS = { bright: (hex) => saturate(hex, 1.4), muted: (hex) => mixHex(hex, COLOURS.bg, 0.55) }
-const UNVARIED = ['muted', 'fg', 'bg', 'black', 'white']
+const UNVARIED = ['muted', 'fg', 'bg', 'bg-shape', 'black', 'white']
 for (const hue of Object.keys(COLOURS).filter((name) => !UNVARIED.includes(name))) {
   for (const [variant, make] of Object.entries(VARIANTS)) COLOURS[`${hue}-${variant}`] = make(COLOURS[hue])
 }

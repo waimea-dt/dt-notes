@@ -344,7 +344,7 @@ i1: stroke green scale 1.3
 
 ## Feature: Colours
 
-<animation grid="13x9">
+<animation grid="13x11">
 
 ```anim
 pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2,1 font 0.4
@@ -428,10 +428,27 @@ rm8: line from 9.85,6 to 10.15,6 stroke purple-muted weight 12
 rm9: line from 10.85,6 to 11.15,6 stroke pink-muted weight 12
 rm10: line from 11.85,6 to 12.15,6 stroke magenta-muted weight 12
 rm11: line from 12.85,6 to 13.15,6 stroke theme-muted weight 12
-st: rect "stroke" at 3,8 size 2x0.8 stroke red weight 2
-cl: rect "colour" at 6,8 size 2x0.8 colour amber
-hx: text "#f80" at 9,8 colour #f80
-mu: text "muted" at 12,8 colour muted
+lo: text "other " at 1,7 font 0.45 align right
+lro: text "raw other " at 1,8 font 0.45 align right
+oth: row ["muted" "fg" "bg" "bg-shape" "black" "white" "none"] at 2,7 font 0.4
+oth.0: fill muted
+oth.1: fill fg colour bg
+oth.2: fill bg
+oth.3: fill bg-shape
+oth.4: fill black colour white
+oth.5: fill white colour black
+oth.6: fill none
+ro0: line from 1.85,8 to 2.15,8 stroke muted weight 12
+ro1: line from 2.85,8 to 3.15,8 stroke fg weight 12
+ro2: line from 3.85,8 to 4.15,8 stroke bg weight 12
+ro3: line from 4.85,8 to 5.15,8 stroke bg-shape weight 12
+ro4: line from 5.85,8 to 6.15,8 stroke black weight 12
+ro5: line from 6.85,8 to 7.15,8 stroke white weight 12
+ro6: line from 7.85,8 to 8.15,8 stroke none weight 12
+st: rect "stroke" at 3,10 size 2x0.8 stroke red weight 2
+cl: rect "colour" at 6,10 size 2x0.8 colour amber
+hx: text "#f80" at 9,10 colour #f80
+mu: text "muted" at 12,10 colour muted
 ```
 
 ---

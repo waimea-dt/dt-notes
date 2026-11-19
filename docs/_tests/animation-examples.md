@@ -155,7 +155,6 @@ i: delete
 Five cities, with a road between every pair. The salesperson starts at **A**.
 
 ```anim
-defaults fill bg stroke fg
 a: circle "A" at 3,6
 b: circle "B" at 6,2
 c: circle "C" at 11,3

@@ -120,7 +120,9 @@ r: row [
 | align | `align left` · `centre` · `right` (text) |
 | layer | `back` · `normal` · `front` |
 
-**Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg black white none` · `#hex`
+**Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg bg-shape black white none` · `#hex`
+
+`bg` is the backdrop. `bg-shape`, a little darker, is a shape's default fill.
 
 **Variants** of `red` … `theme`: `-bright` (more saturated, e.g. `red-bright`) · `-muted` (darker and dimmer, towards the background, e.g. `blue-muted`). A fill is tinted less when bright, more when muted.
 

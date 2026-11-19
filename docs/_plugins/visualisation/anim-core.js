@@ -143,15 +143,15 @@
   const SHAPES = {
     rect: {
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow', 'bar', 'max', 'track'],
-      defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg' }, outline: 'box', label: 'centre', inside: true,
+      defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg-shape' }, outline: 'box', label: 'centre', inside: true,
     },
     circle: {
       takes: [...BOXED_PROPS, 'size', 'radius', 'fill', 'stroke', 'linestyle', 'flow'],
-      defaults: { r: CELL / 2, fill: 'bg' }, outline: 'round', label: 'centre', inside: true,
+      defaults: { r: CELL / 2, fill: 'bg-shape' }, outline: 'round', label: 'centre', inside: true,
     },
     diamond: {
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'fill', 'stroke', 'linestyle', 'flow'],
-      defaults: { w: CELL, h: CELL, fill: 'bg' }, outline: 'diamond', label: 'centre', inside: true,
+      defaults: { w: CELL, h: CELL, fill: 'bg-shape' }, outline: 'diamond', label: 'centre', inside: true,
     },
     text: { takes: [...BOXED_PROPS, 'align'], defaults: { w: 0, h: 0 }, outline: 'box', label: 'content', band: { pad: 0.2, corner: 0.15 } },
     image: {
@@ -257,13 +257,14 @@
     muted: 'var(--color-mono-5)',
     fg: 'var(--anim-fg)',
     bg: 'var(--anim-bg)',
+    'bg-shape': 'var(--anim-shape)', // a shape's default fill: a little darker than the backdrop (bg)
     black: '#000',
     white: '#fff',
     none: 'none',
   }
   // Named colours used as a fill are tinted towards the background, so labels stay readable: a fill
   // keeps FILL_MIX % of its colour (a variant: its own fillMix). These are never tinted.
-  const PLAIN_FILLS = ['fg', 'bg', 'black', 'white', 'none']
+  const PLAIN_FILLS = ['fg', 'bg', 'bg-shape', 'black', 'white', 'none']
   const FILL_MIX = 45
 
   // Variants of each hue, written <hue>-<variant> (red-bright, blue-muted), added to COLOURS. Each
