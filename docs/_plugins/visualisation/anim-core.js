@@ -205,6 +205,9 @@
   //   numbers     its indices keep to its cells' font size
   //   panel       a background behind it (and its indices): pad and corner, in cells
   //   spanName    the side a span's name goes (beside its places, away from the indices)
+  //   arrange     how its cells are arranged: 'line', one line of them, each place a number; or
+  //               'grid', lines of them (see views), each place "row.column". Laid out and read
+  //               by ARRANGE in anim-layout.js, and edited by EDITS in anim-edit.js
   //   index       where an index goes beside what it numbers: side, and gap (in cells)
   //   views       its values are rows, in [ ] ([[1 2] [3 4]]), laid out in a grid of cells: g.1.2 is
   //               row 1's cell 2. Its rows and columns are views: groups of its cells that don't own
@@ -222,15 +225,15 @@
     col: { layout: 'column', word: 'col', index: INDEX_BELOW }, // numbered along the bottom, as a row's cells are
   }
   const LAYOUTS = {
-    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left-of', spanName: 'above', slide: true, slot: true, bow: 'own', index: INDEX_BELOW },
-    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'above', spanName: 'right-of', slide: true, slot: true, bow: 'own', index: INDEX_LEFT },
+    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left-of', spanName: 'above', slide: true, slot: true, arrange: 'line', bow: 'own', index: INDEX_BELOW },
+    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'above', spanName: 'right-of', slide: true, slot: true, arrange: 'line', bow: 'own', index: INDEX_LEFT },
     code: {
       noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'above', spanName: 'right-of', lines: true, fit: true, typeInTurn: true,
-      slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 }, index: INDEX_LEFT,
+      arrange: 'line', slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 }, index: INDEX_LEFT,
     },
-    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', slide: true, slot: true, bow: 'own', views: GRID_VIEWS },
+    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS },
     table: {
-      noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', slide: true, slot: true, bow: 'own', views: GRID_VIEWS,
+      noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS,
       head: { word: 'head', look: { bold: true } },
     },
   }

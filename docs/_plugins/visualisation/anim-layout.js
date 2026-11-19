@@ -61,33 +61,39 @@
     // they're the corners of), in order, and the places, lowest first (as a span keeps them).
     // `example` is the line as it might be written, for the message when they're missing.
     function cellsBetween(row, tokens, i, word, example) {
-      if (LAYOUTS[row.layout].views) {
-        const [a, b] = [tokens[i], tokens[i + 1]].map((token) => gridPlaceOf(row, token))
-        if (!a || !b) throw new Error(`"${word}" expects two of a ${LAYOUTS[row.layout].noun}'s cells, as row.column, e.g. ${example('0.0', '1.2')}`)
-        const from = { r: Math.min(a.r, b.r), c: Math.min(a.c, b.c) }
-        const to = { r: Math.max(a.r, b.r), c: Math.max(a.c, b.c) }
-        return { from, to, cells: placedCells(row, { from, to }) }
-      }
+      const { from, to } = arranged(row).between(row, tokens.slice(i, i + 2), word, example)
+      return { from, to, cells: placedCells(row, { from, to }) }
+    }
+
+    // A line's two places: numbers (or end), lowest first
+    function lineBetween(row, tokens, word, example) {
       const base = baseOf(row.layout)
-      const [a, b] = [tokens[i], tokens[i + 1]].map((token) => placeOf(row, token))
+      const [a, b] = tokens.map((token) => placeOf(row, token))
       if (a === undefined || b === undefined) throw new Error(`"${word}" expects two cell numbers, e.g. ${example(base, base + 2)}`)
       const n = row.members.length
       for (const k of [a, b]) {
         if (k < base || k >= base + n) throw new Error(`"${row.id}" has no cell ${k} (its cells are ${cellRange(row, n)})`)
       }
-      const [from, to] = a <= b ? [a, b] : [b, a]
-      return { from, to, cells: placedCells(row, { from, to }) }
+      return a <= b ? { from: a, to: b } : { from: b, to: a }
     }
 
-    // The cells at some places of a layout (as cellsBetween gives them): a row's from one number to
-    // another, a grid's in the block between two corners. Places past the end (after a remove) are
-    // left out.
-    function placedCells(row, { from, to }) {
-      const ids = LAYOUTS[row.layout].views
-        ? gridLines(row).slice(from.r, to.r + 1).flatMap((line) => shapes.get(line).members.slice(from.c, to.c + 1))
-        : row.members.slice(from - baseOf(row.layout), to - baseOf(row.layout) + 1)
-      return ids.map((cell) => shapes.get(cell)).filter(Boolean)
+    // A grid's two places: the corners of a block, as its top-left and bottom-right
+    function gridBetween(grid, tokens, word, example) {
+      const [a, b] = tokens.map((token) => gridPlaceOf(grid, token))
+      if (!a || !b) throw new Error(`"${word}" expects two of a ${LAYOUTS[grid.layout].noun}'s cells, as row.column, e.g. ${example('0.0', '1.2')}`)
+      return { from: { r: Math.min(a.r, b.r), c: Math.min(a.c, b.c) }, to: { r: Math.max(a.r, b.r), c: Math.max(a.c, b.c) } }
     }
+
+    // The cells at some places of a layout (as cellsBetween gives them), in order. Places past the
+    // end (after a remove) are left out.
+    function placedCells(row, places) {
+      return arranged(row).cells(row, places).map((cell) => shapes.get(cell)).filter(Boolean)
+    }
+
+    // The ids at a line's places, from one number to another; at a grid's, in the block between
+    // two corners
+    const lineCells = (row, { from, to }) => row.members.slice(from - baseOf(row.layout), to - baseOf(row.layout) + 1)
+    const gridCells = (grid, { from, to }) => gridLines(grid).slice(from.r, to.r + 1).flatMap((line) => shapes.get(line).members.slice(from.c, to.c + 1))
 
     // Where a shape is laid out relative to `frame`, from their offset attachments: a cell in its
     // row, or a grid's cell in one of its rows or columns (both laid out in the grid). Each is
@@ -294,21 +300,28 @@
     // What a layout's indices number, in order: each with its id's last part (key), its label, the
     // shape it goes beside (of) and where (LAYOUTS: index). A row's / column's cells, or a grid's
     // rows and columns (LAYOUTS: views; a table's heading isn't numbered).
-    function indexMarks(row) {
-      const kind = LAYOUTS[row.layout]
+    const indexMarks = (row) => arranged(row).marks(row)
+
+    // Marks for some shapes of a layout, in order (ids), numbered from its base: key(k) gives each
+    // one's key from its number
+    function marksFor(row, ids, key, index) {
       const base = baseOf(row.layout)
-      const mark = (ids, key, index) => ids.map((id, k) => ({ key: key(k + base), label: String(k + base), of: shapes.get(id), index }))
-      if (!kind.views) return mark(row.members, (k) => k, kind.index)
-      return Object.entries(kind.views).flatMap(([name, view]) => mark(row.views[name], (k) => viewKey(view, k), view.index))
+      return ids.map((id, k) => ({ key: key(k + base), label: String(k + base), of: shapes.get(id), index }))
+    }
+    const lineMarks = (row) => marksFor(row, row.members, (k) => k, LAYOUTS[row.layout].index)
+    const gridMarks = (grid) => Object.entries(LAYOUTS[grid.layout].views).flatMap(([name, view]) => marksFor(grid, grid.views[name], (k) => viewKey(view, k), view.index))
+
+    // "arr: row [5 3 8 1] at 2,3": a layout made by its arrangement (ARRANGE)
+    function createLayout(id, layout, tokens, existing, meta, warn) {
+      return ARRANGE[LAYOUTS[layout].arrange].create(id, layout, tokens, existing, meta, warn)
     }
 
     // A row (side by side) or column (one under another) of rect cells, ids "id.0", "id.1", …: a
     // group placed by its first cell. The values go in [ ] straight after the type (numbers or
     // quoted text, commas optional), or a bare count makes that many empty cells; size, gap and
-    // the look apply to every cell.
-    function createLayout(id, layout, tokens, existing, meta, warn) {
+    // the look apply to every cell. A code block's are lines (LAYOUTS: lines).
+    function createLine(id, layout, tokens, existing, meta, warn) {
       if (LAYOUTS[layout].lines) return createLines(id, layout, tokens, existing, meta, warn)
-      if (LAYOUTS[layout].views) return createGrid(id, layout, tokens, existing, meta, warn)
       const example = `e.g. "${id}: ${layout} [5 3 8 1] at 2,3" (words in quotes: ["A" "B"]), or a number of empty cells: "${id}: ${layout} 4 at 2,3"`
       const count = tokens[1]?.kind === 'word' && NUMBER.test(tokens[1].value) ? tokens[1].value : null
       if (count !== null && !/^\d+$/.test(count)) throw new Error(`a ${layout}'s number of cells is a whole number, e.g. "${id}: ${layout} 4", not "${count}"`)
@@ -462,6 +475,41 @@
       for (const view of [...shapes.values()].filter((s) => s.view && s.part === grid.id && !keep.has(s.id))) removeShape(view, props, meta, warn)
     }
 
+    // A layout's cells' ids from its values: flat, its values in order (a line's are a list, a
+    // grid's its lines from the top, each a list); ids, each cell's; views, the ids of what it lays
+    // them out in (a grid's lines and columns); headings, how many of the first cells are headings
+    // (LAYOUTS: head)
+    const lineIds = (id, layout, values) => ({ flat: values, ids: values.map((_, k) => cellId(id, k + baseOf(layout))), views: [], headings: 0 })
+    function gridIds(id, layout, values) {
+      const names = gridNames(id, layout, values.length, values[0].length)
+      return {
+        flat: values.flat(), ids: values.flatMap((line, r) => line.map((_, c) => names.cell(r, c))),
+        views: [...names.lineIds, ...names.views.col], headings: names.heading ? values[0].length : 0,
+      }
+    }
+
+    // How each arrangement of a layout's cells (LAYOUTS: arrange) is made, laid out and read:
+    //   create(id, layout, tokens, existing, meta, warn)  reads a new one's values and makes it
+    //   ids(id, layout, values)  its cells' ids from its values (lineIds, gridIds)
+    //   lay(frame, cells, values)  lays new cells out from the first (ids, offsets), and sets the
+    //                              layout's members (frame: its id, layout and gap)
+    //   sync(row, props, meta, warn)  after it's made or edited: a grid's views
+    //   between(row, tokens, word, example)  two places written after a verb, lowest first
+    //   cells(row, places)  the ids at some places
+    //   marks(row)  what its indices number (indexMarks)
+    const ARRANGE = {
+      line: {
+        create: createLine, ids: lineIds, lay: (frame, cells) => layoutCells(frame, cells), sync: () => {},
+        between: lineBetween, cells: lineCells, marks: lineMarks,
+      },
+      grid: {
+        create: createGrid, ids: gridIds, lay: (frame, cells, values) => layoutGrid(frame, chunk(cells, values[0].length)), sync: syncViews,
+        between: gridBetween, cells: gridCells, marks: gridMarks,
+      },
+    }
+    // A layout's arrangement (ARRANGE)
+    const arranged = (row) => ARRANGE[LAYOUTS[row.layout].arrange]
+
     // Makes a row / column / code block from its cells' values (a grid / table: its rows of values)
     // and the line's props.
     function makeLayout(id, layout, values, props, existing, meta, warn) {
@@ -470,12 +518,8 @@
         removeShape(existing, props, meta, warn)
       }
       const kind = LAYOUTS[layout]
-      const base = baseOf(layout)
-      // a grid's values are its lines from the top, each a list (LAYOUTS: views)
-      const names = kind.views ? gridNames(id, layout, values.length, values[0].length) : null
-      const flat = kind.views ? values.flat() : values
-      const ids = kind.views ? values.flatMap((line, r) => line.map((_, c) => names.cell(r, c))) : values.map((_, k) => cellId(id, k + base))
-      const views = names ? [...names.lineIds, ...names.views.col] : []
+      const arrangement = ARRANGE[kind.arrange]
+      const { flat, ids, views, headings } = arrangement.ids(id, layout, values)
       for (const taken of [...ids, ...views]) {
         if (!shapes.has(taken)) continue
         warn(`"${taken}" already exists, so it is replaced by ${views.includes(taken) ? 'a row or column' : 'a cell'} of "${id}"`)
@@ -499,11 +543,10 @@
       delete blank.id
       delete blank.uid
       // a table's headings start with their own look (LAYOUTS: head)
-      if (names?.heading) cells.slice(0, values[0].length).forEach((cell) => applyProps(cell, kind.head.look, false, warn, meta))
+      cells.slice(0, headings).forEach((cell) => applyProps(cell, kind.head.look, false, warn, meta))
       if (kind.fit) fitLines(cells)
       const frame = { id, layout, gap }
-      if (kind.views) layoutGrid(frame, chunk(cells, values[0].length))
-      else layoutCells(frame, cells)
+      arrangement.lay(frame, cells, values)
       cells.forEach((cell) => Object.assign(cell, { x: cell.attach.dx, y: cell.attach.dy }))
       if (takeBareNumber(props)) numberEach(cells, props, meta, warn)
       const b = unionBounds(cells, shapes)
@@ -511,7 +554,7 @@
         ...baseShape('group'), id, uid: newUid(), layout, members: ids, gap, cell: blank,
         w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2,
       }
-      if (kind.views) Object.assign(row, pick(frame, ['views', 'heading']))
+      Object.assign(row, pick(frame, ['views', 'heading'])) // a grid's
       applyProps(row, pick(props, ['at', 'x', 'y', 'highlight', 'callout']), true, warn, meta)
       shapes.set(id, row)
       schedule(meta, row.uid, props).enter = 'fade'
@@ -520,7 +563,7 @@
         shapes.set(cell.id, cell)
         schedule(meta, cell.uid, props).enter = props.effect || defaults.effect || 'fade'
       }
-      if (kind.views) syncViews(row, props, meta, warn)
+      arrangement.sync(row, props, meta, warn)
       if (props.effect) warnEffect(cells[0], props.effect, warn)
       updateParts(row, props, meta, warn)
       if (LAYOUTS[layout].typeInTurn && (props.effect || defaults.effect) === 'typed') typeInTurn(row, cells, [...shapes.values()].filter((s) => s.part === id), props, meta)
@@ -597,11 +640,9 @@
     }
 
     return {
-      functions: { cellsBetween, changeRange, checkParts, chunk, createGrid, createLayout, createLines,
-        fitCode, fitLines, fitSpan, fitSpans, gridLines, gridNames, gridPlaceOf, indexMarks,
-        layoutCells, layoutGrid, makeLayout, makeSpan, nameSide, numberOf, offsetIn, placeOf,
-        placedCells, readList, refuseView, setName, syncIndices, syncViews, transpose, typeInTurn,
-        updateParts, withRowMax },
+      functions: { arranged, checkParts, chunk, createLayout, fitCode, fitLines, fitSpans, gridLines,
+        gridPlaceOf, layoutCells, layoutGrid, numberOf, readList, refuseView, syncIndices, transpose,
+        typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },
       link: () => {
         ({ applyDefaults, applyProps, applyStagger, busiest, delayOf, numberEach, removeShape, retime,
