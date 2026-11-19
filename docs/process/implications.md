@@ -40,7 +40,7 @@ Good designers think about these things **before** they build, not after. Consid
 A system that works but is confusing or frustrating will fail its users. Good usability means anyone can pick it up and use it effectively.
 
 #### Consider:
-- Does it follow the [Usability Heuristics](process/usability.md)?
+- Does it follow the [Usability Heuristics](usability.md)?
 - Can users avoid mistakes, and recover easily if they make one?
 - Does it use recognised conventions (e.g. a back button, a save icon)?
 - Does it match how things work in the real world?
