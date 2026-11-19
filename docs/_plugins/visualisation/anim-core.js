@@ -208,9 +208,10 @@
   //   index       where an index goes beside what it numbers: side, and gap (in cells)
   //   views       its values are rows, in [ ] ([[1 2] [3 4]]), laid out in a grid of cells: g.1.2 is
   //               row 1's cell 2. Its rows and columns are views: groups of its cells that don't own
-  //               them (the grid does), laid out as the layout they're given. Each view: word, what
-  //               goes before its number in its id (g.col.2; none: g.1), and index, where its
-  //               indices go. A place in it is written "row.column" (span g 1.2 3.4).
+  //               them (the grid does): row, its lines across; col, its columns. Each: layout, the
+  //               layout it acts as; word, what goes before its number in its id (g.col.2; none:
+  //               g.1, and the one an edit takes with no word); and index, where its indices go. A
+  //               place in it is written "row.column" (span g 1.2 3.4).
   //   head        its first row is its headings, a view of its own (t.head; word, its id's last
   //               part), not counted with the rows (t.0 is the first row after it) or numbered;
   //               look, the props its cells start with
