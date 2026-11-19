@@ -1,5 +1,7 @@
 ﻿# Flash Cards
 
+Click or ↑ / ↓ to flip, ← / → to move. On touch, swipe left / right to move and up / down to flip. Double clicking doesn't select text.
+
 ## Simple
 
 <flashcards>

@@ -28,6 +28,7 @@
     box-shadow: var(--box-shadow);
     overflow: hidden;
     color: var(--anim-fg);
+    touch-action: manipulation; /* a double tap plays / pauses (animation.js), not zooms */
 
     [hidden] {
         display: none !important;

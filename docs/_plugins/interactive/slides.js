@@ -22,6 +22,10 @@
  *   Click the deck for focus, then press `s` to open the speaker view.
  *   </slides>
  *
+ * Touch swipes are reveal.js's own (`touch`, on by default); they don't also go back / forward in
+ * the browser (DocsifyUtils.preventSwipeNavigation). A double click doesn't select text
+ * (DocsifyUtils.preventDoubleClickSelect), except in editors and inputs.
+ *
  * The VS Code extension (vscode/dt-notes-syntax, preview-pane.js) previews a deck with this file,
  * moving it with `preview-show` events and following its `preview-position` ones (followPreview).
  */
@@ -248,6 +252,8 @@
 
   function startDeck(deck) {
     if (!sharedNotes && typeof RevealNotes !== 'undefined') sharedNotes = RevealNotes()
+    window.DocsifyUtils.preventDoubleClickSelect(deck)
+    window.DocsifyUtils.preventSwipeNavigation(deck)
     const reveal = new Reveal(deck, {
       embedded: true,
       url: getReceiverUrl(deck),

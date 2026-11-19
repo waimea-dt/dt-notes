@@ -47,6 +47,9 @@
  *                                         (after loadLibrary('codemirror'))
  *   resolveScope(root)                  - Use root if it is a queryable node, else document
  *   parseHeaderConfig(el, defaults)     - Parse header/title/sub-title attributes from a plugin element
+ *   addSwipeSupport(el, handlers, ign)  - Touch swipes { left, right, up, down } and doubleTap (tap or click)
+ *   preventSwipeNavigation(el)          - Stop sideways swipes over el going back / forward in history
+ *   preventDoubleClickSelect(el, ign)   - Stop double clicks selecting text (drag-select still works)
  */
 ;(function () {
     'use strict'
@@ -755,6 +758,125 @@
     }
 
     // -------------------------------------------------------------------------
+    // Gestures
+    // -------------------------------------------------------------------------
+
+    // Presses on these are left to the control itself (no swipe, tap or selection handling).
+    const INTERACTIVE_SELECTOR = 'a, button, input, textarea, select, [contenteditable], .CodeMirror'
+    const SWIPE_MIN_PX     = 50   // a swipe moves at least this far, mostly along one axis
+    const TAP_MAX_PX       = 10   // a tap moves less than this
+    const DOUBLE_TAP_MS    = 300  // the second tap of a double tap comes within this
+    const TOUCH_MOUSE_MS   = 800  // mouse events this soon after a touch were made from it
+
+    const isIgnored = (event, ignore) => Boolean(event.target.closest?.(ignore))
+
+    // Whether something between target and el (inclusive) scrolls sideways itself
+    function scrollsSideways(target, el) {
+        for (let node = target; node && node !== el.parentNode; node = node.parentNode) {
+            if (node.nodeType !== 1 || !(node.scrollWidth > node.clientWidth)) continue // SVG nodes have no scrollWidth
+            if (/auto|scroll/.test(getComputedStyle(node).overflowX)) return true
+        }
+        return false
+    }
+
+    /**
+     * Stop sideways swipes over an element going back / forward in the browser's history
+     * (touchscreen overscroll and trackpad two-finger swipes). Sideways-scrolling content inside
+     * it, e.g. a wide code block, still scrolls. A swipe from the very edge of a phone screen is
+     * the system's back gesture, which a page can't stop.
+     */
+    function preventSwipeNavigation(el) {
+        let touchStart = null
+        el.addEventListener('touchstart', (event) => {
+            const touch = event.touches[0]
+            touchStart = event.touches.length === 1 && !scrollsSideways(event.target, el)
+                ? { x: touch.clientX, y: touch.clientY } : null
+        }, { passive: true })
+        el.addEventListener('touchmove', (event) => {
+            if (!touchStart || !event.cancelable) return
+            const touch = event.touches[0]
+            if (Math.abs(touch.clientX - touchStart.x) > Math.abs(touch.clientY - touchStart.y)) event.preventDefault()
+        }, { passive: false })
+
+        // A trackpad gesture is a stream of wheel events on one target: check that target once
+        let wheelTarget = null
+        let wheelScrolls = false
+        el.addEventListener('wheel', (event) => {
+            if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return
+            if (event.target !== wheelTarget) {
+                wheelTarget = event.target
+                wheelScrolls = scrollsSideways(event.target, el)
+            }
+            if (!wheelScrolls) event.preventDefault()
+        }, { passive: false })
+    }
+
+    /**
+     * Touch swipes, plus an optional double tap / double click, on an element.
+     * Swipes are touch only (the keyboard covers desktop, and a mouse drag still selects text).
+     * Directions are the way the finger moves: swiping left usually means "next".
+     * Sideways swipes don't also go back / forward in the browser (preventSwipeNavigation).
+     *
+     * @param {Element} el
+     * @param {Object}  handlers - { left, right, up, down, doubleTap } - each optional, given the event
+     * @param {string}  ignore   - presses starting on these are ignored (default: links, buttons, inputs, editors)
+     */
+    function addSwipeSupport(el, handlers = {}, ignore = INTERACTIVE_SELECTOR) {
+        let start = null
+        let lastTap = null
+        let lastTouchAt = 0
+
+        preventSwipeNavigation(el)
+
+        el.addEventListener('touchstart', (event) => {
+            lastTouchAt = Date.now()
+            const touch = event.changedTouches[0]
+            start = event.touches.length === 1 && !isIgnored(event, ignore) ? { x: touch.screenX, y: touch.screenY } : null
+        }, { passive: true })
+
+        el.addEventListener('touchend', (event) => {
+            lastTouchAt = Date.now()
+            if (!start) return
+            const touch = event.changedTouches[0]
+            const dx = touch.screenX - start.x
+            const dy = touch.screenY - start.y
+            start = null
+            const horizontal = Math.abs(dx) > Math.abs(dy)
+            if (Math.max(Math.abs(dx), Math.abs(dy)) > SWIPE_MIN_PX) {
+                lastTap = null
+                const handler = horizontal ? handlers[dx < 0 ? 'left' : 'right'] : handlers[dy < 0 ? 'up' : 'down']
+                handler?.(event)
+            } else if (handlers.doubleTap && Math.hypot(dx, dy) < TAP_MAX_PX) {
+                const tap = { x: touch.screenX, y: touch.screenY, at: Date.now() }
+                const isDouble = lastTap && tap.at - lastTap.at < DOUBLE_TAP_MS &&
+                    Math.hypot(tap.x - lastTap.x, tap.y - lastTap.y) < SWIPE_MIN_PX
+                lastTap = isDouble ? null : tap
+                if (isDouble) handlers.doubleTap(event)
+            }
+        })
+
+        el.addEventListener('touchcancel', () => { start = null })
+
+        // Desktop double click; browsers that also fire dblclick for a double tap are skipped
+        if (handlers.doubleTap) {
+            el.addEventListener('dblclick', (event) => {
+                if (Date.now() - lastTouchAt < TOUCH_MOUSE_MS || isIgnored(event, ignore)) return
+                handlers.doubleTap(event)
+            })
+        }
+    }
+
+    /**
+     * Stop a double (or triple) click selecting text in an element; drag-selecting still works.
+     * Inputs and editors (the ignore selector) keep their usual double-click word selection.
+     */
+    function preventDoubleClickSelect(el, ignore = INTERACTIVE_SELECTOR) {
+        el.addEventListener('mousedown', (event) => {
+            if (event.detail > 1 && !isIgnored(event, ignore)) event.preventDefault()
+        })
+    }
+
+    // -------------------------------------------------------------------------
     // Export
     // -------------------------------------------------------------------------
 
@@ -799,6 +921,9 @@
         createEditor,
         resolveScope,
         parseHeaderConfig,
+        addSwipeSupport,
+        preventSwipeNavigation,
+        preventDoubleClickSelect,
     })
 
     window.DocsifyUtils = docsifyUtils

@@ -21,6 +21,9 @@
  *   Note:                 teacher notes, to the end of the step
  *   </animation>
  *
+ * Controls: buttons, keys (? lists them), touch swipes left / right, and a double click / tap
+ * to play or pause (DocsifyUtils.addSwipeSupport).
+ *
  * How it works: like slides.js, beforeEach rewrites the block into plain HTML wrappers with the
  * caption markdown left in place, so Docsify compiles it with the rest of the page and every
  * other plugin processes it too. Scene text is carried in data attributes. In doneEach the
@@ -51,6 +54,12 @@
   // What changes as it plays is shown with data- and aria- attributes and inline styles, never
   // classes, `hidden` / `disabled` or added and removed nodes: with the site's :has() rules, any of
   // those restyles the whole page, which stalls the frame a step starts or ends on.
+  const { addSwipeSupport, preventDoubleClickSelect } = window.DocsifyUtils
+  // Gestures on these are left alone: the controls have their own clicks, and notes / help hold
+  // text to select
+  const GESTURE_IGNORE = 'a, button, input, textarea, select, [contenteditable], .CodeMirror, ' +
+    '.anim-controls, .anim-progress, .anim-notes, .anim-help'
+
   const setFlag = (el, name, on) => el.toggleAttribute(`data-${name}`, on)
   const setDisabled = (button, on) => button.setAttribute('aria-disabled', String(on))
 
@@ -83,6 +92,8 @@
       ['S', 'Speaker notes'],
       ['?', 'Show or hide these shortcuts'],
       ['Esc', 'Close this / exit full screen'],
+      ['Swipe ← / →', 'Next / previous step (touch)'],
+      ['Double click / tap', 'Play / pause'],
     ]
     const help = widget.appendChild(document.createElement('div'))
     help.className = 'anim-help'
@@ -96,7 +107,7 @@
     inner.className = 'anim-help-inner'
     const title = inner.appendChild(document.createElement('div'))
     title.className = 'anim-help-title'
-    title.textContent = 'Keyboard Shortcuts'
+    title.textContent = 'Shortcuts'
     const table = inner.appendChild(document.createElement('table'))
     table.innerHTML = `<thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>${rows
       .map(([key, action]) => `<tr><td>${escapeHtml(key)}</td><td>${escapeHtml(action)}</td></tr>`).join('')}</tbody>`
@@ -639,6 +650,11 @@
     })
     const toggleNotes = () => { if (hasNotes) notesPanel.hidden = !notesPanel.hidden }
     const help = buildHelp(widget)
+
+    // Touch: swipe left / right for next / back; a double tap or double click plays / pauses
+    const gesture = (fn) => () => { touched(); fn() }
+    addSwipeSupport(widget, { left: gesture(userNext), right: gesture(userBack), doubleTap: gesture(userPlay) }, GESTURE_IGNORE)
+    preventDoubleClickSelect(widget, GESTURE_IGNORE)
 
     // Keys, as on slides: → N Space next, ← P Shift+Space back, Home / End, A (play), F, S, ? and Esc.
     widget.addEventListener('keydown', (event) => {

@@ -17,12 +17,15 @@
  * Attributes:
  *   shuffle - if present, cards are shown in a randomised order.
  *
+ * Controls: click / Up / Down flip a card, Left / Right move. On touch, swipe left / right to
+ * move and up / down to flip (DocsifyUtils.addSwipeSupport).
+ *
  * The VS Code extension (vscode/dt-notes-syntax, preview-pane.js) previews cards with this file,
  * moving them with `preview-show` events and following their `preview-position` ones.
  */
 (function () {
 
-    const { clamp, shuffleArray } = window.DocsifyUtils
+    const { clamp, shuffleArray, addSwipeSupport, preventDoubleClickSelect } = window.DocsifyUtils
 
     const ICONS = {
         FIRST:      'chevrons-left',
@@ -154,10 +157,13 @@
                     card.classList.toggle('revealed')
                     tellPreview()
                 })
-                card.addEventListener('mousedown', (e) => { if (e.detail > 1) e.preventDefault() })
-
-                // Add swipe gesture support
-                addSwipeSupport(card, changeCard, revealCurrentCard)
+                preventDoubleClickSelect(card)
+                addSwipeSupport(card, {
+                    left:  () => changeCard(1),
+                    right: () => changeCard(-1),
+                    up:    revealCurrentCard,
+                    down:  revealCurrentCard,
+                })
 
                 removeLinks(card)
                 convertImagesToParaBacks(card)
@@ -202,55 +208,6 @@
         })
 
         cleanupWindowListeners = () => cleanups.forEach(fn => fn())
-    }
-
-
-    function addSwipeSupport(card, changeCard, revealCurrentCard) {
-        let touchStartX = 0
-        let touchStartY = 0
-        let touchEndX = 0
-        let touchEndY = 0
-
-        const minSwipeDistance = 50  // Minimum distance in pixels to register as a swipe
-
-        card.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX
-            touchStartY = e.changedTouches[0].screenY
-        })
-
-        card.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX
-            touchEndY = e.changedTouches[0].screenY
-            handleSwipe()
-        })
-
-        function handleSwipe() {
-            const deltaX = touchEndX - touchStartX
-            const deltaY = touchEndY - touchStartY
-            const absDeltaX = Math.abs(deltaX)
-            const absDeltaY = Math.abs(deltaY)
-
-            // Determine if swipe is primarily horizontal or vertical
-            if (absDeltaX > absDeltaY && absDeltaX > minSwipeDistance) {
-                // Horizontal swipe
-                if (deltaX > 0) {
-                    // Right swipe -> previous card
-                    changeCard(-1)
-                } else {
-                    // Left swipe -> next card
-                    changeCard(1)
-                }
-            } else if (absDeltaY > absDeltaX && absDeltaY > minSwipeDistance) {
-                // Vertical swipe
-                if (deltaY < 0) {
-                    // Up swipe -> flip card
-                    revealCurrentCard()
-                }
-                else {
-                    revealCurrentCard()
-                }
-            }
-        }
     }
 
 

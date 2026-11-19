@@ -2,6 +2,8 @@
 
 Normal docs content here...
 
+On touch, swipe left / right to change slide (reveal.js). Double clicking a slide doesn't select text, except in code editors.
+
 ## Full Feature Test
 
 <slides>
