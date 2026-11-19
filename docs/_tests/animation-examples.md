@@ -13,8 +13,7 @@ Whole animations, as they would appear in notes. Click an animation to give it f
 We start with an unsorted array.
 
 ```anim
-arr: row [5 3 8 1] at 5,3 size 0.9 gap 0.1 fill blue
-i: text "i" attach below arr.0
+arr: row [5 3 8 1] at 3,3 font 3 size 1.8 gap 0.2 corner 0.05 fill blue
 ```
 
 ---
@@ -24,8 +23,7 @@ i: text "i" attach below arr.0
 Is `5` bigger than `3`?
 
 ```anim
-arr.0: highlight spotlight
-arr.1: highlight spotlight
+comp: span arr 0 1 fill pink-bright name "Compare"
 ```
 
 +++
@@ -48,12 +46,8 @@ arr: swap 0 1
 
 +++
 
-...and `i` moves on.
-
 ```anim
-arr.0: fill blue highlight clear
-arr.1: fill blue highlight clear
-i: attach below arr.1
+arr.1: fill blue
 ```
 
 Note:
@@ -66,8 +60,7 @@ Ask the class to predict the next comparison before advancing.
 Is `5` bigger than `8`?
 
 ```anim
-arr.1: highlight spotlight
-arr.2: highlight spotlight
+comp: span arr 1 2
 ```
 
 +++
@@ -78,20 +71,12 @@ No it's not
 arr.2: fill amber pulse
 ```
 
----
-
-## Swap
++++
 
 So they remain in place...
 
-+++
-
-...and `i` moves on.
-
 ```anim
-arr.1: fill blue highlight clear
-arr.2: fill blue highlight clear
-i: attach below arr.2
+arr.2: fill blue
 ```
 
 Note:
@@ -104,8 +89,7 @@ Ask the class to predict the next comparison before advancing.
 Is `8` bigger than `1`?
 
 ```anim
-arr.2: highlight spotlight
-arr.3: highlight spotlight
+comp: span arr 2 3
 ```
 
 +++
@@ -131,8 +115,8 @@ arr: swap 2 3
 ...and that pass is done.
 
 ```anim
-arr.2: fill blue highlight clear
-arr.3: highlight clear
+arr.3: fill blue
+comp: delete
 ```
 
 +++
@@ -141,7 +125,6 @@ The largest value, 8, has 'bubbled' to the end!
 
 ```anim
 arr.3: fill green wiggle speed fast
-i: delete
 ```
 
 </animation>
