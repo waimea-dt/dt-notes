@@ -142,7 +142,14 @@ eg5: grid [[]] at 1,1
 eg.1: move 2,2
 eg.col.0: delete
 eg.1: indices
-eg: swap 0 1
+eg: swap 0 9
+eg: swap col 0 1.1
+eg: insert [1 2 3 4] at 0
+eg: insert col [1] at 5
+eg: remove 0 into er.0
+eg: remove 1.1
+sg4: grid [[1]] at 1,1
+sg4: remove 0
 eg.0: remove 0
 eg6: group [eg.0]
 sg1: span eg 0.0 5.0

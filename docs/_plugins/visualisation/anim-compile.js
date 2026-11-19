@@ -562,8 +562,9 @@
       return parseAs('index', token)
     }
 
-    // A list cut into lists of n
+    // A list cut into lists of n; and lists of lists turned the other way (lines <-> columns)
     const chunk = (list, n) => Array.from({ length: list.length / n }, (_, k) => list.slice(k * n, (k + 1) * n))
+    const transpose = (lists) => lists[0].map((_, k) => lists.map((list) => list[k]))
 
     // A grid's lines from the top, as views: its heading (if it has one), then its rows
     const gridLines = (grid) => [...(grid.heading ? [grid.heading] : []), ...grid.views.row]
@@ -1275,42 +1276,78 @@
     }
 
     // What a swap, insert or remove moves as one (a unit), read from the line at tokens[1]: one of a
-    // row's / column's / code block's cells.
+    // row's / column's / code block's cells; a grid's rows, or (after a view's word, "col") its
+    // columns (LAYOUTS: views); or for a swap of two places ("1.2 0.0"), its cells one at a time.
     //   units   each unit's cells, in order; noun, what one is called; base, the first's number
+    //   size    how many cells a unit has; fixed, lines that stay put above them (a table's heading)
     //   across  units go side by side (otherwise one under another); next, the token after any word
+    //   single  units are single cells of a grid (a swap's places)
     //   place(token, after)  a unit's position (from 0) as written: a number, or end (after: the
     //           place after the last); undefined if it's neither
     //   missing(k)  the message for a unit k (as written) that isn't there
     //   steps(i, j) how many places apart two units are
+    //   headed(k)   whether cell k of a new unit is a heading (LAYOUTS: head)
     //   relay(list) lays the layout out again from its units in this order (ids go with the places)
     function editAxis(row, tokens) {
       const kind = LAYOUTS[row.layout]
       const base = baseOf(row.layout)
-      if (kind.views) throw new Error(`"${tokens[0].value}" doesn't work on ${article(kind.noun)} ${kind.noun} yet`)
       const number = (token, n, after) => { const k = numberOf(token, n, base, after); return k === undefined ? undefined : k - base }
-      const units = row.members.map((cell) => shapes.get(cell)).filter(Boolean).map((cell) => [cell])
+      if (!kind.views) {
+        const units = row.members.map((cell) => shapes.get(cell)).filter(Boolean).map((cell) => [cell])
+        return {
+          units, noun: kind.item, base, size: 1, fixed: 0, across: kind.across, next: 1,
+          place: (token, after) => number(token, units.length, after),
+          missing: (k) => `"${cellId(row.id, k)}" isn't a cell of "${row.id}" (its cells are ${cellRange(row, units.length)})`,
+          steps: (i, j) => Math.abs(i - j), headed: () => false, relay: (list) => layoutCells(row, list.flat()),
+        }
+      }
+      const matrix = gridLines(row).map((line) => shapes.get(line).members.map((cell) => shapes.get(cell)))
+      const across = matrix[0].length
+      const fixed = matrix.length - row.views.row.length
+      if (gridPlaceOf(row, tokens[1])) {
+        const units = matrix.flat().map((cell) => [cell])
+        const at = (k) => ({ r: Math.floor(k / across), c: k % across })
+        return {
+          units, noun: kind.item, base, size: 1, fixed: 0, single: true, next: 1,
+          place: (token) => { const p = gridPlaceOf(row, token); return p && p.r * across + p.c },
+          steps: (i, j) => Math.abs(at(i).r - at(j).r) + Math.abs(at(i).c - at(j).c), headed: () => false,
+          relay: (list) => layoutGrid(row, chunk(list.flat(), across)),
+        }
+      }
+      // a view's word picks it (col); with none, the one without a word (rows)
+      const word = tokens[1]?.kind === 'word' ? tokens[1].lower : null
+      const view = Object.values(kind.views).find((v) => v.word && v.word === word) || Object.values(kind.views).find((v) => !v.word)
+      const lines = view === kind.views.row // its units are lines, one under another (else columns)
+      const units = lines ? matrix.slice(fixed) : transpose(matrix)
+      const { noun } = LAYOUTS[view.layout]
       return {
-        units, noun: kind.item, base, across: kind.across, next: 1,
+        units, noun, base, size: lines ? across : matrix.length, fixed: lines ? fixed : 0, across: !lines, next: view.word ? 2 : 1,
         place: (token, after) => number(token, units.length, after),
-        missing: (k) => `"${cellId(row.id, k)}" isn't a cell of "${row.id}" (its cells are ${cellRange(row, units.length)})`,
-        steps: (i, j) => Math.abs(i - j), relay: (list) => layoutCells(row, list.flat()),
+        missing: (k) => `"${row.id}" has no ${noun} ${k} (its ${noun}s are ${units.length ? `${base} to ${base + units.length - 1}` : 'none'})`,
+        steps: (i, j) => Math.abs(i - j), headed: (k) => !lines && k < fixed,
+        relay: (list) => layoutGrid(row, lines ? [...matrix.slice(0, fixed), ...list] : transpose(list)),
       }
     }
 
     // "arr: swap 0 3": two cells change places, one arcing over and one under (a column's: to the
     // right and left). Ids go with the places, so afterwards arr.0 is the cell now first; whatever
-    // is attached to arr.0 (a pointer) stays there, and highlights go with the cells. Units of
-    // several cells (editAxis) swap the same way, each cell with the one in the same place in the
-    // other.
+    // is attached to arr.0 (a pointer) stays there, and highlights go with the cells. A grid's two
+    // rows, two columns ("g: swap col 1 3") or two cells ("g: swap 1.2 0.0") swap the same way, each
+    // cell with the one in the same place in the other.
     function swapCells(id, row, tokens, meta, warn) {
       if (!row) throw new Error(`no shape called "${id}"`)
       if (!row.layout) throw new Error(`"swap" swaps two cells of a row or column, and "${id}" isn't one`)
       refuseView(row, 'swap')
+      const kind = LAYOUTS[row.layout]
       const axis = editAxis(row, tokens)
       const { base, noun, next } = axis
       const i = axis.place(tokens[next])
       const j = axis.place(tokens[next + 1])
-      if (i === undefined || j === undefined) throw new Error(`"swap" expects two cell numbers, e.g. "${id}: swap ${base} ${base + 3}"`)
+      if (i === undefined || j === undefined) {
+        const ways = kind.views ? Object.values(kind.views).map((view) => `"${id}: swap ${view.word ? `${view.word} ` : ''}${base} ${base + 1}"`) : []
+        throw new Error(kind.views ? `"swap" expects two of a ${kind.noun}'s rows, columns or cells, e.g. ${ways.join(', ')} or "${id}: swap 0.0 1.2"`
+          : `"swap" expects two cell numbers, e.g. "${id}: swap ${base} ${base + 3}"`)
+      }
       const props = parseProps(tokens, next + 2, 'swap', shapes)
       for (const k of [i, j]) if (k < 0 || k >= axis.units.length) throw new Error(axis.missing(k + base))
       if (i === j) return warn(`a ${noun} swapped with itself stays where it is`)
@@ -1428,7 +1465,8 @@
     // after it close up or open a space. Ids go with the places, as in a swap: after "remove 2",
     // arr.2 is the cell that was arr.3, and what's attached to the last place (now gone) is left
     // where it was. "insert v1 at …" copies a var's or cell's value in; "remove … into v1" moves
-    // the cell's value out into one. Units of several cells (editAxis) come and go the same way.
+    // the cell's value out into one. A grid's rows and columns (editAxis) come and go the same way:
+    // "g: insert [1 2 3] at 1", "g: remove col end" (a table's new column: its heading first).
     function editCells(id, row, tokens, meta, warn, word) {
       if (!row) throw new Error(`no shape called "${id}"`)
       const removing = word === 'remove'
@@ -1437,9 +1475,12 @@
       const kind = LAYOUTS[row.layout]
       const axis = editAxis(row, tokens)
       const { units, noun, base } = axis
-      const example = removing ? `"${id}: remove 2" or "${id}: remove end into v1"` : kind.lines ? `"${id}: insert "x = 1" at 2" or "${id}: insert "x = 1" at end"` : `"${id}: insert 7 at 3" or "${id}: insert v1 at end"`
+      const col = Object.values(kind.views || {}).find((view) => view.word)?.word // a grid's columns' word, for examples
+      const example = kind.views ? (removing ? `"${id}: remove 1" or "${id}: remove ${col} end"` : `"${id}: insert [1 2 3] at 1" or "${id}: insert ${col} [1 2 3] at end"`)
+        : removing ? `"${id}: remove 2" or "${id}: remove end into v1"` : kind.lines ? `"${id}: insert "x = 1" at 2" or "${id}: insert "x = 1" at end"` : `"${id}: insert 7 at 3" or "${id}: insert v1 at end"`
+      if (axis.single) throw new Error(`"${word}" takes a whole row or column of a ${kind.noun}, e.g. ${example}`)
       const n = units.length
-      const range = cellRange(row, n)
+      const range = kind.views ? (n ? `${base} to ${base + n - 1}` : 'none') : cellRange(row, n)
       // a number, or end: the last (remove), or after it (insert); as a place from 0
       const place = (token) => axis.place(token, !removing)
 
@@ -1455,20 +1496,31 @@
         if (at === undefined) throw new Error(`"remove" expects a ${noun} number or end, e.g. ${example}`)
         next++
         if (tokens[next]?.kind === 'word' && tokens[next].lower === 'into') {
+          if (kind.views) throw new Error(`"into" takes one cell's value, so it doesn't go with a ${kind.noun}'s ${noun}`)
           if (!holderRef(tokens[next + 1])) throw new Error(`"into" expects a var or cell, e.g. ${example}`)
           target = holderRef(tokens[next + 1], 'remove into')
           next += 2
         }
       } else {
-        let value = valueOf(tokens[next])
-        if (!value && holderRef(tokens[next])) {
-          source = structuredClone(holderRef(tokens[next], 'insert'))
-          value = valueIn(source)
+        if (kind.views) {
+          // a grid's new row or column: its values in [ ], filled out with empty cells
+          if (tokens[next]?.value !== '[') throw new Error(`"insert" expects a ${noun}'s values in [ ], e.g. ${example}`)
+          const list = readList(tokens, next, `a ${noun}`)
+          if (tokens[list.next]?.value !== ']') throw new Error(`the "[" of a ${noun} has no closing "]"`)
+          values = list.values
+          next = list.next + 1
+          if (values.length > axis.size) throw new Error(`a ${noun} of "${id}" has ${axis.size} cells, so it takes at most ${axis.size} values`)
+        } else {
+          let value = valueOf(tokens[next])
+          if (!value && holderRef(tokens[next])) {
+            source = structuredClone(holderRef(tokens[next], 'insert'))
+            value = valueIn(source)
+          }
+          if (!value) throw new Error(`"insert" expects a value (a number, "quoted" text or null) or a var, e.g. ${example}`)
+          values = [value]
+          next++
         }
-        if (!value) throw new Error(`"insert" expects a value (a number, "quoted" text or null) or a var, e.g. ${example}`)
-        values = [value]
-        next++
-        if (tokens[next]?.lower !== 'at' || place(tokens[next + 1]) === undefined) throw new Error(`"insert" expects a value and where it goes (a ${noun} number or end), e.g. ${example}`)
+        if (tokens[next]?.lower !== 'at' || place(tokens[next + 1]) === undefined) throw new Error(`"insert" expects ${kind.views ? 'its values' : 'a value'} and where it goes (a ${noun} number or end), e.g. ${example}`)
         at = place(tokens[next + 1])
         next += 2
       }
@@ -1478,8 +1530,14 @@
 
       if (removing && !n) throw new Error(`"${id}" has no ${noun}s left to remove`)
       if (removing && (at < 0 || at >= n)) throw new Error(`"${id}" has no ${noun} ${at + base} (its ${noun}s are ${range})`)
+      // a grid keeps at least one cell (a table's heading stays, so its rows can all go)
+      if (removing && kind.views && n === 1 && !axis.fixed) throw new Error(`"${id}" has only one ${noun}, and a ${kind.noun} needs at least one: to delete it, "${id}: delete"`)
       if (!removing && (at < 0 || at > n)) throw new Error(`"insert … at" goes from ${base} to ${n + base} (or end), and "${id}" has ${n} ${noun}${n === 1 ? '' : 's'}`)
       if (target && target.uid === units[at][0].uid) throw new Error(`"${target.id}" is the cell being removed, so it can't be removed into`)
+      if (!removing && values.length < axis.size) {
+        warn(`a ${noun} of "${id}" has ${axis.size} cells, so this one is filled out with empty cells`)
+        while (values.length < axis.size) values.push({ label: '' })
+      }
 
       const speed = speedOf(props)
       // the second of the two moves (closing up, or sliding in) starts when the leaving cell is
@@ -1507,8 +1565,9 @@
         slotUnit = gone
       } else {
         const blank = row.cell || { ...baseShape('rect') }
-        const fresh = values.map((value) => {
+        const fresh = values.map((value, k) => {
           const cell = { ...structuredClone(blank), ...(source ? keptStyle(props, source) : {}), uid: ++uid, holds: true, hl: null, callout: null }
+          if (axis.headed(k)) applyProps(cell, kind.head.look, false, warn, meta) // a table's new heading
           setValue(cell, value)
           return cell
         })
@@ -1535,6 +1594,7 @@
         Object.assign(cell, { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy })
         shapes.set(cell.id, cell)
       }
+      if (kind.views) syncViews(row, props, meta, warn)
       // the last index comes with the slot, or goes as it closes
       if (row.indices) syncIndices(row, props, meta, { add: 0, remove: then })
 

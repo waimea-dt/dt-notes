@@ -241,6 +241,13 @@ s2: span t head.0 end.0            # a table's column 0, heading too
 g.1: range 0 2 fill green          # a row or column acts as a row / column
 s3: span g.col.2 0 1
 g: indices                         # rows down the left, columns along the bottom
+g: swap 0 1                        # rows
+g: swap col 1 end                  # columns
+g: swap 1.2 0.0                    # cells
+g: insert [9 9 9 9] at 1           # a row
+t: insert col ["D" 7 8] at end     # a column, its heading first
+g: remove 0
+g: remove col end
 ```
 
 - Rows and columns count from 0. A table's `t.0` is the first row after its headings.
@@ -248,6 +255,8 @@ g: indices                         # rows down the left, columns along the botto
 - `size`, `gap`, looks, `name` and `indices` go on the whole grid. A table's headings start bold.
 - A row or column takes looks, highlights, emphasis, callouts, `stagger`, `range`, `span` and a `name`. It moves and goes with its grid.
 - A place in a grid is `row.column`: a number, or `end`, each side (a table's row can also be `head`).
+- Edits play like a row's. Ids stay with the places: after `remove 0`, `g.0` is the row that was `g.1`, and a highlight or span on `g.0` stays put.
+- A new row or column that's short is filled out with empty cells. A table's heading stays on top; its rows can all go.
 
 ## Variables
 

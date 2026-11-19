@@ -228,8 +228,11 @@
       noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'above', spanName: 'right-of', lines: true, fit: true, typeInTurn: true,
       slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 }, index: INDEX_LEFT,
     },
-    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', views: GRID_VIEWS },
-    table: { noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', views: GRID_VIEWS, head: { word: 'head', look: { bold: true } } },
+    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', slide: true, slot: true, bow: 'own', views: GRID_VIEWS },
+    table: {
+      noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', slide: true, slot: true, bow: 'own', views: GRID_VIEWS,
+      head: { word: 'head', look: { bold: true } },
+    },
   }
   const LAYOUT_TYPES = Object.keys(LAYOUTS)
 

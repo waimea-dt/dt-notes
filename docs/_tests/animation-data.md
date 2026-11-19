@@ -448,6 +448,78 @@ t: delete
 
 </animation>
 
+## Feature: grid and table edits
+
+<animation grid="16x9">
+
+```anim
+g: grid [[1 2 3] [4 5 6] [7 8 9]] at 2,2 gap 0.1 indices
+t: table [["A" "B"] [1 2] [3 4]] at 10,2 size 1.2x0.8 indices
+g.1: highlight outline            # stays on row 1's place
+s: span g 0.0 0.1 stroke red      # and a span on its places
+```
+
+---
+
+## swap
+
+```anim
+g: swap 0 2                       # rows
+```
+
++++
+
+```anim
+g: swap col 0 end                 # columns
+t: swap col 0 1                   # a heading goes with its column
+```
+
++++
+
+```anim
+g: swap 1.1 0.0                   # two cells
+t: swap 0 1
+```
+
+---
+
+## insert
+
+```anim
+g: insert [10 11 12] at 1         # a row: the rows below open up
+```
+
++++
+
+```anim
+g: insert col [0 0 0 0] at end    # a column on the end
+t: insert col ["C" 5 6] at 1      # its heading first
+```
+
+---
+
+## remove
+
+```anim
+g: remove col 0
+t: remove 0
+```
+
++++
+
+```anim
+g: remove end speed slow
+t: remove 0                       # a table's rows can all go
+```
+
++++
+
+```anim
+t: insert [7 8 9] at end
+```
+
+</animation>
+
 ## Feature: var
 
 <animation grid="12x4">
