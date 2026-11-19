@@ -625,36 +625,48 @@
 
   const cellToPx = (c) => (c - 0.5) * CELL
 
-  // The width of some text in the site's font, measured once with a hidden SVG <text> and cached
-  // (falls back to an estimate when it can't be measured, e.g. before the page has a body).
-  const textWidths = new Map()
-  let measurer = null
+  // The width of some text in the site's font, measured on a canvas and cached (falls back to an
+  // estimate when it can't be measured, e.g. outside a browser). A canvas measures without laying
+  // out the page, as reading an SVG text's length would. Each font (bold, mono) is resolved once
+  // through a hidden SVG <text>, as a label would show it, and again after a theme change (some
+  // themes change the font). Widths are cached at one size and scaled, so text whose size is
+  // changing is measured once.
   const MONO_FONT = 'var(--font-family-mono)'
-  // `pre` keeps runs of spaces (a code line's indent), which other text collapses.
+  const MEASURE_SIZE = 100 // px: the size widths are measured and cached at
+  const textWidths = new Map() // font|text -> width at MEASURE_SIZE
+  const fonts = new Map() // bold|mono -> canvas font
+  let measurer = null // { text, ctx }
+  function fontFor(bold, mono) {
+    const key = `${bold ? 'b' : ''}|${mono ? 'm' : ''}`
+    if (fonts.has(key)) return fonts.get(key)
+    const { text } = measurer
+    text.style.fontWeight = bold ? '700' : ''
+    text.style.fontFamily = mono ? MONO_FONT : 'var(--font-family)'
+    const style = getComputedStyle(text)
+    const font = `${style.fontStyle} ${style.fontWeight} ${MEASURE_SIZE}px ${style.fontFamily}`
+    fonts.set(key, font)
+    return font
+  }
+  // `pre` keeps runs of spaces (a code line's indent), which other text collapses, as SVG does.
   function textWidth(text, size, bold = false, mono = false, pre = false) {
-    const key = `${size}|${bold ? 'b' : ''}|${mono ? 'm' : ''}|${pre ? 'p' : ''}|${text}`
-    if (textWidths.has(key)) return textWidths.get(key)
     if (!measurer && document.body) {
       const holder = svgEl('svg', { width: 0, height: 0, 'aria-hidden': 'true' })
       holder.style.cssText = 'position: absolute; left: -9999px; top: 0; visibility: hidden'
-      measurer = holder.appendChild(svgEl('text'))
-      measurer.style.fontFamily = 'var(--font-family)'
-      document.body.appendChild(holder)
+      const ctx = document.createElement('canvas').getContext?.('2d')
+      if (ctx) measurer = { text: holder.appendChild(svgEl('text')), ctx }
+      if (ctx) document.body.appendChild(holder)
     }
-    let width = 0
-    if (measurer) {
-      measurer.style.fontSize = `${size}px`
-      measurer.style.fontWeight = bold ? '700' : ''
-      measurer.style.fontFamily = mono ? MONO_FONT : 'var(--font-family)'
-      if (pre) measurer.setAttributeNS(XML_NS, 'xml:space', 'preserve')
-      else measurer.removeAttributeNS(XML_NS, 'space')
-      measurer.textContent = text
-      width = measurer.getComputedTextLength()
+    const shown = pre ? text : text.replace(/\s+/g, ' ').trim()
+    if (!measurer) return 0.55 * size * shown.length
+    const font = fontFor(bold, mono)
+    const key = `${font}|${shown}`
+    if (!textWidths.has(key)) {
+      measurer.ctx.font = font
+      textWidths.set(key, measurer.ctx.measureText(shown).width)
     }
-    if (!width) width = 0.55 * size * text.length
-    textWidths.set(key, width)
-    return width
+    return (textWidths.get(key) * size) / MEASURE_SIZE || 0.55 * size * shown.length
   }
+  window.addEventListener?.('docsify-theme-change', () => fonts.clear())
 
   // A shape's type entry (a group, or a point to place beside, has none: it's a plain box)
   const kindOf = (shape) => SHAPES[shape.type] || {}
