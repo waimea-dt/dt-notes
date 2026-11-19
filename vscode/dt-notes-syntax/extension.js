@@ -103,6 +103,8 @@ function activate(context) {
   start('block shading', () => require('./shading').activate(context, log))
   // error and warning marks from the animation engine (see diagnostics.js)
   start('error marks', () => require('./diagnostics').activate(context))
+  // a live preview of the animation at the cursor (see preview-pane.js)
+  start('animation preview', () => require('./preview-pane').activate(context, log))
   log.appendLine('started')
   // anim highlighting in the Markdown preview (see preview.js)
   return { extendMarkdownIt: require('./preview').extendMarkdownIt }

@@ -1,54 +1,12 @@
 // Error and warning marks (squiggles, and the Problems panel) for anim scenes: each <animation>
 // block in a Markdown file (and a whole .anim file) is compiled by the animation engine itself,
 // exactly as the page does, and each problem it finds is marked on its line. The engine is loaded
-// from the dt-notes repo the file is in (docs/_plugins/visualisation), and reloaded when it
-// changes; outside the repo there are no marks.
+// from the dt-notes repo the file is in (engine.js), and reloaded when it changes; outside the
+// repo there are no marks.
 const vscode = require('vscode')
-const fs = require('fs')
-const path = require('path')
-const vm = require('vm')
+const { engineDirFor, loadEngine, isEngineFile } = require('./engine')
 
-const ENGINE = path.join('docs', '_plugins', 'visualisation')
-// The engine's parts, in load order, as the site's page loads them (so a new part needs no change here)
-const PAGE = path.join('..', '..', 'index.html') // from the engine's folder
-const PART = /_plugins\/visualisation\/(anim-[\w-]+)\.js/g
-const partsOf = (dir) => [...fs.readFileSync(path.join(dir, PAGE), 'utf8').matchAll(PART)].map((m) => m[1])
 const WAIT_MS = 300 // after the last keystroke
-
-// The engine's parts loaded into a sandbox with just enough of a browser to load: text is
-// estimated rather than measured, and every icon name is accepted (Lucide isn't loaded).
-const engines = new Map() // engine dir -> { stamp, Anim }
-function loadEngine(dir) {
-  const parts = partsOf(dir)
-  const stamp = [PAGE, ...parts.map((part) => `${part}.js`)].map((file) => fs.statSync(path.join(dir, file)).mtimeMs).join('|')
-  const cached = engines.get(dir)
-  if (cached?.stamp === stamp) return cached.Anim
-  const element = () => ({ setAttribute() {}, appendChild: (child) => child, style: {} })
-  const sandbox = {
-    console,
-    structuredClone,
-    document: { body: null, createElementNS: element, createElement: element },
-    DocsifyUtils: { escapeHtml: (s) => String(s) },
-    lucide: { icons: new Proxy({}, { get: () => ({}) }) },
-  }
-  sandbox.window = sandbox
-  vm.createContext(sandbox)
-  for (const part of parts) {
-    const file = path.join(dir, `${part}.js`)
-    vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: file })
-  }
-  engines.set(dir, { stamp, Anim: sandbox.Anim })
-  return sandbox.Anim
-}
-
-// The engine folder for a file: the nearest folder above it holding docs/_plugins/visualisation.
-function engineDirFor(file) {
-  for (let dir = path.dirname(file); ; dir = path.dirname(dir)) {
-    const candidate = path.join(dir, ENGINE)
-    if (fs.existsSync(path.join(candidate, 'anim-compile.js'))) return candidate
-    if (path.dirname(dir) === dir) return null
-  }
-}
 
 // The range to mark on a line: the word the message is about (the last quoted word in the message
 // that's on the line, e.g. "fill" in '"delete" only takes …, not "fill"'), or else the whole line.
@@ -130,7 +88,7 @@ function activate(context) {
     vscode.workspace.onDidChangeTextDocument((event) => later(event.document)),
     vscode.workspace.onDidCloseTextDocument((document) => collection.delete(document.uri)),
     // an edited engine is reloaded (by its files' times) and every open file checked again
-    vscode.workspace.onDidSaveTextDocument((document) => { if (/[\\/]anim-[\w-]+\.js$/.test(document.fileName)) checkAll() }),
+    vscode.workspace.onDidSaveTextDocument((document) => { if (isEngineFile(document.fileName)) checkAll() }),
   )
   checkAll()
 }

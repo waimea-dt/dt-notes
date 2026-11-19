@@ -179,7 +179,13 @@ c1: via 6,2 speed slow
 The ends follow their shapes.
 
 ```anim
-b: move 10,1
+b: move 11,5
+```
+
++++
+
+```anim
+b: move 11,2
 ```
 
 </animation>

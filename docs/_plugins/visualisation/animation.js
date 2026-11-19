@@ -34,6 +34,10 @@
  *   anim-render.js   drawing a beat, or a blend between two, into the SVG
  *   animation.js     the widget: controls, captions, playback and the camera (this file)
  * Each part starts by taking what it needs from window.Anim and ends by adding what later parts use.
+ *
+ * The VS Code extension (vscode/dt-notes-syntax, preview-pane.js) loads these same files into a
+ * preview pane, runs this plugin's hooks itself, sends the widget `anim-show` events and listens
+ * for its `anim-beat` events.
  */
 
 ;(function () {
@@ -281,6 +285,11 @@
     let waitingForClick = false // playing, but stopped at a `pause` until Next
     let navId = 0 // bumped by every navigation, so older auto chains and play steps stop
 
+    // Where the viewer's own stepping is going, as an `anim-beat` event ({ beat }) sent as each
+    // move sets off: the VS Code preview pane moves the editor's cursor to that beat
+    const announceBeat = () => widget.dispatchEvent(new CustomEvent('anim-beat', { bubbles: true, detail: { beat: current } }))
+    const BY_VIEWER = { announce: true }
+
     function showStatic(index) {
       const state = beats[index]?.state || empty
       setView(cameraView(beats[index]?.camera))
@@ -365,7 +374,8 @@
     }
 
     // Moves to beat `to`: neighbouring beats animate (backwards plays in reverse), jumps are instant.
-    function goTo(to, { animate = true } = {}) {
+    // announce: say where it's going (anim-beat) as it sets off, for the viewer's own stepping.
+    function goTo(to, { animate = true, announce = false } = {}) {
       to = Math.max(0, Math.min(beats.length - 1, to))
       introPending = false // moving on before it played: no intro (until back at the start)
       if (running) running.finish()
@@ -373,6 +383,7 @@
       if (to === from) return Promise.resolve()
       current = to
       updateControls()
+      if (announce) announceBeat()
       showCaption(from, to, animate && Math.abs(to - from) === 1)
 
       if (!animate || Math.abs(to - from) !== 1 || reducedMotion()) {
@@ -454,12 +465,12 @@
 
     // One step, following `auto` chains: arriving at a beat marked `auto` goes straight on in the
     // same direction, so one click plays a chain forwards and one click undoes it.
-    function step(dir) {
+    function step(dir, { announce = false } = {}) {
       const token = ++navId
       const go = () => {
         const target = current + dir
         if (target < 0 || target > last) return Promise.resolve()
-        return goTo(target).then(() => {
+        return goTo(target, { announce }).then(() => {
           if (token === navId && beats[current].meta.auto && !atEnd(dir)) return go()
         })
       }
@@ -467,9 +478,9 @@
     }
 
     // Jumps straight to a beat; arriving back at the start plays the intro again.
-    function jump(index) {
+    function jump(index, { announce = false } = {}) {
       const token = ++navId
-      return goTo(index, { animate: false }).then(() => (token === navId && index === 0 ? playIntro() : null))
+      return goTo(index, { animate: false, announce }).then(() => (token === navId && index === 0 ? playIntro() : null))
     }
 
     // The intro: when the first beat chooses an entrance (typed, pop, draw, slide) or a delay, it
@@ -597,10 +608,10 @@
     const userNext = () => {
       if (playing && waitingForClick) return playNext()
       userStop()
-      step(1)
+      step(1, BY_VIEWER)
     }
-    const userBack = () => { userStop(); step(-1) }
-    const userJump = (index) => { userStop(); jump(index) }
+    const userBack = () => { userStop(); step(-1, BY_VIEWER) }
+    const userJump = (index) => { userStop(); jump(index, BY_VIEWER) }
     const userPlay = () => (playing ? userStop() : startPlaying())
 
     function toggleFullscreen() {
@@ -647,6 +658,17 @@
       else if (key === 'a') userPlay()
       else return
       event.preventDefault()
+    })
+
+    // An `anim-show` event ({ beat, play }) goes to a beat: the VS Code preview pane sends it to
+    // follow the editor's cursor. With play, it plays into the beat from the one before (or the
+    // intro, for the first), so an edited beat is seen moving.
+    widget.addEventListener('anim-show', ({ detail: { beat, play } }) => {
+      userStop()
+      const to = Math.max(0, Math.min(last, beat))
+      if (!play || to === 0) return jump(to)
+      const token = ++navId
+      goTo(to - 1, { animate: false }).then(() => { if (token === navId) goTo(to) })
     })
 
     // A theme change redraws, with the colours (theme variables) re-resolved (anim-render.js)
