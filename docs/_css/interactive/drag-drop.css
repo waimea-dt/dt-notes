@@ -167,29 +167,26 @@
                     border-bottom-right-radius: var(--border-radius);
                 }
 
-                &:has(pre, code) {
-                    &:not(:has(p, ol, li, h1, h2, h3, h4, h5)) {
-                        background-color: var(--code-bg-color);
-                    }
+                /* data-code-only is set by drag-drop.js on items that are only code */
+                &[data-code-only] {
+                    background-color: var(--code-bg-color);
                 }
 
                 code, pre {
                     padding: var(--drag-drop-gap-tiny) var(--drag-drop-padding-small) !important;
                 }
 
-                &:has(pre, code) {
-                    &:not(:has(p, ol, li, h1, h2, h3, h4, h5)) {
-                        pre {
-                            padding: 0.1rem 0 !important;
+                &[data-code-only] {
+                    pre {
+                        padding: 0.1rem 0 !important;
 
-                            &::after {
-                                display: none;
-                            }
+                        &::after {
+                            display: none;
                         }
+                    }
 
-                        code {
-                            padding: 0 0.25rem !important;
-                        }
+                    code {
+                        padding: 0 0.25rem !important;
                     }
                 }
 

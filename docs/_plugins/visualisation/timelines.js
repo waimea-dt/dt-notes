@@ -18,10 +18,12 @@
  *   - Date alone: "1945"
  *   - Date with title: "1945: Event Title"
  *   - Content is in paragraphs after the date/title
+ *   - A <dd> holding an image, SVG or figure gets data-media (text and media side by side)
  */
 
 ;(function () {
   const { resolveScope } = window.DocsifyUtils
+  const MEDIA_SELECTOR = 'svg, img, figure, [data-lucide]'
 
   function processTimelines(root) {
     const scope = resolveScope(root)
@@ -118,6 +120,10 @@
 
         if (content.hasChildNodes()) dd.appendChild(content)
         if (figures.hasChildNodes()) dd.appendChild(figures)
+
+        // data-media lays text and media out side by side. An attribute, not dd:has(...),
+        // which restyles the whole page. [data-lucide] icons become SVGs later.
+        dd.toggleAttribute('data-media', dd.querySelector(MEDIA_SELECTOR) !== null)
 
         // Add DT and DD to the definition list
         dl.appendChild(dt)

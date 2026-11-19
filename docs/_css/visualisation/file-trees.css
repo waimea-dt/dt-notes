@@ -52,7 +52,7 @@
         }
 
         /* Folders */
-        &:has(ul) {
+        &[data-folder] {
             color: var(--file-tree-folder-color);
 
             &::before {
@@ -61,7 +61,7 @@
         }
 
         /* Files */
-        &:not(:has(ul)) {
+        &:not([data-folder]) {
             color: var(--file-tree-file-color);
 
             &::before {
@@ -154,15 +154,15 @@
         }
     }
 
-    /* DIMMING WHEN FOCUS EXISTS */
+    /* DIMMING WHEN FOCUS EXISTS (data-folder / data-focus are set by file-trees.js) */
 
-    &:has(.focus) {
+    &[data-focus] {
         /* Dim all items */
-        & .file-tree-item:has(ul) {
+        & .file-tree-item[data-folder] {
             color: var(--file-tree-folder-color-low);
         }
 
-        & .file-tree-item:not(:has(ul)) {
+        & .file-tree-item:not([data-folder]) {
             color: var(--file-tree-file-color-low);
         }
 
@@ -173,19 +173,19 @@
         }
 
         /* Restore colors for focused items and their children */
-        & .file-tree-item.focus:has(ul),
-        & .file-tree-item.focus:has(ul) .file-tree-item:has(ul) {
+        & .file-tree-item.focus[data-folder],
+        & .file-tree-item.focus[data-folder] .file-tree-item[data-folder] {
             color: var(--file-tree-folder-color);
         }
 
-        & .file-tree-item.focus:not(:has(ul)),
-        & .file-tree-item.focus:has(ul) .file-tree-item:not(:has(ul)) {
+        & .file-tree-item.focus:not([data-folder]),
+        & .file-tree-item.focus[data-folder] .file-tree-item:not([data-folder]) {
             color: var(--file-tree-file-color);
         }
 
         /* Restore opacity for focused items' icons/lines and their descendants */
         & .file-tree-item.focus::before,
-        & .file-tree-item.focus:has(ul) .file-tree-item::before,
+        & .file-tree-item.focus[data-folder] .file-tree-item::before,
         & .file-tree-item.focus .file-tree-folder::after {
             opacity: 1;
         }

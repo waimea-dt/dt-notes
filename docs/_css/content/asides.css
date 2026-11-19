@@ -2,10 +2,9 @@
  * Styled floating asides for notes, tips, warnings, and other highlighted content
  */
 
-.markdown-section:has(aside) {
-    :is(h1, h2, h3) {
-        clear: both;
-    }
+/* Asides are the only floats on the site, so this has no effect on pages without them */
+.markdown-section :is(h1, h2, h3) {
+    clear: both;
 }
 
 .markdown-section > aside,

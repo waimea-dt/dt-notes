@@ -169,7 +169,8 @@
         font-size: 0.875rem;
         background-color: var(--trace-bg-table);
 
-        :is(td, th):has(input) {
+        /* data-input is set by trace-table.js on cells holding a worksheet input */
+        :is(td, th)[data-input] {
             padding: 2px;
 
             .trace-table-cell-input {
@@ -244,7 +245,7 @@
             }
 
             tr.active,
-            tr:has(td > input:focus) {
+            tr:focus-within {
                 background: var(--trace-row-active-bg) !important;
 
                 td {

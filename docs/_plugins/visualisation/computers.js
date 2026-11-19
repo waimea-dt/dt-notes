@@ -7,6 +7,9 @@
  *   # Your Content
  *   Regular markdown here...
  *   </computer>
+ *
+ * A page that is only one <computer> plus a <script> gets data-computer-page on
+ * .markdown-section, which centres the computer on the page.
  */
 
 ;(function () {
@@ -108,8 +111,19 @@
     // Plugin Registration
     // -------------------------------------------------------------------------
 
+    // An attribute, not .markdown-section:has(...), which restyles the whole page on every DOM change
+    function markComputerPage() {
+        const section = document.querySelector('.markdown-section')
+        if (!section) return
+
+        const isComputerPage = section.querySelectorAll(':scope > computer').length === 1
+            && section.querySelector(':scope > script') !== null
+        section.toggleAttribute('data-computer-page', isComputerPage)
+    }
+
     const docsifyComputers = function (hook) {
         hook.doneEach(function () {
+            markComputerPage()
             processComputers()
         })
     }

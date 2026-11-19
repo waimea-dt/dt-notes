@@ -85,7 +85,8 @@
             margin-bottom: 0;
         }
 
-        &:has(svg, img, figure) {
+        /* data-media is set by timelines.js */
+        &[data-media] {
             display: flex;
             flex-wrap: wrap;
             gap: var(--gap);

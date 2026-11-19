@@ -1,5 +1,6 @@
 /**
  * Mouse trails on selected routes
+ * Sets data-mouse-trail on <body> while the trail is on (turns off text selection in the content).
  */
 ;(function () {
     'use strict'
@@ -12,6 +13,8 @@
 
     const TRAIL_CLASS = 'mouse-trail-item'
     const ROOT_CLASS = 'mouse-trail-root'
+    // An attribute, not body:has(.mouse-trail-root): that :has() rule restyles the whole page on every DOM change
+    const ACTIVE_ATTR = 'data-mouse-trail'
 
     const ITEM_LIFETIME_MAX_MS = 1200
     const ITEM_LIFETIME_MIN_MS = 600
@@ -146,6 +149,7 @@
         const root = document.createElement('div')
         root.className = ROOT_CLASS
         document.body.appendChild(root)
+        document.body.toggleAttribute(ACTIVE_ATTR, true)
 
         trailRoot = root
         return root
@@ -306,6 +310,7 @@
         if (trailRoot) {
             trailRoot.remove()
             trailRoot = null
+            document.body.toggleAttribute(ACTIVE_ATTR, false)
         }
     }
 

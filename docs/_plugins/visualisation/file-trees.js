@@ -50,8 +50,12 @@
         // Check for focus marker
         const markerInfo = extractMarker(textContent, FOCUS_MARKER)
 
+        // data- attributes for CSS: :has(ul) / :has(.focus) rules restyle the whole page
+        if (nestedUL) item.toggleAttribute('data-folder', true)
+
         if (markerInfo.hasMarker) {
           item.classList.add('focus')
+          fileList.toggleAttribute('data-focus', true)
         }
 
         // Remove all content nodes (text and formatted elements)

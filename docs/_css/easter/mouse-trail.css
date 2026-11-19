@@ -1,5 +1,6 @@
-body:has(.mouse-trail-root) .content,
-body:has(.mouse-trail-root) .content * {
+/* data-mouse-trail is set by mouse-trail.js while the trail is on */
+body[data-mouse-trail] .content,
+body[data-mouse-trail] .content * {
     /* pointer-events: none; */
     user-select: none;
 }

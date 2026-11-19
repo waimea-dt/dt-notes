@@ -548,20 +548,23 @@ body.effect-antigravity :is(.markdown-section>h1,
 
 /* DELETED ----------------------------------------- */
 
-:has(.rm-message) {
-    background-color: var(--code-color-back) !important;
-    background-image: none !important;
+/* data-easter-deleted is set on <html> by easter.js when the content has been deleted */
+:root[data-easter-deleted] {
+    &, body {
+        background-color: var(--code-color-back) !important;
+        background-image: none !important;
 
-    color: var(--code-color-normal);
+        color: var(--code-color-normal);
+    }
+}
 
-    .rm-message {
-        padding: var(--padding);
-        font-size: var(--font-xlarge);
-        font-family: var(--font-family-mono);
+.rm-message {
+    padding: var(--padding);
+    font-size: var(--font-xlarge);
+    font-family: var(--font-family-mono);
 
-        &:focus-visible {
-            outline: none;
-        }
+    &:focus-visible {
+        outline: none;
     }
 }
 

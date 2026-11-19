@@ -3,7 +3,7 @@
  */
 
 /* Target only lists on the glossary page */
-.markdown-section:has(> h1#glossary, > h1#glossary-of-terms) :is(h2, h3) + ul {
+.markdown-section > :is(h1#glossary, h1#glossary-of-terms) ~ :is(h2, h3) + ul {
     /* Container styles */
 
     > li {

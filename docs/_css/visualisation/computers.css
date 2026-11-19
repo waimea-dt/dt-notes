@@ -2,7 +2,8 @@
  * SVG-based computer screen visualizations
  */
 
- .markdown-section:has(> computer:only-of-type):has(> script) {
+/* data-computer-page is set by computers.js on a page that is one computer plus a script */
+.markdown-section[data-computer-page] {
     display: flex;
     min-height: 100%;
     width: 100%;

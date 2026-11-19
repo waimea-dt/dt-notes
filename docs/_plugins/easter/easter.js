@@ -342,6 +342,8 @@
         message.contentEditable = 'true'
         message.spellcheck = false
         message.textContent = 'rm: All content deleted.\n\nI hope you had a backup!\n\nroot@dt-notes:~# '
+        // An attribute for the terminal look, not :has(.rm-message), which restyles the whole page
+        document.documentElement.toggleAttribute('data-easter-deleted', true)
         document.body.appendChild(message)
 
         // Wait a tick so the element is in the DOM, then put the caret at the end

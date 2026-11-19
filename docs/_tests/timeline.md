@@ -124,3 +124,33 @@
     One of the most frightening things about your true nerd, for may people, is not that he's socially inept - because everybody's been there - but rather his complete lack of embarrassment about it.
 
 </timeline>
+
+## With Images
+
+A captioned figure sits beside the text; a plain image stays in the text, below it.
+
+<timeline>
+
+- 1941: Captioned Figure
+
+    **Konrad Zuse** built the **Z3**, an electro-mechanical computer using about 2,300 relays for floating-point binary arithmetic.
+
+    <captioned>
+
+    ![Konrad Zuse and the Z3](../history/_assets/1940s/zuse-z3.webp)
+
+    Konrad Zuse and the Z3
+
+    </captioned>
+
+- 1941: Plain Image
+
+    The **Bombe** was built to find the daily settings of the Enigma machine.
+
+    ![Bombes used to attack ENIGMA](../history/_assets/1940s/bombe.webp)
+
+- 1942: Text Only
+
+    The **Atanasoff-Berry Computer** was the first computer able to store information in electronic main memory.
+
+</timeline>

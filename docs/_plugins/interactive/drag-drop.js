@@ -83,7 +83,18 @@
                 id: `${idPrefix}-${index + 1}`,
                 originalIndex: index,
                 html: itemEl.innerHTML,
+                codeOnly: isCodeOnly(itemEl),
             }))
+    }
+
+    // Code with no block text around it: shown as a code chip (data-code-only). An attribute,
+    // not :has(pre, code):not(:has(p, ...)), which restyles the whole page
+    function isCodeOnly(el) {
+        return el.querySelector('pre, code') !== null && el.querySelector('p, ol, li, h1, h2, h3, h4, h5') === null
+    }
+
+    function codeOnlyAttr(item) {
+        return item.codeOnly ? ' data-code-only' : ''
     }
 
     function getTopLevelWidgetLists(el) {
@@ -166,7 +177,7 @@
         const atBottom = index === total - 1
 
         return `
-            <div class="drag-drop-item" role="listitem" data-id="${item.id}" data-original-index="${item.originalIndex}">
+            <div class="drag-drop-item" role="listitem" data-id="${item.id}" data-original-index="${item.originalIndex}"${codeOnlyAttr(item)}>
                 <div class="drag-drop-item-shell">
                     <button class="drag-drop-drag-handle" aria-label="${UI_TEXT.aria.dragHandle}" title="${UI_TEXT.aria.dragHandle}">${SVG_ICONS.controls.drag}</button>
                     <div class="drag-drop-item-content">${item.html}</div>
@@ -311,7 +322,7 @@
             if (!this.referenceListEl || !this.hasReferenceList) return
 
             this.referenceListEl.innerHTML = this.referenceItems
-                .map((item) => `<div class="drag-drop-reference-item" role="listitem">${item.html}</div>`)
+                .map((item) => `<div class="drag-drop-reference-item" role="listitem"${codeOnlyAttr(item)}>${item.html}</div>`)
                 .join('')
         }
 
@@ -336,6 +347,7 @@
                     id,
                     originalIndex,
                     html: existing ? existing.html : itemEl.querySelector('.drag-drop-item-content')?.innerHTML || '',
+                    codeOnly: itemEl.hasAttribute('data-code-only'),
                 }
             })
 

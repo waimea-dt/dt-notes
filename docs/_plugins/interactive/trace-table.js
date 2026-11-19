@@ -1580,6 +1580,18 @@
         if (typeof value === 'boolean' || value === null || value === undefined) td.classList.add('trace-table-cell-boolean')
     }
 
+    // Blank-worksheet input. data-input marks the cell for CSS: :has(input) restyles the whole page
+    function appendCellInput(cell, placeholder, ariaLabel) {
+        const input = document.createElement('input')
+        input.type = 'text'
+        input.className = 'trace-table-cell-input'
+        input.placeholder = placeholder
+        input.setAttribute('aria-label', ariaLabel)
+        cell.appendChild(input)
+        cell.toggleAttribute('data-input', true)
+        return input
+    }
+
     function createTraceButton(className, text, disabled = false) {
         const button = document.createElement('button')
         button.className = className
@@ -1675,12 +1687,7 @@
         variableOrder.forEach(name => {
             const th = document.createElement('th')
             if (options.blankTemplate) {
-                const nameInput = document.createElement('input')
-                nameInput.type = 'text'
-                nameInput.className = 'trace-table-cell-input'
-                nameInput.placeholder = '?'
-                nameInput.setAttribute('aria-label', `Variable name ${name}`)
-                th.appendChild(nameInput)
+                appendCellInput(th, '?', `Variable name ${name}`)
             } else {
                 th.textContent = name
             }
@@ -1702,12 +1709,7 @@
             const lineTd = document.createElement('td')
             lineTd.className = 'trace-table-line-number'
             if (options.blankTemplate && row.kind !== 'done') {
-                const lineInput = document.createElement('input')
-                lineInput.type = 'text'
-                lineInput.className = 'trace-table-cell-input'
-                lineInput.placeholder = '—'
-                lineInput.setAttribute('aria-label', `Line number for row ${idx + 1}`)
-                lineTd.appendChild(lineInput)
+                appendCellInput(lineTd, '—', `Line number for row ${idx + 1}`)
             } else {
                 lineTd.textContent = String(row.lineNumber)
             }
@@ -1717,12 +1719,7 @@
                 const td = document.createElement('td')
                 td.dataset.varName = name
                 if (options.blankTemplate) {
-                    const input = document.createElement('input')
-                    input.type = 'text'
-                    input.className = 'trace-table-cell-input'
-                    input.placeholder = '—'
-                    input.setAttribute('aria-label', `Row ${idx + 1}, variable ${name}`)
-                    td.appendChild(input)
+                    appendCellInput(td, '—', `Row ${idx + 1}, variable ${name}`)
                 } else if (Object.prototype.hasOwnProperty.call(row.variables, name)) {
                     const value = row.variables[name]
                     td.innerHTML = formatValueHtml(value, adapter)
@@ -1737,12 +1734,7 @@
             const outputTd = document.createElement('td')
             outputTd.className = 'trace-table-output'
             if (options.blankTemplate) {
-                const outputInput = document.createElement('input')
-                outputInput.type = 'text'
-                outputInput.className = 'trace-table-cell-input'
-                outputInput.placeholder = '—'
-                outputInput.setAttribute('aria-label', `Row ${idx + 1}, output`)
-                outputTd.appendChild(outputInput)
+                appendCellInput(outputTd, '—', `Row ${idx + 1}, output`)
             } else {
                 outputTd.textContent = row.output ? row.output : '—'
                 if (!row.output) outputTd.classList.add('trace-table-cell-empty')

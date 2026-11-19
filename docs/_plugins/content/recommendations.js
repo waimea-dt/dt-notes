@@ -10,6 +10,8 @@
  *   - **Recommended** → adds "recommended" class + star icon (also uses a star badge in CSS)
  *   - **Free** / **Paid** → adds "free"/"paid" class + gift/circle-dollar-sign icon
  *   - **Online** / **Desktop** → adds "online"/"desktop" class + globe/monitor icon
+ * A genre filter is added under the h1. It sets data-filter="<genre|all>" on itself and
+ * data-filtered-out on items that don't match.
  *
  * Usage:
  *   # Page Title
@@ -127,6 +129,19 @@
 
         details.append(filterContainer)
         firstHeading.parentElement.insertBefore(details, firstHeading.nextSibling)
+
+        applyFilter(details, recommendationItems, 'all')
+        filterContainer.addEventListener('change', event => {
+            applyFilter(details, recommendationItems, event.target.value)
+        })
+    }
+
+    // Shows the filter state with data- attributes: page-wide :has() rules restyle the whole page
+    function applyFilter(filter, items, genre) {
+        filter.dataset.filter = genre
+        items.forEach(item => {
+            item.toggleAttribute('data-filtered-out', genre !== 'all' && !item.classList.contains(genre))
+        })
     }
 
     function appendFilterCount(label, count) {

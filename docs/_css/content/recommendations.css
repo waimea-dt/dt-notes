@@ -269,18 +269,17 @@
             background-color: inherit;
         }
 
-        &:has(~ .recommendations-filter-list label input[value="all"]:checked) {
-            &::after {
-                content: " OFF";
-            }
+        &::after {
+            content: " OFF";
         }
+    }
 
-        &:has(~ .recommendations-filter-list label input:not([value="all"]):checked) {
-            color: var(--recommendations-filter-on);
-            &::after {
-                content: " ON";
-                color: var(--recommendations-filter-hover);
-            }
+    /* data-filter is set by the plugin (the chosen genre, or "all") */
+    &:not([data-filter="all"]) summary {
+        color: var(--recommendations-filter-on);
+        &::after {
+            content: " ON";
+            color: var(--recommendations-filter-hover);
         }
     }
 
@@ -289,10 +288,6 @@
         display: inline-flex;
         gap: var(--gap-tiny) var(--gap-large);
         flex-wrap: wrap;
-
-        &:has(input:not([value="all"]):checked) {
-            color: var(--recommendations-filter-off);
-        }
 
         label {
             text-wrap: nowrap;
@@ -341,42 +336,13 @@
             }
         }
     }
+
+    &:not([data-filter="all"]) .recommendations-filter-list {
+        color: var(--recommendations-filter-off);
+    }
 }
 
-.markdown-section {
-
-    &:has(input[value="action"]:checked) .recommendations>li:not(.action),
-    &:has(input[value="adventure"]:checked) .recommendations>li:not(.adventure),
-    &:has(input[value="animated"]:checked) .recommendations>li:not(.animated),
-    &:has(input[value="biography"]:checked) .recommendations>li:not(.biography),
-    &:has(input[value="comedy"]:checked) .recommendations>li:not(.comedy),
-    &:has(input[value="computing"]:checked) .recommendations>li:not(.computing),
-    &:has(input[value="crime"]:checked) .recommendations>li:not(.crime),
-    &:has(input[value="desktop"]:checked) .recommendations>li:not(.desktop),
-    &:has(input[value="drama"]:checked) .recommendations>li:not(.drama),
-    &:has(input[value="dystopia"]:checked) .recommendations>li:not(.dystopia),
-    &:has(input[value="factual"]:checked) .recommendations>li:not(.factual),
-    &:has(input[value="fantasy"]:checked) .recommendations>li:not(.fantasy),
-    &:has(input[value="free"]:checked) .recommendations>li:not(.free),
-    &:has(input[value="gaming"]:checked) .recommendations>li:not(.gaming),
-    &:has(input[value="hacking"]:checked) .recommendations>li:not(.hacking),
-    &:has(input[value="history"]:checked) .recommendations>li:not(.history),
-    &:has(input[value="horror"]:checked) .recommendations>li:not(.horror),
-    &:has(input[value="mystery"]:checked) .recommendations>li:not(.mystery),
-    &:has(input[value="nature"]:checked) .recommendations>li:not(.nature),
-    &:has(input[value="online"]:checked) .recommendations>li:not(.online),
-    &:has(input[value="paid"]:checked) .recommendations>li:not(.paid),
-    &:has(input[value="philosophy"]:checked) .recommendations>li:not(.philosophy),
-    &:has(input[value="recommended"]:checked) .recommendations>li:not(.recommended),
-    &:has(input[value="romance"]:checked) .recommendations>li:not(.romance),
-    &:has(input[value="sci-fi"]:checked) .recommendations>li:not(.sci-fi),
-    &:has(input[value="science"]:checked) .recommendations>li:not(.science),
-    &:has(input[value="society"]:checked) .recommendations>li:not(.society),
-    &:has(input[value="spy"]:checked) .recommendations>li:not(.spy),
-    &:has(input[value="space"]:checked) .recommendations>li:not(.space),
-    &:has(input[value="thriller"]:checked) .recommendations>li:not(.thriller),
-    &:has(input[value="war"]:checked) .recommendations>li:not(.war),
-    &:has(input[value="zombie"]:checked) .recommendations>li:not(.zombie) {
-        opacity: 0.2;
-    }
+/* Set by the plugin on items that don't match the chosen genre */
+.markdown-section .recommendations > li[data-filtered-out] {
+    opacity: 0.2;
 }
