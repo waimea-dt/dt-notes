@@ -66,111 +66,92 @@
     return glossaryMap;
   }
 
-  function createTextNodeReplacer(term, definition, replaceOnlyFirst) {
-    let replaced = false;
+  // Skipped with everything inside: code, existing abbr tags, menu cards, quiz/flashcard content
+  // (would leak answers via tooltips), and plugin content marked up as plain HTML before its
+  // plugin runs (animation.js: step/beat captions and teacher notes)
+  const SKIP = 'code, pre, abbr, script, style, quiz, flashcards, drag-drop, menu, .anim-source';
 
-    return function replaceInTextNode(node) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        // Skip if already replaced and replaceOnlyFirst is true
-        if (replaceOnlyFirst && replaced) {
-          return;
-        }
+  // Two patterns for all terms, built once when the glossary loads: terms with a capital letter
+  // match exactly, all-lowercase terms match in any case. Each allows a plural 's'.
+  let matchers = [];
 
-        // Skip empty or whitespace-only nodes
-        if (!node.textContent.trim()) {
-          return;
-        }
-
-        // Determine if term has any uppercase letters
-        // If it does, use exact/case-sensitive matching
-        const hasUppercase = /[A-Z]/.test(term);
-
-        // Use case-sensitive matching for terms with uppercase, case-insensitive for all-lowercase terms
-        const flags = hasUppercase ? 'g' : 'gi';
-        // Match term with optional trailing 's' for plurals
-        const regex = new RegExp(`\\b(${escapeRegExp(term)}s?)\\b`, flags);
-        const text = node.textContent;
-
-        // Check if there are any matches
-        if (!regex.test(text)) {
-          return;
-        }
-
-        // Reset regex (test() moves the index)
-        regex.lastIndex = 0;
-
-        // Split and rebuild with abbr tags
-        const parts = text.split(regex);
-
-        if (parts.length > 1) {
-          const fragment = document.createDocumentFragment();
-
-          // Get all matches to preserve original case
-          const matches = [];
-          let match;
-          regex.lastIndex = 0;
-          while ((match = regex.exec(text)) !== null) {
-            matches.push(match[0]);
-          }
-
-          // Build fragment: text, abbr, text, abbr, ...
-          for (let i = 0; i < parts.length; i++) {
-            if (i % 2 === 0) {
-              // Even index = regular text
-              if (parts[i]) {
-                fragment.appendChild(document.createTextNode(parts[i]));
-              }
-            } else {
-              // Odd index = matched term (use original case from matches)
-              const abbr = document.createElement('abbr');
-              abbr.setAttribute('data-tooltip', definition);
-              abbr.textContent = matches[Math.floor(i / 2)];
-              abbr.classList.add('glossary-term');
-              fragment.appendChild(abbr);
-            }
-          }
-
-          node.parentNode.replaceChild(fragment, node);
-          replaced = true;
-        }
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        // Skip code blocks, existing abbr tags, menu cards, and quiz/flashcard content (would leak answers via tooltips)
-        const skipTags = ['CODE', 'PRE', 'ABBR', 'SCRIPT', 'STYLE', 'QUIZ', 'FLASHCARDS', 'DRAG-DROP', 'MENU'];
-        if (skipTags.includes(node.tagName)) {
-          return;
-        }
-
-        // Skip plugin content marked up as plain HTML before its plugin runs, by class
-        // (animation.js: step/beat captions and teacher notes)
-        const skipClasses = ['anim-source'];
-        if (skipClasses.some(cls => node.classList.contains(cls))) {
-          return;
-        }
-
-        // Recursively process child nodes
-        const children = Array.from(node.childNodes);
-        children.forEach(replaceInTextNode);
-      }
+  function buildMatchers() {
+    const terms = Object.keys(glossary);
+    const lowercaseDefinitions = new Map(terms.map(term => [term.toLowerCase(), glossary[term]]));
+    const pattern = (list, flags) => {
+      // Longest first, so a longer term wins over a shorter one at the same place
+      const alternatives = list.sort((a, b) => b.length - a.length).map(escapeRegExp).join('|');
+      return new RegExp(`\\b(${alternatives})s?\\b`, flags);
     };
+    const exact = terms.filter(term => /[A-Z]/.test(term));
+    const anyCase = terms.filter(term => !/[A-Z]/.test(term));
+    matchers = [
+      exact.length && { regex: pattern(exact, 'g'), definition: term => glossary[term] },
+      anyCase.length && { regex: pattern(anyCase, 'gi'), definition: term => lowercaseDefinitions.get(term.toLowerCase()) },
+    ].filter(Boolean);
+  }
+
+  // The terms in a piece of text, longest first where two overlap: { start, end, text, term }
+  function findTerms(text) {
+    const found = [];
+    for (const { regex, definition } of matchers) {
+      for (const match of text.matchAll(regex)) {
+        found.push({ start: match.index, end: match.index + match[0].length, text: match[0], definition: definition(match[1]), key: match[1].toLowerCase() });
+      }
+    }
+    found.sort((a, b) => (b.end - b.start) - (a.end - a.start) || a.start - b.start);
+    const kept = [];
+    for (const term of found) {
+      if (!kept.some(other => term.start < other.end && other.start < term.end)) kept.push(term);
+    }
+    return kept.sort((a, b) => a.start - b.start);
+  }
+
+  function textNodesToSearch(container) {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+      acceptNode: node => node.nodeType === Node.ELEMENT_NODE
+        ? (node.matches(SKIP) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP)
+        : (node.data.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP),
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    return nodes;
+  }
+
+  function createAbbr(term) {
+    const abbr = document.createElement('abbr');
+    abbr.setAttribute('data-tooltip', term.definition);
+    abbr.textContent = term.text;
+    abbr.classList.add('glossary-term');
+    return abbr;
   }
 
   function addAbbreviations(content, options) {
-    if (!glossaryLoaded || Object.keys(glossary).length === 0) {
+    if (!matchers.length) {
       return content;
     }
 
-    // Create a temporary container
     const container = document.createElement('div');
     container.innerHTML = content;
+    const used = new Set(); // for replaceOnlyFirst
 
-    // Sort terms by length (longest first) to avoid partial matches
-    const terms = Object.keys(glossary).sort((a, b) => b.length - a.length);
+    textNodesToSearch(container).forEach(node => {
+      let terms = findTerms(node.data);
+      if (options.replaceOnlyFirst) {
+        terms = terms.filter(term => !used.has(term.key) && used.add(term.key));
+      }
+      if (!terms.length) return;
 
-    // Replace each term
-    terms.forEach(term => {
-      const definition = glossary[term];
-      const replacer = createTextNodeReplacer(term, definition, options.replaceOnlyFirst);
-      replacer(container);
+      // Rebuild the text node as text, abbr, text, abbr, ...
+      const fragment = document.createDocumentFragment();
+      let at = 0;
+      terms.forEach(term => {
+        if (term.start > at) fragment.append(node.data.slice(at, term.start));
+        fragment.append(createAbbr(term));
+        at = term.end;
+      });
+      if (at < node.data.length) fragment.append(node.data.slice(at));
+      node.replaceWith(fragment);
     });
 
     return container.innerHTML;
@@ -200,6 +181,7 @@
         .then(text => {
           if (text) {
             glossary = parseGlossary(text);
+            buildMatchers();
             glossaryLoaded = true;
           }
         })

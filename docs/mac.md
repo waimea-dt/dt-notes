@@ -712,6 +712,7 @@
         ])
 
         const nameInput = document.getElementById('username')
+        if (!nameInput) return // left the page while the chat was typing
         nameInput.focus()
         nameInput.addEventListener('change', () => {
             if (nameInput.value && nameInput.value.trim().length > 0) {
