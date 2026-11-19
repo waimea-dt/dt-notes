@@ -93,8 +93,11 @@
         if (!markdownSection || markdownSection.dataset.svgZoomObserverAttached) return
         markdownSection.dataset.svgZoomObserverAttached = 'true'
 
+        // Changes inside an existing SVG (animations and sims redrawing themselves) are skipped:
+        // only new SVGs and images added to the page are looked at.
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
+                if (mutation.target.closest('svg')) return
                 mutation.addedNodes.forEach(function (node) {
                     if (node.nodeName === 'SVG' || node.tagName === 'svg') {
                         attachZoom(node)
@@ -195,20 +198,17 @@
         document.addEventListener('keydown', onKey)
     }
 
-    function bootstrapNow() {
+    function attachToPage() {
         const markdownSection = document.querySelector('.markdown-section')
-        if (!markdownSection) return false
+        if (!markdownSection) return
 
         ensureGlobalCapture()
         scanAndAttach(markdownSection)
         ensureMutationObserver(markdownSection)
-        return true
     }
 
     const svgZoom = function (hook) {
-        hook.doneEach(function () {
-            bootstrapNow()
-        })
+        hook.doneEach(attachToPage)
     }
 
     window.SvgZoom = window.SvgZoom || {}
@@ -216,19 +216,6 @@
         const target = root || document.querySelector('.markdown-section')
         if (!target) return
         scanAndAttach(target)
-    }
-
-    if (!bootstrapNow()) {
-        document.addEventListener('DOMContentLoaded', bootstrapNow, { once: true })
-        window.addEventListener('load', bootstrapNow, { once: true })
-        const retryTimer = window.setInterval(function () {
-            if (bootstrapNow()) {
-                window.clearInterval(retryTimer)
-            }
-        }, 250)
-        window.setTimeout(function () {
-            window.clearInterval(retryTimer)
-        }, 10000)
     }
 
     registerPlugin(svgZoom)
