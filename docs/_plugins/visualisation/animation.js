@@ -44,6 +44,12 @@
   // Widget
   // ---------------------------------------------------------------------------
 
+  // What changes as it plays is shown with data- and aria- attributes and inline styles, never
+  // classes, `hidden` / `disabled` or added and removed nodes: with the site's :has() rules, any of
+  // those restyles the whole page, which stalls the frame a step starts or ends on.
+  const setFlag = (el, name, on) => el.toggleAttribute(`data-${name}`, on)
+  const setDisabled = (button, on) => button.setAttribute('aria-disabled', String(on))
+
   // Transparent icon buttons styled like reveal.js's controls (animation.css): chevrons are drawn in
   // CSS, other icons use the shared --butt-icon-* masks. No type attribute: Docsify's core CSS
   // styles button[type].
@@ -147,7 +153,8 @@
     if (opts.controls != null && opts.controls !== 'none') warnings.push(`controls="${opts.controls}" isn't "none", so the controls are shown`)
 
     const widget = document.createElement('div')
-    widget.className = 'animation anim-untouched' // until the first interaction (see CSS)
+    widget.className = 'animation'
+    setFlag(widget, 'untouched', true) // until the first interaction (see CSS)
     widget.tabIndex = 0
     widget.setAttribute('role', 'region')
     widget.setAttribute('aria-label', title ? `Animation: ${title.textContent.trim()}` : 'Animation')
@@ -211,10 +218,13 @@
     const notesPanel = widget.appendChild(document.createElement('div'))
     notesPanel.className = 'anim-notes'
     notesPanel.hidden = true
-    // Each step's note nodes go straight into the panel (no wrapper, no whitespace-only text), so a
-    // step without notes leaves the panel :empty.
-    const notes = steps.map((step) => [...(step.notes?.childNodes || [])]
-      .filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim()))
+    // One page of notes per step, the current one shown. A step's note nodes go straight into its
+    // page (no whitespace-only text), so a step without notes leaves its page :empty.
+    const notes = hasNotes ? steps.map((step) => {
+      const page = notesPanel.appendChild(document.createElement('div'))
+      page.append(...[...(step.notes?.childNodes || [])].filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim()))
+      return page
+    }) : []
 
     const messages = [...errors.map((m) => ['error', m]), ...(debug ? warnings.map((m) => ['warning', m]) : [])]
     if (messages.length) {
@@ -279,13 +289,13 @@
 
     function updateControls() {
       const step = beats[current]?.step ?? 0
-      prev.disabled = current === 0
-      rewind.disabled = current === 0
-      next.disabled = current >= beats.length - 1
+      setDisabled(prev, current === 0)
+      setDisabled(rewind, current === 0)
+      setDisabled(next, current >= beats.length - 1)
       progressBar.style.transform = `scaleX(${beats.length > 1 ? current / (beats.length - 1) : 1})`
       progress.setAttribute('aria-valuenow', String(current))
       progress.setAttribute('aria-valuetext', `Step ${step + 1} of ${steps.length}`)
-      if (hasNotes) notesPanel.replaceChildren(...notes[step])
+      notes.forEach((page, i) => { page.style.display = i === step ? '' : 'none' })
     }
 
     // A caption slide or fade. While it runs the element has its own compositor layer, so the
@@ -298,9 +308,8 @@
       return anim
     }
 
-    // What to undo once a caption animation is over (classes, styles, a held last frame). It waits
-    // until the diagram stops moving: the site's many :has() selectors make any class change
-    // restyle the whole page, which would stall a shape mid-move (the caption ends 500ms in).
+    // What to undo once a caption animation is over (flags, styles, a held last frame). It waits
+    // until the diagram stops moving, so the caption's changes all land on the frame it stops.
     let tidyUps = []
     function afterCaption(anim, fn) {
       let done = false
@@ -324,8 +333,8 @@
       const forward = to > from
       const pageA = pages[a.step]
       const pageB = pages[b.step]
-      pages.forEach((p, i) => p.page.classList.toggle('is-active', i === b.step))
-      pageB.parts.forEach((part, i) => part.classList.toggle('is-shown', i <= b.beat))
+      pages.forEach((p, i) => setFlag(p.page, 'active', i === b.step))
+      pageB.parts.forEach((part, i) => setFlag(part, 'shown', i <= b.beat))
 
       if (a.step !== b.step) {
         const sameHeading = pageA.headingText === pageB.headingText
@@ -335,11 +344,11 @@
         if (ms) {
           // The outgoing page stays visible while it fades out.
           const outTarget = sameHeading ? pageA.body : pageA.page
-          pageA.page.classList.add('is-leaving')
+          setFlag(pageA.page, 'leaving', true)
           if (sameHeading) pageA.heading.style.visibility = 'hidden'
           const out = animateEl(outTarget, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${forward ? '-1.5em' : '1.5em'})` }], ms, { fill: 'forwards' })
           afterCaption(out, () => {
-            pageA.page.classList.remove('is-leaving')
+            setFlag(pageA.page, 'leaving', false)
             pageA.heading.style.visibility = ''
             out.cancel()
           })
@@ -348,9 +357,9 @@
         const part = pageB.parts[Math.max(a.beat, b.beat)]
         if (forward) animateEl(part, [{ opacity: 0 }, { opacity: 1 }], ms)
         else if (ms) {
-          part.classList.add('is-leaving')
+          setFlag(part, 'leaving', true)
           const out = animateEl(part, [{ opacity: 1 }, { opacity: 0 }], ms, { fill: 'forwards' })
-          afterCaption(out, () => { part.classList.remove('is-leaving'); out.cancel() })
+          afterCaption(out, () => { setFlag(part, 'leaving', false); out.cancel() })
         }
       }
     }
@@ -490,14 +499,14 @@
 
     function setWaiting(on) {
       waitingForClick = on
-      widget.classList.toggle('is-waiting', on)
+      setFlag(widget, 'waiting', on)
     }
 
     function stopPlaying() {
       playing = false
       setWaiting(false)
       clearTimeout(playTimer)
-      widget.classList.remove('is-playing')
+      setFlag(widget, 'playing', false)
       setButtonLabel(play, 'Play', 'A')
     }
 
@@ -536,7 +545,7 @@
 
     function startPlaying({ waiting = false, holdFirst = false } = {}) {
       playing = true
-      widget.classList.add('is-playing')
+      setFlag(widget, 'playing', true)
       setButtonLabel(play, 'Pause', 'A')
       if (waiting) return schedule(Infinity)
       // autoplay: show where it starts first (after the intro, if it's playing)
@@ -599,12 +608,14 @@
       else widget.requestFullscreen?.().catch(() => {})
     }
 
-    rewind.addEventListener('click', () => userJump(0))
-    prev.addEventListener('click', userBack)
-    next.addEventListener('click', userNext)
-    play.addEventListener('click', userPlay)
+    // aria-disabled (not disabled) still lets a click through
+    const onPress = (button, fn) => button.addEventListener('click', () => { if (button.getAttribute('aria-disabled') !== 'true') fn() })
+    onPress(rewind, () => userJump(0))
+    onPress(prev, userBack)
+    onPress(next, userNext)
+    onPress(play, userPlay)
     // The next/play nudge stops at the first interaction, as reveal.js's controls tutorial does
-    const touched = () => widget.classList.remove('anim-untouched')
+    const touched = () => setFlag(widget, 'untouched', false)
     controls.addEventListener('click', touched)
     widget.addEventListener('keydown', touched)
 

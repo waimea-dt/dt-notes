@@ -98,8 +98,8 @@
             visibility: hidden;
             min-width: 0;
 
-            &.is-active,
-            &.is-leaving {
+            &[data-active],
+            &[data-leaving] {
                 visibility: visible;
             }
 
@@ -111,7 +111,7 @@
             }
 
             .anim-body > .anim-part {
-                &:not(.is-shown, .is-leaving) {
+                &:not([data-shown], [data-leaving]) {
                     visibility: hidden;
                 }
 
@@ -119,7 +119,7 @@
                 > :last-child { margin-bottom: 0; }
             }
 
-            &.is-leaving:not(.is-active) .anim-part:not(.is-shown) {
+            &[data-leaving]:not([data-active]) .anim-part:not([data-shown]) {
                 visibility: hidden;
             }
         }
@@ -157,18 +157,18 @@
         cursor: pointer;
         transition: color 0.2s, opacity 0.2s, transform 0.2s;
 
-        &:hover:not(:disabled) {
+        &:hover:not([aria-disabled="true"]) {
             background: transparent;
             color: var(--anim-ctrl-color);
             opacity: 1;
         }
 
-        &:active:not(:disabled) {
+        &:active:not([aria-disabled="true"]) {
             transform: none;
         }
 
-        /* Hidden while unavailable, as reveal.js hides disabled arrows */
-        &:disabled {
+        /* Hidden while unavailable, as reveal.js hides disabled arrows (aria-disabled: see animation.js) */
+        &[aria-disabled="true"] {
             visibility: hidden;
             opacity: 0;
         }
@@ -196,10 +196,10 @@
 
         &::before { transform: translateY(1.55em) rotate(45deg); }
         &::after { transform: translateY(1.55em) rotate(-45deg); }
-        &:hover:not(:disabled)::before { transform: translateY(1.55em) rotate(40deg); }
-        &:hover:not(:disabled)::after { transform: translateY(1.55em) rotate(-40deg); }
-        &:active:not(:disabled)::before { transform: translateY(1.55em) rotate(36deg); }
-        &:active:not(:disabled)::after { transform: translateY(1.55em) rotate(-36deg); }
+        &:hover:not([aria-disabled="true"])::before { transform: translateY(1.55em) rotate(40deg); }
+        &:hover:not([aria-disabled="true"])::after { transform: translateY(1.55em) rotate(-40deg); }
+        &:active:not([aria-disabled="true"])::before { transform: translateY(1.55em) rotate(36deg); }
+        &:active:not([aria-disabled="true"])::after { transform: translateY(1.55em) rotate(-36deg); }
     }
 
     /* Rewind, back and play are faded until hovered, as reveal.js's controlsBackArrows: 'faded' */
@@ -210,7 +210,7 @@
     button.anim-play {
         transform: rotate(180deg);
 
-        &:active:not(:disabled) { transform: rotate(180deg); }
+        &:active:not([aria-disabled="true"]) { transform: rotate(180deg); }
         &:hover::before { transform: translateY(1.55em) rotate(45deg); }
         &:hover::after { transform: translateY(1.55em) rotate(-45deg); }
 
@@ -227,7 +227,7 @@
         .anim-pause-bar { display: none; }
     }
 
-    &.is-playing button.anim-play {
+    &[data-playing] button.anim-play {
         &::before,
         &::after { display: none; }
 
@@ -254,10 +254,10 @@
         }
     }
     button.anim-next { transform: rotate(180deg); }
-    button.anim-next:active:not(:disabled) { transform: rotate(180deg); }
+    button.anim-next:active:not([aria-disabled="true"]) { transform: rotate(180deg); }
 
     /* Until the first interaction, next nudges every 2 seconds (reveal.js's controls tutorial) */
-    &.anim-untouched button.anim-next:not(:disabled) {
+    &[data-untouched] button.anim-next:not([aria-disabled="true"]) {
         animation: anim-bounce-next 2s ease-out 50 both;
     }
 
@@ -360,13 +360,16 @@
         border-top: 1px dashed var(--anim-line);
         font-size: var(--font-size-med);
 
-        &:empty::before {
-            content: 'No notes for this step.';
-            color: var(--anim-muted);
-        }
+        /* a step's page (animation.js) */
+        > div {
+            &:empty::before {
+                content: 'No notes for this step.';
+                color: var(--anim-muted);
+            }
 
-        > :first-child { margin-top: 0; }
-        > :last-child { margin-bottom: 0; }
+            > :first-child { margin-top: 0; }
+            > :last-child { margin-bottom: 0; }
+        }
     }
 
     /* Errors and debug warnings */
@@ -442,7 +445,7 @@
 }
 
 /* Playing, but held at a `pause` until Next: next nudges, as it does before the first click */
-.markdown-section .animation.is-waiting button.anim-next:not(:disabled) {
+.markdown-section .animation[data-waiting] button.anim-next:not([aria-disabled="true"]) {
     animation: anim-bounce-next 2s ease-out infinite both;
 }
 
