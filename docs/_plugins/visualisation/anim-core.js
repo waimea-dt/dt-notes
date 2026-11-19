@@ -188,6 +188,18 @@
   // A shape's name in messages: its noun, or its type
   const nounOf = (shape) => SHAPES[shape.type]?.noun || shape.type
 
+  // The parts a shape can have: shapes made and placed by it that go with it (shape.part, its
+  // owner's id; shape.role, which of these). Each goes when its owner does, and is lit with it.
+  //   outline  an outline round its owner goes round it too (highlight outline)
+  //   bound    its owner lays it out and holds its members, so it can't be moved, deleted, grouped
+  //            or edited on its own
+  const PARTS = {
+    name: { outline: true }, // a var's, layout's or span's name tag
+    index: { outline: true }, // a layout's cell, row or column number
+    view: { bound: true }, // a grid's row or column, or a table's heading (LAYOUTS: views)
+    span: {}, // a box round some of a layout's places (SHAPES: span)
+  }
+
   // Every layout: a group of cells (the type after "id:"), in one place:
   //   noun        its name in messages; item, what its cells are called ("line", "cell")
   //   cell        the shape type of its cells
@@ -967,7 +979,7 @@
 
   Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NOUNS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
-    LOOKS, NORMAL_MS, TIMING, article, wordFor,
+    LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,

@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
+  const { PARTS, HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE, PATTERNS,
     reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, bounds,
     CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH, linePoints,
     MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES, entranceFor, XML_NS, LAYOUTS, LOOKS, barFits } = window.Anim
@@ -976,7 +976,7 @@
       draw: (o, { item, b, now }) => {
         // an outline is round the whole thing: a var's / row's / column's name and indices too (not
         // a shape that hugs its own edge, SHAPES: hug)
-        const parts = key === 'outline' && !kindOf(item.shape).hug ? [...now.values()].filter((s) => s.part === item.shape.id) : []
+        const parts = key === 'outline' && !kindOf(item.shape).hug ? [...now.values()].filter((s) => s.part === item.shape.id && PARTS[s.role]?.outline) : []
         const outer = parts.length > 0
         const box = outer ? mergeBoxes([b, ...parts.map((part) => bounds(part, now))]) : b
         const { d, transform } = highlightPath(item.shape, item.v, offsetOf(item.shape), box, outer)

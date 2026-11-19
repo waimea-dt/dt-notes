@@ -4,7 +4,11 @@
  */
 
 ;(function () {
-  const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo, attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps, tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES, entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf } = window.Anim
+  const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo,
+    attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
+    tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
+    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
+    LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -216,8 +220,8 @@
       // a shape placed by what it belongs to (SHAPES: owned), or a grid's row or column (a view),
       // laid out in its grid, can't be moved on its own
       const owned = kindOf(shape).owned
-      if ((owned || shape.view) && (positioned || props.via || props.travel || props.follow || props.attach || props.detach)) {
-        throw new Error(shape.view ? `"${shape.id}" is laid out in "${shape.part}", so it can't be moved on its own: move "${shape.part}"`
+      if ((owned || bound(shape)) && (positioned || props.via || props.travel || props.follow || props.attach || props.detach)) {
+        throw new Error(bound(shape) ? `"${shape.id}" is laid out in "${shape.part}", so it can't be moved on its own: move "${shape.part}"`
           : `${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
       }
       if (props.travel && props.follow) throw new Error('give either "travel" or "follow", not both')
@@ -342,6 +346,11 @@
       return shape.members.flatMap((id) => { const m = shapes.get(id); return m ? [m, ...groupMembers(m)] : [] })
     }
 
+    // A shape's parts (PARTS), or those of one role
+    const partsOf = (owner, role) => [...shapes.values()].filter((s) => s.part === owner.id && (!role || s.role === role))
+    // Whether a shape is a part its owner lays out and holds the members of (PARTS: bound)
+    const bound = (shape) => Boolean(PARTS[shape.role]?.bound)
+
     // Takes a shape out of the group it's in (if any).
     function leaveGroup(shape) {
       if (shape.attach?.kind !== 'offset') return
@@ -364,7 +373,7 @@
         const members = group.members.map((id) => shapes.get(id)).filter(Boolean)
         // a layout with a panel (LAYOUTS) takes its indices in too: the panel goes behind them
         const panel = LAYOUTS[group.layout]?.panel
-        const indices = panel ? [...shapes.values()].filter((s) => s.part === group.id && s.id.startsWith(indexId(group.id, ''))) : []
+        const indices = panel ? partsOf(group, 'index') : []
         const b = unionBounds([...members, ...indices], shapes)
         if (group.layout) {
           // a row / column is placed by its first cell: its box is its cells' (cx, cy: to its middle)
@@ -586,7 +595,7 @@
       const props = parseProps(tokens, 1, 'delete', shapes)
       const order = staggerOrder(existing) // taken before its members go
       const lines = LAYOUTS[existing.layout]?.typeInTurn ? existing.members.map((m) => shapes.get(m)).filter(Boolean) : []
-      const parts = [...shapes.values()].filter((s) => s.part === id)
+      const parts = partsOf(existing)
       removeShape(existing, props, meta, warn)
       if (lines.length && (props.effect || defaults.effect) === 'typed') typeInTurn(existing, lines, parts, props, meta, true)
       applyStagger(existing, order, props, meta, warn)
@@ -632,7 +641,7 @@
       noStagger(props, warn)
       const list = members.map((m) => shapes.get(m))
       for (const m of list) {
-        if (m.view) throw new Error(`"${m.id}" is laid out in "${m.part}", so it can't go in a group: group "${m.part}"`)
+        if (bound(m)) throw new Error(`"${m.id}" is laid out in "${m.part}", so it can't go in a group: group "${m.part}"`)
         if (LINE_TYPES.includes(m.type) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
       }
       const b = unionBounds(list, shapes)
@@ -651,7 +660,7 @@
     // "g: ungroup": the group goes, its shapes stay where they are
     function ungroup(id, existing, tokens, meta) {
       if (!existing) throw new Error(`no shape called "${id}"`)
-      if (existing.type !== 'group' || existing.view) throw new Error(`"${id}" isn't a group`)
+      if (existing.type !== 'group' || bound(existing)) throw new Error(`"${id}" isn't a group`)
       parseProps(tokens, 1, 'ungroup', shapes)
       for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
       shapes.delete(id)
@@ -662,8 +671,8 @@
     // Removes a shape (and a group's members), with the line's exit effect and timing.
     function removeShape(target, props, meta, warn) {
       if (!target) return
-      if (target.type === 'group' && !target.view) target.members.forEach((m) => removeShape(shapes.get(m), props, meta, warn)) // a view's cells are its grid's
-      for (const part of [...shapes.values()].filter((s) => s.part === target.id)) removeShape(part, props, meta, warn) // its name, indices
+      if (target.type === 'group' && !bound(target)) target.members.forEach((m) => removeShape(shapes.get(m), props, meta, warn)) // a view's cells are its grid's
+      for (const part of partsOf(target)) removeShape(part, props, meta, warn) // its name, indices, views, spans
       leaveGroup(target)
       freezeEndsAttachedTo(target.id)
       shapes.delete(target.id)
@@ -744,7 +753,7 @@
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let assignValue, checkParts, createLayout, fitCode, fitSpans, holderRef, refuseView, setValue,
       typeInTurn, updateParts, valueOf, withRowMax
-    const cx = { shapes, defaults, newUid, context, applyDefaults, applyProps, applyStagger, busiest, delayOf,
+    const cx = { shapes, defaults, newUid, context, bound, partsOf, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))

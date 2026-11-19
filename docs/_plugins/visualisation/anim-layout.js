@@ -12,7 +12,7 @@
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyDefaults, applyProps, applyStagger, busiest, delayOf, numberEach, removeShape, retime, schedule,
+    let applyDefaults, bound, partsOf, applyProps, applyStagger, busiest, delayOf, numberEach, removeShape, retime, schedule,
       setValue, speedOf, takeBareNumber, valueOf, warnEffect
 
     // A cell's number as written after a verb ("swap 0 3", "range 3 end"): a whole number, or end,
@@ -161,7 +161,7 @@
       }
       const shape = respan ? structuredClone(existing) : { ...baseShape('span'), id, uid: newUid() }
       shape.span = { of: rowId, from, to }
-      shape.part = rowId
+      Object.assign(shape, { part: rowId, role: 'span' })
       checkParts(shape, props)
       if (!respan) applyDefaults(shape)
       fitSpan(shape)
@@ -221,12 +221,12 @@
     function checkParts(shape, props) {
       if (props.name && !shape.var && !shape.layout && !shape.span) throw new Error('"name" is for a var, row, column or span')
       if (props.indices !== undefined && !shape.layout) throw new Error('"indices" is for a row, column, grid or table')
-      if (props.indices !== undefined && shape.view) throw new Error(`a grid's indices number all its rows and columns, so they go on the whole grid: "${shape.part}: indices"`)
+      if (props.indices !== undefined && bound(shape)) throw new Error(`a grid's indices number all its rows and columns, so they go on the whole grid: "${shape.part}: indices"`)
     }
 
     // A grid's row or column (a view) belongs to its grid, so it can't be deleted or edited on its own
     function refuseView(shape, word) {
-      if (shape.view) throw new Error(`"${shape.id}" is part of "${shape.part}", so "${word}" doesn't work on it on its own`)
+      if (bound(shape)) throw new Error(`"${shape.id}" is part of "${shape.part}", so "${word}" doesn't work on it on its own`)
     }
 
     function updateParts(shape, props, meta, warn) {
@@ -255,7 +255,7 @@
         schedule(meta, old.uid, props)
         return
       }
-      const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: newUid(), font: 1.2, layer: owner.layer, part: owner.id }
+      const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: newUid(), font: 1.2, layer: owner.layer, part: owner.id, role: 'name' }
       text.label = name.text
       text.attach = besideOf(owner.id, name.side || old?.attach?.side || nameSide(owner), 0.2 * CELL)
       Object.assign(text, attachPos(text, owner, text.attach))
@@ -276,7 +276,7 @@
         const old = shapes.get(id)
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
         // cell slides in or out of it; at the back, so a sliding cell passes over it
-        const text = old || { ...baseShape('text'), id, uid: newUid(), label: mark.label, font: 0.88, colour: 'muted', layer: 'back', part: row.id }
+        const text = old || { ...baseShape('text'), id, uid: newUid(), label: mark.label, font: 0.88, colour: 'muted', layer: 'back', part: row.id, role: 'index' }
         if (numbers) text.font = 0.88 * mark.of.font // line numbers keep to the code's size
         const place = { ...mark.of, ...offsetIn(mark.of, row) }
         place.x += row.x
@@ -290,7 +290,7 @@
         schedule(meta, text.uid, props, { after: add })
       }
       // the ones with nothing left to number (or all of them, with indices clear)
-      for (const old of [...shapes.values()].filter((s) => s.part === row.id && s.id.startsWith(indexId(row.id, '')) && !kept.has(s.id))) {
+      for (const old of partsOf(row, 'index').filter((s) => !kept.has(s.id))) {
         shapes.delete(old.id)
         tween(meta, old.uid).exit = 'fade'
         schedule(meta, old.uid, props, { after: remove })
@@ -462,7 +462,7 @@
         const cells = members.map((cell) => shapes.get(cell))
         const first = cells[0]
         const b = unionBounds(cells, shapes)
-        const view = old ? structuredClone(old) : { ...baseShape('group'), id, uid: newUid(), layout, view: true, part: grid.id }
+        const view = old ? structuredClone(old) : { ...baseShape('group'), id, uid: newUid(), layout, part: grid.id, role: 'view' }
         Object.assign(view, {
           members, covers: members, attach: offsetFrom(grid.id, first.attach.dx, first.attach.dy), x: first.x, y: first.y,
           w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - first.x, cy: (b.y0 + b.y1) / 2 - first.y,
@@ -472,7 +472,7 @@
         else if (JSON.stringify([old.members, old.attach]) !== JSON.stringify([view.members, view.attach])) retime(meta, view.uid, busiest(meta, cells))
       }
       const keep = new Set(wanted.map(([id]) => id))
-      for (const view of [...shapes.values()].filter((s) => s.view && s.part === grid.id && !keep.has(s.id))) removeShape(view, props, meta, warn)
+      for (const view of partsOf(grid, 'view').filter((s) => !keep.has(s.id))) removeShape(view, props, meta, warn)
     }
 
     // A layout's cells' ids from its values: flat, its values in order (a line's are a list, a
@@ -566,7 +566,7 @@
       arrangement.sync(row, props, meta, warn)
       if (props.effect) warnEffect(cells[0], props.effect, warn)
       updateParts(row, props, meta, warn)
-      if (LAYOUTS[layout].typeInTurn && (props.effect || defaults.effect) === 'typed') typeInTurn(row, cells, [...shapes.values()].filter((s) => s.part === id), props, meta)
+      if (LAYOUTS[layout].typeInTurn && (props.effect || defaults.effect) === 'typed') typeInTurn(row, cells, partsOf(row), props, meta)
       applyStagger(row, cells.map((cell) => [cell.uid]), { ...props, at: null, x: null, y: null }, meta, warn) // placing it isn't a move
     }
 
@@ -645,7 +645,7 @@
         typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },
       link: () => {
-        ({ applyDefaults, applyProps, applyStagger, busiest, delayOf, numberEach, removeShape, retime,
+        ({ applyDefaults, bound, partsOf, applyProps, applyStagger, busiest, delayOf, numberEach, removeShape, retime,
           schedule, setValue, speedOf, takeBareNumber, valueOf, warnEffect } = cx)
       },
     }
