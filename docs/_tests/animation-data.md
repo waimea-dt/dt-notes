@@ -348,7 +348,7 @@ g: grid [
     [1, 2, 3, 4],
     [5, 6, 7, 8],
     [9, 0, 1, 2]
-] at 2,2 gap 0.1 name "g" indices
+] at 2,2 gap 0.4 corner 0.1 name "g" indices
 t: table [
     ["A", "B", "C"],
     [1, 2, 3],
@@ -453,10 +453,10 @@ t: delete
 <animation grid="16x9">
 
 ```anim
-g: grid [[1 2 3] [4 5 6] [7 8 9]] at 2,2 gap 0.1 indices
+g: grid [[1 2 3] [4 5 6] [7 8 9]] at 2,2 gap 0.4 indices corner 0.1
 t: table [["A" "B"] [1 2] [3 4]] at 10,2 size 1.2x0.8 indices
 g.1: highlight outline            # stays on row 1's place
-s: span g 0.0 0.1 stroke red      # and a span on its places
+s: span g 0.0 0.1 fill red      # and a span on its places
 ```
 
 ---
