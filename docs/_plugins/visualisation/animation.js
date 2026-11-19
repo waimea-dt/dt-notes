@@ -650,7 +650,7 @@
     updateControls()
   }
 
-  function initAnimations() {
+  function buildAll() {
     document.querySelectorAll('.markdown-section .anim-source:not([data-anim-built])').forEach((source) => {
       source.setAttribute('data-anim-built', 'true')
       try {
@@ -660,6 +660,12 @@
         window.DocsifyUtils.renderErrorBox(source, `Animation failed to build: ${error.message}`)
       }
     })
+  }
+
+  // Built once the page's web fonts have loaded, so text is measured in the font it's drawn in
+  function initAnimations() {
+    if (document.fonts?.status === 'loading') document.fonts.ready.then(buildAll)
+    else buildAll()
   }
 
   const docsifyAnimation = function (hook) {

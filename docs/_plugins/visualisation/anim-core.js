@@ -667,6 +667,8 @@
     return (textWidths.get(key) * size) / MEASURE_SIZE || 0.55 * size * shown.length
   }
   window.addEventListener?.('docsify-theme-change', () => fonts.clear())
+  // text measured before its web font loaded (in a fallback font) is measured again once it has
+  document.fonts?.addEventListener?.('loadingdone', () => textWidths.clear())
 
   // A shape's type entry (a group, or a point to place beside, has none: it's a plain box)
   const kindOf = (shape) => SHAPES[shape.type] || {}
