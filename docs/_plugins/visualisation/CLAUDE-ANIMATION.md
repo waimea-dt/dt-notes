@@ -69,7 +69,14 @@ For every new word:
 1. Add it to the VS Code grammar, `vscode/dt-notes-syntax/syntaxes/anim.tmLanguage.json`, in the right role (see Highlighting).
 2. Bump the version in `vscode/dt-notes-syntax/package.json`.
 3. Add it to `ANIMATION.md`.
-4. Add a test to `docs/_tests/animation.md`: one animation per feature, and a line in the error-test block for each new error.
+4. Add a test to the test page for its topic: one animation per feature, in the cheat-sheet's order, and a line in the error-test block (`animation-errors.md`) for each new error. The pages, listed on `docs/_tests/animation.md`:
+   - `animation.md`: the block itself (steps and beats, the grid, comments, playback)
+   - `animation-examples.md`: whole example animations
+   - `animation-shapes.md`: shapes, looks (colours, line styles, layers …), emphasis and highlights
+   - `animation-motion.md`: placing and moving, copy / attach / group, timing and effects, the camera
+   - `animation-data.md`: rows and columns, spans, vars and moving values, bars, code blocks
+
+   A new page also goes in the menu on `animation.md`, the links at the top of each page, and `docs/_tests/_sidebar.md`.
 
 ## Language rules
 
@@ -105,6 +112,6 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 
 ## Checking a change
 
-- **Compare before and after:** compile and render every animation on `docs/_tests/animation.md` with the working engine and the committed one, and compare. Load the four `anim-*.js` parts into a Node `vm` context with a small fake DOM: elements recording attributes, style and children, `getComputedStyle` returning a fake `rgb()` per colour, and a stub `lucide`. Render each transition (intro, forwards, backwards) at several moments. Hash the serialised SVG and the compiled `beats` / `errors` / `warnings`, per animation. A refactor should leave every hash the same, and a feature should change only its own animations.
+- **Compare before and after:** compile and render every animation on the test pages (`docs/_tests/animation*.md`) with the working engine and the committed one, and compare. Load the four `anim-*.js` parts into a Node `vm` context with a small fake DOM: elements recording attributes, style and children, `getComputedStyle` returning a fake `rgb()` per colour, and a stub `lucide`. Render each transition (intro, forwards, backwards) at several moments. Hash the serialised SVG and the compiled `beats` / `errors` / `warnings`, per animation. A refactor should leave every hash the same, and a feature should change only its own animations.
 - **Lint:** run ESLint on copies of the files (no project config), with `no-undef` and `no-unused-vars`.
 - **Browser runs:** the user's laptop struggles with headless browsers, so keep those to one small run and leave visual checks to the user.

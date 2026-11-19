@@ -62,6 +62,11 @@
     - [OOP Sim](/_tests/oop-sim.md)
     - [SimCore](/_tests/sim-core.md)
     - [Animation](/_tests/animation.md)
+        - [Examples](/_tests/animation-examples.md)
+        - [Shapes and Looks](/_tests/animation-shapes.md)
+        - [Movement and Timing](/_tests/animation-motion.md)
+        - [Data and Code](/_tests/animation-data.md)
+        - [Errors](/_tests/animation-errors.md)
 
 - <i data-lucide="mouse-pointer-click"></i> Interactive
     - **General**

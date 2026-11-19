@@ -1,7 +1,7 @@
 # Animation Cheat-Sheet
 
 `<animation>` blocks: a step-by-step animated SVG drawing with a caption per step.
-Code: `anim-core.js` · `anim-parse.js` · `anim-compile.js` · `anim-render.js` · `animation.js` · CSS `_css/visualisation/animation.css` · Tests `_tests/animation.md` · VS Code highlighting `vscode/dt-notes-syntax/`.
+Code: `anim-core.js` · `anim-parse.js` · `anim-compile.js` · `anim-render.js` · `animation.js` · CSS `_css/visualisation/animation.css` · Tests `_tests/animation*.md` (menu: `animation.md`) · VS Code highlighting `vscode/dt-notes-syntax/`.
 
 ## Block
 
