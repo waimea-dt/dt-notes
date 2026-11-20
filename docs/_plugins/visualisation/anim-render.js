@@ -516,8 +516,7 @@
         attr(label, 'x', -hw + kindOf(s).pre.pad * fontSize)
         attr(label, 'y', -LABEL_LIFT * fontSize)
       } else if (place === 'script') {
-        drawScript(node, s, v.label, v.hlScript, v.hlLines, hw, hh, colours)
-        node.script.style.opacity = v.labelOpacity
+        drawScript(node, s, v.script, colours)
       } else if (place === 'below') {
         attr(label, 'y', hh + fontSize * 0.75)
       } else if (place === 'top') {
@@ -534,41 +533,100 @@
     }
 
     // A script shape's script (SHAPES: script), drawn by its library (SCRIPTS) or, until that has
-    // loaded, as plain text: an <svg> fitted in the shape's box, keeping its shape. Drawn again
-    // only when its text changes (or its library loads). lit and hlLines: its lit line (dimBlocks).
-    function drawScript(node, s, text, lit, hlLines, hw, hh, colours) {
-      const script = scriptOf(s)
-      const key = `${script.ready()}|${text}`
-      if (node.scriptKey !== key) {
-        node.scriptKey = key
-        const ready = script.ready()
-        const { svg: drawn, blocks } = ready ? script.render(text) : { svg: scriptText(text), blocks: [] }
-        node.scriptLines = ready ? null : drawn.firstChild // plain text takes the shape's colour
-        // each block's own parts: what it draws that has no other block in it (a C block's inner
-        // script does)
-        node.blockParts = blocks.map((block) => [...block.children].filter((part) => !blocks.some((other) => other !== block && part.contains(other))))
-        node.blockLines = scriptBlocksIn(script, text.split('\n')).map((block) => block.at + 1) // the line each starts on
-        if (!drawn.hasAttribute('viewBox')) attr(drawn, 'viewBox', `0 0 ${drawn.getAttribute('width')} ${drawn.getAttribute('height')}`)
-        attr(drawn, 'preserveAspectRatio', 'xMidYMid meet')
-        attr(drawn, 'class', `${drawn.getAttribute('class') || ''} no-zoom`.trim()) // the zoom plugin also attaches to nested SVGs
-        node.script.replaceChildren(drawn)
+    // loaded, as plain text, in the middle of the shape's box at the scale that fits it (blending
+    // from A's to B's). step (scriptStep): A's and B's scripts, lit lines and boxes, and an edit's
+    // map. A change of script shows A's drawing and B's together while it plays (moveBlocks).
+    function drawScript(node, s, step, colours) {
+      const to = scriptDrawing(node, s, step.b)
+      const from = step.a !== step.b ? scriptDrawing(node, s, step.a) : null
+      const pair = `${from?.key}|${to.key}`
+      if (node.scriptPair !== pair) {
+        node.scriptPair = pair
+        node.script.replaceChildren(...[to, from].filter(Boolean).map((drawing) => drawing.svg)) // A's over B's, fading out
+        for (const key of node.drawings.keys()) if (key !== to.key && key !== from?.key) node.drawings.delete(key)
       }
-      const drawn = node.script.firstChild
-      setBox(drawn, hw, hh)
-      if (node.scriptLines) paint(node.scriptLines, 'fill', colours.colour)
-      dimBlocks(node, lit, hlLines)
+      const fit = (drawing, box) => Math.min(box.w / drawing.w, box.h / drawing.h)
+      const k = lerp(fit(from || to, step.boxA), fit(to, step.boxB), step.t)
+      for (const drawing of [from, to].filter(Boolean)) {
+        setBox(drawing.svg, (drawing.w * k) / 2, (drawing.h * k) / 2)
+        if (drawing.text) paint(drawing.text, 'fill', colours.colour) // plain text takes the shape's colour
+      }
+      moveBlocks(from, to, step)
     }
 
-    // highlight line N: a spotlight within the script. Every block but the one on the lit line dims
-    // to BLOCK_DIM, as far as the light is on (lit: 0-1, blending as it turns on or off); one on a
-    // line being lit or unlit (hlLines) dims by the rest. Only a block's own parts dim
-    // (blockParts), so a C block's inner blocks keep their own light.
-    function dimBlocks(node, lit, hlLines) {
-      node.blockParts.forEach((parts, i) => {
-        const dim = lit - (hlLines.get(node.blockLines[i]) || 0)
-        const opacity = dim > 0 ? String(1 - (1 - BLOCK_DIM) * dim) : ''
-        for (const part of parts) paint(part, 'opacity', opacity)
+    // A script's drawing, made once for its text (and kept while it's A's or B's): its <svg>, its
+    // size, and its blocks (own: its own parts gathered in a group, so it moves and dims as one,
+    // apart from the blocks inside a C block; x, y, where it sits from the drawing's middle; line,
+    // the line it starts on; look, to tell a moved block from a changed one).
+    function scriptDrawing(node, s, text) {
+      const script = scriptOf(s)
+      const ready = script.ready()
+      const key = `${ready}|${text}`
+      node.drawings ||= new Map()
+      if (node.drawings.has(key)) return node.drawings.get(key)
+      const { svg, blocks } = ready ? script.render(text) : { svg: scriptText(text), blocks: [] }
+      const [w, h] = [+svg.getAttribute('width'), +svg.getAttribute('height')]
+      if (!svg.hasAttribute('viewBox')) attr(svg, 'viewBox', `0 0 ${w} ${h}`)
+      attr(svg, 'class', `${svg.getAttribute('class') || ''} no-zoom`.trim()) // the zoom plugin also attaches to nested SVGs
+      svg.style.overflow = 'visible' // a block moving to its new place can pass outside it
+      const lines = scriptBlocksIn(script, text.split('\n')).map((block) => block.at + 1)
+      const own = blocks.map((block, i) => {
+        const parts = [...block.children].filter((part) => !blocks.some((other) => other !== block && part.contains(other)))
+        const group = block.insertBefore(svgEl('g'), parts[0] || null)
+        group.append(...parts)
+        const at = offsetIn(block, svg)
+        return { group, line: lines[i], look: group.innerHTML, x: at.x - w / 2, y: at.y - h / 2 }
       })
+      const drawing = { key, svg, w, h, own, text: ready ? null : svg.firstChild }
+      node.drawings.set(key, drawing)
+      return drawing
+    }
+    // Where an element sits in an <svg> (its parents' translations, as the library places blocks)
+    function offsetIn(el, root) {
+      let x = 0
+      let y = 0
+      for (let e = el; e && e !== root; e = e.parentNode) {
+        const m = e.transform?.baseVal?.consolidate()?.matrix
+        if (m) { x += m.e; y += m.f }
+      }
+      return { x, y }
+    }
+
+    // A script's blocks between A and B (t: how far). The same script: each block's light blends.
+    // A new one: A's drawing crossfades into B's. An edit (map): a block that's still there slides
+    // from its place in A to its place in B, and one that's changed (a replaced line, or a C block
+    // whose inside grew) shows its new look under its old one fading out; a new one fades in and
+    // one that's gone fades out, each moving with the block before it (or after, at the top). Each
+    // is dimmed by the light (highlight line N: a spotlight within the script), as far as it's on.
+    function moveBlocks(from, to, { t, map, litA, litB }) {
+      const on = lerp(litA != null ? 1 : 0, litB != null ? 1 : 0, t)
+      const lit = (block, line) => (block && block.line === line ? 1 : 0)
+      const dimmed = (light) => (on > light ? 1 - (1 - BLOCK_DIM) * (on - light) : 1)
+      const show = (block, { x, y }, opacity) => {
+        attr(block.group, 'transform', x || y ? `translate(${x} ${y})` : null)
+        paint(block.group, 'opacity', opacity < 1 ? String(opacity) : '')
+      }
+      const still = { x: 0, y: 0 }
+      paint(to.svg, 'opacity', from && !map ? String(t) : '')
+      if (from) paint(from.svg, 'opacity', map ? '' : String(1 - t))
+      if (!from || !map) {
+        // the same blocks (or, crossfading, each drawing's own), lit as A then B
+        to.own.forEach((block) => show(block, still, dimmed(lerp(from ? 0 : lit(block, litA), lit(block, litB), t))))
+        from?.own.forEach((block) => show(block, still, dimmed(lit(block, litA))))
+        return
+      }
+      // how far each block is from where it's drawn: B's from their places in A, A's towards B's
+      const was = to.own.map((_, j) => (map[j] === null ? null : from.own[map[j]]))
+      const toShift = to.own.map((block, j) => was[j] && { x: (was[j].x - block.x) * (1 - t), y: (was[j].y - block.y) * (1 - t) })
+      const now = from.own.map((_, k) => to.own[map.indexOf(k)] || null)
+      const fromShift = from.own.map((block, k) => now[k] && { x: (now[k].x - block.x) * t, y: (now[k].y - block.y) * t })
+      // a new block, or one that's gone, moves with its neighbour (the one before, or after)
+      const withNeighbour = (shifts) => shifts.map((shift, i) => shift || shifts.slice(0, i).reverse().find(Boolean) || shifts.slice(i + 1).find(Boolean) || still)
+      const toMoves = withNeighbour(toShift)
+      const fromMoves = withNeighbour(fromShift)
+      const kept = new Set(was.filter((block, j) => block?.look === to.own[j].look)) // shown as they are by B
+      to.own.forEach((block, j) => show(block, toMoves[j], (was[j] ? 1 : t) * dimmed(lerp(lit(was[j], litA), lit(block, litB), t))))
+      from.own.forEach((block, k) => show(block, fromMoves[k], kept.has(block) ? 0 : (1 - t) * dimmed(lit(block, litA))))
     }
 
     // A script's lines as mono text, one under another (at font 1, as scriptTextSize measures them)
@@ -974,13 +1032,9 @@
         // highlight glow fades in / out like the box; a shape glows too when one covering it does
         // (a span's cells: covers)
         item.v.hlGlow = blend(item, (s) => s.hl?.glow || (s === item.a ? glowA : glowB).has(s.id))
-        // highlight line: with no number, a band (true); with one, a script's line: how far the
-        // script's light is on, and each line lit in A or B, fading out of one and into the next
+        // highlight line: with no number, a band behind its text (a script's: scriptStep)
         item.v.hlLine = blend(item, (s) => s.hl?.line === true)
-        const litLine = (s) => typeof s?.hl?.line === 'number'
-        item.v.hlScript = blend(item, litLine)
-        const lit = new Set([item.a, item.b].filter(litLine).map((s) => s.hl.line))
-        item.v.hlLines = new Map([...lit].map((n) => [n, blend(item, (s) => s.hl?.line === n)]))
+        if (kindOf(item.shape).script) item.v.script = scriptStep(item, meta.tweens.get(item.uid))
         drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
       }
@@ -1033,6 +1087,17 @@
 
     // How much of a two-state feature shows: from A's value to B's over the shape's progress,
     // times the shape's own visibility (entering / leaving).
+    // A script shape between A and B, for drawScript: their scripts, lit lines (highlight line N)
+    // and boxes, how far (t), and an edit's map of its blocks (tween: script). Coming or going, it's
+    // the one it has.
+    function scriptStep({ a, b, t }, tw) {
+      const [from, to] = [a || b, b || a]
+      const lit = (s) => (typeof s.hl?.line === 'number' ? s.hl.line : null)
+      return {
+        a: from.label, b: to.label, t: a && b ? clamp01(t) : 1, map: (a && b && tw?.script) || null,
+        litA: lit(from), litB: lit(to), boxA: { w: from.w, h: from.h }, boxB: { w: to.w, h: to.h },
+      }
+    }
     const blend = (item, has) => lerp(item.a && has(item.a) ? 1 : 0, item.b && has(item.b) ? 1 : 0, item.a && item.b ? item.t : 1) * (item.a && item.b ? 1 : item.v.opacity)
 
     // How far inside the shape's edge the inside highlight's centre line sits: past the shape's own

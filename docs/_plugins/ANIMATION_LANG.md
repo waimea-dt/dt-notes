@@ -365,6 +365,7 @@ s: swap 2 4
 - [scratchblocks](https://scratchblocks.github.io) syntax. Shows as plain text if the library can't load.
 - Lines count from 1 as written in the [ ], end, else, blank lines and comments too.
 - One shape: no line ids or `typed`. Edits keep a lit line lit.
+- Edits move the blocks: the rest slide to make room or close up, a changed block fades to its new look. A new script (`s: [ … ]`) crossfades.
 
 ## Stagger
 

@@ -6,7 +6,7 @@
 
 ;(function () {
   const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, LAYOUTS, BARS, cellId, baseOf, cellRange,
-    tween, baseShape, LAYOUT_NOUNS, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, blockOnLine } = window.Anim
+    tween, baseShape, LAYOUT_NOUNS, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, newUid } = cx
@@ -342,8 +342,9 @@
     // end, else, blank lines and comments): "s: line 3 "…"" replaces line 3, "s: insert "…" at 3"
     // puts lines in before it (or at end), "s: remove 3" takes out the block it starts and
     // "s: swap 2 4" swaps two (a C block goes with the blocks inside it, to its end). Lines go in
-    // with the indent of where they go. The script is drawn again, fading as a label does. A lit
-    // line (highlight line) keeps its light wherever it goes.
+    // with the indent of where they go. A lit line (highlight line) keeps its light wherever it
+    // goes. Its beat's tween gets the edit's map (script: for each block after it, the block it was
+    // before, or null for a new one; edits in one beat compose), so its blocks are seen to move.
     const SCRIPT_NOUNS = nounList(Object.keys(SHAPES).filter((type) => SHAPES[type].script).map((type) => nounOf({ type })))
     const SCRIPT_EDITS = {
       line: { example: (id) => `"${id}: line 2 "move (10) steps""`, edit: replaceLine },
@@ -357,14 +358,30 @@
       const script = scriptOf(shape)
       const lines = shape.label.split('\n').map((text) => ({ text })) // objects, so a lit one can be followed
       const lit = typeof shape.hl?.line === 'number' ? lines[shape.hl.line - 1] : null
+      const before = [...lines]
       const { example, edit } = SCRIPT_EDITS[word]
       const next = edit({ id, script, tokens, lines, warn, example: example(id) })
       const props = parseProps(tokens, next, word, shapes)
       const changed = structuredClone(shape)
+      const record = tween(meta, changed.uid)
+      const earlier = record.script // undefined: no change to it yet this beat; null: a new script
       applyProps(changed, { label: lines.map((line) => line.text).join('\n') }, false, warn, meta)
       if (lit) changed.hl = { ...changed.hl, line: lines.includes(lit) ? lines.indexOf(lit) + 1 : false }
+      const map = blockMap(script, before, lines)
+      record.script = earlier === undefined ? map : earlier && map.map((k) => (k === null ? null : earlier[k]))
       shapes.set(id, changed)
       schedule(meta, changed.uid, props)
+    }
+
+    // For each block in a script's lines after an edit, the block it was before (null: a new one),
+    // known by its first line (the same object, though its text may have changed)
+    function blockMap(script, before, after) {
+      const blocksIn = (lines) => scriptBlocksIn(script, lines.map((line) => line.text))
+      const firstLines = blocksIn(before).map((block) => before[block.at])
+      return blocksIn(after).map((block) => {
+        const k = firstLines.indexOf(after[block.at])
+        return k < 0 ? null : k
+      })
     }
 
     // A line's number as written (from 1, or end; after: the place after the last, for an insert),

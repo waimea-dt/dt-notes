@@ -129,6 +129,8 @@
       if (props.label !== undefined) { shape.label = props.label; if (shape.nil) shape.nil = false }
       applyLook(shape, props, creating, warn)
       if (kindOf(shape).script) fitScript(shape, props)
+      // a script given new text has no map of where its blocks went (an edit gives one: editScript)
+      if (kindOf(shape).script && props.label !== undefined && meta) tween(meta, shape.uid).script = null
       if (props.highlight) applyHighlight(shape, props.highlight)
       if (props.emphasis) applyEmphasis(shape, props, creating, warn, meta)
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
