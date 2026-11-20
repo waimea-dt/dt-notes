@@ -9,7 +9,7 @@
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
-    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize } = window.Anim
+    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, anchorShift } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -117,6 +117,12 @@
 
     // A grid coordinate (the centre of a cell), absolute, or relative to `current` when signed
     const coord = (n, current) => numberValue(n, current, { unit: CELL, coord: true })
+    // A shape's centre on one axis from a coordinate: an absolute one is its cell, and for a shape
+    // placed by a corner (SHAPES: anchor), that corner of the cell; a relative one moves it as it is
+    const placed = (shape, n, current, axis) => {
+      const value = coord(n, current)
+      return n.rel && current != null ? value : value + anchorShift(shape)[axis]
+    }
 
     // Applies parsed props to a shape (a fresh one when creating, a copy when changing).
     // Returns the route it moves along (a curve through via points, travel's hops, a followed
@@ -127,8 +133,15 @@
         if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
       if (props.label !== undefined) { shape.label = props.label; if (shape.nil) shape.nil = false }
+      // a shape placed by a corner (SHAPES: anchor) keeps that corner where it is as its size changes
+      const corner = !creating && kindOf(shape).anchor ? anchorShift(shape) : null
       applyLook(shape, props, creating, warn)
       if (kindOf(shape).script) fitScript(shape, props)
+      if (corner) {
+        const shift = anchorShift(shape)
+        shape.x += shift.x - corner.x
+        shape.y += shift.y - corner.y
+      }
       // a script given new text has no map of where its blocks went (an edit gives one: editScript)
       if (kindOf(shape).script && props.label !== undefined && meta) tween(meta, shape.uid).script = null
       if (props.highlight) applyHighlight(shape, props.highlight)
@@ -258,14 +271,14 @@
     function setPosition(shape, props, creating) {
       const now = (value) => (creating ? undefined : value)
       const { at } = props
-      if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
+      if (at?.kind === 'abs') { shape.x = placed(shape, at.x, now(shape.x), 'x'); shape.y = placed(shape, at.y, now(shape.y), 'y') }
       if (at?.kind === 'ref') Object.assign(shape, boxCentre(shapes.get(at.ref)))
       if (at?.kind === 'place') {
         const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
         Object.assign(shape, placeNextTo(shape, shapes.get(at.ref), at.place, gap))
       }
-      if (props.x) shape.x = coord(props.x, now(shape.x))
-      if (props.y) shape.y = coord(props.y, now(shape.y))
+      if (props.x) shape.x = placed(shape, props.x, now(shape.x), 'x')
+      if (props.y) shape.y = placed(shape, props.y, now(shape.y), 'y')
     }
 
     // attach (beside or on top of another shape) / detach

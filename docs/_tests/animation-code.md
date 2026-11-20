@@ -125,7 +125,7 @@ s: scratch [
     "when green flag clicked",
     "turn right (15) degrees",
     "say [Hello!] for (2) seconds"
-] at 5,3.5 pop
+] at 2,2 pop
 t: text "Flag script" attach below s
 a: arrow from 11,3 to s
 ```
@@ -179,7 +179,7 @@ s: "move (10) steps"
 Given a size, a script fits inside it. Its font makes it bigger or smaller.
 
 ```anim
-b: rect at 12,5 size 4x3 fill none stroke muted dashed
+b: rect at 13.5,6 size 4x3 fill none stroke muted dashed
 f: scratch [ "when this sprite clicked" "play sound (Meow v) until done" ] at 12,5 size 4x3
 s: font 0.7
 ```
@@ -188,7 +188,7 @@ s: font 0.7
 
 ```anim
 f: highlight outline
-s: move 4,6 angle -10
+s: move 3,5 angle -10
 ```
 
 </animation>
@@ -212,7 +212,7 @@ s: scratch [
     "        move (10) steps",
     "    end",
     "end"
-] at 4,4
+] at 2,2
 
 r: rect "TEST" size 2x2 at 9,2 fill pink
 ```
@@ -295,7 +295,7 @@ s: scratch [
     "        say [Ouch!] for (1) seconds",
     "    end",
     "end"
-] at 4,4
+] at 2,2
 ```
 
 +++

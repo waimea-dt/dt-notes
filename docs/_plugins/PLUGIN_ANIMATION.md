@@ -53,7 +53,7 @@ In your summary, say that you checked, and name any exception you kept.
 
 | To add | Table | File |
 |---|---|---|
-| A shape type | `SHAPES` (props, defaults, outline, label place, inside, noun, band, pre, internal, script, lines); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
+| A shape type | `SHAPES` (props, defaults, outline, label place, inside, noun, band, pre, internal, script, lines, anchor); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
 | A kind of script (`scratch`: a shape drawn by a library from its text) | `SCRIPTS` (library, ready, render, syntax, scale), then a `SHAPES` type with `script` naming it | `anim-core.js` |
 | A kind of part (name, index, view, span) | `PARTS` (outline, bound) | `anim-core.js` |
 | A layout (`row`, `column`, `code`, `grid`, `table`) | `LAYOUTS` (cell type, across, base, name side, lines, fit, typeInTurn, slide, slot, bow, numbers, panel, index, arrange, views, head) | `anim-core.js` |

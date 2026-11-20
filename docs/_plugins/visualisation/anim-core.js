@@ -164,6 +164,9 @@
   //             by it unless given a size (scriptSize). A change to it fades the old one out and
   //             the new one in, as a label does
   //   lines     its label can be given as "quoted" lines in [ ], where the label would go
+  //   anchor    it's placed by a corner (ANCHORS), not its centre: an absolute place (at x,y, x, y)
+  //             puts that corner of its box at that corner of the cell, and the corner stays put
+  //             when its size changes (anchorShift)
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
@@ -192,7 +195,7 @@
     // a Scratch script (SCRIPTS: scratch), as big as it is (× its font) or fitted in the size given
     scratch: {
       takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height'],
-      defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true,
+      defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
     line: { takes: LINE_PROPS, label: 'along', line: true },
     arrow: { takes: LINE_PROPS, label: 'along', line: true, head: true },
@@ -846,6 +849,18 @@
     return { hw: e.hw * cos + e.hh * sin, hh: e.hw * sin + e.hh * cos }
   }
 
+  // The corners a shape can be placed by (SHAPES: anchor): which side of the cell each edge is at
+  // (-1: left / top, 1: right / bottom)
+  const ANCHORS = { 'top-left': { x: -1, y: -1 } }
+  // How far a shape placed by a corner has its centre from the centre of the cell it's placed at
+  // (none for a shape placed by its centre). Its x, y are always its centre.
+  function anchorShift(shape) {
+    const anchor = ANCHORS[kindOf(shape).anchor]
+    if (!anchor) return { x: 0, y: 0 }
+    const { hw, hh } = sized(shape)
+    return { x: -anchor.x * (hw - CELL / 2), y: -anchor.y * (hh - CELL / 2) }
+  }
+
   // Centre of a shape's box. A row / column is placed by its first cell (cx, cy: from there to the
   // middle); align left/right anchors text to that side of its cell.
   function boxCentre(shape) {
@@ -1148,7 +1163,7 @@
     LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
-    EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
+    EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, anchorShift, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
 })()
