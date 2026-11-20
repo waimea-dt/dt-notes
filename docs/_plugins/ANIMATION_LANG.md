@@ -355,6 +355,7 @@ s: scratch "move (10) steps" at 4,3  # one line
 s: [ "when green flag clicked" "move (10) steps" ]   # new script: fades, box grows to fit
 s: font 0.8                        # smaller
 f: scratch [ … ] at 12,5 size 4x3  # fitted in the box
+s: highlight block 3               # the others dim; blank lines, comments, end and else aren't blocks
 ```
 
 - [scratchblocks](https://scratchblocks.github.io) syntax. Shows as plain text if the library can't load.
@@ -399,6 +400,7 @@ a: highlight glow
 a: highlight number        # the next number: 1, then 2, …
 a: highlight number 5      # 5 (the next bare one is 6)
 arr: highlight number      # a row / column / group: numbers each of its shapes in turn
+s: highlight block 3       # a scratch script's 3rd block (end / else not counted)
 a: highlight spotlight     # dims everything else
 a: highlight outline arrow # several
 a: highlight clear

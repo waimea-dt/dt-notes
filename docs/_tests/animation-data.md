@@ -1062,3 +1062,88 @@ s: move 4,6 angle -10
 ```
 
 </animation>
+
+## Feature: Scratch block highlights
+
+<animation grid="14x8">
+
+# Stepping Through a Script
+
+`highlight block N` dims every block but the Nth, like a spotlight. `end` and `else` aren't blocks.
+
+```anim
+s: scratch [
+    "when green flag clicked",
+    "forever",
+    "    turn right (15) degrees",
+    "    if <mouse down?> then",
+    "        say [Ouch!] for (1) seconds",
+    "    else",
+    "        move (10) steps",
+    "    end",
+    "end"
+] at 4,4
+
+r: rect "TEST" size 2x2 at 9,2 fill pink
+```
+
++++
+
+```anim
+s: highlight block 1
+```
+
++++
+
+```anim
+s: highlight block 2
+```
+
++++
+
+The light moves from block to block.
+
+```anim
+s: highlight block 3
+```
+
++++
+
+```anim
+s: highlight block 4
+```
+
++++
+
+```anim
+s: highlight block 6
+```
+
+---
+
+## Changes and clearing
+
+A highlight stays on through a change to the script.
+
+```anim
+s: [
+    "when green flag clicked",
+    "forever",
+    "    turn right (45) degrees",
+    "    if <mouse down?> then",
+    "        say [Ouch!] for (1) seconds",
+    "    else",
+    "        move (10) steps",
+    "    end",
+    "end"
+] speed instant
+s: highlight block 3
+```
+
++++
+
+```anim
+s: highlight clear
+```
+
+</animation>

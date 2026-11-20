@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { escapeHtml, HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, DIRECTIONS, COLOURS, SPEEDS, EASES, RESERVED,
+  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, DIRECTIONS, COLOURS, SPEEDS, EASES, RESERVED,
     KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, BRACKET_NOUNS, LINE_STARTS, LINES, listProps, BAR_KINDS } = window.Anim
 
   // ---------------------------------------------------------------------------
@@ -191,7 +191,7 @@
     const word = token.lower
     switch (type) {
       case 'highlight': return HIGHLIGHTS.includes(word) ? word : undefined
-      case 'number': return word === 'number' ? word : undefined
+      case 'valued': return VALUED_HIGHLIGHTS.includes(word) ? word : undefined // a highlight that takes a number
       case 'side': return CALLOUT_SIDES[word]
       case 'clear': return word === 'clear' ? word : undefined
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined

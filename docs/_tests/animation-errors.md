@@ -119,6 +119,11 @@ es2: scratch ["move (10) steps" at 1,1
 es3: scratch "move (10) steps" at 1,1 fill red
 es3: scratch "move (10) steps" at 1,1 typed
 es3: highlight line
+es5: scratch ["move (10) steps" "turn right (5) degrees"] at 1,1
+es5: highlight block
+es5: highlight block 3
+es5: highlight block 1.5
+hlr2: rect at 1,1 highlight block 1
 es4: rect at 1,1
 es4: ["move (10) steps"]
 ec: highlight line

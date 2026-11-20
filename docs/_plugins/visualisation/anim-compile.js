@@ -135,18 +135,29 @@
       return LINE_TYPES.includes(shape.type) ? placeLine(shape, props, creating, warn) : placeShape(shape, props, creating, warn)
     }
 
-    // highlight: each kind (HIGHLIGHT_KINDS) stays until clear; "number" with no value is the next
+    // highlight: each kind (HIGHLIGHT_KINDS) stays until clear. One that takes a number is
+    // { kind: n }: with no number, "number" takes the next (next); the others need one.
     function applyHighlight(shape, items) {
       const none = Object.fromEntries(Object.entries(HIGHLIGHT_KINDS).map(([kind, h]) => [kind, 'off' in h ? h.off : false]))
       const hl = { ...none, ...shape.hl }
       for (const item of items) {
-        const kind = HIGHLIGHT_KINDS[typeof item === 'object' ? 'number' : item]
+        const name = typeof item === 'object' ? Object.keys(item)[0] : item
+        const kind = HIGHLIGHT_KINDS[name]
         if (kind?.applies && !kind.applies(shape)) throw new Error(kind.refuse(shape))
         if (item === 'clear') Object.assign(hl, none)
-        else if (typeof item === 'object') hl.number = lastNumber = item.number ?? lastNumber + 1
+        else if (typeof item === 'object') hl[name] = valuedHighlight(shape, name, item[name])
         else hl[item] = true
       }
       shape.hl = hl
+    }
+    function valuedHighlight(shape, name, n) {
+      const kind = HIGHLIGHT_KINDS[name]
+      if (n === null && !kind.next) throw new Error(`"highlight ${name}" needs a number, e.g. "${shape.id}: highlight ${name} 2"`)
+      if (n === null) n = lastNumber + 1
+      const problem = kind.check?.(shape, n)
+      if (problem) throw new Error(problem)
+      if (kind.next) lastNumber = n
+      return n
     }
 
     // pulse / shake / wobble / bounce / glow: one-off effects this beat, on an existing shape (and

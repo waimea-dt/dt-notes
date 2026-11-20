@@ -86,8 +86,10 @@
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
   // anim-render.js (glow and spotlight change the shape itself).
-  //   off      its value when off (default false); valued: it takes a value ("number 5")
+  //   off      its value when off (default false); valued: it takes a number ("number 5")
+  //   next     a valued one given no number takes the next (number); without it, a number is needed
   //   applies  whether it fits a shape, with refuse(shape) the message when it doesn't
+  //   check    check(shape, n): an error message when a valued one's number doesn't fit the shape
   const HIGHLIGHT_KINDS = {
     outline: { applies: (shape) => !isLine(shape), refuse: () => '"highlight outline" doesn\'t fit a line: try glow or signal' },
     inside: {
@@ -109,10 +111,22 @@
     spotlight: {},
     arrow: {},
     glow: {},
-    number: { off: null, valued: true },
+    number: { off: null, valued: true, next: true },
+    // one of a script's blocks (SCRIPTS: blocks), counted from 1: the others dim, as outside a
+    // spotlight (a C block's inner blocks too)
+    block: {
+      off: null, valued: true,
+      applies: (shape) => Boolean(SHAPES[shape.type]?.script),
+      refuse: () => `"highlight block" is for ${nounList(typesWhere((kind) => kind.script).map((type) => nounOf({ type })))}, e.g. "s: highlight block 2"`,
+      check: (shape, n) => {
+        const count = scriptOf(shape).blocks(shape.label)
+        return Number.isInteger(n) && n >= 1 && n <= count ? null : `"${shape.id}" has ${count} block${count === 1 ? '' : 's'}, so there's no block ${n}`
+      },
+    },
   }
-  // The words after "highlight" (number, which takes a value, is matched on its own: KEYWORDS)
+  // The words after "highlight" (those that take a number are matched on their own: KEYWORDS)
   const HIGHLIGHTS = [...Object.keys(HIGHLIGHT_KINDS).filter((kind) => !HIGHLIGHT_KINDS[kind].valued), 'clear']
+  const VALUED_HIGHLIGHTS = Object.keys(HIGHLIGHT_KINDS).filter((kind) => HIGHLIGHT_KINDS[kind].valued)
   // One-off emphasis on an existing shape (rendered by EMPHASIS_FRAMES in anim-render.js); along:
   // it runs along a line, arrow or curve (on a group: each of its lines). aliases: other words for it.
   const EMPHASES = {
@@ -214,21 +228,44 @@
   // (animation.js). Until it has loaded, or if it can't, a script shows as plain text.
   //   library  its name in DocsifyUtils.loadLibrary
   //   ready    whether the library has loaded
-  //   render   render(text): an <svg> of the script, with its own width and height
+  //   render   render(text): { svg, blocks }, an <svg> of the script (with its own width and height)
+  //            and its blocks' elements in order, each with its own shape first
+  //   blocks   blocks(text): how many blocks the text has (counted as render lists them)
   //   scale    its size beside the animation's text, as a multiple of the size it's drawn at
-  let scratchStyled = false
   const SCRIPTS = {
     scratch: {
       library: 'scratchblocks',
       ready: () => Boolean(window.scratchblocks?.render),
       render: (text) => {
         const lib = window.scratchblocks
-        if (!scratchStyled) { lib.appendStyles(); scratchStyled = true }
-        return lib.render(lib.parse(text, { languages: ['en'] }), { style: 'scratch3' })
+        setUpScratch(lib)
+        const view = lib.newView(lib.parse(text, { languages: ['en'] }), { style: 'scratch3' })
+        const svg = view.render()
+        svg.classList.add('scratchblocks-style-scratch3') // as scratchblocks.render does
+        return { svg, blocks: scratchBlocks(view).map((block) => block.el) }
       },
+      // every line but a blank one, a comment, and the end / else of a C block
+      blocks: (text) => text.split('\n').filter((line) => !/^\s*(end|else|\/\/.*)?\s*$/i.test(line)).length,
       scale: 1.5,
     },
   }
+  // Once: scratchblocks' styles, and its blocks keep the element each draws (el), so a block can be
+  // found in the drawing (its views keep only sizes). Drawing is unchanged.
+  let scratchSetUp = false
+  function setUpScratch(lib) {
+    if (scratchSetUp) return
+    scratchSetUp = true
+    lib.appendStyles()
+    const probe = lib.newView(lib.parse('move (1) steps'), { style: 'scratch3' }).scripts[0].blocks[0]
+    const blockView = Object.getPrototypeOf(probe)
+    const draw = blockView.draw
+    blockView.draw = function (...args) { return (this.el = draw.apply(this, args)) }
+  }
+  // A scratchblocks view's blocks in order: each script's, and inside a C block, its scripts' (a
+  // reporter in an input isn't one)
+  const scratchBlocks = (view) => view.scripts.flatMap(function inScript(script) {
+    return script.blocks.flatMap((block) => [block, ...(block.children || []).filter((child) => child.blocks).flatMap(inScript)])
+  })
   const scriptOf = (shape) => SCRIPTS[kindOf(shape).script]
   // The libraries the scripts in some compiled beats need that haven't loaded
   const scriptLibraries = (beats) => [...new Set(beats.flatMap((beat) => [...beat.state.values()])
@@ -544,10 +581,10 @@
     ...words(Object.keys(EMPHASES), 'emphasis', 'emphasis'),
     ...Object.fromEntries(Object.entries(EMPHASES).flatMap(([name, e]) => (e.aliases || []).map((alias) => [alias, fixed('emphasis', name, { what: 'emphasis' })]))),
     highlight: {
-      key: 'highlight', list: [['number', 'num'], ['number'], ['highlight']],
-      // number with no value: the next in the sequence (null until compiled)
-      build: (v, sig) => (sig[0] === 'number' ? { number: sig.length === 2 ? v[1].v : null } : v[0]),
-      help: 'outline, inside, line, spotlight, arrow, glow, number (N) or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)',
+      key: 'highlight', list: [['valued', 'num'], ['valued'], ['highlight']],
+      // one that takes a number: { kind: n }, n null when not given (number: the next in the sequence)
+      build: (v, sig) => (sig[0] === 'valued' ? { [v[0]]: sig.length === 2 ? v[1].v : null } : v[0]),
+      help: `${[...HIGHLIGHTS.slice(0, -1), ...VALUED_HIGHLIGHTS.map((kind) => `${kind} (N)`)].join(', ')} or clear (pulse, shake, wobble, bounce and a one-off glow go on their own)`,
     },
     callout: {
       key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],
@@ -740,7 +777,7 @@
     if (!scriptSizes.has(key)) {
       let size
       if (ready) {
-        const svg = script.render(shape.label)
+        const { svg } = script.render(shape.label)
         size = { w: +svg.getAttribute('width') * script.scale, h: +svg.getAttribute('height') * script.scale }
       } else size = scriptTextSize(shape.label)
       scriptSizes.set(key, size)
@@ -1078,7 +1115,7 @@
   }
 
   Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
-    LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
