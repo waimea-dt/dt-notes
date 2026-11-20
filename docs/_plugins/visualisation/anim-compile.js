@@ -9,7 +9,7 @@
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
-    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, anchorShift } = window.Anim
+    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -117,12 +117,6 @@
 
     // A grid coordinate (the centre of a cell), absolute, or relative to `current` when signed
     const coord = (n, current) => numberValue(n, current, { unit: CELL, coord: true })
-    // A shape's centre on one axis from a coordinate: an absolute one is its cell, and for a shape
-    // placed by a corner (SHAPES: anchor), that corner of the cell; a relative one moves it as it is
-    const placed = (shape, n, current, axis) => {
-      const value = coord(n, current)
-      return n.rel && current != null ? value : value + anchorShift(shape)[axis]
-    }
 
     // Applies parsed props to a shape (a fresh one when creating, a copy when changing).
     // Returns the route it moves along (a curve through via points, travel's hops, a followed
@@ -133,15 +127,8 @@
         if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
       if (props.label !== undefined) { shape.label = props.label; if (shape.nil) shape.nil = false }
-      // a shape placed by a corner (SHAPES: anchor) keeps that corner where it is as its size changes
-      const corner = !creating && kindOf(shape).anchor ? anchorShift(shape) : null
       applyLook(shape, props, creating, warn)
       if (kindOf(shape).script) fitScript(shape, props)
-      if (corner) {
-        const shift = anchorShift(shape)
-        shape.x += shift.x - corner.x
-        shape.y += shift.y - corner.y
-      }
       // a script given new text has no map of where its blocks went (an edit gives one: editScript)
       if (kindOf(shape).script && props.label !== undefined && meta) tween(meta, shape.uid).script = null
       if (props.highlight) applyHighlight(shape, props.highlight)
@@ -271,14 +258,14 @@
     function setPosition(shape, props, creating) {
       const now = (value) => (creating ? undefined : value)
       const { at } = props
-      if (at?.kind === 'abs') { shape.x = placed(shape, at.x, now(shape.x), 'x'); shape.y = placed(shape, at.y, now(shape.y), 'y') }
-      if (at?.kind === 'ref') Object.assign(shape, boxCentre(shapes.get(at.ref)))
+      if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
+      if (at?.kind === 'ref') Object.assign(shape, placeFor(shape, boxCentre(shapes.get(at.ref))))
       if (at?.kind === 'place') {
         const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
         Object.assign(shape, placeNextTo(shape, shapes.get(at.ref), at.place, gap))
       }
-      if (props.x) shape.x = placed(shape, props.x, now(shape.x), 'x')
-      if (props.y) shape.y = placed(shape, props.y, now(shape.y), 'y')
+      if (props.x) shape.x = coord(props.x, now(shape.x))
+      if (props.y) shape.y = coord(props.y, now(shape.y))
     }
 
     // attach (beside or on top of another shape) / detach
@@ -300,12 +287,14 @@
     // The route a moving shape takes from `start`, ending where it now is (travel and follow set
     // that): travel's hops (a signed stop is relative to the one before), along a followed line, or
     // a curve through via points (signed: relative to where it starts). Null for a straight move.
+    // Its points are where it's placed by: its box goes through a shape's centre, or along a line.
     function routeOf(shape, props, start) {
+      const onto = (p) => placeFor(shape, p)
       if (props.travel) {
         const points = [start]
         for (const stop of props.travel) {
           const prev = points[points.length - 1]
-          points.push(stop.kind === 'ref' ? boxCentre(shapes.get(stop.ref)) : { x: coord(stop.x, prev.x), y: coord(stop.y, prev.y) })
+          points.push(stop.kind === 'ref' ? onto(boxCentre(shapes.get(stop.ref))) : { x: coord(stop.x, prev.x), y: coord(stop.y, prev.y) })
         }
         Object.assign(shape, points[points.length - 1])
         const path = buildPolyline(points)
@@ -316,18 +305,18 @@
         const line = shapes.get(props.follow.ref)
         if (!LINE_TYPES.includes(line.type)) throw new Error(`"${props.follow.ref}" isn't a line or arrow, so it can't be followed`)
         // along the line (a curve's whole path), from the end it starts at
-        const along = linePoints(resolveEnds(line, shapes)).map(({ x, y }) => ({ x, y }))
+        const along = linePoints(resolveEnds(line, shapes)).map(onto)
         if (props.follow.reverse) along.reverse()
         // The line stops short of a shape at its far end, so finish on that shape's centre (as
         // the route starts from wherever the shape is)
         const farEnd = props.follow.reverse ? line.from : line.to
-        if (farEnd?.ref && shapes.has(farEnd.ref)) along.push(boxCentre(shapes.get(farEnd.ref)))
+        if (farEnd?.ref && shapes.has(farEnd.ref)) along.push(onto(boxCentre(shapes.get(farEnd.ref))))
         Object.assign(shape, along[along.length - 1])
         return buildPolyline([start, ...along])
       }
       if (!props.via) return null
       const vias = props.via.map((via) => {
-        if (via.kind === 'ref') return boxCentre(shapes.get(via.ref))
+        if (via.kind === 'ref') return onto(boxCentre(shapes.get(via.ref)))
         if (via.kind === 'place') return placeNextTo(shape, shapes.get(via.ref), via.place, PLACE_GAP)
         return { x: coord(via.x, start.x), y: coord(via.y, start.y) }
       })

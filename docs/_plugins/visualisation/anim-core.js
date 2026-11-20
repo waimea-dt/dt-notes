@@ -164,9 +164,8 @@
   //             by it unless given a size (scriptSize). A change to it fades the old one out and
   //             the new one in, as a label does
   //   lines     its label can be given as "quoted" lines in [ ], where the label would go
-  //   anchor    it's placed by a corner (ANCHORS), not its centre: an absolute place (at x,y, x, y)
-  //             puts that corner of its box at that corner of the cell, and the corner stays put
-  //             when its size changes (anchorShift)
+  //   anchor    it's placed by a corner (ANCHORS), not its centre: at x,y puts that corner of its
+  //             box at that corner of the cell, and it stays put as its size changes (centreShift)
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
@@ -849,25 +848,34 @@
     return { hw: e.hw * cos + e.hh * sin, hh: e.hw * sin + e.hh * cos }
   }
 
-  // The corners a shape can be placed by (SHAPES: anchor): which side of the cell each edge is at
-  // (-1: left / top, 1: right / bottom)
+  // The edges a shape can be placed by: a corner (SHAPES: anchor), or for a shape that takes align,
+  // a side (ALIGN_EDGES). Each says which side of its cell the box's edge is on (-1: left / top,
+  // 1: right / bottom, 0: its middle on the cell's).
   const ANCHORS = { 'top-left': { x: -1, y: -1 } }
-  // How far a shape placed by a corner has its centre from the centre of the cell it's placed at
-  // (none for a shape placed by its centre). Its x, y are always its centre.
-  function anchorShift(shape) {
-    const anchor = ANCHORS[kindOf(shape).anchor]
-    if (!anchor) return { x: 0, y: 0 }
+  const ALIGN_EDGES = { left: -1, centre: 0, right: 1 }
+  const edgeOf = (shape) => ANCHORS[kindOf(shape).anchor] || (APPLIES.align.includes(shape.type) ? { x: ALIGN_EDGES[shape.align] ?? 0, y: 0 } : null)
+
+  // How far a shape's box's centre is from the point it's placed by (its x, y): a row / column is
+  // placed by its first cell (cx, cy: from there to its middle), and a shape placed by an edge
+  // (edgeOf) by that edge of its cell; any other by its centre. Worked out from its size as it is,
+  // so that edge stays put as its size changes.
+  function centreShift(shape) {
+    if (shape.cx !== undefined) return { x: shape.cx, y: shape.cy }
+    const edge = edgeOf(shape)
+    if (!edge?.x && !edge?.y) return { x: 0, y: 0 }
     const { hw, hh } = sized(shape)
-    return { x: -anchor.x * (hw - CELL / 2), y: -anchor.y * (hh - CELL / 2) }
+    return { x: edge.x * (CELL / 2 - hw), y: edge.y * (CELL / 2 - hh) }
   }
 
-  // Centre of a shape's box. A row / column is placed by its first cell (cx, cy: from there to the
-  // middle); align left/right anchors text to that side of its cell.
+  // Centre of a shape's box (centreShift from the point it's placed by)
   function boxCentre(shape) {
-    if (shape.cx !== undefined) return { x: shape.x + shape.cx, y: shape.y + shape.cy }
-    if (!APPLIES.align.includes(shape.type) || shape.align === 'centre') return { x: shape.x, y: shape.y }
-    const { hw } = sized(shape)
-    return { x: shape.align === 'left' ? shape.x - CELL / 2 + hw : shape.x + CELL / 2 - hw, y: shape.y }
+    const shift = centreShift(shape)
+    return { x: shape.x + shift.x, y: shape.y + shift.y }
+  }
+  // The point a shape is placed by, for its box's centre to be at p
+  function placeFor(shape, p) {
+    const shift = centreShift(shape)
+    return { x: p.x - shift.x, y: p.y - shift.y }
   }
 
   // Extra height taken up by a label below its shape (an image or icon).
@@ -884,8 +892,8 @@
       case 'left-of': p = { x: c.x - b.hw - gap - a.hw, y: c.y }; break
       default: p = { x: c.x + b.hw + gap + a.hw, y: c.y }
     }
-    // the whole row / column goes there, so its first cell is off-centre
-    return self.cx !== undefined ? { x: p.x - self.cx, y: p.y - self.cy } : p
+    // its box goes there: a row / column's first cell, or an aligned shape's side, is off-centre
+    return placeFor(self, p)
   }
 
   // A shape's attachment (shape.attach), one of two kinds:
@@ -899,7 +907,7 @@
   // Where an attached shape sits, from its ref and its attachment.
   function attachPos(shape, ref, spec) {
     if (spec.kind === 'offset') return { x: ref.x + spec.dx, y: ref.y + spec.dy }
-    if (spec.side === 'centre') return boxCentre(ref)
+    if (spec.side === 'centre') return placeFor(shape, boxCentre(ref))
     return placeNextTo(shape, ref, spec.side, spec.gap ?? PLACE_GAP)
   }
 
@@ -1163,7 +1171,7 @@
     LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
-    EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, anchorShift, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
+    EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

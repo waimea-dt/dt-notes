@@ -96,6 +96,33 @@ t3: text "align right" at 6,3 align right
 t1: "new text" colour amber
 ```
 
+---
+
+## Placed beside a shape
+
+Aligned text placed beside a shape, attached to it, or moved onto it, is placed by its box, as any shape is.
+
+```anim
+b: rect at 10,2 size 3x1 fill none stroke blue
+t2: below b
+t3: attach above b
+```
+
++++
+
+```anim
+b: move 9,3
+t2: travel 2,4 b
+```
+
++++
+
+A longer text keeps its aligned edge.
+
+```anim
+t2: "align left, longer"
+t3: "align right, longer"
+```
 
 </animation>
 
