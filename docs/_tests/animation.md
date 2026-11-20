@@ -10,7 +10,8 @@ Click an animation to give it focus, then use ← / → to step and `F` for full
 - [Shapes, Looks and Highlights](animation-shapes.md)
 - [Movement, Timing and Camera](animation-motion.md)
 - [Images and Scenes](animation-images.md)
-- [Data Structures and Code](animation-data.md)
+- [Data Structures](animation-data.md)
+- [Code and Scratch](animation-code.md)
 - [Errors](animation-errors.md)
 
 This page tests the block itself: steps and beats, the grid, comments, and playback.

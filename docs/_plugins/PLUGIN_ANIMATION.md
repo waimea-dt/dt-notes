@@ -92,7 +92,8 @@ For every new word:
    - `animation-examples.md`: whole example animations
    - `animation-shapes.md`: shapes, looks (colours, line styles, layers …), emphasis and highlights
    - `animation-motion.md`: placing and moving, copy / attach / group, timing and effects, the camera
-   - `animation-data.md`: rows and columns, range, spans, grids and tables, vars and moving values, bars, code blocks, Scratch scripts
+   - `animation-data.md`: rows and columns, range, spans, grids and tables, vars and moving values, bars
+   - `animation-code.md`: code blocks, Scratch scripts
 
    A new page also goes in the menu on `animation.md`, the links at the top of each page, and `docs/_tests/_sidebar.md`.
 

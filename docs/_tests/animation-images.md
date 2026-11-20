@@ -2,7 +2,7 @@
 
 Click an animation to give it focus, then use ← / → (or scroll) to step and `F` for full screen.
 
-**Animation tests:** [Blocks](animation.md) · [Examples](animation-examples.md) · [Shapes, Looks and Highlights](animation-shapes.md) · [Movement, Timing and Camera](animation-motion.md) · **Images and Scenes** · [Data Structures and Code](animation-data.md) · [Errors](animation-errors.md)
+**Animation tests:** [Blocks](animation.md) · [Examples](animation-examples.md) · [Shapes, Looks and Highlights](animation-shapes.md) · [Movement, Timing and Camera](animation-motion.md) · **Images and Scenes** · [Data Structures](animation-data.md) · [Code and Scratch](animation-code.md) · [Errors](animation-errors.md)
 
 Scratch stages as full backdrops (`back` layer, 480×360 on a 16x12 grid, `crop`ped so nothing shows outside the stage), with sprites moving, turning and scaling on top, and the camera zooming in, out and panning across the scene.
 

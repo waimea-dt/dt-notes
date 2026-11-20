@@ -66,7 +66,8 @@
         - [Shapes and Looks](/_tests/animation-shapes.md)
         - [Movement and Timing](/_tests/animation-motion.md)
         - [Images and Scenes](/_tests/animation-images.md)
-        - [Data and Code](/_tests/animation-data.md)
+        - [Data Structures](/_tests/animation-data.md)
+        - [Code and Scratch](/_tests/animation-code.md)
         - [Errors](/_tests/animation-errors.md)
 
 - <i data-lucide="mouse-pointer-click"></i> Interactive
