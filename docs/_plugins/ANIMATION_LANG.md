@@ -51,6 +51,7 @@ Markers go alone on their line. Everything in a beat plays at once.
 |---|---|---|
 | `grid="CxR"` / `grid="fit"` | `16x9` | Grid size / fit the content |
 | `debug` | off | Grid numbers, ids, warnings |
+| `crop` | off | Nothing drawn outside the grid, no margin round it (backdrops, scenes) |
 | `autoplay` | off | Plays when on screen |
 | `loop` / `loop-bounce` | off | Restart / play back to the start |
 | `hold="s"` | `1.5` | Wait between beats while playing |

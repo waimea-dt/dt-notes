@@ -58,6 +58,9 @@
 
     .anim-stage {
         min-height: 0;
+        /* Frames the drawing away from the panel's edges, the title and the caption's line (the
+           drawing's own margin only makes room for strokes on its edge, and is none when cropped) */
+        padding: var(--padding-small);
 
         svg {
             display: block;

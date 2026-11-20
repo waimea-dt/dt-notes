@@ -146,14 +146,23 @@
     return { steps, title, assets }
   }
 
+  // crop: the drawing is clipped to its area (the grid), so nothing outside it shows, even with the
+  // camera zoomed out (when the SVG's own edge is further out)
+  function clipTo(svg, drawing, area) {
+    const clip = svg.appendChild(svgEl('clipPath', { id: window.DocsifyUtils.generateId('anim-crop') }))
+    clip.appendChild(svgEl('rect', { x: area.x, y: area.y, width: area.w, height: area.h }))
+    drawing.setAttribute('clip-path', `url(#${clip.id})`)
+  }
+
   function buildWidget(source) {
     const { steps, title, assets } = readSource(source)
     const debug = source.hasAttribute('data-debug')
+    const crop = source.hasAttribute('data-crop')
     const grid = source.dataset.grid
     const fixedGrid = grid !== 'fit' && viewBoxFor(grid, [], [])
     const centre = fixedGrid && { x: fixedGrid.x + fixedGrid.w / 2, y: fixedGrid.y + fixedGrid.h / 2 }
     const { beats, errors, warnings } = compile(steps, { assets, centre })
-    const viewBox = viewBoxFor(source.dataset.grid, beats, warnings)
+    const viewBox = viewBoxFor(source.dataset.grid, beats, warnings, { crop })
     if (debug) warnOutsideGrid(beats, viewBox, warnings)
 
     // Playback options from the tag: autoplay, loop / loop-bounce, hold="s", controls="none"
@@ -185,6 +194,8 @@
     stage.className = 'anim-stage'
     const svg = stage.appendChild(svgEl('svg', { class: 'no-zoom', viewBox: `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`, role: 'img' }))
     if (title) svg.setAttribute('aria-label', title.textContent.trim())
+    const drawing = svg.appendChild(svgEl('g'))
+    if (crop) clipTo(svg, drawing, viewBox)
 
     // Captions: one page per step, stacked in one grid cell so the panel keeps the tallest height.
     const caption = widget.appendChild(document.createElement('div'))
@@ -264,7 +275,7 @@
     // The camera's view: the part of the drawing the SVG shows. Callouts and slides use it, so it is
     // one object, updated in place.
     const view = { ...viewBox }
-    const renderer = createRenderer(svg, view, debug)
+    const renderer = createRenderer(drawing, view, debug)
 
     // A beat's camera as a viewBox: zoomed about its centre, and kept inside the drawing when zoomed in.
     function cameraView(camera) {

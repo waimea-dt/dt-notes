@@ -94,6 +94,94 @@ d2: arrow from tr to bl draw
 
 </animation>
 
+## Feature: Crop
+
+The same animation twice. Without `crop`, a small margin round the grid leaves room for strokes and outlines on its edge, and shapes off the grid show in it (and, with the camera zoomed out, beyond it). With `crop`, there's no margin and nothing outside the grid is drawn: shapes on the edge are cut, the ball disappears at the edge, and zooming out shows the grid alone.
+
+<animation grid="10x4">
+
+# Without crop
+
+```anim
+bg: rect at 5.5,2.5 size 10x4 fill blue-muted stroke none back
+edge: rect "edge" at 1,1 stroke amber weight 2
+edge: highlight outline
+ball: circle at 5,4 radius 0.4 fill pink
+```
+
+---
+
+## Off the edge
+
+```anim
+ball: move 5,5.5 speed slow
+```
+
+---
+
+## Camera in and out
+
+```anim
+camera at edge zoom 2.5 speed slow
+```
+
++++
+
+```anim
+camera zoom 0.6 speed slow
+```
+
++++
+
+```anim
+camera reset
+ball: move 5,4
+```
+
+</animation>
+
+<animation grid="10x4" crop>
+
+# With crop
+
+```anim
+bg: rect at 5.5,2.5 size 10x4 fill blue-muted stroke none back
+edge: rect "edge" at 1,1 stroke amber weight 2
+edge: highlight outline
+ball: circle at 5,4 radius 0.4 fill pink
+```
+
+---
+
+## Off the edge
+
+```anim
+ball: move 5,5.5 speed slow
+```
+
+---
+
+## Camera in and out
+
+```anim
+camera at edge zoom 2.5 speed slow
+```
+
++++
+
+```anim
+camera zoom 0.6 speed slow
+```
+
++++
+
+```anim
+camera reset
+ball: move 5,4
+```
+
+</animation>
+
 ## Feature: Debug
 
 Grid numbers, ids and warnings.

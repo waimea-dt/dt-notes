@@ -82,7 +82,7 @@
   const wrap = (open, body, close) => `${open}\n\n${body}\n\n${close}`
   const attr = (value) => encodeURIComponent(value)
 
-  // Tag attributes: bare flags (debug, autoplay, loop, loop-bounce) and name="value" pairs
+  // Tag attributes: bare flags (debug, crop, autoplay, loop, loop-bounce) and name="value" pairs
   // (grid, hold, controls).
   function parseAttrs(attrs) {
     const out = {}
@@ -94,6 +94,7 @@
     const opts = parseAttrs(attrs)
     const grid = typeof opts.grid === 'string' ? opts.grid : ''
     const debug = 'debug' in opts
+    const crop = 'crop' in opts // nothing drawn outside the grid, and no margin round it
     const playback = {
       autoplay: 'autoplay' in opts,
       loop: 'loop-bounce' in opts ? 'bounce' : 'loop' in opts ? 'loop' : null,
@@ -117,7 +118,7 @@
       ? wrap(`<div class="anim-src-assets" data-paths="${attr(JSON.stringify(paths))}">`, paths.map((p) => `![](${p})`).join('\n\n'), '</div>')
       : ''
 
-    const open = `<div class="anim-source" data-grid="${escapeHtml(grid)}" data-playback="${attr(JSON.stringify(playback))}"${debug ? ' data-debug' : ''}>`
+    const open = `<div class="anim-source" data-grid="${escapeHtml(grid)}" data-playback="${attr(JSON.stringify(playback))}"${debug ? ' data-debug' : ''}${crop ? ' data-crop' : ''}>`
     return `\n\n${wrap(open, [...steps, assets].filter(Boolean).join('\n\n'), '</div>')}\n${SOURCE_END}\n\n`
   }
 

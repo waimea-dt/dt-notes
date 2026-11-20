@@ -18,7 +18,9 @@
   const STROKE = 3                 // normal stroke thickness
   const FONT = 30                  // normal font size
   const PLACE_GAP = 0.25 * CELL    // default gap for above / below / left-of / right-of
-  const GRID_MARGIN = 0.2 * CELL   // drawn round a fixed grid (about 1rem at full width)
+  const GRID_MARGIN = 0.12 * CELL  // round a fixed grid: room for the strokes and highlight outlines of
+                                   // shapes on its edge (none when cropped; the stage's CSS padding frames it)
+  const FIT_MARGIN = CELL / 2      // round a fitted drawing's shapes (none when cropped)
   const EDGE_GAP = 0.06 * CELL     // gap between a line end and the edge of its shape
   const HEAD = 0.2 * CELL          // arrowhead length at normal weight
   const CAPTION_MS = 500           // caption transition (kept snappy, whatever the shapes' speed)
@@ -975,21 +977,21 @@
 
   const unionBounds = (list, byId, depth = 0) => mergeBoxes(list.map((shape) => bounds(shape, byId, {}, depth)))
 
-  function viewBoxFor(gridAttr, beats, warnings) {
+  // The drawing's area: a fixed grid, or (grid="fit") the shapes' bounds, with a margin all round so
+  // shapes on (or just over) its edge aren't against the frame. Cropped (the crop attribute): no
+  // margin, as nothing outside the area is drawn (the widget clips to it).
+  function viewBoxFor(gridAttr, beats, warnings, { crop = false } = {}) {
     const fixed = String(gridAttr || '').trim().toLowerCase().match(/^(\d+)\s*x\s*(\d+)$/)
     if (gridAttr && gridAttr !== 'fit' && !fixed) warnings.push(`grid="${gridAttr}" isn't "CxR" or "fit", so 16x9 is used`)
+    const around = (box, margin) => ({ x: box.x0 - margin, y: box.y0 - margin, w: box.x1 - box.x0 + 2 * margin, h: box.y1 - box.y0 + 2 * margin })
     if (gridAttr !== 'fit') {
-      // the grid, with a margin all round so shapes on (or just over) its edge aren't against the frame
       const cols = fixed ? Math.max(1, +fixed[1]) : 16
       const rows = fixed ? Math.max(1, +fixed[2]) : 9
-      return { x: -GRID_MARGIN, y: -GRID_MARGIN, w: cols * CELL + 2 * GRID_MARGIN, h: rows * CELL + 2 * GRID_MARGIN, cols, rows }
+      return { ...around({ x0: 0, y0: 0, x1: cols * CELL, y1: rows * CELL }, crop ? 0 : GRID_MARGIN), cols, rows }
     }
     const box = mergeBoxes(beats.map(({ state }) => unionBounds([...state.values()], state)))
     if (!Number.isFinite(box.x0)) return { x: 0, y: 0, w: 16 * CELL, h: 9 * CELL, cols: 16, rows: 9 }
-    const margin = CELL / 2
-    const x = box.x0 - margin
-    const y = box.y0 - margin
-    return { x, y, w: box.x1 - box.x0 + 2 * margin, h: box.y1 - box.y0 + 2 * margin }
+    return around(box, crop ? 0 : FIT_MARGIN)
   }
 
   function warnOutsideGrid(beats, viewBox, warnings) {
