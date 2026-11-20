@@ -65,6 +65,7 @@
         - [Examples](/_tests/animation-examples.md)
         - [Shapes and Looks](/_tests/animation-shapes.md)
         - [Movement and Timing](/_tests/animation-motion.md)
+        - [Images and Scenes](/_tests/animation-images.md)
         - [Data and Code](/_tests/animation-data.md)
         - [Errors](/_tests/animation-errors.md)
 

@@ -2,7 +2,7 @@
 
 Whole animations, as they would appear in notes. Click an animation to give it focus, then use ← / → to step and `F` for full screen.
 
-**Animation tests:** [Blocks](animation.md) · **Examples** · [Shapes, Looks and Highlights](animation-shapes.md) · [Movement, Timing and Camera](animation-motion.md) · [Data Structures and Code](animation-data.md) · [Errors](animation-errors.md)
+**Animation tests:** [Blocks](animation.md) · **Examples** · [Shapes, Looks and Highlights](animation-shapes.md) · [Movement, Timing and Camera](animation-motion.md) · [Images and Scenes](animation-images.md) · [Data Structures and Code](animation-data.md) · [Errors](animation-errors.md)
 
 ## Bubble Sort
 
