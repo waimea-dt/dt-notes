@@ -24,7 +24,8 @@
  *
  * Touch swipes are reveal.js's own (`touch`, on by default); they don't also go back / forward in
  * the browser (DocsifyUtils.preventSwipeNavigation). A double click doesn't select text
- * (DocsifyUtils.preventDoubleClickSelect), except in editors and inputs.
+ * (DocsifyUtils.preventDoubleClickSelect), except in editors and inputs. While the deck is focused,
+ * scrolling steps through it (addDeckWheelStepping); reveal.js's own `mouseWheel` stays off.
  *
  * The VS Code extension (vscode/dt-notes-syntax, preview-pane.js) previews a deck with this file,
  * moving it with `preview-show` events and following its `preview-position` ones (followPreview).
@@ -250,6 +251,19 @@
     window.DocsifyUtils.withLibraries(['reveal'], decks, startDeck)
   }
 
+  // While the deck is focused (reveal.js's own focus: clicked into), scrolling steps through
+  // slides and fragments. Scroll view (narrow screens) keeps reveal.js's own scrolling.
+  function addDeckWheelStepping(deck, reveal) {
+    const stepping = () => reveal.isFocused() && !reveal.isScrollView()
+    window.DocsifyUtils.addWheelStepping(deck, {
+      next: () => reveal.next(),
+      prev: () => reveal.prev(),
+      canNext: () => !reveal.isLastSlide() || reveal.availableFragments().next,
+      canPrev: () => !reveal.isFirstSlide() || reveal.availableFragments().prev,
+      isFocused: stepping,
+    })
+  }
+
   function startDeck(deck) {
     if (!sharedNotes && typeof RevealNotes !== 'undefined') sharedNotes = RevealNotes()
     window.DocsifyUtils.preventDoubleClickSelect(deck)
@@ -279,6 +293,7 @@
       deck.setAttribute('data-slides-ready', 'true')
       refreshEditors(reveal.getCurrentSlide())
       reveal.on('slidechanged', (event) => refreshEditors(event.currentSlide))
+      addDeckWheelStepping(deck, reveal)
       previewStarts.get(deck)?.(reveal)
     })
   }

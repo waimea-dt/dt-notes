@@ -2,7 +2,7 @@
 
 Normal docs content here...
 
-On touch, swipe left / right to change slide (reveal.js). Double clicking a slide doesn't select text, except in code editors.
+Click a deck to focus it, then scroll to step through slides and fragments (the page scrolls again at either end; narrow screens use reveal.js's scroll view instead). On touch, swipe left / right to change slide (reveal.js). Double clicking a slide doesn't select text, except in code editors.
 
 ## Full Feature Test
 

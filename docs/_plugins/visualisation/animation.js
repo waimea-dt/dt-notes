@@ -21,8 +21,8 @@
  *   Note:                 teacher notes, to the end of the step
  *   </animation>
  *
- * Controls: buttons, keys (? lists them), touch swipes left / right, and a double click / tap
- * to play or pause (DocsifyUtils.addSwipeSupport).
+ * Controls: buttons, keys (? lists them), touch swipes left / right, a double click / tap to play
+ * or pause (DocsifyUtils.addSwipeSupport), and scrolling while focused (addWheelStepping).
  *
  * How it works: like slides.js, beforeEach rewrites the block into plain HTML wrappers with the
  * caption markdown left in place, so Docsify compiles it with the rest of the page and every
@@ -54,7 +54,7 @@
   // What changes as it plays is shown with data- and aria- attributes and inline styles, never
   // classes, `hidden` / `disabled` or added and removed nodes: with the site's :has() rules, any of
   // those restyles the whole page, which stalls the frame a step starts or ends on.
-  const { addSwipeSupport, preventDoubleClickSelect } = window.DocsifyUtils
+  const { addSwipeSupport, addWheelStepping, preventDoubleClickSelect } = window.DocsifyUtils
   // Gestures on these are left alone: the controls have their own clicks, and notes / help hold
   // text to select
   const GESTURE_IGNORE = 'a, button, input, textarea, select, [contenteditable], .CodeMirror, ' +
@@ -93,6 +93,7 @@
       ['?', 'Show or hide these shortcuts'],
       ['Esc', 'Close this / exit full screen'],
       ['Swipe ← / →', 'Next / previous step (touch)'],
+      ['Scroll ↓ / ↑', 'Next / previous step (when focused)'],
       ['Double click / tap', 'Play / pause'],
     ]
     const help = widget.appendChild(document.createElement('div'))
@@ -631,7 +632,8 @@
     }
 
     // aria-disabled (not disabled) still lets a click through
-    const onPress = (button, fn) => button.addEventListener('click', () => { if (button.getAttribute('aria-disabled') !== 'true') fn() })
+    const isEnabled = (button) => button.getAttribute('aria-disabled') !== 'true'
+    const onPress = (button, fn) => button.addEventListener('click', () => { if (isEnabled(button)) fn() })
     onPress(rewind, () => userJump(0))
     onPress(prev, userBack)
     onPress(next, userNext)
@@ -655,6 +657,13 @@
     const gesture = (fn) => () => { touched(); fn() }
     addSwipeSupport(widget, { left: gesture(userNext), right: gesture(userBack), doubleTap: gesture(userPlay) }, GESTURE_IGNORE)
     preventDoubleClickSelect(widget, GESTURE_IGNORE)
+    // While focused, scrolling steps (the page scrolls again at either end)
+    addWheelStepping(widget, {
+      next: gesture(userNext),
+      prev: gesture(userBack),
+      canNext: () => isEnabled(next),
+      canPrev: () => isEnabled(prev),
+    })
 
     // Keys, as on slides: → N Space next, ← P Shift+Space back, Home / End, A (play), F, S, ? and Esc.
     widget.addEventListener('keydown', (event) => {

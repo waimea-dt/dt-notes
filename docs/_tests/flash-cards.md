@@ -1,6 +1,6 @@
 ﻿# Flash Cards
 
-Click or ↑ / ↓ to flip, ← / → to move. On touch, swipe left / right to move and up / down to flip. Double clicking doesn't select text.
+Click to flip; that also gives the deck focus. While focused: ↑ / ↓ flip, ← / → and scrolling move (the page scrolls again at either end), and only that deck responds. On touch, swipe left / right to move and up / down to flip. Double clicking doesn't select text.
 
 ## Simple
 

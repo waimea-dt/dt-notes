@@ -49,6 +49,7 @@
  *   parseHeaderConfig(el, defaults)     - Parse header/title/sub-title attributes from a plugin element
  *   addSwipeSupport(el, handlers, ign)  - Touch swipes { left, right, up, down } and doubleTap (tap or click)
  *   preventSwipeNavigation(el)          - Stop sideways swipes over el going back / forward in history
+ *   addWheelStepping(el, options)       - Wheel / trackpad scroll steps next / prev while el is focused
  *   preventDoubleClickSelect(el, ign)   - Stop double clicks selecting text (drag-select still works)
  */
 ;(function () {
@@ -770,14 +771,21 @@
 
     const isIgnored = (event, ignore) => Boolean(event.target.closest?.(ignore))
 
-    // Whether something between target and el (inclusive) scrolls sideways itself
-    function scrollsSideways(target, el) {
+    const SCROLL_AXES = {
+        x: { size: 'scrollWidth',  view: 'clientWidth',  overflow: 'overflowX' },
+        y: { size: 'scrollHeight', view: 'clientHeight', overflow: 'overflowY' },
+    }
+
+    // Whether something between target and el (inclusive) scrolls along axis ('x' or 'y') itself
+    function hasScroller(target, el, axis) {
+        const { size, view, overflow } = SCROLL_AXES[axis]
         for (let node = target; node && node !== el.parentNode; node = node.parentNode) {
-            if (node.nodeType !== 1 || !(node.scrollWidth > node.clientWidth)) continue // SVG nodes have no scrollWidth
-            if (/auto|scroll/.test(getComputedStyle(node).overflowX)) return true
+            if (node.nodeType !== 1 || !(node[size] > node[view])) continue // SVG nodes have no scroll sizes
+            if (/auto|scroll/.test(getComputedStyle(node)[overflow])) return true
         }
         return false
     }
+    const scrollsSideways = (target, el) => hasScroller(target, el, 'x')
 
     /**
      * Stop sideways swipes over an element going back / forward in the browser's history
@@ -866,6 +874,37 @@
         }
     }
 
+    const WHEEL_GESTURE_GAP_MS = 200 // wheel events closer together than this are one gesture
+
+    /**
+     * Step with the mouse wheel / trackpad scroll while the pointer is over el and it has focus:
+     * down is next, up is previous, one step per gesture (a trackpad flick or a spin of the wheel
+     * sends a burst of events). At either end, or unfocused, the page scrolls as usual, and content
+     * inside el that scrolls vertically itself (notes, a tall code block) keeps its scrolling.
+     *
+     * @param {Element} el
+     * @param {Object}  options - { next, prev, canNext, canPrev, isFocused } - functions;
+     *                            isFocused defaults to focus being inside el
+     */
+    function addWheelStepping(el, { next, prev, canNext, canPrev, isFocused = () => el.contains(document.activeElement) }) {
+        let lastWheelAt = 0
+        let gestureSteps = false // whether the current gesture is stepping (else it scrolls the page)
+
+        el.addEventListener('wheel', (event) => {
+            // event.timeStamp is when the input happened, so a busy page can't split a gesture
+            const newGesture = event.timeStamp - lastWheelAt > WHEEL_GESTURE_GAP_MS
+            lastWheelAt = event.timeStamp
+            if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || event.ctrlKey) return // sideways, or pinch zoom
+
+            if (newGesture) {
+                const forward = event.deltaY > 0
+                gestureSteps = isFocused() && !hasScroller(event.target, el, 'y') && (forward ? canNext() : canPrev())
+                if (gestureSteps) (forward ? next : prev)()
+            }
+            if (gestureSteps) event.preventDefault()
+        }, { passive: false })
+    }
+
     /**
      * Stop a double (or triple) click selecting text in an element; drag-selecting still works.
      * Inputs and editors (the ignore selector) keep their usual double-click word selection.
@@ -923,6 +962,7 @@
         parseHeaderConfig,
         addSwipeSupport,
         preventSwipeNavigation,
+        addWheelStepping,
         preventDoubleClickSelect,
     })
 

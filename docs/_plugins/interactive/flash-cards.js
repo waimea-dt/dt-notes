@@ -17,15 +17,16 @@
  * Attributes:
  *   shuffle - if present, cards are shown in a randomised order.
  *
- * Controls: click / Up / Down flip a card, Left / Right move. On touch, swipe left / right to
- * move and up / down to flip (DocsifyUtils.addSwipeSupport).
+ * Controls: click to flip a card. While the deck has focus (after a click in it): Up / Down flip,
+ * Left / Right move, Escape goes back to the first card, and scrolling moves (addWheelStepping).
+ * On touch, swipe left / right to move and up / down to flip (DocsifyUtils.addSwipeSupport).
  *
  * The VS Code extension (vscode/dt-notes-syntax, preview-pane.js) previews cards with this file,
  * moving them with `preview-show` events and following their `preview-position` ones.
  */
 (function () {
 
-    const { clamp, shuffleArray, addSwipeSupport, preventDoubleClickSelect } = window.DocsifyUtils
+    const { clamp, shuffleArray, addSwipeSupport, addWheelStepping, preventDoubleClickSelect } = window.DocsifyUtils
 
     const ICONS = {
         FIRST:      'chevrons-left',
@@ -171,12 +172,13 @@
 
             addControls(cardList, cardInfo, cardInstruct, changeCard)
 
-            const keyHandler = (e) => {
+            // Keys and the wheel act on the deck with focus (clicking a card or a control gives it focus)
+            cardList.tabIndex = 0
+            cardList.addEventListener('keydown', (e) => {
                 switch (e.code) {
                     case 'ArrowUp':
                     case 'ArrowDown':
                         revealCurrentCard()
-                        e.preventDefault()
                         break
                     case 'Escape':
                         // Escape should always return to a clean baseline state.
@@ -185,8 +187,16 @@
                         break
                     case 'ArrowRight': changeCard(1);  break
                     case 'ArrowLeft':  changeCard(-1); break
+                    default: return
                 }
-            }
+                e.preventDefault()
+            })
+            addWheelStepping(cardList, {
+                next:    () => changeCard(1),
+                prev:    () => changeCard(-1),
+                canNext: () => parseInt(cardList.dataset.currentCard) < numCards,
+                canPrev: () => parseInt(cardList.dataset.currentCard) > 1,
+            })
 
             const fullscreenHandler = () => {
                 if (!document.fullscreenElement) {
@@ -195,12 +205,8 @@
                 }
             }
 
-            window.addEventListener('keydown', keyHandler)
             window.addEventListener('fullscreenchange', fullscreenHandler)
-            cleanups.push(() => {
-                window.removeEventListener('keydown', keyHandler)
-                window.removeEventListener('fullscreenchange', fullscreenHandler)
-            })
+            cleanups.push(() => window.removeEventListener('fullscreenchange', fullscreenHandler))
 
             // Move the cardList out of the wrapper before removing the wrapper
             trigger.parentNode.insertBefore(cardList, trigger)
