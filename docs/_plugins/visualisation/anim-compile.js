@@ -136,22 +136,25 @@
     }
 
     // highlight: each kind (HIGHLIGHT_KINDS) stays until clear. One that takes a number is
-    // { kind: n }: with no number, "number" takes the next (next); the others need one.
+    // { kind: n }: with no number, "number" takes the next (next), "line" is just on (bare); the
+    // others need one.
     function applyHighlight(shape, items) {
       const none = Object.fromEntries(Object.entries(HIGHLIGHT_KINDS).map(([kind, h]) => [kind, 'off' in h ? h.off : false]))
       const hl = { ...none, ...shape.hl }
       for (const item of items) {
         const name = typeof item === 'object' ? Object.keys(item)[0] : item
+        const n = typeof item === 'object' ? item[name] : null
         const kind = HIGHLIGHT_KINDS[name]
-        if (kind?.applies && !kind.applies(shape)) throw new Error(kind.refuse(shape))
+        if (kind?.applies && !kind.applies(shape, n)) throw new Error(kind.refuse(shape, n))
         if (item === 'clear') Object.assign(hl, none)
-        else if (typeof item === 'object') hl[name] = valuedHighlight(shape, name, item[name])
+        else if (typeof item === 'object') hl[name] = valuedHighlight(shape, name, n)
         else hl[item] = true
       }
       shape.hl = hl
     }
     function valuedHighlight(shape, name, n) {
       const kind = HIGHLIGHT_KINDS[name]
+      if (n === null && kind.bare) return true
       if (n === null && !kind.next) throw new Error(`"highlight ${name}" needs a number, e.g. "${shape.id}: highlight ${name} 2"`)
       if (n === null) n = lastNumber + 1
       const problem = kind.check?.(shape, n)
@@ -563,7 +566,7 @@
       const word = first?.kind === 'word' ? first.lower : ''
       if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
       // a verb: delete, swap, insert, remove, copy, group, ungroup (LINES)
-      if (LINES[word]?.verb) return VERBS[word](id, existing, tokens, meta, warn, word)
+      if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
 
       // "l: arrow …" on a line or curve that already exists, with no new ends, puts a head on it
       // (rather than replacing it with an arrow shape): read as a change, where "arrow" is the flag

@@ -1063,13 +1063,13 @@ s: move 4,6 angle -10
 
 </animation>
 
-## Feature: Scratch block highlights
+## Feature: Scratch line highlights
 
 <animation grid="14x8">
 
 # Stepping Through a Script
 
-`highlight block N` dims every block but the Nth, like a spotlight. `end` and `else` aren't blocks.
+`highlight line N` dims every block but the one on line N, like a spotlight. Lines count from 1, as written.
 
 ```anim
 s: scratch [
@@ -1090,13 +1090,13 @@ r: rect "TEST" size 2x2 at 9,2 fill pink
 +++
 
 ```anim
-s: highlight block 1
+s: highlight line 1
 ```
 
 +++
 
 ```anim
-s: highlight block 2
+s: highlight line 2
 ```
 
 +++
@@ -1104,19 +1104,21 @@ s: highlight block 2
 The light moves from block to block.
 
 ```anim
-s: highlight block 3
+s: highlight line 3
 ```
 
 +++
 
 ```anim
-s: highlight block 4
+s: highlight line 4
 ```
 
 +++
 
+Line 6 is the else, so the next block is on line 7.
+
 ```anim
-s: highlight block 6
+s: highlight line 7
 ```
 
 ---
@@ -1137,13 +1139,99 @@ s: [
     "    end",
     "end"
 ] speed instant
-s: highlight block 3
+s: highlight line 3
 ```
 
 +++
 
 ```anim
 s: highlight clear
+```
+
+</animation>
+
+## Feature: Scratch line edits
+
+<animation grid="14x8">
+
+# Editing a Script
+
+```anim
+s: scratch [
+    "when green flag clicked",
+    "forever",
+    "    turn right (15) degrees",
+    "    if <mouse down?> then",
+    "        say [Ouch!] for (1) seconds",
+    "    end",
+    "end"
+] at 4,4
+```
+
++++
+
+Lines are numbered from 1, as written, `end` lines too.
+
+```anim
+s: highlight line 3
+```
+
+---
+
+## Replace a line
+
+```anim
+s: line 3 "turn right (45) degrees"
+```
+
++++
+
+Instant, the new value just replaces the old one.
+
+```anim
+s: line 3 "turn right (90) degrees" speed instant
+```
+
+---
+
+## Insert, swap and remove
+
+Line 6 is the if's end, so this goes inside the if. A lit line keeps its light as the lines round it change.
+
+```anim
+s: insert "move (10) steps" at 6
+```
+
++++
+
+```anim
+s: swap 3 4
+```
+
++++
+
+```anim
+s: highlight clear
+```
+
++++
+
+A C block goes with the blocks inside it.
+
+```anim
+s: remove 3
+```
+
++++
+
+Several lines go in [ ]. Line 4 is the forever's end, so they go inside it.
+
+```anim
+s: insert [
+    "repeat (3)",
+    "    play sound (Meow v) until done",
+    "end"
+] at 4
 ```
 
 </animation>

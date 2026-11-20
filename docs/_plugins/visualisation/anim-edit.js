@@ -6,13 +6,13 @@
 
 ;(function () {
   const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, LAYOUTS, BARS, cellId, baseOf, cellRange,
-    tween, baseShape, LAYOUT_NOUNS, LINES, EDIT_WORDS } = window.Anim
+    tween, baseShape, LAYOUT_NOUNS, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, blockOnLine } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
-      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numberOf, readList, refuseView, schedule,
+      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numberOf, readLines, readList, refuseView, schedule,
       setValue, speedOf, syncIndices, transpose, valueIn, valueOf
 
     // What a swap, insert or remove moves as one (a unit), read from the line at tokens[1] by its
@@ -137,8 +137,9 @@
     // is attached to arr.0 (a pointer) stays there, and highlights go with the cells. A grid's two
     // rows, two columns ("g: swap col 1 3") or two cells ("g: swap 1.2 0.0") swap the same way, each
     // cell with the one in the same place in the other.
-    function swapCells(id, row, tokens, meta, warn) {
+    function swapCells(id, row, tokens, meta, warn, word) {
       if (!row) throw noShape(id)
+      if (scriptOf(row)) return editScript(id, row, tokens, meta, warn, word)
       if (!row.layout) throw new Error(`"swap" swaps two cells of ${LAYOUT_NOUNS}, and "${id}" isn't one`)
       refuseView(row, 'swap')
       const axis = editAxis(row, tokens)
@@ -190,6 +191,7 @@
     // "g: insert [1 2 3] at 1", "g: remove col end" (a table's new column: its heading first).
     function editCells(id, row, tokens, meta, warn, word) {
       if (!row) throw noShape(id)
+      if (scriptOf(row)) return editScript(id, row, tokens, meta, warn, word)
       const removing = Boolean(LINES[word].takesOut)
       if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} ${LAYOUT_NOUNS}, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
       refuseView(row, word)
@@ -336,6 +338,108 @@
       }
     }
 
+    // A script's edits (SHAPES: script), made on its lines (from 1, as written in its [ ], counting
+    // end, else, blank lines and comments): "s: line 3 "…"" replaces line 3, "s: insert "…" at 3"
+    // puts lines in before it (or at end), "s: remove 3" takes out the block it starts and
+    // "s: swap 2 4" swaps two (a C block goes with the blocks inside it, to its end). Lines go in
+    // with the indent of where they go. The script is drawn again, fading as a label does. A lit
+    // line (highlight line) keeps its light wherever it goes.
+    const SCRIPT_NOUNS = nounList(Object.keys(SHAPES).filter((type) => SHAPES[type].script).map((type) => nounOf({ type })))
+    const SCRIPT_EDITS = {
+      line: { example: (id) => `"${id}: line 2 "move (10) steps""`, edit: replaceLine },
+      insert: { example: (id) => `"${id}: insert "say [Hi!]" at 2" (or at end)`, edit: insertLines },
+      remove: { example: (id) => `"${id}: remove 2"`, edit: removeBlock },
+      swap: { example: (id) => `"${id}: swap 2 3"`, edit: swapBlocks },
+    }
+    function editScript(id, shape, tokens, meta, warn, word) {
+      if (!shape) throw noShape(id)
+      if (!scriptOf(shape)) throw new Error(`"${word}" changes the lines of ${SCRIPT_NOUNS}, and "${id}" isn't one`)
+      const script = scriptOf(shape)
+      const lines = shape.label.split('\n').map((text) => ({ text })) // objects, so a lit one can be followed
+      const lit = typeof shape.hl?.line === 'number' ? lines[shape.hl.line - 1] : null
+      const { example, edit } = SCRIPT_EDITS[word]
+      const next = edit({ id, script, tokens, lines, warn, example: example(id) })
+      const props = parseProps(tokens, next, word, shapes)
+      const changed = structuredClone(shape)
+      applyProps(changed, { label: lines.map((line) => line.text).join('\n') }, false, warn, meta)
+      if (lit) changed.hl = { ...changed.hl, line: lines.includes(lit) ? lines.indexOf(lit) + 1 : false }
+      shapes.set(id, changed)
+      schedule(meta, changed.uid, props)
+    }
+
+    // A line's number as written (from 1, or end; after: the place after the last, for an insert),
+    // checked: its place in lines from 0
+    function lineAt({ id, lines, example }, token, what, after = false) {
+      const k = numberOf(token, lines.length, 1, after)
+      if (k === undefined) throw new Error(`${what} expects a line number${after ? ' or end' : ''}, e.g. ${example}`)
+      if (k < 1 || k > lines.length + (after ? 1 : 0)) throw new Error(`"${id}" has ${lines.length} line${lines.length === 1 ? '' : 's'}, so there's no line ${k}`)
+      return k - 1
+    }
+    // The block a line starts, as written (removed, swapped: done)
+    function blockAt(ask, token, what, done) {
+      const { block, problem } = blockOnLine(ask.script, ask.lines.map((line) => line.text), lineAt(ask, token, what) + 1, ask.id, done)
+      if (problem) throw new Error(problem)
+      return block
+    }
+    // New lines: one "quoted" line, or several in [ ], each with the indent given; and the token after
+    function newLines({ tokens, example }, j, what, indent) {
+      if (tokens[j]?.kind === 'str') return { added: [{ text: indent + tokens[j].value }], next: j + 1 }
+      if (tokens[j]?.kind !== 'bracket' || tokens[j].value !== '[') throw new Error(`${what} expects a "quoted" line, or lines in [ ], e.g. ${example}`)
+      const { values, next } = readLines(tokens, j, { noun: 'script', item: 'line', example })
+      return { added: values.map((text) => ({ text: indent + text })), next }
+    }
+    const indentOf = (line) => line.text.match(/^\s*/)[0]
+
+    // "s: line 3 "…"": keeping its indent (its first new line stays the same line, so a light on it
+    // stays)
+    function replaceLine(ask) {
+      const { lines, tokens } = ask
+      const at = lineAt(ask, tokens[1], '"line"')
+      const line = lines[at]
+      const { added, next } = newLines(ask, 2, '"line"', indentOf(line))
+      line.text = added[0].text
+      lines.splice(at + 1, 0, ...added.slice(1))
+      return next
+    }
+    // "s: insert "…" at 3": before line 3 (at end: after the last), at the indent of the line before
+    // it, one deeper after a line that opens or divides a C block (SCRIPTS: syntax)
+    function insertLines(ask) {
+      const { lines, tokens, example, script } = ask
+      const { opens, middle, indent } = script.syntax
+      const end = tokens.findIndex((token, k) => k > 0 && token.kind === 'word' && token.lower === 'at')
+      if (end < 0) throw new Error(`"insert" expects where the lines go, e.g. ${example}`)
+      const at = lineAt(ask, tokens[end + 1], '"insert … at"', true)
+      const before = lines[at - 1]
+      const deeper = before && (opens.test(before.text) || middle.test(before.text))
+      const { added, next } = newLines(ask, 1, '"insert"', before ? indentOf(before) + (deeper ? indent : '') : '')
+      if (next !== end) throw new Error(`"insert" expects its lines, then where they go, e.g. ${example}`)
+      lines.splice(at, 0, ...added)
+      return end + 2
+    }
+    // "s: remove 3": the block line 3 starts (a C block's lines, to its end)
+    function removeBlock(ask) {
+      const { id, lines, tokens } = ask
+      const block = blockAt(ask, tokens[1], '"remove"', 'removed')
+      if (block.at === 0 && block.to === lines.length - 1) throw new Error(`that would leave "${id}" with no blocks: to delete it, "${id}: delete"`)
+      lines.splice(block.at, block.to - block.at + 1)
+      return 2
+    }
+    // "s: swap 2 4": the blocks two lines start change places, each taking the other's indent
+    function swapBlocks(ask) {
+      const { id, lines, tokens } = ask
+      const [a, b] = [blockAt(ask, tokens[1], '"swap"', 'swapped'), blockAt(ask, tokens[2], '"swap"', 'swapped')].sort((x, y) => x.at - y.at)
+      if (a.at === b.at) { ask.warn('a block swapped with itself stays where it is'); return 3 }
+      if (b.at <= a.to) throw new Error(`line ${b.at + 1} is inside the block on line ${a.at + 1} of "${id}", so they can't swap`)
+      const shift = (from, to) => (line) => { if (line.text.startsWith(from)) line.text = to + line.text.slice(from.length) }
+      const [first, second] = [lines.slice(a.at, a.to + 1), lines.slice(b.at, b.to + 1)]
+      const [ia, ib] = [indentOf(first[0]), indentOf(second[0])]
+      first.forEach(shift(ia, ib))
+      second.forEach(shift(ib, ia))
+      lines.splice(b.at, second.length, ...first)
+      lines.splice(a.at, first.length, ...second)
+      return 3
+    }
+
     // A slot (a muted outline) marks the space while it opens or closes (drawn only during the
     // beat): left where a unit goes out, closing as the ones after it close up; or opening as they
     // move aside, for the new one to land in. Round the unit's cells' places (a removed unit's from
@@ -359,10 +463,10 @@
 
     return {
       functions: { },
-      verbs: { swap: swapCells, insert: editCells, remove: editCells },
+      verbs: { swap: swapCells, insert: editCells, remove: editCells, line: editScript },
       link: () => {
         ({ applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines,
-          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numberOf, readList,
+          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numberOf, readLines, readList,
           refuseView, schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf } = cx)
       },
     }

@@ -355,11 +355,16 @@ s: scratch "move (10) steps" at 4,3  # one line
 s: [ "when green flag clicked" "move (10) steps" ]   # new script: fades, box grows to fit
 s: font 0.8                        # smaller
 f: scratch [ … ] at 12,5 size 4x3  # fitted in the box
-s: highlight block 3               # the others dim; blank lines, comments, end and else aren't blocks
+s: highlight line 3                # the others dim (a block's line, not end / else / blank)
+s: line 3 "turn right (45) degrees"  # replace line 3
+s: insert "move (10) steps" at 6   # before line 6 (an end: inside its C block), or at end; several in [ ]
+s: remove 3                        # the block on line 3 (a C block with its inside)
+s: swap 2 4
 ```
 
 - [scratchblocks](https://scratchblocks.github.io) syntax. Shows as plain text if the library can't load.
-- One shape: no line ids, edits or `typed`.
+- Lines count from 1 as written in the [ ], end, else, blank lines and comments too.
+- One shape: no line ids or `typed`. Edits keep a lit line lit.
 
 ## Stagger
 
@@ -395,12 +400,12 @@ One-off; they don't replay going back. `signal` is for lines (on a group: each o
 a: highlight outline       # follows the shape, just outside it (not lines)
 a: highlight inside        # just inside its stroke (not text, lines or groups)
 t: highlight line          # a band behind a text or a code line (c.2)
+s: highlight line 3        # a scratch script's line 3: the other blocks dim
 a: highlight arrow
 a: highlight glow
 a: highlight number        # the next number: 1, then 2, …
 a: highlight number 5      # 5 (the next bare one is 6)
 arr: highlight number      # a row / column / group: numbers each of its shapes in turn
-s: highlight block 3       # a scratch script's 3rd block (end / else not counted)
 a: highlight spotlight     # dims everything else
 a: highlight outline arrow # several
 a: highlight clear

@@ -8,7 +8,7 @@
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
-    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup, scriptOf, scriptTextSize, SCRIPT_TEXT } = window.Anim
+    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -516,7 +516,7 @@
         attr(label, 'x', -hw + kindOf(s).pre.pad * fontSize)
         attr(label, 'y', -LABEL_LIFT * fontSize)
       } else if (place === 'script') {
-        drawScript(node, s, v.label, v.hlScript, v.hlBlocks, hw, hh, colours)
+        drawScript(node, s, v.label, v.hlScript, v.hlLines, hw, hh, colours)
         node.script.style.opacity = v.labelOpacity
       } else if (place === 'below') {
         attr(label, 'y', hh + fontSize * 0.75)
@@ -535,9 +535,8 @@
 
     // A script shape's script (SHAPES: script), drawn by its library (SCRIPTS) or, until that has
     // loaded, as plain text: an <svg> fitted in the shape's box, keeping its shape. Drawn again
-    // only when its text changes (or its library loads). lit and hlBlocks: its highlight block
-    // (dimBlocks).
-    function drawScript(node, s, text, lit, hlBlocks, hw, hh, colours) {
+    // only when its text changes (or its library loads). lit and hlLines: its lit line (dimBlocks).
+    function drawScript(node, s, text, lit, hlLines, hw, hh, colours) {
       const script = scriptOf(s)
       const key = `${script.ready()}|${text}`
       if (node.scriptKey !== key) {
@@ -548,6 +547,7 @@
         // each block's own parts: what it draws that has no other block in it (a C block's inner
         // script does)
         node.blockParts = blocks.map((block) => [...block.children].filter((part) => !blocks.some((other) => other !== block && part.contains(other))))
+        node.blockLines = scriptBlocksIn(script, text.split('\n')).map((block) => block.at + 1) // the line each starts on
         if (!drawn.hasAttribute('viewBox')) attr(drawn, 'viewBox', `0 0 ${drawn.getAttribute('width')} ${drawn.getAttribute('height')}`)
         attr(drawn, 'preserveAspectRatio', 'xMidYMid meet')
         attr(drawn, 'class', `${drawn.getAttribute('class') || ''} no-zoom`.trim()) // the zoom plugin also attaches to nested SVGs
@@ -556,16 +556,16 @@
       const drawn = node.script.firstChild
       setBox(drawn, hw, hh)
       if (node.scriptLines) paint(node.scriptLines, 'fill', colours.colour)
-      dimBlocks(node, lit, hlBlocks)
+      dimBlocks(node, lit, hlLines)
     }
 
-    // highlight block: a spotlight within the script. Every block but the lit one dims to
-    // BLOCK_DIM, as far as the light is on (lit: 0-1, blending as it turns on or off); a block
-    // being lit or unlit (hlBlocks) dims by the rest. Only a block's own parts dim (blockParts), so
-    // a C block's inner blocks keep their own light.
-    function dimBlocks(node, lit, hlBlocks) {
+    // highlight line N: a spotlight within the script. Every block but the one on the lit line dims
+    // to BLOCK_DIM, as far as the light is on (lit: 0-1, blending as it turns on or off); one on a
+    // line being lit or unlit (hlLines) dims by the rest. Only a block's own parts dim
+    // (blockParts), so a C block's inner blocks keep their own light.
+    function dimBlocks(node, lit, hlLines) {
       node.blockParts.forEach((parts, i) => {
-        const dim = lit - (hlBlocks.get(i + 1) || 0)
+        const dim = lit - (hlLines.get(node.blockLines[i]) || 0)
         const opacity = dim > 0 ? String(1 - (1 - BLOCK_DIM) * dim) : ''
         for (const part of parts) paint(part, 'opacity', opacity)
       })
@@ -802,7 +802,7 @@
     }
 
     const DIM = 0.2 // opacity of shapes outside the spotlight
-    const BLOCK_DIM = 0.45 // opacity of a script's other blocks (highlight block): lighter, as they sit close together
+    const BLOCK_DIM = 0.45 // opacity of a script's other blocks (highlight line N): lighter, as they sit close together
 
     /**
      * Renders the transition between two consecutive states. progress(uid) gives each shape's
@@ -974,12 +974,13 @@
         // highlight glow fades in / out like the box; a shape glows too when one covering it does
         // (a span's cells: covers)
         item.v.hlGlow = blend(item, (s) => s.hl?.glow || (s === item.a ? glowA : glowB).has(s.id))
-        item.v.hlLine = blend(item, (s) => s.hl?.line)
-        // highlight block: how far the script's light is on, and each block lit in A or B, fading
-        // out of one and into the next
-        item.v.hlScript = blend(item, (s) => s.hl?.block != null)
-        const lit = new Set([item.a?.hl?.block, item.b?.hl?.block].filter((n) => n != null))
-        item.v.hlBlocks = new Map([...lit].map((n) => [n, blend(item, (s) => s.hl?.block === n)]))
+        // highlight line: with no number, a band (true); with one, a script's line: how far the
+        // script's light is on, and each line lit in A or B, fading out of one and into the next
+        item.v.hlLine = blend(item, (s) => s.hl?.line === true)
+        const litLine = (s) => typeof s?.hl?.line === 'number'
+        item.v.hlScript = blend(item, litLine)
+        const lit = new Set([item.a, item.b].filter(litLine).map((s) => s.hl.line))
+        item.v.hlLines = new Map([...lit].map((n) => [n, blend(item, (s) => s.hl?.line === n)]))
         drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
       }

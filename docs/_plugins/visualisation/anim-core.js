@@ -87,8 +87,10 @@
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
   // anim-render.js (glow and spotlight change the shape itself).
   //   off      its value when off (default false); valued: it takes a number ("number 5")
-  //   next     a valued one given no number takes the next (number); without it, a number is needed
-  //   applies  whether it fits a shape, with refuse(shape) the message when it doesn't
+  //   next     a valued one given no number takes the next (number); bare: with none, it's just on
+  //            (line); with neither, a number is needed
+  //   applies  applies(shape, n): whether it fits a shape (n: its number, if it has one), with
+  //            refuse(shape, n) the message when it doesn't
   //   check    check(shape, n): an error message when a valued one's number doesn't fit the shape
   const HIGHLIGHT_KINDS = {
     outline: { applies: (shape) => !isLine(shape), refuse: () => '"highlight outline" doesn\'t fit a line: try glow or signal' },
@@ -100,29 +102,23 @@
         return `"highlight inside" needs a shape with an inside (${types.slice(0, -1).join(', ')} or ${types[types.length - 1]}), not ${article(what)} ${what}`
       },
     },
-    // a band behind a shape's text, in the highlight colour (shapes with a band: SHAPES)
+    // with no number, a band behind a shape's text, in the highlight colour (shapes with a band:
+    // SHAPES); with one, a script's line (from 1): the block it starts stays lit and the others dim,
+    // as outside a spotlight (a C block's inner blocks too)
     line: {
-      applies: (shape) => Boolean(SHAPES[shape.type]?.band),
-      refuse: () => {
+      valued: true, bare: true,
+      applies: (shape, n) => Boolean(n == null ? SHAPES[shape.type]?.band : SHAPES[shape.type]?.script),
+      refuse: (shape, n) => {
+        if (n != null) return `"highlight line ${n}" lights a line of ${nounList(typesWhere((kind) => kind.script).map((type) => nounOf({ type })))}, e.g. "s: highlight line 2" (a code block's line: "c.2: highlight line")`
         const nouns = Object.keys(SHAPES).filter((type) => SHAPES[type].band).map((type) => `${article(nounOf({ type }))} ${nounOf({ type })}`)
         return `"highlight line" is for ${nouns.join(' or ')}, e.g. "c.2: highlight line" (a code block's line 2)`
       },
+      check: (shape, n) => blockOnLine(scriptOf(shape), shape.label.split('\n'), n, shape.id, 'lit').problem || null,
     },
     spotlight: {},
     arrow: {},
     glow: {},
     number: { off: null, valued: true, next: true },
-    // one of a script's blocks (SCRIPTS: blocks), counted from 1: the others dim, as outside a
-    // spotlight (a C block's inner blocks too)
-    block: {
-      off: null, valued: true,
-      applies: (shape) => Boolean(SHAPES[shape.type]?.script),
-      refuse: () => `"highlight block" is for ${nounList(typesWhere((kind) => kind.script).map((type) => nounOf({ type })))}, e.g. "s: highlight block 2"`,
-      check: (shape, n) => {
-        const count = scriptOf(shape).blocks(shape.label)
-        return Number.isInteger(n) && n >= 1 && n <= count ? null : `"${shape.id}" has ${count} block${count === 1 ? '' : 's'}, so there's no block ${n}`
-      },
-    },
   }
   // The words after "highlight" (those that take a number are matched on their own: KEYWORDS)
   const HIGHLIGHTS = [...Object.keys(HIGHLIGHT_KINDS).filter((kind) => !HIGHLIGHT_KINDS[kind].valued), 'clear']
@@ -230,7 +226,10 @@
   //   ready    whether the library has loaded
   //   render   render(text): { svg, blocks }, an <svg> of the script (with its own width and height)
   //            and its blocks' elements in order, each with its own shape first
-  //   blocks   blocks(text): how many blocks the text has (counted as render lists them)
+  //   syntax   which of its lines aren't blocks (skip), which start a C block (opens), divide one
+  //            (middle) and end one (closes), and the indent of a C block's inside: scriptBlocksIn
+  //            finds its blocks in the text with them, as render lists them, so compiling (lit
+  //            lines, edits) never needs the library
   //   scale    its size beside the animation's text, as a multiple of the size it's drawn at
   const SCRIPTS = {
     scratch: {
@@ -244,8 +243,13 @@
         svg.classList.add('scratchblocks-style-scratch3') // as scratchblocks.render does
         return { svg, blocks: scratchBlocks(view).map((block) => block.el) }
       },
-      // every line but a blank one, a comment, and the end / else of a C block
-      blocks: (text) => text.split('\n').filter((line) => !/^\s*(end|else|\/\/.*)?\s*$/i.test(line)).length,
+      syntax: {
+        skip: /^\s*(\/\/.*)?$/, // a blank line or a comment
+        opens: /^\s*(forever|repeat\b.*|if\b.*\bthen)\s*$/i, // not "if on edge, bounce"
+        middle: /^\s*else\s*$/i,
+        closes: /^\s*end\s*$/i,
+        indent: '    ',
+      },
       scale: 1.5,
     },
   }
@@ -267,6 +271,29 @@
     return script.blocks.flatMap((block) => [block, ...(block.children || []).filter((child) => child.blocks).flatMap(inScript)])
   })
   const scriptOf = (shape) => SCRIPTS[kindOf(shape).script]
+  // A script's blocks in its lines, in order (SCRIPTS: syntax): each { at, to }, the lines it takes
+  // (a C block's go to its end; one with no end, to the last line)
+  function scriptBlocksIn(script, lines) {
+    const { skip, opens, middle, closes } = script.syntax
+    const blocks = []
+    const open = []
+    lines.forEach((line, i) => {
+      if (closes.test(line)) { const block = open.pop(); if (block) block.to = i; return }
+      if (skip.test(line) || middle.test(line)) return
+      const block = { at: i, to: i }
+      blocks.push(block)
+      if (opens.test(line)) open.push(block)
+    })
+    for (const block of open) block.to = lines.length - 1
+    return blocks
+  }
+  // The block that starts on line n (from 1) of a script's lines, or why there's none: a message
+  // naming the line (done: what it can't be, "lit")
+  function blockOnLine(script, lines, n, id, done) {
+    if (!Number.isInteger(n) || n < 1 || n > lines.length) return { problem: `"${id}" has ${lines.length} line${lines.length === 1 ? '' : 's'}, so there's no line ${n}` }
+    const block = scriptBlocksIn(script, lines).find((b) => b.at === n - 1)
+    return block ? { block } : { problem: `line ${n} of "${id}" isn't a block (it's blank, a comment, or a C block's else or end), so it can't be ${done}` }
+  }
   // The libraries the scripts in some compiled beats need that haven't loaded
   const scriptLibraries = (beats) => [...new Set(beats.flatMap((beat) => [...beat.state.values()])
     .map(scriptOf).filter((script) => script && !script.ready()).map((script) => script.library))]
@@ -632,6 +659,7 @@
 
   // Every kind of scene line and the props it can have, checked as its props are read (parseProps).
   //   verb     typed straight after "id:" (the others are known by the line's shape)
+  //   on       on(shape): a verb only on such a shape (elsewhere its word is read as usual)
   //   takesOut a row edit that takes cells out (remove), rather than putting them in (insert)
   //   takes    the props it takes (left out: any), with `what` naming it in the message
   //   refuses  props it doesn't take, with `refuse(word)` the message
@@ -654,6 +682,8 @@
       verb: true, takes: [...SHAPES.span.takes, 'layer', 'highlight', 'callout', 'name', 'effect', ...TIMING],
       refuse: (word) => `"${word}" doesn't apply to a span: it's a box round its cells, for a fill, stroke, highlight, callout or name`,
     },
+    // "s: line 3 "…"": a script's line, replaced (on a script only: elsewhere "line" makes a line)
+    line: { verb: true, on: (shape) => Boolean(SHAPES[shape?.type]?.script), takes: TIMING },
     range: { // some of a row's / column's cells, "arr: range 0 3 fill red": how they look, not where they are
       verb: true, takes: [...CELL_STYLE, 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
       refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,
@@ -1114,7 +1144,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
