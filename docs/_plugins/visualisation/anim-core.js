@@ -66,6 +66,9 @@
   // The entrance a shape really gets: its own, or a fade where that doesn't apply
   const entranceFor = (effect, shape) => (ENTRANCES[effect]?.applies?.(shape) === false ? 'fade' : effect)
   const LAYERS = { back: 0, normal: 1, front: 2 }
+  // How an image fills its box (its SVG preserveAspectRatio): contain, all of it inside the box;
+  // cover, filling the box, cropped to it (e.g. a backdrop of another shape than the grid)
+  const IMAGE_FITS = { contain: 'xMidYMid meet', cover: 'xMidYMid slice' }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
   const ALIGNS = { left: 'left', centre: 'centre', right: 'right' }
   const LINE_STYLES = ['solid', 'dashed', 'dotted']
@@ -158,7 +161,7 @@
     },
     text: { takes: [...BOXED_PROPS, 'align'], defaults: { w: 0, h: 0 }, outline: 'box', label: 'content', band: { pad: 0.2, corner: 0.15 } },
     image: {
-      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'stroke', 'linestyle', 'flow'],
+      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'stroke', 'linestyle', 'flow', 'fit'],
       defaults: { w: CELL, h: CELL, stroke: 'none' }, outline: 'box', label: 'below', inside: true, resource: true,
     },
     icon: {
@@ -392,6 +395,7 @@
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
     layer: { field: 'layer', default: 'normal' },
+    fit: { field: 'fit', default: 'contain' }, // an image's fit in its box (IMAGE_FITS)
     // a var's or cell's value as a bar (bar clear: back to a plain box)
     bar: { field: 'bar', map: { clear: false }, cell: true, check: barCheck }, // a kind (BARS), or false
     // a full bar's value (a row's or column's: its biggest when its bar is turned on, unless given)
@@ -484,6 +488,7 @@
     ...words(LINE_STYLES, 'linestyle', 'line style'),
     ...words(Object.keys(FLOWS), 'flow', 'flow'),
     ...words(Object.keys(LAYERS), 'layer', 'layer'),
+    ...words(Object.keys(IMAGE_FITS), 'fit', 'image fit'),
     // timing and effects
     speed: { key: 'speed', sigs: [['speed']], help: 'vslow, slow, normal, fast, vfast, instant or a number of seconds' },
     delay: number('delay', 'a number of seconds'),
@@ -1001,7 +1006,7 @@
   }
 
   Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
-    LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,

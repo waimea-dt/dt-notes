@@ -119,6 +119,7 @@ r: row [
 | font | `font 1.5` · `bold` · `mono` |
 | align | `align left` · `centre` · `right` (text) |
 | layer | `back` · `normal` · `front` |
+| image fit | `contain` (whole image in its box) · `cover` (fills the box, cropped) |
 
 **Colours:** `red orange amber yellow green teal cyan blue purple pink magenta theme muted fg bg bg-shape black white none` · `#hex`
 

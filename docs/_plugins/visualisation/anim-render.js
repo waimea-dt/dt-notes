@@ -5,7 +5,7 @@
 
 ;(function () {
   const { PARTS, HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE,
-    PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS,
+    PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup } = window.Anim
@@ -170,6 +170,12 @@
         attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
       },
     }
+    // An image's URL, with its fit. Browsers (Chrome) ignore an <image>'s preserveAspectRatio for an
+    // SVG with its own viewBox, using the SVG's instead, so an SVG is given its fit in its URL too
+    // (an svgView fragment, which overrides the SVG's own).
+    const SVG_FILE = /\.svg(\?[^#]*)?$/i
+    const imageHref = (src, fit) => (SVG_FILE.test(src) ? `${src}#svgView(preserveAspectRatio(${encodeURIComponent(fit)}))` : src)
+
     const BODIES = {
       rect: rectBody,
       codeline: rectBody, // a code line's box, which a fill shows as a band
@@ -185,10 +191,16 @@
       text: { make: () => {}, size: () => {} },
       image: {
         make: (node, shape) => {
-          node.image = node.g.appendChild(svgEl('image', { href: shape.src, preserveAspectRatio: 'xMidYMid meet' }))
+          node.image = node.g.appendChild(svgEl('image'))
           node.body = node.g.appendChild(svgEl('rect', { fill: 'none' }))
         },
-        size: (node, s, hw, hh) => { setBox(node.image, hw, hh); setBox(node.body, hw, hh) },
+        size: (node, s, hw, hh) => {
+          setBox(node.image, hw, hh)
+          setBox(node.body, hw, hh)
+          const fit = IMAGE_FITS[s.fit ?? LOOKS.fit.default]
+          attr(node.image, 'preserveAspectRatio', fit)
+          attr(node.image, 'href', imageHref(s.src, fit))
+        },
       },
       icon: {
         make: (node, shape) => {

@@ -308,6 +308,31 @@ pair: move -2,+0
 
 ---
 
+## Contain and cover
+
+A 4:3 stage in a wide box: `contain` (the default) shows all of it, `cover` fills the box and crops it. Then they swap.
+
+```anim
+w1: image(../_assets/scratch/stages/sky.svg) "contain" at 4.5,6 size 4x1.2 stroke muted dashed front
+w2: image(../_assets/scratch/stages/sky.svg) "cover" at 10.5,6 size 4x1.2 cover stroke muted dashed front
+```
+
++++
+
+```anim
+w1: cover "cover"
+w2: contain "contain"
+```
+
++++
+
+```anim
+w1: delete
+w2: delete
+```
+
+---
+
 ## Emphasis, highlights and callouts
 
 ```anim
