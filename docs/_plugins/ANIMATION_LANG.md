@@ -366,7 +366,7 @@ s: swap 2 4
 - `at` is the top-left, which stays put as the script grows or shrinks.
 - Lines count from 1 as written in the [ ], end, else, blank lines and comments too.
 - One shape: no line ids or `typed`. Edits keep a lit line lit.
-- Edits move the blocks: the rest slide to make room or close up, a changed block fades to its new look. A new script (`s: [ … ]`) crossfades.
+- Edits move the blocks: a removed block slides out right and fades first, then the rest close up; or the rest make room first, then a new block slides in from the right. A changed block fades to its new look; a C block that grows or shrinks swaps shape at once. A new script (`s: [ … ]`) crossfades.
 
 ## Stagger
 

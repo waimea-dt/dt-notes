@@ -8,7 +8,7 @@
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
-    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT } = window.Anim
+    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -533,9 +533,11 @@
     }
 
     // A script shape's script (SHAPES: script), drawn by its library (SCRIPTS) or, until that has
-    // loaded, as plain text, in the middle of the shape's box at the scale that fits it (blending
-    // from A's to B's). step (scriptStep): A's and B's scripts, lit lines and boxes, and an edit's
-    // map. A change of script shows A's drawing and B's together while it plays (moveBlocks).
+    // loaded, as plain text, at the scale that fits the shape's box (blending from A's to B's).
+    // step (scriptStep): A's and B's scripts, lit lines and boxes, and an edit's map. A change of
+    // script shows A's drawing and B's together while it plays (moveBlocks), each where it is in its
+    // own box: from the edge the shape is placed by (edgeOf), so that edge holds still while the
+    // box between them grows or shrinks.
     function drawScript(node, s, step, colours) {
       const to = scriptDrawing(node, s, step.b)
       const from = step.a !== step.b ? scriptDrawing(node, s, step.a) : null
@@ -547,17 +549,26 @@
       }
       const fit = (drawing, box) => Math.min(box.w / drawing.w, box.h / drawing.h)
       const k = lerp(fit(from || to, step.boxA), fit(to, step.boxB), step.t)
-      for (const drawing of [from, to].filter(Boolean)) {
-        setBox(drawing.svg, (drawing.w * k) / 2, (drawing.h * k) / 2)
+      // a drawing's middle from the middle of the box as it is now, when it's in its own box
+      const edge = edgeOf(s) || { x: 0, y: 0 }
+      const middleIn = (box) => ({ x: (-edge.x * (box.w - s.w)) / 2, y: (-edge.y * (box.h - s.h)) / 2 })
+      const [atA, atB] = [middleIn(step.boxA), middleIn(step.boxB)]
+      for (const [drawing, at] of [[from, atA], [to, atB]]) {
+        if (!drawing) continue
+        const [hw, hh] = [(drawing.w * k) / 2, (drawing.h * k) / 2]
+        attr(drawing.svg, 'x', at.x - hw); attr(drawing.svg, 'y', at.y - hh)
+        attr(drawing.svg, 'width', 2 * hw); attr(drawing.svg, 'height', 2 * hh)
         if (drawing.text) paint(drawing.text, 'fill', colours.colour) // plain text takes the shape's colour
       }
-      moveBlocks(from, to, step)
+      // how far A's drawing's middle is from B's, and a cell, in the drawings' units
+      moveBlocks(from, to, step, { x: (atA.x - atB.x) / k, y: (atA.y - atB.y) / k }, CELL / k)
     }
 
     // A script's drawing, made once for its text (and kept while it's A's or B's): its <svg>, its
     // size, and its blocks (own: its own parts gathered in a group, so it moves and dims as one,
     // apart from the blocks inside a C block; x, y, where it sits from the drawing's middle; line,
-    // the line it starts on; look, to tell a moved block from a changed one).
+    // the line it starts on; look, to tell a moved block from a changed one; holds, it's a C block
+    // with blocks inside).
     function scriptDrawing(node, s, text) {
       const script = scriptOf(s)
       const ready = script.ready()
@@ -575,7 +586,8 @@
         const group = block.insertBefore(svgEl('g'), parts[0] || null)
         group.append(...parts)
         const at = offsetIn(block, svg)
-        return { group, line: lines[i], look: group.innerHTML, x: at.x - w / 2, y: at.y - h / 2 }
+        const holds = blocks.some((other) => other !== block && block.contains(other)) // a C block, with blocks inside
+        return { group, line: lines[i], look: group.innerHTML, holds, x: at.x - w / 2, y: at.y - h / 2 }
       })
       const drawing = { key, svg, w, h, own, text: ready ? null : svg.firstChild }
       node.drawings.set(key, drawing)
@@ -593,12 +605,15 @@
     }
 
     // A script's blocks between A and B (t: how far). The same script: each block's light blends.
-    // A new one: A's drawing crossfades into B's. An edit (map): a block that's still there slides
-    // from its place in A to its place in B, and one that's changed (a replaced line, or a C block
-    // whose inside grew) shows its new look under its old one fading out; a new one fades in and
-    // one that's gone fades out, each moving with the block before it (or after, at the top). Each
-    // is dimmed by the light (highlight line N: a spotlight within the script), as far as it's on.
-    function moveBlocks(from, to, { t, map, litA, litB }) {
+    // A new one: A's drawing crossfades into B's. An edit (map), in turn: a block that's gone fades
+    // out; then, quickly (CHOREOGRAPHY: scriptRoom), the blocks make room or close up, one still there
+    // sliding from its place in A to its place in B and one that's changed (a replaced line) showing
+    // its new look under its old one fading out, or for a C block whose inside grew or shrank,
+    // swapping to its new shape halfway (CHOREOGRAPHY: scriptReshape); then a new one
+    // fades in. New and gone blocks move with the block before them (or after, at the top), and
+    // slide in from or out to the right as they fade (CHOREOGRAPHY: scriptAside, in cells). Each is
+    // dimmed by the light (highlight line N: a spotlight within the script), as far as it's on.
+    function moveBlocks(from, to, { t, map, litA, litB }, apart, cell) {
       const on = lerp(litA != null ? 1 : 0, litB != null ? 1 : 0, t)
       const lit = (block, line) => (block && block.line === line ? 1 : 0)
       const dimmed = (light) => (on > light ? 1 - (1 - BLOCK_DIM) * (on - light) : 1)
@@ -615,18 +630,30 @@
         from?.own.forEach((block) => show(block, still, dimmed(lit(block, litA))))
         return
       }
-      // how far each block is from where it's drawn: B's from their places in A, A's towards B's
       const was = to.own.map((_, j) => (map[j] === null ? null : from.own[map[j]]))
-      const toShift = to.own.map((block, j) => was[j] && { x: (was[j].x - block.x) * (1 - t), y: (was[j].y - block.y) * (1 - t) })
       const now = from.own.map((_, k) => to.own[map.indexOf(k)] || null)
-      const fromShift = from.own.map((block, k) => now[k] && { x: (now[k].x - block.x) * t, y: (now[k].y - block.y) * t })
+      // the three parts of the edit's time: going (a gone block), making room, coming (a new one)
+      const rest = 1 - CHOREOGRAPHY.scriptRoom
+      const goes = now.includes(null) ? rest / (was.includes(null) ? 2 : 1) : 0
+      const comes = was.includes(null) ? rest / (now.includes(null) ? 2 : 1) : 0
+      const part = (start, end) => (end > start ? clamp01((t - start) / (end - start)) : 1)
+      const [out, room, inn] = [part(0, goes), part(goes, 1 - comes), part(1 - comes, 1)]
+      // how far each block is from where it's drawn: B's from their places in A, A's towards B's
+      const toShift = to.own.map((block, j) => was[j] && { x: (was[j].x + apart.x - block.x) * (1 - room), y: (was[j].y + apart.y - block.y) * (1 - room) })
+      const fromShift = from.own.map((block, k) => now[k] && { x: (now[k].x - apart.x - block.x) * room, y: (now[k].y - apart.y - block.y) * room })
       // a new block, or one that's gone, moves with its neighbour (the one before, or after)
       const withNeighbour = (shifts) => shifts.map((shift, i) => shift || shifts.slice(0, i).reverse().find(Boolean) || shifts.slice(i + 1).find(Boolean) || still)
       const toMoves = withNeighbour(toShift)
       const fromMoves = withNeighbour(fromShift)
       const kept = new Set(was.filter((block, j) => block?.look === to.own[j].look)) // shown as they are by B
-      to.own.forEach((block, j) => show(block, toMoves[j], (was[j] ? 1 : t) * dimmed(lerp(lit(was[j], litA), lit(block, litB), t))))
-      from.own.forEach((block, k) => show(block, fromMoves[k], kept.has(block) ? 0 : (1 - t) * dimmed(lit(block, litA))))
+      const aside = (far, move) => ({ x: move.x + CHOREOGRAPHY.scriptAside * cell * far, y: move.y })
+      // a reshaped C block's new shape, as far as it's in (its old one is the rest)
+      const span = CHOREOGRAPHY.scriptReshape
+      const reshaped = span ? clamp01((room - (1 - span) / 2) / span) : room < 0.5 ? 0 : 1
+      const shown = (block, j) => (!was[j] ? inn : kept.has(was[j]) ? 1 : block.holds ? reshaped : 1) // new, kept, reshaped, changed
+      const hidden = (block, k) => (kept.has(block) ? 1 : !now[k] ? out : block.holds ? reshaped : room) // kept, gone, reshaped, changed
+      to.own.forEach((block, j) => show(block, was[j] ? toMoves[j] : aside(1 - inn, toMoves[j]), shown(block, j) * dimmed(lerp(lit(was[j], litA), lit(block, litB), t))))
+      from.own.forEach((block, k) => show(block, now[k] ? fromMoves[k] : aside(out, fromMoves[k]), (1 - hidden(block, k)) * dimmed(lit(block, litA))))
     }
 
     // A script's lines as mono text, one under another (at font 1, as scriptTextSize measures them)

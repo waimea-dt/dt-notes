@@ -289,13 +289,14 @@ s: highlight clear
 ```anim
 s: scratch [
     "when green flag clicked",
-    "forever",
+    "repeat (10)",
     "    turn right (15) degrees",
     "    if <mouse down?> then",
     "        say [Ouch!] for (1) seconds",
     "    end",
-    "end"
-] at 2,2
+    "end",
+    "say [Yay!]",
+] at 2,1.5
 ```
 
 +++
@@ -320,6 +321,12 @@ Instant, the new value just replaces the old one.
 
 ```anim
 s: line 3 "turn right (90) degrees" speed instant
+```
+
++++
+
+```anim
+s: highlight clear
 ```
 
 ---
