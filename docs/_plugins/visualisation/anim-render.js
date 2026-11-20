@@ -607,8 +607,9 @@
     // A script's blocks between A and B (t: how far). The same script: each block's light blends.
     // A new one: A's drawing crossfades into B's. An edit (map), in turn: a block that's gone fades
     // out; then, quickly (CHOREOGRAPHY: scriptRoom), the blocks make room or close up, one still there
-    // sliding from its place in A to its place in B and one that's changed (a replaced line) showing
-    // its new look under its old one fading out, or for a C block whose inside grew or shrank,
+    // sliding from its place in A to its place in B and one that's changed (a replaced line)
+    // crossfading from its old look to its new (the dip as they pass marks the change), or for a C
+    // block whose inside grew or shrank,
     // swapping to its new shape halfway (CHOREOGRAPHY: scriptReshape); then a new one
     // fades in. New and gone blocks move with the block before them (or after, at the top), and
     // slide in from or out to the right as they fade (CHOREOGRAPHY: scriptAside, in cells). Each is
@@ -650,7 +651,7 @@
       // a reshaped C block's new shape, as far as it's in (its old one is the rest)
       const span = CHOREOGRAPHY.scriptReshape
       const reshaped = span ? clamp01((room - (1 - span) / 2) / span) : room < 0.5 ? 0 : 1
-      const shown = (block, j) => (!was[j] ? inn : kept.has(was[j]) ? 1 : block.holds ? reshaped : 1) // new, kept, reshaped, changed
+      const shown = (block, j) => (!was[j] ? inn : kept.has(was[j]) ? 1 : block.holds ? reshaped : room) // new, kept, reshaped, changed
       const hidden = (block, k) => (kept.has(block) ? 1 : !now[k] ? out : block.holds ? reshaped : room) // kept, gone, reshaped, changed
       to.own.forEach((block, j) => show(block, was[j] ? toMoves[j] : aside(1 - inn, toMoves[j]), shown(block, j) * dimmed(lerp(lit(was[j], litA), lit(block, litB), t))))
       from.own.forEach((block, k) => show(block, now[k] ? fromMoves[k] : aside(out, fromMoves[k]), (1 - hidden(block, k)) * dimmed(lit(block, litA))))

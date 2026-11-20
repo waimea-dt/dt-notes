@@ -153,15 +153,8 @@ s: [
 The same script with some new values
 
 ```anim
-s: [
-    "when green flag clicked",
-    "forever",
-    "    turn right (45) degrees",
-    "    if <touching (edge v)?> then",
-    "        say [Eek!] for (3) seconds",
-    "    end",
-    "end"
-] speed instant
+s: line 3 "turn right (45) degrees"
+s: line 5 "say [Eek!] for (3) seconds"
 ```
 
 +++
