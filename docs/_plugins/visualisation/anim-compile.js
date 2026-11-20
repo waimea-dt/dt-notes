@@ -9,7 +9,7 @@
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
-    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN } = window.Anim
+    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -128,6 +128,7 @@
       }
       if (props.label !== undefined) { shape.label = props.label; if (shape.nil) shape.nil = false }
       applyLook(shape, props, creating, warn)
+      if (kindOf(shape).script) fitScript(shape, props)
       if (props.highlight) applyHighlight(shape, props.highlight)
       if (props.emphasis) applyEmphasis(shape, props, creating, warn, meta)
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
@@ -357,6 +358,26 @@
     const inTurn = (props) => Boolean(ENTRANCES[props.effect || defaults.effect]?.inTurn)
     // Messages given in many places
     const noShape = (id) => new Error(`no shape called "${id}"`)
+    // A script shape (SHAPES: script) is as big as its script, unless it's been given a size (then
+    // its script is fitted in that). Before placing it, so a placement beside it fits round it.
+    function fitScript(shape, props) {
+      if (props.size || props.width || props.height) shape.sized = true
+      if (!shape.sized) Object.assign(shape, scriptSize(shape))
+    }
+
+    // A line's props, read from tokens[i]. A shape whose label is lines (SHAPES: lines) can have
+    // them in [ ] where its label would go: "s: scratch [ "…" "…" ] at 2,1", "s: [ "…" ]".
+    function propsOf(type, tokens, i, kind) {
+      if (!SHAPES[type]?.lines || tokens[i]?.kind !== 'bracket' || tokens[i].value !== '[') return parseProps(tokens, i, kind, shapes)
+      const noun = nounOf({ type })
+      const example = `e.g. "${type} ["…" "…"] at 2,1"`
+      const { values, next } = readLines(tokens, i, { noun, item: 'line', example })
+      const props = parseProps(tokens, next, kind, shapes)
+      if (props.label !== undefined) throw new Error(`a ${noun} takes one "quoted" line, or its lines in [ ], ${example}`)
+      props.label = values.join('\n')
+      return props
+    }
+
     const replaced = (id, warn) => warn(`"${id}" already exists, so it is replaced`)
     // "a row, column, code block, grid, table or group": what stagger works on
     const GROUPS = nounList([...LAYOUT_NAMES, GROUP])
@@ -538,7 +559,7 @@
       const addsHead = SHAPES[type]?.head && existing && LINE_TYPES.includes(existing.type)
         && !tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
       if (type && !addsHead) {
-        const props = parseProps(tokens, varValue ? 2 : 1, 'create', shapes)
+        const props = propsOf(type, tokens, varValue ? 2 : 1, 'create')
         if (isVar && props.label !== undefined) throw new Error(`a var's value goes straight after "var", e.g. "${id}: var 67" or "${id}: var "Dog""`)
         if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
         const shape = { ...baseShape(type), id, uid: newUid() }
@@ -570,7 +591,7 @@
       if (existing.holds && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
       // "v: 123" / "arr.2: null": a new value for a var or a row's / column's cell ("text" is a label)
       const newValue = existing.holds && first?.kind === 'word' ? valueOf(first) : undefined
-      const props = parseProps(tokens, newValue ? 1 : 0, 'change', shapes)
+      const props = propsOf(existing.type, tokens, newValue ? 1 : 0, 'change')
       if (newValue && props.label !== undefined) throw new Error('give one value: a number, "quoted" text or null')
       // "s: "print(y)"": a one-line code block's text is its line's
       if (LAYOUTS[existing.layout]?.lines && props.label !== undefined) {
@@ -766,7 +787,7 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let assignValue, checkParts, createLayout, fitCode, fitSpans, holderRef, refuseView, setValue,
+    let assignValue, checkParts, createLayout, fitCode, fitSpans, holderRef, readLines, refuseView, setValue,
       typeInTurn, updateParts, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
@@ -774,7 +795,7 @@
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ assignValue, checkParts, createLayout, fitCode, fitSpans, holderRef, refuseView, setValue,
+      ({ assignValue, checkParts, createLayout, fitCode, fitSpans, holderRef, readLines, refuseView, setValue,
         typeInTurn, updateParts, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()

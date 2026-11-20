@@ -97,6 +97,7 @@ r: row [
 | `curve` | `c: curve from a to b via 5,1 via 7,3` | |
 | `image(path)` | `p: image(../_assets/x.svg) "Alt" at 3,4 size 2` | 1×1 |
 | `icon(name)` | `i: icon(laptop) "Laptop" at 10,2` | 1×1, Lucide |
+| `scratch` | `s: scratch "move (10) steps" at 4,3` | its blocks' size (see Scratch) |
 
 - Labels: centred; halfway along a line; under an image / icon.
 - Arrowhead: `l: line from a to b arrow`, or `l: arrow` on an existing line. Put it before any `highlight`.
@@ -340,6 +341,24 @@ c: code [ … ] at 2,3 typed         # lines type in turn
 - Lines count from 1. Leading spaces are kept. `at` is the left edge.
 - `lang`: `python` `js` `java` `kotlin` `c` `cpp` `csharp` `sql` `css` `markup` `json` `yaml` (none: plain).
 - Otherwise like a column.
+
+## Scratch
+
+```anim
+s: scratch [
+    "when green flag clicked",
+    "forever",
+    "    turn right (15) degrees",
+    "end"
+] at 4,3                           # as big as its blocks
+s: scratch "move (10) steps" at 4,3  # one line
+s: [ "when green flag clicked" "move (10) steps" ]   # new script: fades, box grows to fit
+s: font 0.8                        # smaller
+f: scratch [ … ] at 12,5 size 4x3  # fitted in the box
+```
+
+- [scratchblocks](https://scratchblocks.github.io) syntax. Shows as plain text if the library can't load.
+- One shape: no line ids, edits or `typed`.
 
 ## Stagger
 

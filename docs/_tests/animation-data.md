@@ -981,3 +981,84 @@ c: delete
 ```
 
 </animation>
+
+## Feature: Scratch scripts
+
+<animation grid="16x8">
+
+# Scratch Scripts
+
+A script is as big as its blocks. Shapes placed beside it fit round it.
+
+```anim
+s: scratch [
+    "when green flag clicked",
+    "turn right (15) degrees",
+    "say [Hello!] for (2) seconds"
+] at 5,3.5 pop
+t: text "Flag script" attach below s
+a: arrow from 11,3 to s
+```
+
+---
+
+## A new script
+
+A change fades the old script out and the new one in, while its box grows to fit.
+
+```anim
+s: [
+    "when green flag clicked",
+    "forever",
+    "    turn right (15) degrees",
+    "    if <touching (edge v)?> then",
+    "        say [Ouch!] for (1) seconds",
+    "    end",
+    "end"
+]
+```
+
++++
+
+The same script with some new values
+
+```anim
+s: [
+    "when green flag clicked",
+    "forever",
+    "    turn right (45) degrees",
+    "    if <touching (edge v)?> then",
+    "        say [Eek!] for (3) seconds",
+    "    end",
+    "end"
+] speed instant
+```
+
++++
+
+One line goes in quotes.
+
+```anim
+s: "move (10) steps"
+```
+
+---
+
+## Sized and scaled
+
+Given a size, a script fits inside it. Its font makes it bigger or smaller.
+
+```anim
+b: rect at 12,5 size 4x3 fill none stroke muted dashed
+f: scratch [ "when this sprite clicked" "play sound (Meow v) until done" ] at 12,5 size 4x3
+s: font 0.7
+```
+
++++
+
+```anim
+f: highlight outline
+s: move 4,6 angle -10
+```
+
+</animation>

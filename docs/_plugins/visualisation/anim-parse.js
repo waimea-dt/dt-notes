@@ -5,7 +5,7 @@
 
 ;(function () {
   const { escapeHtml, HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, DIRECTIONS, COLOURS, SPEEDS, EASES, RESERVED,
-    KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, LINE_STARTS, LINES, listProps, BAR_KINDS } = window.Anim
+    KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, BRACKET_NOUNS, LINE_STARTS, LINES, listProps, BAR_KINDS } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Markdown -> source markup (beforeEach)
@@ -258,7 +258,7 @@
       const token = tokens[i]
       if (token.kind === 'str') { allow('label', 'quoted text'); set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
-      if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${LAYOUT_NOUNS}, straight after its type, e.g. "row [5 3 8]"`)
+      if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${BRACKET_NOUNS}, straight after its type, e.g. "row [5 3 8]"`)
       const word = token.lower
       const entry = KEYWORDS[word]
       if (entry?.modes && !entry.modes.includes(kind)) throw new Error(`"${word}" only goes ${entry.where}`)

@@ -344,26 +344,35 @@
     function createLines(id, layout, tokens, existing, meta, warn) {
       const { noun, item } = LAYOUTS[layout]
       const example = `e.g. "${id}: ${layout} "print(x)" lang python at 2,1", or its ${item}s in [ ]: "${id}: ${layout} ["x = 1" "print(x)"] at 2,1"`
-      const values = []
+      let values = []
       let j = 1
       if (tokens[1]?.kind === 'str') {
         values.push({ label: tokens[1].value })
         j = 2
       } else {
         if (tokens[1]?.kind !== 'bracket' || tokens[1].value !== '[') throw new Error(`a ${noun}'s ${item}s go in quotes straight after "${layout}", ${example}`)
-        for (j = 2; j < tokens.length && tokens[j].kind !== 'bracket'; j++) {
-          if (tokens[j].kind !== 'str') throw new Error(`a ${noun}'s ${item}s are "quoted" text, not "${tokens[j].value ?? tokens[j].name}" (is a "]" missing?)`)
-          values.push({ label: tokens[j].value })
-        }
-        if (tokens[j]?.value !== ']') throw new Error(`the "[" of a ${noun} has no closing "]"`)
-        if (!values.length) throw new Error(`a ${noun} needs at least one ${item}, ${example}`)
-        j++
+        const lines = readLines(tokens, 1, { noun, item, example })
+        values = lines.values.map((label) => ({ label }))
+        j = lines.next
       }
       const props = parseProps(tokens, j, 'layout', shapes)
       if (props.label !== undefined) throw new Error(`a ${noun} takes one "quoted" ${item}, or its ${item}s in [ ], ${example}`)
       const sized = ['size', 'width', 'height'].find((key) => props[key])
       if (sized) throw new Error(`a ${noun} is as big as its ${item}s, so it takes no "${sized}" (use font to make it bigger or smaller)`)
       makeLayout(id, layout, values, props, existing, meta, warn)
+    }
+
+    // "Quoted" lines in [ ] from the "[" at tokens[j] (a code block's, a script's): the lines, and
+    // the token after its "]". noun, item and example name them in messages.
+    function readLines(tokens, j, { noun, item, example }) {
+      const values = []
+      for (j++; j < tokens.length && tokens[j].kind !== 'bracket'; j++) {
+        if (tokens[j].kind !== 'str') throw new Error(`a ${noun}'s ${item}s are "quoted" text, not "${tokens[j].value ?? tokens[j].name}" (is a "]" missing?)`)
+        values.push(tokens[j].value)
+      }
+      if (tokens[j]?.value !== ']') throw new Error(`the "[" of a ${noun} has no closing "]"`)
+      if (!values.length) throw new Error(`a ${noun} needs at least one ${item}, ${example}`)
+      return { values, next: j + 1 }
     }
 
     // Values in [ ] from the "[" at tokens[j] (numbers, "quoted" text or null, commas optional), as
@@ -643,7 +652,7 @@
 
     return {
       functions: { arranged, checkParts, chunk, createLayout, fitCode, fitLines, fitSpans, gridLines,
-        gridPlaceOf, layoutCells, layoutGrid, numberOf, readList, refuseView, syncIndices, transpose,
+        gridPlaceOf, layoutCells, layoutGrid, numberOf, readLines, readList, refuseView, syncIndices, transpose,
         typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },
       link: () => {

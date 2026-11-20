@@ -59,7 +59,7 @@
     pop: {},
     draw: { applies: isLine, unless: (noun) => `"draw" only draws lines and arrows, so this ${noun} fades instead` },
     slide: { applies: (shape) => !isLine(shape), unless: (noun) => `"slide" doesn't move lines, so this ${noun} fades instead` },
-    typed: { inTurn: true, applies: (shape) => Boolean(shape.label), unless: (noun) => `"typed" types out a shape's text, and this ${noun} has none, so it fades instead` },
+    typed: { inTurn: true, applies: (shape) => Boolean(shape.label) && !SHAPES[shape.type]?.script, unless: (noun) => `"typed" types out a shape's text, so this ${noun} fades instead` },
     appear: { quiet: true, internal: true },
     vanish: { quiet: true, internal: true },
   }
@@ -132,7 +132,8 @@
   //   outline   its edge, for line ends, highlights and bounds: 'box' (a rect, rounded by its
   //             corner if it takes one), 'round' (radius r) or 'diamond'
   //   label     where its label goes: 'centre', 'content' (text: the label is the shape, measured),
-  //             'below' (image, icon: it adds to the shape's height) or 'along' (lines). A bar
+  //             'below' (image, icon: it adds to the shape's height), 'along' (lines) or 'script'
+  //             (the label is the shape's script, drawn to fit its box: see script). A bar
   //             (BAR_DRAWS: label) can put it elsewhere: 'top' or 'right', inside that edge of the box
   //   inside    it has an inside to highlight (highlight inside)
   //   line      it runs from / to; head: it has an arrowhead; bends: it's bent through via points
@@ -149,6 +150,10 @@
   //             can't be moved or attached: the hint the message gives instead
   //   hug       it's already a padded marker, so a highlight outline sits on its own edge (no gap)
   //             and goes round it alone, leaving its name outside
+  //   script    its label is a script, drawn by this SCRIPTS entry (label place 'script') and sized
+  //             by it unless given a size (scriptSize). A change to it fades the old one out and
+  //             the new one in, as a label does
+  //   lines     its label can be given as "quoted" lines in [ ], where the label would go
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
@@ -173,6 +178,11 @@
     icon: {
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'stroke'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'below', inside: true, resource: true,
+    },
+    // a Scratch script (SCRIPTS: scratch), as big as it is (× its font) or fitted in the size given
+    scratch: {
+      takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height'],
+      defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true,
     },
     line: { takes: LINE_PROPS, label: 'along', line: true },
     arrow: { takes: LINE_PROPS, label: 'along', line: true, head: true },
@@ -199,6 +209,30 @@
   const LINE_TYPES = typesWhere((kind) => kind.line)
   // A shape's name in messages: its noun, or its type
   const nounOf = (shape) => SHAPES[shape.type]?.noun || shape.type
+
+  // How each kind of script (SHAPES: script) is drawn, by a library loaded when an animation has one
+  // (animation.js). Until it has loaded, or if it can't, a script shows as plain text.
+  //   library  its name in DocsifyUtils.loadLibrary
+  //   ready    whether the library has loaded
+  //   render   render(text): an <svg> of the script, with its own width and height
+  //   scale    its size beside the animation's text, as a multiple of the size it's drawn at
+  let scratchStyled = false
+  const SCRIPTS = {
+    scratch: {
+      library: 'scratchblocks',
+      ready: () => Boolean(window.scratchblocks?.render),
+      render: (text) => {
+        const lib = window.scratchblocks
+        if (!scratchStyled) { lib.appendStyles(); scratchStyled = true }
+        return lib.render(lib.parse(text, { languages: ['en'] }), { style: 'scratch3' })
+      },
+      scale: 1.5,
+    },
+  }
+  const scriptOf = (shape) => SCRIPTS[kindOf(shape).script]
+  // The libraries the scripts in some compiled beats need that haven't loaded
+  const scriptLibraries = (beats) => [...new Set(beats.flatMap((beat) => [...beat.state.values()])
+    .map(scriptOf).filter((script) => script && !script.ready()).map((script) => script.library))]
 
   // The parts a shape can have: shapes made and placed by it that go with it (shape.part, its
   // owner's id; shape.role, which of these). Each goes when its owner does, and is lit with it.
@@ -424,6 +458,8 @@
   // The layouts' names: "a row, column, code block, grid or table"
   const LAYOUT_NAMES = LAYOUT_TYPES.map((layout) => LAYOUTS[layout].noun)
   const LAYOUT_NOUNS = nounList(LAYOUT_NAMES)
+  // What [ ] can follow: the layouts, and shapes whose label is lines (SHAPES: lines)
+  const BRACKET_NOUNS = nounList([...LAYOUT_NAMES, ...typesWhere((kind) => kind.lines).map((type) => nounOf({ type }))])
 
   // A group of shapes: a group, a layout, or a grid's row or column (it has no SHAPES entry, and
   // isn't drawn)
@@ -683,6 +719,36 @@
 
   // A shape's type entry (a group, or a point to place beside, has none: it's a plain box)
   const kindOf = (shape) => SHAPES[shape.type] || {}
+
+  // A script shape's size at font 1 (SHAPES: script): the drawn script's own size × its scale, or,
+  // before its library has loaded (or outside a browser), the size of its lines as plain text, in
+  // the mono font with a margin round them (SCRIPT_TEXT: its font, × the normal font size, about
+  // the size of a drawn script's text; its line height and margin, × its font). Cached by text.
+  const SCRIPT_TEXT = { font: 0.6, height: 1.4, pad: 0.3 }
+  const scriptSizes = new Map() // ready|kind|text -> { w, h }
+  // A script's lines as plain text, at font 1 (drawn so by anim-render.js)
+  function scriptTextSize(text) {
+    const lines = text.split('\n')
+    const size = SCRIPT_TEXT.font * FONT
+    const pad = 2 * SCRIPT_TEXT.pad * size
+    return { w: Math.max(...lines.map((line) => textWidth(line, size, false, true, true))) + pad, h: lines.length * SCRIPT_TEXT.height * size + pad }
+  }
+  function scriptSize(shape) {
+    const script = scriptOf(shape)
+    const ready = script.ready()
+    const key = `${ready}|${kindOf(shape).script}|${shape.label}`
+    if (!scriptSizes.has(key)) {
+      let size
+      if (ready) {
+        const svg = script.render(shape.label)
+        size = { w: +svg.getAttribute('width') * script.scale, h: +svg.getAttribute('height') * script.scale }
+      } else size = scriptTextSize(shape.label)
+      scriptSizes.set(key, size)
+    }
+    const { w, h } = scriptSizes.get(key)
+    return { w: w * shape.font, h: h * shape.font }
+  }
+  document.fonts?.addEventListener?.('loadingdone', () => scriptSizes.clear()) // estimates, as textWidths
 
   // Half-width and half-height of a shape's box, with its outline (round, diamond) for the edge
   // maths. A shape whose label is its content (text) is as big as the text, measured.
@@ -1011,7 +1077,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

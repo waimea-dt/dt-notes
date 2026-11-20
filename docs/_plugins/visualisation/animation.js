@@ -45,7 +45,8 @@
 
 ;(function () {
   const { escapeHtml, viewBoxFor, compile, warnOutsideGrid, PLAY_PAUSE, svgEl, createRenderer,
-    reducedMotion, CAPTION_MS, ease, easeFn, lerp, pointOnHops, clamp01, rewriteBlocks, stripHeadingAnchors, ENTRANCES } = window.Anim
+    reducedMotion, CAPTION_MS, ease, easeFn, lerp, pointOnHops, clamp01, rewriteBlocks, stripHeadingAnchors, ENTRANCES,
+    scriptLibraries } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Widget
@@ -154,14 +155,25 @@
     drawing.setAttribute('clip-path', `url(#${clip.id})`)
   }
 
-  function buildWidget(source) {
-    const { steps, title, assets } = readSource(source)
+  // Reads and compiles a source, then builds it. Its scripts (SCRIPTS) are measured and drawn by
+  // their libraries, so when one hasn't loaded it's loaded first and the scenes are compiled again
+  // (if it can't load, they're built as they are: the scripts show as plain text).
+  function prepareWidget(source) {
+    const read = readSource(source)
+    const fixedGrid = source.dataset.grid !== 'fit' && viewBoxFor(source.dataset.grid, [], [])
+    const centre = fixedGrid && { x: fixedGrid.x + fixedGrid.w / 2, y: fixedGrid.y + fixedGrid.h / 2 }
+    const compileAll = () => compile(read.steps, { assets: read.assets, centre })
+    const compiled = compileAll()
+    const needed = scriptLibraries(compiled.beats)
+    if (!needed.length) return buildWidget(source, read, compiled)
+    window.DocsifyUtils.loadLibraries(...needed)
+      .then(() => compileAll(), (error) => { console.warn('animation: scripts show as text', error); return compiled })
+      .then((recompiled) => source.isConnected && guardBuild(source, () => buildWidget(source, read, recompiled)))
+  }
+
+  function buildWidget(source, { steps, title }, { beats, errors, warnings }) {
     const debug = source.hasAttribute('data-debug')
     const crop = source.hasAttribute('data-crop')
-    const grid = source.dataset.grid
-    const fixedGrid = grid !== 'fit' && viewBoxFor(grid, [], [])
-    const centre = fixedGrid && { x: fixedGrid.x + fixedGrid.w / 2, y: fixedGrid.y + fixedGrid.h / 2 }
-    const { beats, errors, warnings } = compile(steps, { assets, centre })
     const viewBox = viewBoxFor(source.dataset.grid, beats, warnings, { crop })
     if (debug) warnOutsideGrid(beats, viewBox, warnings)
 
@@ -722,13 +734,18 @@
   function buildAll() {
     document.querySelectorAll('.markdown-section .anim-source:not([data-anim-built])').forEach((source) => {
       source.setAttribute('data-anim-built', 'true')
-      try {
-        buildWidget(source)
-      } catch (error) {
-        console.error('animation: failed to build', error)
-        window.DocsifyUtils.renderErrorBox(source, `Animation failed to build: ${error.message}`)
-      }
+      guardBuild(source, () => prepareWidget(source))
     })
+  }
+
+  // Builds a widget, showing an error box in its place if that fails
+  function guardBuild(source, build) {
+    try {
+      build()
+    } catch (error) {
+      console.error('animation: failed to build', error)
+      window.DocsifyUtils.renderErrorBox(source, `Animation failed to build: ${error.message}`)
+    }
   }
 
   // Built once the page's web fonts have loaded, so text is measured in the font it's drawn in

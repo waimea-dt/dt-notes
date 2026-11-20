@@ -113,6 +113,14 @@ ec5: code [] at 1,1
 ec6: code "a" lang pyhton at 1,1
 ec7: text "a" lang python at 1,1
 ec8: row [1 2] at 1,5 lang python
+es: scratch ["move (10) steps" 5] at 1,1
+es: scratch ["move (10) steps"] "say [Hi]" at 1,1
+es2: scratch ["move (10) steps" at 1,1
+es3: scratch "move (10) steps" at 1,1 fill red
+es3: scratch "move (10) steps" at 1,1 typed
+es3: highlight line
+es4: rect at 1,1
+es4: ["move (10) steps"]
 ec: highlight line
 er: highlight line
 hlr: rect at 1,1 highlight line

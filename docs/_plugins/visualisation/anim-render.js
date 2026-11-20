@@ -8,7 +8,7 @@
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
-    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup } = window.Anim
+    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup, scriptOf, scriptTextSize, SCRIPT_TEXT } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -201,6 +201,11 @@
           attr(node.image, 'preserveAspectRatio', fit)
           attr(node.image, 'href', imageHref(s.src, fit))
         },
+      },
+      // a script's drawing goes in node.script (drawScript), as its label
+      scratch: {
+        make: (node) => { node.script = node.g.appendChild(svgEl('g', { class: 'anim-script' })) },
+        size: () => {},
       },
       icon: {
         make: (node, shape) => {
@@ -407,7 +412,7 @@
       node.label.style.opacity = v.labelOpacity
       paint(node.label, 'fill', colours.colour) // a text shape's colour, or any shape's label
       if (kindOf(node).pre) paint(node.label, 'color', colours.colour) // for tokens code.css doesn't colour
-      setLabel(node, v.label, v.typed, v.erase, s.lang)
+      setLabel(node, kindOf(node).script ? '' : v.label, v.typed, v.erase, s.lang) // a script is drawn by drawScript
 
       if (LINE_TYPES.includes(node.type)) {
         const ends = v.ends || resolveEnds(s, byId)
@@ -510,6 +515,9 @@
         attr(label, 'text-anchor', 'start')
         attr(label, 'x', -hw + kindOf(s).pre.pad * fontSize)
         attr(label, 'y', -LABEL_LIFT * fontSize)
+      } else if (place === 'script') {
+        drawScript(node, s, v.label, hw, hh, colours)
+        node.script.style.opacity = v.labelOpacity
       } else if (place === 'below') {
         attr(label, 'y', hh + fontSize * 0.75)
       } else if (place === 'top') {
@@ -523,6 +531,43 @@
         attr(label, 'y', -LABEL_LIFT * fontSize) // "central" sits text a little low in a shape
       }
       if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); setText(node.debugId, s.id) }
+    }
+
+    // A script shape's script (SHAPES: script), drawn by its library (SCRIPTS) or, until that has
+    // loaded, as plain text: an <svg> fitted in the shape's box, keeping its shape. Drawn again
+    // only when its text changes (or its library loads).
+    function drawScript(node, s, text, hw, hh, colours) {
+      const script = scriptOf(s)
+      const key = `${script.ready()}|${text}`
+      if (node.scriptKey !== key) {
+        node.scriptKey = key
+        const ready = script.ready()
+        const drawn = ready ? script.render(text) : scriptText(text)
+        node.scriptLines = ready ? null : drawn.firstChild // plain text takes the shape's colour
+        if (!drawn.hasAttribute('viewBox')) attr(drawn, 'viewBox', `0 0 ${drawn.getAttribute('width')} ${drawn.getAttribute('height')}`)
+        attr(drawn, 'preserveAspectRatio', 'xMidYMid meet')
+        attr(drawn, 'class', `${drawn.getAttribute('class') || ''} no-zoom`.trim()) // the zoom plugin also attaches to nested SVGs
+        node.script.replaceChildren(drawn)
+      }
+      const drawn = node.script.firstChild
+      setBox(drawn, hw, hh)
+      if (node.scriptLines) paint(node.scriptLines, 'fill', colours.colour)
+    }
+
+    // A script's lines as mono text, one under another (at font 1, as scriptTextSize measures them)
+    function scriptText(text) {
+      const { w, h } = scriptTextSize(text)
+      const svg = svgEl('svg', { width: w, height: h })
+      const size = SCRIPT_TEXT.font * FONT
+      const pad = SCRIPT_TEXT.pad * size
+      const lines = svg.appendChild(svgEl('text', { 'dominant-baseline': 'central' }))
+      lines.setAttributeNS(XML_NS, 'xml:space', 'preserve')
+      Object.assign(lines.style, { fontFamily: MONO_FONT, fontSize: `${size}px` })
+      text.split('\n').forEach((line, i) => {
+        const span = lines.appendChild(svgEl('tspan', { x: pad, y: pad + (i + 0.5) * SCRIPT_TEXT.height * size }))
+        span.textContent = line
+      })
+      return svg
     }
 
     // How each kind of bar (BARS in anim-core.js) is drawn, in place of the shape's fill: over its

@@ -53,7 +53,8 @@ In your summary, say that you checked, and name any exception you kept.
 
 | To add | Table | File |
 |---|---|---|
-| A shape type | `SHAPES` (props, defaults, outline, label place, inside, noun, band, pre, internal); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
+| A shape type | `SHAPES` (props, defaults, outline, label place, inside, noun, band, pre, internal, script, lines); a boxed one also needs `BODIES` | `anim-core.js`, `anim-render.js` |
+| A kind of script (`scratch`: a shape drawn by a library from its text) | `SCRIPTS` (library, ready, render, scale), then a `SHAPES` type with `script` naming it | `anim-core.js` |
 | A kind of part (name, index, view, span) | `PARTS` (outline, bound) | `anim-core.js` |
 | A layout (`row`, `column`, `code`, `grid`, `table`) | `LAYOUTS` (cell type, across, base, name side, lines, fit, typeInTurn, slide, slot, bow, numbers, panel, index, arrange, views, head) | `anim-core.js` |
 | A new arrangement of a layout's cells (beside `line` and `grid`) | `ARRANGE` (create, ids, lay, sync, between, cells, marks) and `EDITS` (axis, insert, into, keepOne, messages) | `anim-layout.js`, `anim-edit.js` |
@@ -78,6 +79,7 @@ In your summary, say that you checked, and name any exception you kept.
 - **Offsets in a layout:** measure a cell's place in its row (or a grid's row or column) with `offsetIn(cell, frame)`, never `cell.attach.dx` (a grid's cells are attached to the grid, not to its views).
 - **Indices:** `indexMarks` lists what a layout's indices number (a row's cells; a grid's views), each beside its shape on the side its `LAYOUTS: index` gives. `syncIndices` adds, moves and removes them to match.
 - **Code blocks:** `code` is a layout of `codeline` cells (an `internal` SHAPES type, never typed after `id:`). `fitLines` sizes every line to the longest; `fitCode`, run from `settle(meta)` after every line, refits a block that changed. Anything that changes along with others (a refitted line, a panel's box) is timed by `retime(meta, uid, busiest(meta, shapes))`. The panel is drawn from the group's box, which takes in its indices, in a layer under every shape. Highlighting happens only at render (`codeSpans`, Prism's tokens as nested tspans coloured by code.css), so compiling never needs Prism; the `lang` look's `check` warns only when Prism is loaded.
+- **Scripts** (`SHAPES: script`, drawn by `SCRIPTS`): the script is the shape's label, so a change fades like a label's. `fitScript` (in `applyProps`, before placing) sizes the shape to its script with `scriptSize` unless it's been given a size. `scriptSize` measures the drawn script when its library has loaded and estimates it as plain text otherwise (as `textWidth` does), so compiling never needs the library. The widget (`prepareWidget`) loads any library a compiled animation's scripts need (`scriptLibraries`), then compiles again; if it can't load, the scripts are drawn as text (`drawScript`).
 - **Warnings** are given once per line, so a check on each of a row's cells says it once.
 
 For every new word:
@@ -90,7 +92,7 @@ For every new word:
    - `animation-examples.md`: whole example animations
    - `animation-shapes.md`: shapes, looks (colours, line styles, layers …), emphasis and highlights
    - `animation-motion.md`: placing and moving, copy / attach / group, timing and effects, the camera
-   - `animation-data.md`: rows and columns, range, spans, grids and tables, vars and moving values, bars, code blocks
+   - `animation-data.md`: rows and columns, range, spans, grids and tables, vars and moving values, bars, code blocks, Scratch scripts
 
    A new page also goes in the menu on `animation.md`, the links at the top of each page, and `docs/_tests/_sidebar.md`.
 

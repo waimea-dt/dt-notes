@@ -12,8 +12,8 @@
  *   when green flag clicked
  *   ```
  *
- * Inline (within text):
- *   Use `when flag clicked`{.language-scratch} for inline blocks.
+ * Inline (within text), via inline-highlight.js:
+ *   Use `when flag clicked`(scratch) for inline blocks.
  *
  * The scratchblocks library is loaded on demand, only on pages that contain Scratch blocks.
  */
