@@ -37,6 +37,9 @@
       "include": "#align"
     },
     {
+      "include": "#angle"
+    },
+    {
       "include": "#lang"
     },
     {
@@ -210,6 +213,18 @@
     },
     "align": {
       "match": "(?<![\\w-])(align)(?:\\s+(left|centre|right)(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "angle": {
+      "$comment": "angle and a direction word (DIRECTIONS in anim-core.js); a number after it is matched as a number",
+      "match": "(?<![\\w-])(angle)(?:\\s+(up|down|left|right)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"

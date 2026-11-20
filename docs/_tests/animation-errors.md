@@ -37,6 +37,7 @@ a: rect "A" at 2,2
 b: rect at 9,9
 c: blob at 3,3
 a: wibble 3
+a: angle sideways
 d: line from a to zz
 e: rect "x" "y" at 4,2
 f: circle at 5,2 size 1x2

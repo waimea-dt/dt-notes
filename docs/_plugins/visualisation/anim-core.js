@@ -73,6 +73,10 @@
   const IMAGE_FITS = { contain: 'xMidYMid meet', cover: 'xMidYMid slice' }
   const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
   const ALIGNS = { left: 'left', centre: 'centre', right: 'right' }
+  // Angles: clockwise degrees from as drawn, which faces right (as sprites do). The direction words
+  // for "angle", as degrees; a shape turns to one the short way (numberValue: turn)
+  const DIRECTIONS = { right: 0, down: 90, left: 180, up: -90 }
+  const FULL_TURN = 360
   const LINE_STYLES = ['solid', 'dashed', 'dotted']
   // Each pattern as a visible mark and gap, in multiples of the line's thickness (w):
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
@@ -474,7 +478,7 @@
     colour: colour('colour'),
     weight: number('weight', 'a number (a multiple of the normal stroke thickness)'),
     font: number('font', 'a number (a multiple of the normal size)'),
-    angle: number('angle', 'a number of degrees (clockwise, 0 = upright)'),
+    angle: { key: 'angle', sigs: [['num'], ['direction']], help: `a number of degrees (clockwise, 0 = facing right, as drawn) or a direction: ${Object.keys(DIRECTIONS).join(', ')}` },
     scale: number('scale', 'a number (a multiple of the normal size)'),
     align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
     bold: fixed('bold', true),
@@ -1007,7 +1011,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

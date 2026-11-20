@@ -116,7 +116,7 @@ r: row [
 | weight | `weight 2` (× normal, `0` hides) |
 | line style | `solid` · `dashed` · `dotted` |
 | flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |
-| angle / scale | `angle 45` (clockwise) · `scale 1.5` (not lines) |
+| angle / scale | `angle 45` (clockwise; 0 = as drawn, facing right) · `angle up` (`right` 0 · `down` 90 · `left` 180 · `up` -90; turns the short way) · `scale 1.5` (not lines) |
 | font | `font 1.5` · `bold` · `mono` |
 | align | `align left` · `centre` · `right` (text) |
 | layer | `back` · `normal` · `front` |

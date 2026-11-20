@@ -105,6 +105,7 @@ For every new word:
 - **One spelling per word, British only:** `colour`, `centre`. No US spellings, and avoid new aliases. `wiggle` and `numbered` (for `indices`) are the only ones.
 - **Reversed variants** are `<word>-reverse`: `flow-reverse`, `follow-reverse`, `signal-reverse`, `stagger-reverse`.
 - **Signed numbers** are relative on a change (`move +2,0`) and absolute when creating.
+- **Angles** are clockwise degrees from as drawn, which faces right (as Scratch sprites do). Direction words (`angle up`, `DIRECTIONS`) are absolute but turn the short way (`numberValue`'s `turn`); numbers turn exactly as written, so `angle +360` spins.
 - **Turning things off** uses the word's own off form: `clear`, `delete`, `ungroup`, `detach`, `static`, `solid`, `reset`.
 - **Rows and columns:** ids stay with the places. After a swap, insert or remove, `arr.2` is whichever cell is now third.
 - **Errors:** a bad line is skipped and listed under the animation. A message names the word as typed (`wordFor`) and gives the fix or an example. "Only takes …" messages come from `LINES`. Only warn (not error) when the line still makes sense.

@@ -641,6 +641,50 @@ t: angle 0 scale 1.3
 w: scale 0.5
 ```
 
+---
+
+## Directions
+
+`angle up` / `right` / `down` / `left`: a sprite drawn facing right, as at angle 0, faces each way in turn.
+
+```anim
+rk: image(../_assets/scratch/sprites/rocket1.svg) at 10.5,1.2 size 1.2 angle up pop
+```
+
++++
+
+```anim
+rk: angle right
+```
+
++++
+
+```anim
+rk: angle down
+```
+
++++
+
+```anim
+rk: angle left
+```
+
+---
+
+## The short way
+
+Two full turns (`angle +720`), then `angle up` turns the short way, a quarter turn from facing left, not back through two and a half turns.
+
+```anim
+rk: angle +720 speed slow
+```
+
++++
+
+```anim
+rk: angle up
+```
+
 </animation>
 
 ## Feature: Layers

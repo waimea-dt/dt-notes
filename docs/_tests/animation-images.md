@@ -20,7 +20,7 @@ On the launch pad.
 bg: image(../_assets/scratch/stages/space.svg) at 8.5,6.5 size 16x12 back
 earth: image(../_assets/scratch/sprites/earth.svg) at 3,10 size 5
 moon: image(../_assets/scratch/sprites/moon.svg) at 13.5,3 size 2.5
-rocket: image(../_assets/scratch/sprites/rocket1.svg) at 4,7 size 1.5x2.5 angle -90 pop
+rocket: image(../_assets/scratch/sprites/rocket1.svg) at 4,7 size 1.5x2.5 angle up pop
 ```
 
 ---
@@ -78,7 +78,7 @@ The rocket turns upright and settles on the moon, the camera closing in.
 ```anim
 a1: delete
 a2: delete
-rocket: move 13.5,1.4 angle -60 scale 0.4 speed slow
+rocket: move 13.5,1.4 angle up scale 0.4 speed slow
 camera at moon zoom 3 speed slow
 ```
 

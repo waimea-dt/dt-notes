@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { escapeHtml, HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, COLOURS, SPEEDS, EASES, RESERVED,
+  const { escapeHtml, HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, DIRECTIONS, COLOURS, SPEEDS, EASES, RESERVED,
     KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, LINE_STARTS, LINES, listProps, BAR_KINDS } = window.Anim
 
   // ---------------------------------------------------------------------------
@@ -199,6 +199,8 @@
       case 'id': return shapes.has(token.value) ? token.value : undefined
       case 'placement': return PLACEMENTS.includes(word) ? word : undefined
       case 'align': return ALIGNS[word]
+      // a direction word as an absolute angle, turned to the short way (numberValue: turn)
+      case 'direction': return word in DIRECTIONS ? { v: DIRECTIONS[word], rel: false, turn: true } : undefined
       case 'colour': return COLOURS[word] !== undefined || HEX.test(word) ? word : undefined
       case 'speed': return word in SPEEDS ? SPEEDS[word] : NUMBER.test(word) && !/^[+-]/.test(word) ? parseFloat(word) * 1000 : undefined
       case 'ease': return word in EASES ? word : undefined

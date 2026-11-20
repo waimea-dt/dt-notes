@@ -9,7 +9,7 @@
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
-    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS } = window.Anim
+    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -54,9 +54,12 @@
   // The one rule for numbers. The parser keeps a number's sign as `rel`; here a signed number is
   // relative to `current` (when there is one: changing a shape, the stop before, a line's end), and
   // anything else is absolute. `unit` scales cells (CELL) or leaves multipliers (1); `coord` makes
-  // an absolute value a grid coordinate (the centre of that cell).
+  // an absolute value a grid coordinate (the centre of that cell). `turn` (an angle's direction
+  // word): absolute, but the way round nearest `current`, so a shape turns the short way to face it.
   function numberValue(n, current, { unit = 1, coord = false } = {}) {
-    if (n.rel && current !== undefined && current !== null) return current + n.v * unit
+    const known = current !== undefined && current !== null
+    if (n.turn && known) return n.v * unit + FULL_TURN * Math.round((current - n.v * unit) / FULL_TURN)
+    if (n.rel && known) return current + n.v * unit
     return coord ? cellToPx(n.v) : n.v * unit
   }
 
