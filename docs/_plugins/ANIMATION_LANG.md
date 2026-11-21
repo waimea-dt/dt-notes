@@ -93,7 +93,7 @@ r: row [
 | `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
 | `diamond` | `d: diamond "x > 3?" at 4,3 size 3x1.5` | 1×1 |
 | `text` | `t: text "Hi" at 7,1 align left` | |
-| `line` / `arrow` | `l: arrow from a to 9,3 "label"` | |
+| `line` / `arrow` | `l: arrow from a to 9,3 "label"` · `l: line from 2,5 via 6,5 via 6,6 to 10,6` | |
 | `curve` | `c: curve from a to b via 5,1 via 7,3` | |
 | `image(path)` | `p: image(../_assets/x.svg) "Alt" at 3,4 size 2` | 1×1 |
 | `icon(name)` | `i: icon(laptop) "Laptop" at 10,2` | 1×1, Lucide |
@@ -101,7 +101,7 @@ r: row [
 
 - Labels: centred; halfway along a line; under an image / icon.
 - Arrowhead: `l: line from a to b arrow`, or `l: arrow` on an existing line. Put it before any `highlight`.
-- Curve: a `via` on a shape follows it; a signed via is relative to the point before. `c: via 6,1` re-bends it.
+- Via: a corner on a line, a bend on a curve. One on a shape follows it; a signed via is relative to the point before. `l: via 6,1` moves them.
 - Image paths work like `![](…)`.
 
 ## Properties
@@ -147,7 +147,7 @@ a: angle +90         # a further quarter turn
 l: to 6,5            # one end
 l: from a to 9,9     # both ends
 l: move +1,+0        # the whole line
-c: via 6,1           # a curve's bend
+c: via 6,1           # a curve's bends, a line's corners
 ```
 
 ## Movement

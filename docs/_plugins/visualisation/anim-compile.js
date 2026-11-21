@@ -181,8 +181,8 @@
       }
     }
 
-    // A line's ends (from / to, or the whole line shifted by a relative move) and a curve's via
-    // points. A line has no route of its own, so this returns null.
+    // A line's ends (from / to, or the whole line shifted by a relative move) and its via points
+    // (a curve's bends, a line's corners). A line has no route of its own, so this returns null.
     function placeLine(shape, props, creating, warn) {
       if (props.travel || props.follow || props.attach) throw new Error('a line has no single position, so it can\'t travel, follow or attach (its ends can follow shapes)')
       if (props.x || props.y || props.at?.kind === 'ref' || props.at?.kind === 'place') throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
@@ -191,7 +191,7 @@
         const ends = resolveEnds(shape, shapes)
         shape.from = { x: coord(props.at.x, ends.from.x), y: coord(props.at.y, ends.from.y) }
         shape.to = { x: coord(props.at.x, ends.to.x), y: coord(props.at.y, ends.to.y) }
-        // a curve's free via points move with it (vias on shapes stay on them)
+        // its free via points move with it (vias on shapes stay on them)
         if (shape.via) shape.via = shape.via.map((p) => (p.ref ? p : { x: coord(props.at.x, p.x), y: coord(props.at.y, p.y) }))
       }
       for (const key of ['from', 'to']) {
@@ -202,7 +202,6 @@
         shape[key] = { x: coord(end.x, current?.x), y: coord(end.y, current?.y) }
       }
       if (creating && (!shape.from || !shape.to)) throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"`)
-      if (props.via && !kindOf(shape).bends) throw new Error('"via" bends a curve, so it can\'t be used on a line: use "curve" instead, e.g. "c: curve from a to b via 5,2"')
       if (props.via) {
         // Via points (replacing any it had): a shape id stays on that shape, a placement is fixed
         // where it is now, and a signed number is relative to the point before.

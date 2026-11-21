@@ -149,7 +149,8 @@
   //             (the label is the shape's script, drawn to fit its box: see script). A bar
   //             (BAR_DRAWS: label) can put it elsewhere: 'top' or 'right', inside that edge of the box
   //   inside    it has an inside to highlight (highlight inside)
-  //   line      it runs from / to; head: it has an arrowhead; bends: it's bent through via points
+  //   line      it runs from / to, through any via points; head: it has an arrowhead; bends: its
+  //             via points are smooth bends (otherwise they're corners, joined by straight lines)
   //   resource  written type(arg): image(path), icon(name)
   //   internal  not a word an author types: a code block's lines (codeline) are made by "code"
   //   noun      its name in messages, when that isn't its type ("a code line")
@@ -977,10 +978,11 @@
     return null
   }
 
-  // A line's two ends as points, trimmed to the edges of any shapes they are attached to, and a
-  // curve's via points (a via on a shape is that shape's centre). A curve is worked out between
-  // the shapes' centres and cut where it crosses their edges, so it meets each shape the way it
-  // really arrives (falling back to the edge towards its nearest via point).
+  // A line's two ends as points, trimmed to the edges of any shapes they are attached to, and its
+  // via points (a via on a shape is that shape's centre), with smooth: whether they bend it (SHAPES:
+  // bends) or are corners. A curve is worked out between the shapes' centres and cut where it
+  // crosses their edges, so it meets each shape the way it really arrives (falling back to the
+  // edge towards its nearest via point). A cornered line meets the edge towards its nearest corner.
   function resolveEnds(line, byId) {
     const target = (end) => (end.ref && byId.get(end.ref)) || null
     const centre = (end) => { const s = target(end); return s ? boxCentre(s) : { x: end.x, y: end.y } }
@@ -989,18 +991,19 @@
     const vias = (line.via || []).map(centre)
     const fromShape = target(line.from)
     const toShape = target(line.to)
+    const smooth = !!kindOf(line).bends
     let from = fromShape ? edgePoint(fromShape, vias[0] || b) : a
     let to = toShape ? edgePoint(toShape, vias[vias.length - 1] || a) : b
-    if (vias.length && (fromShape || toShape)) {
+    if (smooth && vias.length && (fromShape || toShape)) {
       const path = buildPath([a, ...vias, b])
       if (fromShape) from = leavePoint(path, fromShape) || from
       if (toShape) to = leavePoint([...path].reverse(), toShape) || to
     }
-    return { from, to, vias }
+    return { from, to, vias, smooth }
   }
 
-  // The points a line is drawn through: its ends, or for a curve the smooth path through its vias.
-  const linePoints = ({ from, to, vias }) => (vias?.length ? buildPath([from, ...vias, to]) : [from, to])
+  // The points a line is drawn through: its ends and corners, or a curve's smooth path through its vias.
+  const linePoints = ({ from, to, vias, smooth }) => (vias?.length ? (smooth ? buildPath : buildPolyline)([from, ...vias, to]) : [from, to])
 
   // An arc of the circle through a, b, c, from p to q, turning the way a -> b -> c goes.
   // Returns t (0-1) -> point, or null when the three points are in a straight line.

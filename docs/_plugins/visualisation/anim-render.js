@@ -420,7 +420,7 @@
         // the dashes stay put while the edge point slides round the shape as the other end moves
         const fromShape = s.from?.ref && byId.get(s.from.ref)
         const dashBase = fromShape ? Math.hypot(ends.from.x - boxCentre(fromShape).x, ends.from.y - boxCentre(fromShape).y) : 0
-        // The points it's drawn through (a curve's smooth path), with the distance along to each
+        // The points it's drawn through (its corners, or a curve's smooth path), with the distance along to each
         const path = measure(linePoints(ends).map((p) => ({ x: p.x + v.dx, y: p.y + v.dy })))
         const total = path[path.length - 1].at
         const at = (d) => pointAt(path, d)
@@ -1053,10 +1053,10 @@
         const ea = resolveEnds(item.a, at(A))
         const eb = resolveEnds(item.b, at(B))
         const mix = (p, q) => ({ x: lerp(p.x, q.x, item.t), y: lerp(p.y, q.y, item.t) })
-        // A curve's via points blend too, when it has the same number before and after; otherwise
-        // the new ones are used throughout (straightening from or bending to them as the ends move)
+        // Via points blend too, when it has the same number before and after; otherwise the new
+        // ones are used throughout (straightening from or bending to them as the ends move)
         const vias = ea.vias.length === eb.vias.length ? eb.vias.map((q, i) => mix(ea.vias[i], q)) : eb.vias
-        item.v.ends = { from: mix(ea.from, eb.from), to: mix(ea.to, eb.to), vias }
+        item.v.ends = { from: mix(ea.from, eb.from), to: mix(ea.to, eb.to), vias, smooth: eb.smooth }
       }
 
       // Flyers: copies of a value gliding between vars and cells, drawn only while the beat plays.

@@ -151,13 +151,15 @@ f2: font 1
 
 ## Feature: line and arrow
 
-<animation grid="12x5">
+<animation grid="12x8">
 
 ```anim
 a: circle "a" at 2,2
 b: rect "b" at 10,2
 l1: line from a to b "line"
 l2: arrow from 2,4 to 10,4 "arrow"
+l3: line from 2,5 via 6,5 via 6,6 to 10,6 draw
+l4: line from 2,7 via 6,7 via 6,8 to 10,8 dotted "bend"
 ```
 
 ---
@@ -176,6 +178,38 @@ An end on a shape follows it.
 
 ```anim
 b: move 9,1
+```
+
+---
+
+## l3: via 4,7 via 8,5
+
+A line's via points are corners, and glide to their new places.
+
+```anim
+l3: via 4,7 via 8,5 speed slow
+```
+
++++
+
+```anim
+l3: signal
+```
+
+---
+
+## l5: arrow via corners
+
+Ends on shapes meet the edge towards the nearest corner.
+
+```anim
+l5: arrow from a to b via 2,0.5 via 11,0.5 via 11,2 draw
+```
+
++++
+
+```anim
+b: move 9,3
 ```
 
 </animation>
