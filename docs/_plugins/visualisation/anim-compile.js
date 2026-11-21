@@ -9,7 +9,7 @@
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
-    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor } = window.Anim
+    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
@@ -219,10 +219,10 @@
           return { x: p.x, y: p.y }
         })
       }
-      const loops = kindOf(shape).loop && shape.from.ref && shape.from.ref === shape.to.ref
+      const loops = isLoop(shape)
       if (creating && kindOf(shape).bends && !shape.via?.length && !loops && !props.bend) warn('a curve with no "via" points or "bend" is a straight line')
       if (props.bend && loops) warn('"bend" has no effect on a loop: its angle and size shape it')
-      if (kindOf(shape).loop && (props.angle || props.size || props.width || props.height) && (!loops || shape.via?.length)) {
+      if (kindOf(shape).loop?.props.some((key) => props[key]) && !loops) {
         warn('angle and size shape a loop: a curve from a shape to itself with no "via" points, e.g. "curve from a to a angle up"')
       }
       return null

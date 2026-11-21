@@ -154,7 +154,8 @@
   //   loop      with no via points, from a shape to itself, it loops out from the shape and back
   //             (loopEnds): the way out is its angle, its size how wide (w) and how far out (h)
   //             from the edge; spread, the degrees each side of its angle it leaves and comes back
-  //             at; shoulder, how far out its widest point is (× h). Any other curve with no via
+  //             at; shoulder, how far out its widest point is (× h); props, the props that shape
+  //             it (isLoop: whether a line is one). Any other curve with no via
   //             points bows out halfway along by its bend (bendVias)
   //   resource  written type(arg): image(path), icon(name)
   //   internal  not a word an author types: a code block's lines (codeline) are made by "code"
@@ -178,6 +179,8 @@
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
+  const CORNERED_LINE_PROPS = [...LINE_PROPS, 'corner'] // a straight line's corners (via) can be rounded
+  const LOOP_PROPS = ['angle', 'size', 'width', 'height'] // the way a loop faces, and its size
   const SHAPES = {
     rect: {
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow', 'bar', 'max', 'track'],
@@ -205,11 +208,11 @@
       takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
-    line: { takes: [...LINE_PROPS, 'corner'], label: 'along', line: true },
-    arrow: { takes: [...LINE_PROPS, 'corner'], label: 'along', line: true, head: true },
+    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true },
+    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, head: true },
     curve: {
-      takes: [...LINE_PROPS, 'angle', 'size', 'width', 'height', 'bend'], label: 'along', line: true, bends: true,
-      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6 },
+      takes: [...LINE_PROPS, ...LOOP_PROPS, 'bend'], label: 'along', line: true, bends: true,
+      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
     },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
@@ -1021,8 +1024,7 @@
   // shapes are now, so it keeps its shape as they move: a loop (SHAPES: loop), with its ends too,
   // or a curve's bend. Null when there are none.
   function workedVias(line, a, b, fromShape, toShape) {
-    const loop = kindOf(line).loop
-    if (loop && fromShape && fromShape === toShape) return loopEnds(line, fromShape, loop)
+    if (isLoop(line) && fromShape) return loopEnds(line, fromShape, kindOf(line).loop)
     if (kindOf(line).bends) return bendVias(line, a, b)
     return null
   }
@@ -1037,6 +1039,10 @@
     const bend = line.bend || 0
     return { vias: [{ x: (a.x + b.x) / 2 + (dy / len) * bend, y: (a.y + b.y) / 2 - (dx / len) * bend }] }
   }
+
+  // Whether a line is a loop (SHAPES: loop): a type that loops, from a shape to itself, with no
+  // via points of its own
+  const isLoop = (line) => Boolean(kindOf(line).loop && line.from?.ref && line.from.ref === line.to?.ref && !line.via?.length)
 
   // A loop out from a shape and back, the way its angle faces: it leaves the edge spread degrees
   // anticlockwise of that and comes back spread degrees clockwise, out through its shoulders
@@ -1252,5 +1258,5 @@
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

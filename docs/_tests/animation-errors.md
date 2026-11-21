@@ -50,7 +50,7 @@ defaults fill none
 remove: rect at 1,1
 vb: rect at 4,1 via 5,2
 a: fill blue via 3,2
-vl: line from a to 6,1 via 3,2
+vl: curve from a to 6,1 via 3,2 bend 1
 defaults via 2,2
 a: move 6,1 via zz
 ar: row at 1,1
@@ -180,6 +180,10 @@ eg6: group [eg.0]
 sg1: span eg 0.0 5.0
 sg2: span eg 0 1
 sg3: span er end 9
+cv1: curve from a to 6,1 angle up
+cv2: curve from a to a bend 1
+cv3: curve from a to 6,1 corner 0.2
+cv4: line from a to a angle up
 ```
 
 </animation>
