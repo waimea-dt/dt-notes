@@ -249,7 +249,7 @@
     "property": {
       "$comment": "named params, which a value follows",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|fill|stroke|colour|weight|font|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|max|track|zoom|into|above|below|left-of|right-of)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|font|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|max|track|zoom|into|above|below|left-of|right-of)(?![\\w-])"
     },
     "flag": {
       "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, an arrowhead)",
