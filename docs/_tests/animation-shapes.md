@@ -212,6 +212,17 @@ l5: arrow from a to b via 2,0.5 via 11,0.5 via 11,2 draw
 b: move 9,3
 ```
 
+---
+
+## corner 0.5
+
+Rounds the corners, as on a rect. A tight corner gets as much as fits.
+
+```anim
+l4: corner 0.5 arrow flow
+l5: corner 0.5 speed slow
+```
+
 </animation>
 
 ## Feature: curve

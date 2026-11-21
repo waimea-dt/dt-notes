@@ -93,7 +93,7 @@ r: row [
 | `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
 | `diamond` | `d: diamond "x > 3?" at 4,3 size 3x1.5` | 1×1 |
 | `text` | `t: text "Hi" at 7,1 align left` | |
-| `line` / `arrow` | `l: arrow from a to 9,3 "label"` · `l: line from 2,5 via 6,5 via 6,6 to 10,6` | |
+| `line` / `arrow` | `l: arrow from a to 9,3 "label"` · `l: line from 2,5 via 6,5 via 6,6 to 10,6 corner 0.3` | |
 | `curve` | `c: curve from a to b via 5,1 via 7,3` | |
 | `image(path)` | `p: image(../_assets/x.svg) "Alt" at 3,4 size 2` | 1×1 |
 | `icon(name)` | `i: icon(laptop) "Laptop" at 10,2` | 1×1, Lucide |
@@ -112,7 +112,7 @@ r: row [
 | placement | `below b` · `above b` · `left-of b` · `right-of b` · `gap 1` |
 | line ends | `from 2,3 to b` (an end on a shape follows it) |
 | size | `size 2x1` · `size 2` (circle: diameter) · `width 3` · `height 0.5` |
-| radius / corner | `radius 0.5` (circle) · `corner 0.2` (rect) |
+| radius / corner | `radius 0.5` (circle) · `corner 0.2` (rect; line, arrow: rounds its corners) |
 | colour | `fill blue` · `stroke #f80` · `colour amber` (text and labels) |
 | weight | `weight 2` (× normal, `0` hides) |
 | line style | `solid` · `dashed` · `dotted` |

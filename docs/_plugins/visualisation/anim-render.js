@@ -1056,7 +1056,7 @@
         // Via points blend too, when it has the same number before and after; otherwise the new
         // ones are used throughout (straightening from or bending to them as the ends move)
         const vias = ea.vias.length === eb.vias.length ? eb.vias.map((q, i) => mix(ea.vias[i], q)) : eb.vias
-        item.v.ends = { from: mix(ea.from, eb.from), to: mix(ea.to, eb.to), vias, smooth: eb.smooth }
+        item.v.ends = { from: mix(ea.from, eb.from), to: mix(ea.to, eb.to), vias, smooth: eb.smooth, corner: lerp(ea.corner, eb.corner, item.t) }
       }
 
       // Flyers: copies of a value gliding between vars and cells, drawn only while the beat plays.

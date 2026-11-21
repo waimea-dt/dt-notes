@@ -200,8 +200,8 @@
       takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
-    line: { takes: LINE_PROPS, label: 'along', line: true },
-    arrow: { takes: LINE_PROPS, label: 'along', line: true, head: true },
+    line: { takes: [...LINE_PROPS, 'corner'], label: 'along', line: true },
+    arrow: { takes: [...LINE_PROPS, 'corner'], label: 'along', line: true, head: true },
     curve: { takes: LINE_PROPS, label: 'along', line: true, bends: true },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
@@ -982,7 +982,8 @@
   // via points (a via on a shape is that shape's centre), with smooth: whether they bend it (SHAPES:
   // bends) or are corners. A curve is worked out between the shapes' centres and cut where it
   // crosses their edges, so it meets each shape the way it really arrives (falling back to the
-  // edge towards its nearest via point). A cornered line meets the edge towards its nearest corner.
+  // edge towards its nearest via point). A cornered line meets the edge towards its nearest corner,
+  // and carries its corner radius.
   function resolveEnds(line, byId) {
     const target = (end) => (end.ref && byId.get(end.ref)) || null
     const centre = (end) => { const s = target(end); return s ? boxCentre(s) : { x: end.x, y: end.y } }
@@ -999,11 +1000,44 @@
       if (fromShape) from = leavePoint(path, fromShape) || from
       if (toShape) to = leavePoint([...path].reverse(), toShape) || to
     }
-    return { from, to, vias, smooth }
+    return { from, to, vias, smooth, corner: line.corner || 0 }
   }
 
-  // The points a line is drawn through: its ends and corners, or a curve's smooth path through its vias.
-  const linePoints = ({ from, to, vias, smooth }) => (vias?.length ? (smooth ? buildPath : buildPolyline)([from, ...vias, to]) : [from, to])
+  // The points a line is drawn through: its ends and corners (rounded by its corner radius), or a
+  // curve's smooth path through its vias.
+  function linePoints({ from, to, vias, smooth, corner }) {
+    if (!vias?.length) return [from, to]
+    const points = [from, ...vias, to]
+    return smooth ? buildPath(points) : buildPolyline(corner ? roundCorners(points, corner) : points)
+  }
+
+  // A polyline with each corner swapped for a circular arc of radius r, sampled. A corner's arc
+  // takes at most half of each segment beside it, so a tight corner gets a smaller radius.
+  function roundCorners(points, r) {
+    const SAMPLES = 8
+    const out = [points[0]]
+    for (let i = 1; i < points.length - 1; i++) {
+      const p = points[i]
+      const [a, b] = [points[i - 1], points[i + 1]].map((q) => ({ dx: q.x - p.x, dy: q.y - p.y, len: Math.hypot(q.x - p.x, q.y - p.y) }))
+      const cos = a.len && b.len ? (a.dx * b.dx + a.dy * b.dy) / (a.len * b.len) : 1
+      const half = Math.acos(Math.min(1, Math.max(-1, cos))) / 2 // half the angle at p (none, or straight on: no arc)
+      if (half < 1e-3 || half > Math.PI / 2 - 1e-3) { out.push(p); continue }
+      const t = Math.min(r / Math.tan(half), a.len / 2, b.len / 2) // from p to where the arc starts
+      const along = (s) => ({ x: p.x + (s.dx / s.len) * t, y: p.y + (s.dy / s.len) * t })
+      const [start, end] = [along(a), along(b)]
+      // the arc's middle: towards p from the midpoint of start and end, by the arc's sagitta
+      const radius = t * Math.tan(half)
+      const mid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 }
+      const toP = Math.hypot(p.x - mid.x, p.y - mid.y)
+      const sag = radius * (1 - Math.cos(Math.PI / 2 - half))
+      const top = { x: mid.x + ((p.x - mid.x) / toP) * sag, y: mid.y + ((p.y - mid.y) / toP) * sag }
+      const arc = arcThrough(start, top, end, start, end)
+      if (!arc) { out.push(p); continue }
+      for (let k = 0; k <= SAMPLES; k++) out.push(arc(k / SAMPLES))
+    }
+    out.push(points[points.length - 1])
+    return out
+  }
 
   // An arc of the circle through a, b, c, from p to q, turning the way a -> b -> c goes.
   // Returns t (0-1) -> point, or null when the three points are in a straight line.
