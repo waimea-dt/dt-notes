@@ -66,8 +66,9 @@ function cardsOf(block) {
 const KINDS = {
   animation: {
     widget: '.animation',
-    scripts: (engineDir) => [...partsOf(engineDir).map((part) => `_plugins/visualisation/${part}.js`), '_plugins/visualisation/animation.js'],
-    styles: ['_css/visualisation/animation.css'],
+    // scratch-blocks.js sets up the library its Scratch scripts are drawn with (DocsifyScratchBlocks)
+    scripts: (engineDir) => [...partsOf(engineDir).map((part) => `_plugins/visualisation/${part}.js`), '_plugins/visualisation/animation.js', '_plugins/coding/scratch-blocks.js'],
+    styles: ['_css/visualisation/animation.css', '_css/coding/scratch-blocks.css'],
     replays: true,
     // the beat: how many beats the block's lines up to the line make (the engine's own splitBlock)
     positionAt(block, line, engineDir) {
