@@ -1057,8 +1057,8 @@
         // ones are used throughout (straightening from or bending to them as the ends move)
         const vias = ea.vias.length === eb.vias.length ? eb.vias.map((q, i) => mix(ea.vias[i], q)) : eb.vias
         item.v.ends = { from: mix(ea.from, eb.from), to: mix(ea.to, eb.to), vias, smooth: eb.smooth, corner: lerp(ea.corner, eb.corner, item.t) }
-        // Via points worked out from its look (a loop) are worked out again from its blended look,
-        // so a loop turns and grows rather than its points sliding straight across
+        // Via points worked out from its look (a loop, a bend) are worked out again from its blended
+        // look, so a loop turns and grows, and a bend bows, rather than its points sliding across
         const end = (key) => (item.a[key].ref && item.a[key].ref === item.b[key].ref ? item.b[key] : item.v.ends[key])
         if (ea.worked && eb.worked) item.v.ends = resolveEnds({ ...item.shape, from: end('from'), to: end('to') }, at(B))
       }

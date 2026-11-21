@@ -202,6 +202,8 @@
         shape[key] = { x: coord(end.x, current?.x), y: coord(end.y, current?.y) }
       }
       if (creating && (!shape.from || !shape.to)) throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"`)
+      if (props.via && props.bend) throw new Error('give either "via" or "bend", not both: a curve bends through its via points, or by its bend when it has none')
+      if (props.bend) shape.via = null // bends by its bend from now on
       if (props.via) {
         // Via points (replacing any it had): a shape id stays on that shape, a placement is fixed
         // where it is now, and a signed number is relative to the point before.
@@ -218,7 +220,8 @@
         })
       }
       const loops = kindOf(shape).loop && shape.from.ref && shape.from.ref === shape.to.ref
-      if (creating && kindOf(shape).bends && !shape.via?.length && !loops) warn('a curve with no "via" points is a straight line')
+      if (creating && kindOf(shape).bends && !shape.via?.length && !loops && !props.bend) warn('a curve with no "via" points or "bend" is a straight line')
+      if (props.bend && loops) warn('"bend" has no effect on a loop: its angle and size shape it')
       if (kindOf(shape).loop && (props.angle || props.size || props.width || props.height) && (!loops || shape.via?.length)) {
         warn('angle and size shape a loop: a curve from a shape to itself with no "via" points, e.g. "curve from a to a angle up"')
       }

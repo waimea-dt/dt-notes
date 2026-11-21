@@ -154,7 +154,8 @@
   //   loop      with no via points, from a shape to itself, it loops out from the shape and back
   //             (loopEnds): the way out is its angle, its size how wide (w) and how far out (h)
   //             from the edge; spread, the degrees each side of its angle it leaves and comes back
-  //             at; shoulder, how far out its widest point is (× h)
+  //             at; shoulder, how far out its widest point is (× h). Any other curve with no via
+  //             points bows out halfway along by its bend (bendVias)
   //   resource  written type(arg): image(path), icon(name)
   //   internal  not a word an author types: a code block's lines (codeline) are made by "code"
   //   noun      its name in messages, when that isn't its type ("a code line")
@@ -207,8 +208,8 @@
     line: { takes: [...LINE_PROPS, 'corner'], label: 'along', line: true },
     arrow: { takes: [...LINE_PROPS, 'corner'], label: 'along', line: true, head: true },
     curve: {
-      takes: [...LINE_PROPS, 'angle', 'size', 'width', 'height'], label: 'along', line: true, bends: true,
-      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL }, loop: { spread: 30, shoulder: 0.6 },
+      takes: [...LINE_PROPS, 'angle', 'size', 'width', 'height', 'bend'], label: 'along', line: true, bends: true,
+      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6 },
     },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
@@ -486,6 +487,7 @@
     height: { field: 'h', unit: CELL, min: 0 },
     radius: { field: 'r', unit: CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
     corner: { field: 'corner', unit: CELL, min: 0, cell: true },
+    bend: { field: 'bend', unit: CELL }, // how far a curve bows out halfway along (+ to its left, - right)
     fill: { field: 'fill', cell: true, kept: true },
     stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use colour' } },
     colour: { field: 'colour', cell: true, kept: true },
@@ -574,6 +576,7 @@
     height: number('height', 'a number of cells'),
     radius: number('radius'),
     corner: number('corner', 'a number of cells'),
+    bend: number('bend', 'a number of cells (bowing to the left of the way it goes, or to the right when negative)'),
     fill: colour('fill'),
     stroke: colour('stroke'),
     colour: colour('colour'),
@@ -1001,7 +1004,7 @@
     const own = (line.via || []).map(centre)
     const smooth = !!kindOf(line).bends
     const corner = line.corner || 0
-    const worked = own.length ? null : workedVias(line, fromShape, toShape)
+    const worked = own.length ? null : workedVias(line, a, b, fromShape, toShape)
     if (worked?.from) return { ...worked, smooth, corner, worked: true }
     const vias = own.length ? own : worked?.vias || []
     let from = fromShape ? edgePoint(fromShape, vias[0] || b) : a
@@ -1015,12 +1018,24 @@
   }
 
   // A line's via points worked out from its look when it has none of its own, from where its
-  // shapes are now, so it keeps its shape as they move: a loop (SHAPES: loop), with its ends too.
-  // Null when there are none.
-  function workedVias(line, fromShape, toShape) {
+  // shapes are now, so it keeps its shape as they move: a loop (SHAPES: loop), with its ends too,
+  // or a curve's bend. Null when there are none.
+  function workedVias(line, a, b, fromShape, toShape) {
     const loop = kindOf(line).loop
     if (loop && fromShape && fromShape === toShape) return loopEnds(line, fromShape, loop)
+    if (kindOf(line).bends) return bendVias(line, a, b)
     return null
+  }
+
+  // A curve that bows out by its bend halfway between a and b, to the left of the way it goes
+  // (to the right when negative): one via point there (in line when it has no bend, so it's
+  // straight, and still blends to a bend).
+  function bendVias(line, a, b) {
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    const len = Math.hypot(dx, dy) || 1
+    const bend = line.bend || 0
+    return { vias: [{ x: (a.x + b.x) / 2 + (dy / len) * bend, y: (a.y + b.y) / 2 - (dx / len) * bend }] }
   }
 
   // A loop out from a shape and back, the way its angle faces: it leaves the edge spread degrees

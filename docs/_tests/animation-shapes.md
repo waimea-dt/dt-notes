@@ -274,7 +274,8 @@ s2: circle "S2" at 9,3
 t1: curve from s1 to s1 arrow "0"
 t2: curve from s1 to s1 angle left arrow "1"
 t3: curve from s2 to s2 angle 45 size 1.2x0.6 arrow "0"
-t4: arrow from s1 to s2 "1"
+t4: curve from s1 to s2 bend 0.6 arrow "1"
+t5: curve from s2 to s1 bend 0.6 arrow "0"
 ```
 
 ---
@@ -292,13 +293,24 @@ They turn and grow.
 
 ```anim
 t1: angle down size 1.2 speed slow
-t3: angle up speed slow size
+t3: angle right speed slow size 1.5
 ```
 
 +++
 
 ```anim
 t2: signal
+```
+
+---
+
+## t4: bend 1.5
+
+A bend bows to the left of the way the curve goes (negative: right), and blends. A signed change is relative: t5 goes from 0.6 to -1.5.
+
+```anim
+t4: bend 1.8 speed slow
+t5: bend -1.5 speed slow
 ```
 
 </animation>
