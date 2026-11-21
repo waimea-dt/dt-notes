@@ -234,6 +234,8 @@ a: circle "a" at 2,3
 b: circle "b" at 10,3
 c1: curve from a to b via 6,1
 c2: curve from a to b via 4,5 via 8,4 dashed stroke teal arrow
+c3: curve from b to b via 11,2.5 via 11,3.5 arrow "A"
+c4: curve from b to b via 12,2.5 via 12,3.5 arrow "B"
 ```
 
 ---
@@ -251,13 +253,13 @@ c1: via 6,2 speed slow
 The ends follow their shapes.
 
 ```anim
-b: move 11,5
+b: move 9,3
 ```
 
 +++
 
 ```anim
-b: move 11,2
+b: move 9,4
 ```
 
 </animation>
