@@ -364,4 +364,15 @@ s: insert [
 ] at 4
 ```
 
++++
+
+```anim
+s: insert [
+    "repeat (3)",
+] at 3
+s: insert [
+    "end"
+] at 5
+```
+
 </animation>
