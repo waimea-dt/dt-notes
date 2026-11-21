@@ -609,8 +609,8 @@
     // out; then, quickly (CHOREOGRAPHY: scriptRoom), the blocks make room or close up, one still there
     // sliding from its place in A to its place in B and one that's changed (a replaced line)
     // crossfading from its old look to its new (the dip as they pass marks the change), or for a C
-    // block whose inside grew or shrank,
-    // swapping to its new shape halfway (CHOREOGRAPHY: scriptReshape); then a new one
+    // block whose inside grew or shrank, morphing from its old shape to its new (blockMorph), or if
+    // it can't, swapping halfway (CHOREOGRAPHY: scriptReshape); then a new one
     // fades in. New and gone blocks move with the block before them (or after, at the top), and
     // slide in from or out to the right as they fade (CHOREOGRAPHY: scriptAside, in cells). Each is
     // dimmed by the light (highlight line N: a spotlight within the script), as far as it's on.
@@ -623,13 +623,15 @@
         paint(block.group, 'opacity', opacity < 1 ? String(opacity) : '')
       }
       const still = { x: 0, y: 0 }
+      const morphing = new Set() // the morph steps applied this frame
+      if (from) unmorph(from, morphing) // as drawn
       paint(to.svg, 'opacity', from && !map ? String(t) : '')
       if (from) paint(from.svg, 'opacity', map ? '' : String(1 - t))
       if (!from || !map) {
         // the same blocks (or, crossfading, each drawing's own), lit as A then B
         to.own.forEach((block) => show(block, still, dimmed(lerp(from ? 0 : lit(block, litA), lit(block, litB), t))))
         from?.own.forEach((block) => show(block, still, dimmed(lit(block, litA))))
-        return
+        return unmorph(to, morphing)
       }
       const was = to.own.map((_, j) => (map[j] === null ? null : from.own[map[j]]))
       const now = from.own.map((_, k) => to.own[map.indexOf(k)] || null)
@@ -651,10 +653,73 @@
       // a reshaped C block's new shape, as far as it's in (its old one is the rest)
       const span = CHOREOGRAPHY.scriptReshape
       const reshaped = span ? clamp01((room - (1 - span) / 2) / span) : room < 0.5 ? 0 : 1
-      const shown = (block, j) => (!was[j] ? inn : kept.has(was[j]) ? 1 : block.holds ? reshaped : room) // new, kept, reshaped, changed
-      const hidden = (block, k) => (kept.has(block) ? 1 : !now[k] ? out : block.holds ? reshaped : room) // kept, gone, reshaped, changed
+      // a C block whose inside changed morphs (B's drawn as it morphs from A's look), as the room's made
+      const morphed = new Set()
+      to.own.forEach((block, j) => {
+        const steps = block.holds && was[j] && !kept.has(was[j]) && morphOf(to, from, j, was[j])
+        if (!steps) return
+        morphed.add(was[j])
+        for (const step of steps) { attr(step.el, step.name, step.at(room)); morphing.add(step) }
+      })
+      unmorph(to, morphing)
+      const shown = (block, j) => (!was[j] ? inn : kept.has(was[j]) || morphed.has(was[j]) ? 1 : block.holds ? reshaped : room) // new, kept or morphing, reshaped, changed
+      const hidden = (block, k) => (kept.has(block) || morphed.has(block) ? 1 : !now[k] ? out : block.holds ? reshaped : room) // kept or morphing, gone, reshaped, changed
       to.own.forEach((block, j) => show(block, was[j] ? toMoves[j] : aside(1 - inn, toMoves[j]), shown(block, j) * dimmed(lerp(lit(was[j], litA), lit(block, litB), t))))
       from.own.forEach((block, k) => show(block, now[k] ? fromMoves[k] : aside(out, fromMoves[k]), (1 - hidden(block, k)) * dimmed(lit(block, litA))))
+    }
+
+    // A changed block's morph from its look in A's drawing to its look in B's: a step for each of
+    // B's own parts' attributes that differ (MORPHED), each part matched with the next of A's of
+    // the same kind, each value blended by blendValues. null when it can't morph (another shape, or
+    // other parts), so it changes another way. Worked out once for each pair of drawings.
+    const MORPHED = ['d', 'transform']
+    function morphOf(to, from, j, was) {
+      to.morphs ||= new Map()
+      const key = `${from.key}|${j}|${from.own.indexOf(was)}`
+      if (!to.morphs.has(key)) to.morphs.set(key, blockMorph(was.group, to.own[j].group))
+      return to.morphs.get(key)
+    }
+    function blockMorph(before, after) {
+      const olds = [...before.children]
+      const steps = []
+      let k = 0
+      for (const el of after.children) {
+        while (k < olds.length && olds[k].tagName !== el.tagName) k++
+        const old = olds[k++]
+        if (!old) return null
+        for (const name of MORPHED) {
+          const [a, b] = [old.getAttribute(name), el.getAttribute(name)]
+          if (a === b) continue
+          const at = a !== null && b !== null && blendValues(a, b)
+          if (!at) return null
+          steps.push({ el, name, at, end: b })
+        }
+      }
+      return steps
+    }
+    // A drawing's morphed parts set back as drawn, but for those still morphing (steps)
+    function unmorph(drawing, steps) {
+      for (const step of drawing.morphing || []) if (!steps.has(step)) attr(step.el, step.name, step.end)
+      drawing.morphing = new Set([...steps].filter((step) => drawing.svg.contains(step.el)))
+    }
+
+    // Two SVG attribute values with the same words and different numbers (a path's commands, a
+    // transform), as at(u): the value u of the way from a to b. null if they differ in more than
+    // their numbers, or in an arc's flags (which can't be part way).
+    const NUMBER_IN = /-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gi
+    function blendValues(a, b) {
+      const [words, others] = [a.split(NUMBER_IN), b.split(NUMBER_IN)]
+      const [xs, ys] = [(a.match(NUMBER_IN) || []).map(Number), (b.match(NUMBER_IN) || []).map(Number)]
+      if (words.join('|') !== others.join('|') || xs.length !== ys.length) return null
+      let command = ''
+      let n = 0 // the number's place in its command's arguments
+      for (let k = 0; k < xs.length; k++) {
+        const letter = words[k].match(/[a-z](?=[^a-z]*$)/i)
+        if (letter) { command = letter[0]; n = 0 }
+        if (/a/i.test(command) && [3, 4].includes(n % 7) && xs[k] !== ys[k]) return null
+        n++
+      }
+      return (u) => words.map((word, k) => (k < xs.length ? word + String(lerp(xs[k], ys[k], u)) : word)).join('')
     }
 
     // A script's lines as mono text, one under another (at font 1, as scriptTextSize measures them)

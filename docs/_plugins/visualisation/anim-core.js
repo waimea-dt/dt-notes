@@ -46,7 +46,7 @@
     spanPad: 0.16,    // a span's box is this much bigger than its cells all round (in cells), so an outline goes round them
     scriptRoom: 0.4,  // a script edit's blocks make room (or close up) in this share of its time: a new block fades in after it, one going out fades out before it
     scriptAside: 1,   // a new script block slides in from this far to its right as it fades in, and a gone one slides out as far (in cells)
-    scriptReshape: 0, // a C block whose inside grows or shrinks swaps to its new shape halfway through making room, crossfading over this share of it (0: at once)
+    scriptReshape: 0, // a C block whose inside grows or shrinks and can't morph (blockMorph) swaps to its new shape halfway through making room, crossfading over this share of it (0: at once)
   }
   // How a shape comes in or goes (the effect words; rendered by FRAMES in anim-render.js):
   //   applies  whether it works on a shape; when it doesn't, the shape fades, with the warning
