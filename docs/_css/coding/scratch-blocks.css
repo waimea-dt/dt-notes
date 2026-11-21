@@ -51,4 +51,10 @@
         fill: #666;
         stroke: #444;
     }
+
+    /* Zebra stripes: a block is a richer, deeper colour unless it's straight inside such a block of
+       its own colour (scratch-blocks.js): more saturated, a little darker */
+    .sb3-zebra {
+        filter: saturate(var(--scratch-zebra-saturate, 1.5)) brightness(var(--scratch-zebra-brightness, 0.95));
+    }
 }

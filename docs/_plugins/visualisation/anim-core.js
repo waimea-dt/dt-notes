@@ -242,7 +242,7 @@
       ready: () => Boolean(window.scratchblocks?.render),
       render: (text) => {
         const lib = window.scratchblocks
-        setUpScratch(lib)
+        window.DocsifyScratchBlocks.setUp(lib) // styles, blocks that keep their elements, zebra stripes (scratch-blocks.js)
         const view = lib.newView(lib.parse(text, { languages: ['en'] }), { style: 'scratch3' })
         const svg = view.render()
         svg.classList.add('scratchblocks-style-scratch3') // as scratchblocks.render does
@@ -257,18 +257,6 @@
       },
       scale: 1.5,
     },
-  }
-  // Once: scratchblocks' styles, and its blocks keep the element each draws (el), so a block can be
-  // found in the drawing (its views keep only sizes). Drawing is unchanged.
-  let scratchSetUp = false
-  function setUpScratch(lib) {
-    if (scratchSetUp) return
-    scratchSetUp = true
-    lib.appendStyles()
-    const probe = lib.newView(lib.parse('move (1) steps'), { style: 'scratch3' }).scripts[0].blocks[0]
-    const blockView = Object.getPrototypeOf(probe)
-    const draw = blockView.draw
-    blockView.draw = function (...args) { return (this.el = draw.apply(this, args)) }
   }
   // A scratchblocks view's blocks in order: each script's, and inside a C block, its scripts' (a
   // reporter in an input isn't one)

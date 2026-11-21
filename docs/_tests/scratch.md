@@ -118,6 +118,29 @@ Yet across the gulf of space, minds that are to our minds as ours are to those o
 
 
 
+### Zebra stripes
+
+A block is a richer, deeper colour unless it's straight inside such a block of its own colour, so nested blocks of one colour alternate, deeper outside. Different colours start again. The first script matches Scratch Addons' zebra striping example; the second nests operators in operators.
+
+```scratch
+forever
+    if <mouse down?> then
+        if <touching (mouse-pointer v)?> then
+            change x by (10)
+            wait (0.1) seconds
+            if <<(x position) > (240)> and <(timer) < (10)>> then
+                set x to (-240)
+                reset timer
+            end
+        end
+    end
+end
+```
+
+```scratch
+say (join (join [Hello, ] (username)) (round ((1) + ((2) * (3)))))
+```
+
 ### Full Reference
 
 ```scratch
