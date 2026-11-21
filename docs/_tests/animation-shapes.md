@@ -234,8 +234,8 @@ a: circle "a" at 2,3
 b: circle "b" at 10,3
 c1: curve from a to b via 6,1
 c2: curve from a to b via 4,5 via 8,4 dashed stroke teal arrow
-c3: curve from b to b via 11,2.5 via 11,3.5 arrow "A"
-c4: curve from b to b via 12,2.5 via 12,3.5 arrow "B"
+c3: curve from b to b angle right arrow "A"
+c4: curve from b to b angle down size 1.5 arrow "B"
 ```
 
 ---
@@ -260,6 +260,45 @@ b: move 9,3
 
 ```anim
 b: move 9,4
+```
+
+</animation>
+
+## Feature: loop
+
+<animation grid="12x6">
+
+```anim
+s1: circle "S1" at 3,3
+s2: circle "S2" at 9,3
+t1: curve from s1 to s1 arrow "0"
+t2: curve from s1 to s1 angle left arrow "1"
+t3: curve from s2 to s2 angle 45 size 1.2x0.6 arrow "0"
+t4: arrow from s1 to s2 "1"
+```
+
+---
+
+## Loops follow their shape
+
+```anim
+s1: move 4,4
+s2: move 8,2
+```
+
++++
+
+They turn and grow.
+
+```anim
+t1: angle down size 1.2 speed slow
+t3: angle up speed slow size
+```
+
++++
+
+```anim
+t2: signal
 ```
 
 </animation>

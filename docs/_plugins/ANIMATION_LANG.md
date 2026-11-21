@@ -94,7 +94,7 @@ r: row [
 | `diamond` | `d: diamond "x > 3?" at 4,3 size 3x1.5` | 1×1 |
 | `text` | `t: text "Hi" at 7,1 align left` | |
 | `line` / `arrow` | `l: arrow from a to 9,3 "label"` · `l: line from 2,5 via 6,5 via 6,6 to 10,6 corner 0.3` | |
-| `curve` | `c: curve from a to b via 5,1 via 7,3` | |
+| `curve` | `c: curve from a to b via 5,1 via 7,3` · `c: curve from a to a angle right` (a loop) | loop: up, 1×1 |
 | `image(path)` | `p: image(../_assets/x.svg) "Alt" at 3,4 size 2` | 1×1 |
 | `icon(name)` | `i: icon(laptop) "Laptop" at 10,2` | 1×1, Lucide |
 | `scratch` | `s: scratch "move (10) steps" at 4,3` | its blocks' size (see Scratch) |
@@ -102,6 +102,7 @@ r: row [
 - Labels: centred; halfway along a line; under an image / icon.
 - Arrowhead: `l: line from a to b arrow`, or `l: arrow` on an existing line. Put it before any `highlight`.
 - Via: a corner on a line, a bend on a curve. One on a shape follows it; a signed via is relative to the point before. `l: via 6,1` moves them.
+- Loop: a curve from a shape to itself, no via. `angle` is the way it faces, `size 1.2x0.6` how wide and how far out. It keeps its shape as the shape moves.
 - Image paths work like `![](…)`.
 
 ## Properties

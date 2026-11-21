@@ -217,7 +217,11 @@
           return { x: p.x, y: p.y }
         })
       }
-      if (creating && kindOf(shape).bends && !shape.via?.length) warn('a curve with no "via" points is a straight line')
+      const loops = kindOf(shape).loop && shape.from.ref && shape.from.ref === shape.to.ref
+      if (creating && kindOf(shape).bends && !shape.via?.length && !loops) warn('a curve with no "via" points is a straight line')
+      if (kindOf(shape).loop && (props.angle || props.size || props.width || props.height) && (!loops || shape.via?.length)) {
+        warn('angle and size shape a loop: a curve from a shape to itself with no "via" points, e.g. "curve from a to a angle up"')
+      }
       return null
     }
 

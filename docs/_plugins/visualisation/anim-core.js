@@ -151,6 +151,10 @@
   //   inside    it has an inside to highlight (highlight inside)
   //   line      it runs from / to, through any via points; head: it has an arrowhead; bends: its
   //             via points are smooth bends (otherwise they're corners, joined by straight lines)
+  //   loop      with no via points, from a shape to itself, it loops out from the shape and back
+  //             (loopEnds): the way out is its angle, its size how wide (w) and how far out (h)
+  //             from the edge; spread, the degrees each side of its angle it leaves and comes back
+  //             at; shoulder, how far out its widest point is (× h)
   //   resource  written type(arg): image(path), icon(name)
   //   internal  not a word an author types: a code block's lines (codeline) are made by "code"
   //   noun      its name in messages, when that isn't its type ("a code line")
@@ -202,7 +206,10 @@
     },
     line: { takes: [...LINE_PROPS, 'corner'], label: 'along', line: true },
     arrow: { takes: [...LINE_PROPS, 'corner'], label: 'along', line: true, head: true },
-    curve: { takes: LINE_PROPS, label: 'along', line: true, bends: true },
+    curve: {
+      takes: [...LINE_PROPS, 'angle', 'size', 'width', 'height'], label: 'along', line: true, bends: true,
+      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL }, loop: { spread: 30, shoulder: 0.6 },
+    },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
     codeline: {
@@ -989,10 +996,14 @@
     const centre = (end) => { const s = target(end); return s ? boxCentre(s) : { x: end.x, y: end.y } }
     const a = centre(line.from)
     const b = centre(line.to)
-    const vias = (line.via || []).map(centre)
     const fromShape = target(line.from)
     const toShape = target(line.to)
+    const own = (line.via || []).map(centre)
     const smooth = !!kindOf(line).bends
+    const corner = line.corner || 0
+    const worked = own.length ? null : workedVias(line, fromShape, toShape)
+    if (worked?.from) return { ...worked, smooth, corner, worked: true }
+    const vias = own.length ? own : worked?.vias || []
     let from = fromShape ? edgePoint(fromShape, vias[0] || b) : a
     let to = toShape ? edgePoint(toShape, vias[vias.length - 1] || a) : b
     if (smooth && vias.length && (fromShape || toShape)) {
@@ -1000,7 +1011,32 @@
       if (fromShape) from = leavePoint(path, fromShape) || from
       if (toShape) to = leavePoint([...path].reverse(), toShape) || to
     }
-    return { from, to, vias, smooth, corner: line.corner || 0 }
+    return { from, to, vias, smooth, corner, worked: Boolean(worked) }
+  }
+
+  // A line's via points worked out from its look when it has none of its own, from where its
+  // shapes are now, so it keeps its shape as they move: a loop (SHAPES: loop), with its ends too.
+  // Null when there are none.
+  function workedVias(line, fromShape, toShape) {
+    const loop = kindOf(line).loop
+    if (loop && fromShape && fromShape === toShape) return loopEnds(line, fromShape, loop)
+    return null
+  }
+
+  // A loop out from a shape and back, the way its angle faces: it leaves the edge spread degrees
+  // anticlockwise of that and comes back spread degrees clockwise, out through its shoulders
+  // (each side) and its tip.
+  function loopEnds(line, shape, { spread, shoulder }) {
+    const FAR = 1e6 // a point far off that way (edgePoint stops at most halfway to it)
+    const c = boxCentre(shape)
+    const facing = (degrees) => { const r = (degrees * Math.PI) / 180; return { x: Math.cos(r), y: Math.sin(r) } }
+    const out = facing(line.angle)
+    const edgeAt = (degrees) => { const u = facing(degrees); return edgePoint(shape, { x: c.x + u.x * FAR, y: c.y + u.y * FAR }) }
+    const edge = edgeAt(line.angle)
+    const reach = Math.hypot(edge.x - c.x, edge.y - c.y)
+    const at = (along, side) => ({ x: c.x + out.x * along - out.y * side, y: c.y + out.y * along + out.x * side })
+    const vias = [at(reach + line.h * shoulder, -line.w / 2), at(reach + line.h, 0), at(reach + line.h * shoulder, line.w / 2)]
+    return { from: edgeAt(line.angle - spread), to: edgeAt(line.angle + spread), vias }
   }
 
   // The points a line is drawn through: its ends and corners (rounded by its corner radius), or a
