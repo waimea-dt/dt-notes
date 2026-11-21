@@ -287,6 +287,20 @@ dot: move 10,2 speed slow
 
 </animation>
 
+## Feature: Still
+
+One beat: a still picture, with no buttons or progress bar.
+
+<animation grid="12x3">
+
+```anim
+a: rect "A" at 3,2
+b: circle "B" at 9,2
+l: arrow from a to b
+```
+
+</animation>
+
 ## Feature: pause
 
 Press `A` to play.

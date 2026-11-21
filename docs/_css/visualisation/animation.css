@@ -443,7 +443,7 @@
     30% { transform: rotate(180deg) translateX(5px); }
 }
 
-/* controls="none": no buttons or progress bar (the keys still work) */
+/* controls="none", or a still: no buttons or progress bar (the keys still work) */
 .markdown-section .animation.anim-no-controls :is(.anim-controls, .anim-progress) {
     display: none;
 }
