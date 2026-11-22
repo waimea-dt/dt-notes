@@ -271,6 +271,7 @@ n: binary v1 at 2,4 bits 4         # a var's value, 4 bits
 b: binary 123 at 2,2 indices powers decimal  # bit numbers below, 1 2 4 … above, "= 123" right
 b.0: 1                             # one bit
 b: 67                              # a new value: the bits that change crossfade
+b: +1                              # relative, as a var
 b: v1                              # a var's or cell's value glides on (v1: b, and back)
 b: flip                            # every bit
 b: flip 0 3                        # bits 0 to 3
@@ -279,7 +280,7 @@ b: powers clear                    # or decimal clear, indices clear
 ```
 
 - `at` places the leftmost bit. Default 8 bits, up to 32; `bits` is given when it's made.
-- A value too big for its bits overflows (keeps its lowest bits), with a warning.
+- A value that doesn't fit (too big, or below 0) wraps round (keeps its lowest bits), with a warning.
 - Bits hold 0 or 1. No swap, insert or remove. Otherwise like a row (looks, `range`, spans, `name`).
 
 ## Variables
@@ -289,6 +290,7 @@ v1: var 67 at 5,3                  # a box holding a value
 v2: var "Dog" at 5,5
 v3: var null at 8,3                # null shows muted, in italics
 v1: 123                            # a new value
+v1: +1                             # relative (a cell too: arr.2: -3); "+1" is text
 v2: "Cat"
 v1: null
 ```

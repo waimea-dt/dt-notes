@@ -38,23 +38,35 @@
       throw new Error(`a ${noun}'s ${item}s hold ${radix > 2 ? `0 to ${radix - 1}` : '0 or 1'}, not ${value.nil ? 'null' : `"${value.label}"`}`)
     }
 
+    // "v: +1" / "b: -5": a signed value adds to what a var, cell or number holds now (any other
+    // value is as given)
+    function addTo(shape, value) {
+      if (value.nil || !/^[+-]/.test(value.label)) return value
+      const now = valueIn(shape)
+      if (now.nil || !NUMBER.test(now.label)) throw new Error(`"${shape.id}" holds ${now.nil ? 'null' : `"${now.label}"`}, not a number, so there's nothing to add ${value.label} to`)
+      if (!shape.layout) return { label: String(Number((Number(now.label) + Number(value.label)).toPrecision(12))) }
+      const { noun } = LAYOUTS[shape.layout]
+      if (!/^[+-]\d+$/.test(value.label)) throw new Error(`a ${noun} adds whole numbers, not ${value.label}`)
+      return { label: String(BigInt(now.label) + BigInt(value.label)) }
+    }
+
     // A number's value from its digits (its cells, lowest first)
     function wholeOf(row) {
       const radix = BigInt(LAYOUTS[row.layout].radix)
       return row.members.reduceRight((n, id) => n * radix + BigInt(shapes.get(id)?.label || 0), 0n)
     }
 
-    // A whole number's digits in a layout's radix, lowest first, as `count` labels. A number too big
-    // for them overflows (keeps its lowest digits), with a warning.
+    // A whole number's digits in a layout's radix, lowest first, as `count` labels. A number that
+    // doesn't fit (too big, or below 0) wraps round (keeps its lowest digits), with a warning.
     function digitsFor(layout, value, count, warn) {
       const { noun, item, radix } = LAYOUTS[layout]
-      if (value.nil || !/^\d+$/.test(value.label)) throw new Error(`a ${noun} holds a whole number, 0 or more, not ${value.nil ? 'null' : `"${value.label}"`}`)
+      if (value.nil || !/^-?\d+$/.test(value.label)) throw new Error(`a ${noun} holds a whole number, not ${value.nil ? 'null' : `"${value.label}"`}`)
       const base = BigInt(radix)
       const size = base ** BigInt(count)
       let n = BigInt(value.label)
-      if (n >= size) {
-        warn(`${value.label} doesn't fit in ${count} ${item}${count === 1 ? '' : 's'}, so it overflows to ${n % size}`)
-        n %= size
+      if (n < 0n || n >= size) {
+        n = ((n % size) + size) % size
+        warn(`${value.label} doesn't fit in ${count} ${item}${count === 1 ? '' : 's'}, so it wraps round to ${n}`)
       }
       return Array.from({ length: count }, () => { const digit = n % base; n /= base; return String(digit) })
     }
@@ -152,7 +164,7 @@
     }
 
     return {
-      functions: { assignValue, checkDigit, digitsFor, fly, flyValue, holderRef, keptStyle, pointOf, setNumber, setValue, valueIn, valueOf },
+      functions: { addTo, assignValue, checkDigit, digitsFor, fly, flyValue, holderRef, keptStyle, pointOf, setNumber, setValue, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {
         ({ applyStagger, cellsBetween, noShape, placeOf, schedule, speedOf } = cx)

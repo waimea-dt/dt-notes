@@ -187,7 +187,9 @@ cv4: line from a to a angle up
 eb: binary 5 at 1,1 bits 4
 eb.0: 2
 eb.1: "x"
-eb: -3
+eb: -9
+eb: +1.5
+vv: +1
 eb: swap 0 1
 eb: insert 1 at 0
 eb: remove 0

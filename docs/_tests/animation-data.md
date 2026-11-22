@@ -564,7 +564,19 @@ b.7: flip
 +++
 
 ```anim
-b: 300                            # too big for 8 bits: it overflows to 44
+b: 300                            # too big for 8 bits: it wraps round to 44
+```
+
++++
+
+```anim
+b: +1                             # signed: relative, = 45
+```
+
++++
+
+```anim
+b: -50                            # below 0: it wraps round to 251
 ```
 
 ---
@@ -634,6 +646,12 @@ v3: 4
 +++
 
 ```anim
+v1: +7                            # signed: relative, = 130
+v3: -0.5                          # = 3.5
+```
+
++++
+
 v1: null
 v2: null fill red
 ```
