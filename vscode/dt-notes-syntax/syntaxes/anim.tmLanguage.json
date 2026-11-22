@@ -150,9 +150,9 @@
       }
     },
     "action": {
-      "$comment": "the verbs: words that start a line's command, and the actions detach (like ungroup) and clear (callout clear, name clear, indices clear, powers clear; highlight clear is in its own rule)",
+      "$comment": "the verbs: words that start a line's command, and the actions detach (like ungroup) and clear (callout clear, name clear, indices clear, powers clear; highlight clear is in its own rule) and reset (fill reset, style reset)",
       "name": "keyword.control.anim",
-      "match": "(?<![\\w-])(copy|group|ungroup|delete|swap|insert|remove|range|span|flip|detach|clear)(?![\\w-])"
+      "match": "(?<![\\w-])(copy|group|ungroup|delete|swap|insert|remove|range|span|flip|detach|clear|reset)(?![\\w-])"
     },
     "ease": {
       "$comment": "ease and its value (in and out are only values here)",
@@ -249,12 +249,12 @@
     "property": {
       "$comment": "named params, which a value follows",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|font|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|powers|decimal|bits|max|track|zoom|into|above|below|left-of|right-of)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|font|style|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|powers|decimal|bits|max|track|zoom|into|above|below|left-of|right-of)(?![\\w-])"
     },
     "flag": {
       "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, an arrowhead)",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(keep-style|bar|bold|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|arrow)(?![\\w-])"
+      "match": "(?<![\\w-])(keep-style|bar|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|arrow)(?![\\w-])"
     },
     "value": {
       "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",
