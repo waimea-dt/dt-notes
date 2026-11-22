@@ -634,9 +634,13 @@
         throw new Error(known ? `no shape called "${id}" (to create one, put a type after the colon, e.g. "${id}: rect")` : `unknown shape type "${first.value}"`)
       }
       // "v1: a.1" / "a.2: v2": a copy of another var's or cell's value glides over
-      if (existing.holds && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
-      // "v: 123" / "arr.2: null": a new value for a var or a row's / column's cell ("text" is a label)
-      const given = existing.holds && first?.kind === 'word' ? valueOf(first) : undefined
+      const symbol = symbolValue(existing, first)
+      // a digit given a word that isn't its symbol or a name: what it holds ("h.0: G")
+      if (existing.digit && !symbol && holderRef(first) && !shapes.has(first.value)) checkDigit(existing.digit, { label: first.value })
+      if (existing.holds && !symbol && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
+      // "v: 123" / "arr.2: null": a new value for a var or a row's / column's cell ("text" is a
+      // label); "h.0: F" a digit's symbol
+      const given = symbol || (existing.holds && first?.kind === 'word' ? valueOf(first) : undefined)
       const newValue = given && addTo(existing, given)
       const props = propsOf(existing.type, tokens, newValue ? 1 : 0, 'change')
       if (newValue && props.label !== undefined) throw new Error('give one value: a number, "quoted" text or null')
@@ -837,7 +841,7 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let addTo, assignValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
+    let addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
       refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
@@ -845,7 +849,7 @@
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ addTo, assignValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
+      ({ addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
         refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()

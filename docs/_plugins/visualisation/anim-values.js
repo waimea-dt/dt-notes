@@ -8,8 +8,12 @@
   const { parseProps, ID, RESERVED, KEYWORDS, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
     nounList, boxCentre } = window.Anim
 
-  // The layouts that hold a number (LAYOUTS: radix), for messages: "a binary number"
-  const NUMBER_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => LAYOUTS[layout].radix).map((layout) => LAYOUTS[layout].noun))
+  // The numbers whose digits flip (LAYOUTS: flip), for messages: "a binary number"
+  const FLIP_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => LAYOUTS[layout].flip).map((layout) => LAYOUTS[layout].noun))
+
+  // A digit's symbol (0-9, then A-F), and the digit a symbol stands for in a radix (or NaN)
+  const digitSymbol = (d) => d.toString(36).toUpperCase()
+  const symbolDigit = (symbol, radix) => (/^[0-9A-Z]$/.test(symbol) && parseInt(symbol, 36) < radix ? parseInt(symbol, 36) : NaN)
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
@@ -31,17 +35,26 @@
     // A shape's value: a var's or cell's, or a number's, from its digits
     const valueIn = (shape) => (shape.layout ? { label: String(wholeOf(shape)), nil: false } : { label: shape.label, nil: shape.nil })
 
-    // A digit of a number (layout: LAYOUTS: radix) is a whole number from 0 to radix - 1
+    // A digit of a number (layout: LAYOUTS: radix) is a symbol for 0 to radix - 1 (0-9, A-F)
     function checkDigit(layout, value) {
       const { noun, item, radix } = LAYOUTS[layout]
-      if (!value.nil && /^\d+$/.test(value.label) && Number(value.label) < radix) return
-      throw new Error(`a ${noun}'s ${item}s hold ${radix > 2 ? `0 to ${radix - 1}` : '0 or 1'}, not ${value.nil ? 'null' : `"${value.label}"`}`)
+      if (!value.nil && !Number.isNaN(symbolDigit(value.label, radix))) return
+      throw new Error(`a ${noun}'s ${item}s hold ${radix > 2 ? `0 to ${digitSymbol(radix - 1)}` : '0 or 1'}, not ${value.nil ? 'null' : `"${value.label}"`}`)
+    }
+    // "h.0: f": a word that's a digit's symbol (any case), as its value, before it's read as a name
+    function symbolValue(shape, token) {
+      const symbol = shape?.digit && token?.kind === 'word' ? token.value.toUpperCase() : ''
+      return symbol && !Number.isNaN(symbolDigit(symbol, LAYOUTS[shape.digit].radix)) ? { label: symbol } : undefined
     }
 
     // "v: +1" / "b: -5": a signed value adds to what a var, cell or number holds now (any other
-    // value is as given)
+    // value is as given). A digit adds in its radix ("h.0: +1": 9 to A), checked as it's set.
     function addTo(shape, value) {
       if (value.nil || !/^[+-]/.test(value.label)) return value
+      if (shape.digit) {
+        const sum = symbolDigit(shape.label, LAYOUTS[shape.digit].radix) + Number(value.label)
+        return { label: Number.isInteger(sum) && sum >= 0 ? digitSymbol(sum) : String(sum) }
+      }
       const now = valueIn(shape)
       if (now.nil || !NUMBER.test(now.label)) throw new Error(`"${shape.id}" holds ${now.nil ? 'null' : `"${now.label}"`}, not a number, so there's nothing to add ${value.label} to`)
       if (!shape.layout) return { label: String(Number((Number(now.label) + Number(value.label)).toPrecision(12))) }
@@ -52,8 +65,8 @@
 
     // A number's value from its digits (its cells, lowest first)
     function wholeOf(row) {
-      const radix = BigInt(LAYOUTS[row.layout].radix)
-      return row.members.reduceRight((n, id) => n * radix + BigInt(shapes.get(id)?.label || 0), 0n)
+      const { radix } = LAYOUTS[row.layout]
+      return row.members.reduceRight((n, id) => n * BigInt(radix) + BigInt(symbolDigit(shapes.get(id)?.label || '0', radix)), 0n)
     }
 
     // A whole number's digits in a layout's radix, lowest first, as `count` labels. A number that
@@ -68,7 +81,7 @@
         n = ((n % size) + size) % size
         warn(`${value.label} doesn't fit in ${count} ${item}${count === 1 ? '' : 's'}, so it wraps round to ${n}`)
       }
-      return Array.from({ length: count }, () => { const digit = n % base; n /= base; return String(digit) })
+      return Array.from({ length: count }, () => { const digit = n % base; n /= base; return digitSymbol(digit) })
     }
 
     // A number's digits given a value ("b: 67"), each that changes (with `look`, keep-style's) put in
@@ -88,7 +101,7 @@
     function flipDigits(id, shape, tokens, meta, warn) {
       if (!shape) throw noShape(id)
       const row = shape.digit ? null : shape
-      if (row && !LAYOUTS[row.layout]?.radix) throw new Error(`"flip" flips the digits of ${NUMBER_NOUNS} (or one, e.g. "b.0: flip"), and "${id}" isn't one`)
+      if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or one, e.g. "b.0: flip"), and "${id}" isn't one`)
       let cells = row ? row.members.map((cell) => shapes.get(cell)).filter(Boolean) : [shape]
       let next = 1
       if (row && placeOf(row, tokens[1]) !== undefined) {
@@ -98,7 +111,8 @@
       const props = parseProps(tokens, next, 'flip', shapes)
       for (const cell of cells) {
         const changed = structuredClone(cell)
-        setValue(changed, { label: String(LAYOUTS[cell.digit].radix - 1 - Number(cell.label)) })
+        const { radix } = LAYOUTS[cell.digit]
+        setValue(changed, { label: digitSymbol(radix - 1 - symbolDigit(cell.label, radix)) })
         shapes.set(changed.id, changed)
         schedule(meta, changed.uid, props)
       }
@@ -164,7 +178,7 @@
     }
 
     return {
-      functions: { addTo, assignValue, checkDigit, digitsFor, fly, flyValue, holderRef, keptStyle, pointOf, setNumber, setValue, valueIn, valueOf },
+      functions: { addTo, assignValue, symbolValue, checkDigit, digitsFor, fly, flyValue, holderRef, keptStyle, pointOf, setNumber, setValue, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {
         ({ applyStagger, cellsBetween, noShape, placeOf, schedule, speedOf } = cx)

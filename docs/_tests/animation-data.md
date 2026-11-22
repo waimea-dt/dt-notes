@@ -529,7 +529,7 @@ A row of bits, numbered from the right: b.0 is the lowest.
 ```anim
 b: binary 123 at 3,2 indices powers decimal name "b"
 v: var 125 at 3,5 name "v"
-b1: binary 666 bits 12 at 1,7 indices powers decimal
+b1: binary 666 digits 12 at 1,7 indices powers decimal
 ```
 
 ---
@@ -598,7 +598,7 @@ w: b                              # and back off them
 +++
 
 ```anim
-n: binary v at 9,5 bits 4 decimal  # a var's value, in 4 bits (overflows to 13)
+n: binary v at 9,5 digits 4 decimal  # a var's value, in 4 bits (wraps round to 13)
 ```
 
 ---
@@ -637,6 +637,42 @@ b: style reset                    # every look back as it started (b.6 not bold)
 ```anim
 b: highlight outline
 n: delete
+```
+
+</animation>
+
+## Feature: hex and denary
+
+<animation grid="14x7">
+
+Numbers in base 16 and base 10: like binary, with digits 0-9, then A-F.
+
+```anim
+h: hex 123 at 3,2 digits 4 name "h" powers decimal  # 007B = 123
+d: denary 123 at 3,5 name "d" indices powers         # 3 digits by default
+```
+
+---
+
+## A digit, or a new value
+
+```anim
+h.0: f                            # = 127 (any case, shown upper)
+d.2: 9                            # = 923
+```
+
++++
+
+```anim
+h.1: +1                           # 8: a digit adds in its base, = 143
+h: 65535 speed slow               # FFFF
+d: +100                           # wraps round to 23
+```
+
++++
+
+```anim
+d: h                              # h's value glides over: 65535 wraps round to 535
 ```
 
 </animation>

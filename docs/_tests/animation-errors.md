@@ -184,7 +184,7 @@ cv1: curve from a to 6,1 angle up
 cv2: curve from a to a bend 1
 cv3: curve from a to 6,1 corner 0.2
 cv4: line from a to a angle up
-eb: binary 5 at 1,1 bits 4
+eb: binary 5 at 1,1 digits 4
 eb.0: 2
 eb.1: "x"
 eb: -9
@@ -193,7 +193,7 @@ vv: +1
 eb: swap 0 1
 eb: insert 1 at 0
 eb: remove 0
-eb: bits 8
+eb: digits 8
 eb: flip 0 9
 eb: flip fill red
 eb: colour clear
@@ -203,8 +203,19 @@ defaults style reset
 eb2: binary 1.5 at 1,1
 eb3: binary null at 1,1
 eb4: binary at 1,1
-eb5: binary 5 bits 0 at 1,1
-eb6: binary 5 bits 40 at 1,1
+eb5: binary 5 digits 0 at 1,1
+eb6: binary 5 digits 40 at 1,1
+eb10: binary 5 bits 4 at 1,1
+eh: hex 255 at 1,1
+eh.0: G
+eh.0: 16
+eh: flip
+eh.1: flip
+eh2: hex 5 digits 9 at 1,1
+ed: denary 5 at 1,1 decimal
+ed2: denary 5 at 1,1
+ed2.0: A
+ed2.0: -9
 eb7: binary zz at 1,1
 eb8: binary 5 [1 0] at 1,1
 eb9: binary 300 at 1,1

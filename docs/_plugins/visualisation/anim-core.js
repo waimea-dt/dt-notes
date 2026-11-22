@@ -362,9 +362,9 @@
   //               look, the props its cells start with
   //   radix       it holds a whole number, written in this base: its value goes straight after its
   //               type ("b: binary 67"), and a value for it (b: 67) sets its cells, each a digit
-  //               from 0 to radix - 1 (b.0 the lowest); flip turns each digit d to radix - 1 - d.
-  //               digits: how many cells it has unless given (default), the most it can (max),
-  //               and the prop that gives it when it's made (prop: "bits 4"). look: the look its
+  //               from 0 to radix - 1, written as its symbol (digitSymbol: 0-9, then A-F; b.0 the
+  //               lowest). digits: how many cells it has unless given (default), the most it can
+  //               (max), and the prop that gives it when it's made (prop: "digits 4"). look: the look its
   //               digits start with (after the defaults); looks: each digit's own look while it holds
   //               that value, a look at a time until the digit is given that look ("colour reset":
   //               again; digitLooks)
@@ -372,10 +372,17 @@
   //   decimal     where its value, written out, goes (side and gap, in cells, and its text's
   //               alignment, so it doesn't shift as it changes) when shown
   //   fixed       its cells stay as made: no swap, insert or remove (a value changes them)
+  //   flip        "flip" turns each digit d to radix - 1 - d (a bit: 0 <-> 1)
   //   props       props only it (and other layouts listing them) takes (LAYOUT_PROPS)
   const INDEX_BELOW = { side: 'below', gap: 0.1 }
   const INDEX_ABOVE = { side: 'above', gap: 0.1 }
   const INDEX_LEFT = { side: 'left-of', gap: 0.2 }
+  // What every number (LAYOUTS: radix) shares: a reversed row of fixed digits
+  const NUMBER = {
+    cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false, arrange: 'line', bow: 'own',
+    index: INDEX_BELOW, power: INDEX_ABOVE, decimal: { side: 'right-of', gap: 0.3, align: 'left' }, fixed: true,
+  }
+  const NUMBER_DIGITS = { prop: 'digits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { colour: 'muted' } } }
   const GRID_VIEWS = {
     row: { layout: 'row', index: INDEX_LEFT }, // numbered down the left, as a column's cells are
     col: { layout: 'column', word: 'col', index: INDEX_BELOW }, // numbered along the bottom, as a row's cells are
@@ -393,11 +400,12 @@
       head: { word: 'head', look: { bold: true } },
     },
     binary: {
-      noun: 'binary number', item: 'bit', cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false,
-      arrange: 'line', bow: 'own', index: INDEX_BELOW, power: INDEX_ABOVE, radix: 2, digits: { default: 8, max: 32, prop: 'bits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { colour: 'muted' } } },
-      decimal: { side: 'right-of', gap: 0.3, align: 'left' },
-      fixed: true, props: ['bits', 'powers', 'decimal'],
+      noun: 'binary number', item: 'bit',
+      ...NUMBER, radix: 2, digits: { ...NUMBER_DIGITS, default: 8, max: 32 }, flip: true, props: ['digits', 'powers', 'decimal'],
     },
+    hex: { noun: 'hex number', item: 'digit', ...NUMBER, radix: 16, digits: { ...NUMBER_DIGITS, default: 2, max: 8 }, props: ['digits', 'powers', 'decimal'] },
+    // its value is already written out, so no decimal
+    denary: { noun: 'denary number', item: 'digit', ...NUMBER, radix: 10, digits: { ...NUMBER_DIGITS, default: 3, max: 10 }, props: ['digits', 'powers'] },
   }
   const LAYOUT_TYPES = Object.keys(LAYOUTS)
   // The props only some layouts take (LAYOUTS: props)
@@ -683,10 +691,10 @@
     },
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
     // a number's place values (NUMBERINGS: powers), its value written out (LAYOUTS: decimal), and
-    // how many bits it has (LAYOUTS: digits), given as it's made
+    // how many digits it has (LAYOUTS: digits), given as it's made
     powers: { key: 'powers', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
     decimal: { key: 'decimal', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show it) or clear' },
-    bits: { ...number('bits', 'a whole number of bits'), modes: ['layout'], where: 'when a binary number is made, e.g. "b: binary 67 bits 4"' },
+    digits: { ...number('digits', 'a whole number of digits'), modes: ['layout'], where: 'when a number is made, e.g. "b: binary 67 digits 4"' },
     numbered: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear', what: 'indices' },
     // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
     // with it, rather than taking on the look of where it goes

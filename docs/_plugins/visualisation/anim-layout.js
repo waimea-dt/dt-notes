@@ -425,9 +425,9 @@
       makeLayout(id, layout, values, props, existing, meta, warn)
     }
 
-    // A number (LAYOUTS: radix), "b: binary 67 at 2,3 bits 8", or a var's or cell's value
+    // A number (LAYOUTS: radix), "b: binary 67 at 2,3 digits 8", or a var's or cell's value
     // ("b: binary v1"): a row of its digits, lowest first (b.0) and numbered from the right, as many
-    // as its bits (LAYOUTS: digits)
+    // as its digits (LAYOUTS: digits)
     function createNumber(id, layout, tokens, existing, meta, warn) {
       const { noun, digits } = LAYOUTS[layout]
       const example = `e.g. "${id}: ${layout} 67 at 2,3", or a var's value: "${id}: ${layout} v1 at 2,3"`

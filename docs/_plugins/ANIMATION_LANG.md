@@ -272,26 +272,29 @@ g: remove col end
 - Edits play like a row's. Ids stay with the places: after `remove 0`, `g.0` is the row that was `g.1`, and a highlight or span on `g.0` stays put.
 - A new row or column that's short is filled out with empty cells. A table's heading stays on top; its rows can all go.
 
-## Binary numbers
+## Numbers
 
 ```anim
 b: binary 123 at 2,2               # 8 bits, b.0 (rightmost) … b.7
-n: binary v1 at 2,4 bits 4         # a var's value, 4 bits
+h: hex 123 at 2,2                  # 2 digits, 0-9 then A-F
+d: denary 123 at 2,2               # 3 digits
+n: binary v1 at 2,4 digits 4       # a var's value, 4 bits
 b: binary 123 at 2,2 indices powers decimal  # bit numbers below, 1 2 4 … above, "= 123" right
 b.0: 1                             # one bit
+h.0: F                             # one hex digit (any case)
 b: 67                              # a new value: the bits that change crossfade
 b: +1                              # relative, as a var
 b: v1                              # a var's or cell's value glides on (v1: b, and back)
-b: flip                            # every bit
+b: flip                            # every bit (binary only)
 b: flip 0 3                        # bits 0 to 3
 b.4: flip                          # one bit
 b: powers clear                    # or decimal clear, indices clear
 ```
 
-- `at` places the leftmost bit. Default 8 bits, up to 32; `bits` is given when it's made.
-- A value that doesn't fit (too big, or below 0) wraps round (keeps its lowest bits), with a warning.
-- Bits start at `font 1.5` with muted strokes, and 0s muted. A bit given a `colour` keeps it whatever its value, until `colour reset`.
-- Bits hold 0 or 1. No swap, insert or remove. Otherwise like a row (looks, `range`, spans, `name`).
+- `at` places the leftmost digit. `digits` is given when it's made: binary 8 (up to 32), hex 2 (up to 8), denary 3 (up to 10).
+- Values are written in denary. One that doesn't fit (too big, or below 0) wraps round (keeps its lowest digits), with a warning.
+- Digits start at `font 1.5` with muted strokes, and 0s muted. A digit given a `colour` keeps it whatever its value, until `colour reset`. Place values light up while their digit isn't 0.
+- No swap, insert or remove. A denary number has no `decimal`. Otherwise like a row (looks, `range`, spans, `name`).
 
 ## Variables
 
