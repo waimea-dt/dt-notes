@@ -12,7 +12,7 @@
     const { shapes, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
-      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numberOf, readLines, readList, refuseView, schedule,
+      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, readLines, readList, refuseView, schedule,
       setValue, speedOf, syncIndices, transpose, valueIn, valueOf
 
     // What a swap, insert or remove moves as one (a unit), read from the line at tokens[1] by its
@@ -315,7 +315,7 @@
       }
       arranged(row).sync(row, props, meta, warn)
       // the last index comes with the slot, or goes as it closes
-      if (row.indices) syncIndices(row, props, meta, { add: 0, remove: then })
+      if (numbered(row)) syncIndices(row, props, meta, { add: 0, remove: then })
       return slotUnit
     }
 
@@ -483,7 +483,7 @@
       verbs: { swap: swapCells, insert: editCells, remove: editCells, line: editScript },
       link: () => {
         ({ applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines,
-          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numberOf, readLines, readList,
+          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, readLines, readList,
           refuseView, schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf } = cx)
       },
     }

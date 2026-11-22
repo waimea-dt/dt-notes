@@ -7,8 +7,8 @@
 ;(function () {
   const { CELL, placeNextTo, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
-    nameId, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, EDIT_WORDS,
-    LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP } = window.Anim
+    markId, NUMBERINGS, nameId, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, EDIT_WORDS,
+    LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
@@ -233,11 +233,13 @@
 
     function updateParts(shape, props, meta, warn) {
       if (props.name) setName(shape, props.name, props, meta, warn)
-      if (props.indices !== undefined) {
-        if (shape.indices === props.indices) warn(props.indices ? `"${shape.id}" already shows its indices` : `"${shape.id}" isn't showing its indices`)
-        shape.indices = props.indices
-        syncIndices(shape, props, meta)
+      const given = Object.keys(NUMBERINGS).filter((key) => props[key] !== undefined)
+      for (const key of given) {
+        const word = wordFor(key)
+        if (shape[key] === props[key]) warn(props[key] ? `"${shape.id}" already shows its ${word}` : `"${shape.id}" isn't showing its ${word}`)
+        shape[key] = props[key]
       }
+      if (given.length) syncIndices(shape, props, meta)
     }
 
     // The side a name goes, unless given: its layout's (LAYOUTS: name), a span's by its row's layout
@@ -266,19 +268,25 @@
       schedule(meta, text.uid, props)
     }
 
-    // Adds or removes index texts so a row / column has one per cell (none without "indices"),
-    // new ones fading in `add` ms in and old ones out `remove` ms in.
-    function syncIndices(row, props, meta, { add = 0, remove = 0 } = {}) {
-      const marks = row.indices ? indexMarks(row) : []
+    // Whether a layout shows any of its numberings (NUMBERINGS)
+    const numbered = (row) => Object.keys(NUMBERINGS).some((key) => row[key])
+
+    // Adds or removes a layout's numbers (each of NUMBERINGS it shows: indices …) so it has one per
+    // cell (none of one it doesn't show), new ones fading in `add` ms in and old ones out `remove` ms in.
+    function syncIndices(row, props, meta, timing = {}) {
+      for (const [key, numbering] of Object.entries(NUMBERINGS)) syncNumbering(row, key, numbering, props, meta, timing)
+    }
+    function syncNumbering(row, key, numbering, props, meta, { add = 0, remove = 0 }) {
+      const marks = row[key] ? indexMarks(row, numbering) : []
       const { numbers } = LAYOUTS[row.layout]
       const kept = new Set()
       for (const mark of marks) {
-        const id = indexId(row.id, mark.key)
+        const id = markId(row.id, numbering, mark.key)
         kept.add(id)
         const old = shapes.get(id)
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
         // cell slides in or out of it; at the back, so a sliding cell passes over it
-        const text = old || { ...baseShape('text'), id, uid: newUid(), label: mark.label, font: 0.88, colour: 'muted', layer: 'back', part: row.id, role: 'index' }
+        const text = old || { ...baseShape('text'), id, uid: newUid(), label: mark.label, font: 0.88, colour: 'muted', layer: 'back', part: row.id, role: numbering.part }
         if (numbers) text.font = 0.88 * mark.of.font // line numbers keep to the code's size
         const place = { ...mark.of, ...offsetIn(mark.of, row) }
         place.x += row.x
@@ -292,26 +300,29 @@
         schedule(meta, text.uid, props, { after: add })
       }
       // the ones with nothing left to number (or all of them, with indices clear)
-      for (const old of partsOf(row, 'index').filter((s) => !kept.has(s.id))) {
+      for (const old of partsOf(row, numbering.part).filter((s) => !kept.has(s.id))) {
         shapes.delete(old.id)
         tween(meta, old.uid).exit = 'fade'
         schedule(meta, old.uid, props, { after: remove })
       }
     }
 
-    // What a layout's indices number, in order: each with its id's last part (key), its label, the
-    // shape it goes beside (of) and where (LAYOUTS: index). A row's / column's cells, or a grid's
-    // rows and columns (LAYOUTS: views; a table's heading isn't numbered).
-    const indexMarks = (row) => arranged(row).marks(row)
+    // What a layout's numbers (a numbering: NUMBERINGS) go beside, in order: each with its id's last
+    // part (key), its label, the shape it goes beside (of) and where (LAYOUTS: the numbering's
+    // field). A row's / column's cells, or a grid's rows and columns (LAYOUTS: views; a table's
+    // heading isn't numbered).
+    const indexMarks = (row, numbering) => arranged(row).marks(row, numbering)
 
     // Marks for some shapes of a layout, in order (ids), numbered from its base: key(k) gives each
-    // one's key from its number
-    function marksFor(row, ids, key, index) {
+    // one's key from its number, and index where it goes (none: it isn't numbered so)
+    function marksFor(row, ids, key, index, numbering) {
+      if (!index) return []
       const base = baseOf(row.layout)
-      return ids.map((id, k) => ({ key: key(k + base), label: String(k + base), of: shapes.get(id), index }))
+      return ids.map((id, k) => ({ key: key(k + base), label: String(numbering.label(k + base, LAYOUTS[row.layout])), of: shapes.get(id), index }))
     }
-    const lineMarks = (row) => marksFor(row, row.members, (k) => k, LAYOUTS[row.layout].index)
-    const gridMarks = (grid) => Object.entries(LAYOUTS[grid.layout].views).flatMap(([name, view]) => marksFor(grid, grid.views[name], (k) => viewKey(view, k), view.index))
+    const lineMarks = (row, numbering) => marksFor(row, row.members, (k) => k, LAYOUTS[row.layout][numbering.field], numbering)
+    const gridMarks = (grid, numbering) => Object.entries(LAYOUTS[grid.layout].views)
+      .flatMap(([name, view]) => marksFor(grid, grid.views[name], (k) => viewKey(view, k), view[numbering.field], numbering))
 
     // "arr: row [5 3 8 1] at 2,3": a layout made by its arrangement (ARRANGE)
     function createLayout(id, layout, tokens, existing, meta, warn) {
@@ -507,7 +518,7 @@
     //   sync(row, props, meta, warn)  after it's made or edited: a grid's views
     //   between(row, tokens, word, example)  two places written after a verb, lowest first
     //   cells(row, places)  the ids at some places
-    //   marks(row)  what its indices number (indexMarks)
+    //   marks(row, numbering)  what its numbers go beside (indexMarks)
     const ARRANGE = {
       line: {
         create: createLine, ids: lineIds, lay: (frame, cells) => layoutCells(frame, cells), sync: () => {},
@@ -582,15 +593,19 @@
     }
 
     // Lays a row's / column's cells out in order from its first cell: ids id.0, id.1, … and their
-    // offsets in it.
+    // offsets in it. Reversed (LAYOUTS: reverse), the first is last along, and the last at 0.
     function layoutCells(row, cells) {
-      const { across } = LAYOUTS[row.layout]
+      const { across, reverse } = LAYOUTS[row.layout]
       let offset = 0
-      cells.forEach((cell, k) => {
+      const offsets = cells.map((cell, k) => {
         const before = cells[k - 1]
         if (before) offset += (across ? (before.w + cell.w) / 2 : (before.h + cell.h) / 2) + (row.gap || 0)
+        return offset
+      })
+      cells.forEach((cell, k) => {
+        const along = reverse ? offset - offsets[k] : offsets[k]
         cell.id = cellId(row.id, k + baseOf(row.layout))
-        cell.attach = offsetFrom(row.id, across ? offset : 0, across ? 0 : offset)
+        cell.attach = offsetFrom(row.id, across ? along : 0, across ? 0 : along)
       })
       row.members = cells.map((cell) => cell.id)
     }
@@ -620,7 +635,7 @@
         if (!changed.length) continue
         const timing = busiest(meta, cells)
         changed.forEach((cell) => retime(meta, cell.uid, timing))
-        if (row.indices) {
+        if (numbered(row)) {
           syncIndices(row, {}, meta)
           for (let k = 0; k < cells.length; k++) {
             const index = shapes.get(indexId(row.id, k + baseOf(row.layout)))
@@ -652,7 +667,7 @@
 
     return {
       functions: { arranged, checkParts, chunk, createLayout, fitCode, fitLines, fitSpans, gridLines,
-        gridPlaceOf, layoutCells, layoutGrid, numberOf, readLines, readList, refuseView, syncIndices, transpose,
+        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, readLines, readList, refuseView, syncIndices, transpose,
         typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },
       link: () => {

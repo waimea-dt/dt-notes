@@ -9,17 +9,19 @@
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
-    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop } = window.Anim
+    DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
+    NUMBERINGS } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
-  // id.1, …; a code block's lines from id.1) and their index labels (id.index.0, …), and the name
+  // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
   // (id.name). Cells are numbered from the layout's base (LAYOUTS): `k` is a cell's number as
   // written, and its place in the row is k - base.
   // A grid's / table's (LAYOUTS: views) rows and columns are named like a row's cells, after the
   // view's word if it has one (g.1, g.col.2), and its heading t.head; their cells like a row's
   // (g.1.2, t.head.2). Their indices take the same last parts (g.index.1, g.index.col.2).
   const cellId = (id, k) => `${id}.${k}`
-  const indexId = (id, k) => `${id}.index.${k}`
+  const markId = (id, numbering, k) => `${id}.${numbering.part}.${k}`
+  const indexId = (id, k) => markId(id, NUMBERINGS.indices, k)
   const nameId = (id) => `${id}.name`
   const viewKey = (view, k) => (view.word ? `${view.word}.${k}` : String(k))
   const viewId = (id, view, k) => `${id}.${viewKey(view, k)}`
@@ -929,5 +931,5 @@
     return { beats, errors, warnings, issues }
   }
 
-  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, indexId, nameId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
+  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
 })()

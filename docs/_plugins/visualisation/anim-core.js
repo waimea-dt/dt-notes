@@ -315,10 +315,21 @@
     span: {}, // a box round some of a layout's places (SHAPES: span)
   }
 
+  // The ways a layout's places can be numbered, each a text beside every one, shown with its word
+  // ("arr: indices", "... clear" hides them) and kept in step with the places (syncIndices):
+  //   part   its texts' role (PARTS) and the part of their ids before the number (arr.index.2)
+  //   field  the LAYOUTS field (a grid's: its views') that gives the side they go and their gap
+  //   label  label(k, layout): the text for place k (as numbered from the layout's base)
+  const NUMBERINGS = {
+    indices: { part: 'index', field: 'index', label: (k) => k },
+  }
+
   // Every layout: a group of cells (the type after "id:"), in one place:
   //   noun        its name in messages; item, what its cells are called ("line", "cell")
   //   cell        the shape type of its cells
   //   across      cells side by side (a row), or one under another
+  //   reverse     its cells are numbered from the right (from the bottom, one under another), as a
+  //               number's digits are; it's still placed by its leftmost (top) cell
   //   base        the number of its first cell: 0 like indices, or 1 like line numbers
   //   name        the side its name goes, unless one is given
   //   lines       its values are "quoted" lines: one alone, or in [ ] (no count of empty cells),
@@ -1254,7 +1265,7 @@
 
   Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
-    LOOKS, NORMAL_MS, PARTS, TIMING, article, wordFor,
+    LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
