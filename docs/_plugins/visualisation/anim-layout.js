@@ -608,6 +608,7 @@
         // a number's cells are its digits (LAYOUTS: radix)
         const cell = { ...baseShape(kind.cell), id: ids[k], uid: newUid(), holds: true, ...(kind.radix && { digit: layout }), x: 0, y: 0 }
         applyDefaults(cell)
+        if (kind.radix) cell.zero = kind.digits.zero // after the defaults: only a colour on its line overrides it
         applyProps(cell, look, true, warn, meta)
         setValue(cell, value)
         cell.layer = layerOf(props)

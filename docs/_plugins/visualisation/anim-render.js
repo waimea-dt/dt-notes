@@ -1113,7 +1113,8 @@
         const from = item.a || item.b
         const to = item.b || item.a
         const t = item.a && item.b ? clamp01(item.t) : 1
-        const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : s.colour) // a null value is muted (colour none still hides it)
+        // a null value is muted (colour none still hides it); a digit's 0s, in its zero colour
+        const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : s.zero && s.label === '0' ? s.zero : s.colour)
         const colours = {
           fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
           stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),

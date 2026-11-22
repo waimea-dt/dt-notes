@@ -111,8 +111,12 @@
         const problem = look.check?.(value, shape)
         if (problem) warn(problem)
         if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
-        else shape[look.field] = look.map && value in look.map ? look.map[value] : value
+        else if (look.map && value in look.map) shape[look.field] = look.map[value]
+        else if (value === 'clear') shape[look.field] = baseShape(shape.type)[look.field]
+        else shape[look.field] = value
       }
+      // a digit's 0s show in its zero colour until it's given a colour (LAYOUTS: radix)
+      if (shape.digit && props.colour) shape.zero = props.colour === 'clear' ? LAYOUTS[shape.digit].digits.zero : null
       // flow only shows on a dashed or dotted line
       if (props.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
       if (props.flow && shape.flow !== 'none' && shape.linestyle === 'solid') warn(`"${props.flow}" only shows on a dashed or dotted line`)

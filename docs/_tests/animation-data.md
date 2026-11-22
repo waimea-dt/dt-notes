@@ -522,13 +522,14 @@ t: insert [7 8 9] at end
 
 ## Feature: binary
 
-<animation grid="14x7">
+<animation grid="14x8">
 
 A row of bits, numbered from the right: b.0 is the lowest.
 
 ```anim
 b: binary 123 at 3,2 indices powers decimal name "b"
 v: var 125 at 3,5 name "v"
+b1: binary 666 bits 12 at 1,7 indices powers decimal
 ```
 
 ---
@@ -609,6 +610,18 @@ b: range 4 7 fill blue            # the high four
 s: span b 0 3 stroke amber
 b: powers clear
 b: decimal clear
+```
+
++++
+
+```anim
+b: colour blue                    # 0s are muted until a colour is given
+```
+
++++
+
+```anim
+b: colour clear                   # back to its own colour, 0s muted
 ```
 
 +++

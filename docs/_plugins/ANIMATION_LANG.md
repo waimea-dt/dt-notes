@@ -281,6 +281,7 @@ b: powers clear                    # or decimal clear, indices clear
 
 - `at` places the leftmost bit. Default 8 bits, up to 32; `bits` is given when it's made.
 - A value that doesn't fit (too big, or below 0) wraps round (keeps its lowest bits), with a warning.
+- 0 bits are muted until given a colour (`colour clear` mutes them again).
 - Bits hold 0 or 1. No swap, insert or remove. Otherwise like a row (looks, `range`, spans, `name`).
 
 ## Variables
@@ -487,6 +488,7 @@ l: static
 l: solid
 a: highlight clear
 a: callout clear
+a: colour clear        # back to its own colour
 defaults clear
 camera reset
 ```

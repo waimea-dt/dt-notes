@@ -363,7 +363,8 @@
   //               type ("b: binary 67"), and a value for it (b: 67) sets its cells, each a digit
   //               from 0 to radix - 1 (b.0 the lowest); flip turns each digit d to radix - 1 - d.
   //               digits: how many cells it has unless given (default), the most it can (max),
-  //               and the prop that gives it when it's made (prop: "bits 4")
+  //               and the prop that gives it when it's made (prop: "bits 4"). zero: the colour a
+  //               0 digit's text shows in, until the digit is given a colour (colour clear: again)
   //   power       where its place values go (NUMBERINGS: powers), as index does
   //   decimal     where its value, written out, goes (side and gap, in cells) when shown
   //   fixed       its cells stay as made: no swap, insert or remove (a value changes them)
@@ -389,7 +390,7 @@
     },
     binary: {
       noun: 'binary number', item: 'bit', cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false,
-      arrange: 'line', bow: 'own', index: INDEX_BELOW, power: INDEX_ABOVE, radix: 2, digits: { default: 8, max: 32, prop: 'bits' }, decimal: { side: 'right-of', gap: 0.3 },
+      arrange: 'line', bow: 'own', index: INDEX_BELOW, power: INDEX_ABOVE, radix: 2, digits: { default: 8, max: 32, prop: 'bits', zero: 'muted' }, decimal: { side: 'right-of', gap: 0.3 },
       fixed: true, props: ['bits', 'powers', 'decimal'],
     },
   }
@@ -615,7 +616,8 @@
     bend: number('bend', 'a number of cells (bowing to the left of the way it goes, or to the right when negative)'),
     fill: colour('fill'),
     stroke: colour('stroke'),
-    colour: colour('colour'),
+    // colour clear: back to the shape's own (a digit: 0s in its zero colour again)
+    colour: { ...colour('colour'), sigs: [['colour'], ['clear']], help: `${colour('colour').help} or clear` },
     weight: number('weight', 'a number (a multiple of the normal stroke thickness)'),
     font: number('font', 'a number (a multiple of the normal size)'),
     angle: { key: 'angle', sigs: [['num'], ['direction']], help: `a number of degrees (clockwise, 0 = facing right, as drawn) or a direction: ${Object.keys(DIRECTIONS).join(', ')}` },
@@ -676,8 +678,8 @@
     // with it, rather than taking on the look of where it goes
     'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"' }),
     null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
-    // defaults only (elsewhere, clear goes after highlight, callout, name or indices)
-    clear: fixed('reset', true, { modes: ['defaults'], where: 'after highlight, callout, name or indices (e.g. "highlight clear"), or on its own on a defaults line' }),
+    // defaults only (elsewhere, clear goes after highlight, callout, name, indices or colour)
+    clear: fixed('reset', true, { modes: ['defaults'], where: 'after highlight, callout, name, indices or colour (e.g. "highlight clear"), or on its own on a defaults line' }),
     // camera only
     zoom: { ...number('zoom', 'a number (2 = twice as close)'), modes: ['camera'], where: 'on a camera line, e.g. "camera zoom 2"' },
     reset: fixed('reset', true, { modes: ['camera'], where: 'on a camera line, "camera reset"' }),
