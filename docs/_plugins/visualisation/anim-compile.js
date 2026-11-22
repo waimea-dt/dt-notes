@@ -7,7 +7,7 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
-    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE,
+    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
     NUMBERINGS } = window.Anim
@@ -102,21 +102,21 @@
         }
       }
       if (props.size && (props.width || props.height)) throw new Error('give either "size" or "width" / "height", not both')
+      if (props.style) STYLE.forEach((key) => resetLook(shape, key))
       for (const [key, look] of Object.entries(LOOKS)) {
         const value = props[key]
-        if (!value) continue
+        if (value === undefined) continue
         const word = wordFor(key, value)
         check(shape, key, word)
         if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
         const problem = look.check?.(value, shape)
         if (problem) warn(problem)
-        if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
-        else if (look.map && value in look.map) shape[look.field] = look.map[value]
-        else if (value === 'clear') shape[look.field] = baseShape(shape.type)[look.field]
-        else shape[look.field] = value
+        if (value === 'reset') resetLook(shape, key)
+        else if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
+        else shape[look.field] = look.map && value in look.map ? look.map[value] : value
+        // a digit given a look no longer takes that look from its value
+        if (value !== 'reset' && shape.auto?.includes(key)) shape.auto = shape.auto.filter((field) => field !== key)
       }
-      // a digit's 0s show in its zero colour until it's given a colour (LAYOUTS: radix)
-      if (shape.digit && props.colour) shape.zero = props.colour === 'clear' ? LAYOUTS[shape.digit].digits.zero : null
       // flow only shows on a dashed or dotted line
       if (props.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
       if (props.flow && shape.flow !== 'none' && shape.linestyle === 'solid') warn(`"${props.flow}" only shows on a dashed or dotted line`)
@@ -351,6 +351,13 @@
       shape.attach.dy = shape.y - parent.y
     }
 
+    // "fill reset" / "style reset": a look (STYLE) back to how the shape started (its type's look,
+    // with the defaults when it was made: applyDefaults). A digit takes it from its value again.
+    function resetLook(shape, key) {
+      shape[key] = (shape.start || baseShape(shape.type))[key]
+      if (shape.auto) shape.auto = digitLooks(shape.digit).filter((field) => field === key || shape.auto.includes(field))
+    }
+
     // Gives a new shape the default look (defaults …) that applies to its type, as if written on
     // its line. The line's timing defaults (speed, effect, ease, stagger, keep-style) are read
     // where they're used.
@@ -359,6 +366,7 @@
       const look = pick(defaults, ['size', ...Object.keys(LOOKS)].filter(fits))
       if (look.size && kindOf(shape).outline === 'round' && !look.size.one) delete look.size // a round shape takes one size
       applyLook(shape, look, true, () => {})
+      shape.start = pick(shape, STYLE)
     }
 
     // "highlight number" with no value on a row, column or group numbers its shapes in turn rather
@@ -435,7 +443,7 @@
     function settle(meta) {
       fitCode(meta)
       fitSpans(meta)
-      fitDecimals(meta)
+      fitNumbers(meta)
       for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
       resolveAttachments(shapes)
       for (const group of shapes.values()) {
@@ -565,6 +573,8 @@
 
       if (defaultsLine) {
         const props = parseProps(tokens, 0, 'defaults', shapes)
+        const reset = Object.keys(props).find((key) => props[key] === 'reset')
+        if (reset) throw new Error(`"${reset} reset" puts a shape's look back, so it isn't a default`)
         for (const [key, look] of Object.entries(LOOKS)) { const problem = props[key] && look.check?.(props[key]); if (problem) warn(problem) }
         if (props.reset) { for (const key of Object.keys(defaults)) delete defaults[key]; delete props.reset }
         const before = JSON.stringify(defaults)
@@ -764,16 +774,17 @@
         }
       }
       const staggered = props.stagger ?? defaults.stagger
-      const look = pick(props, staggered ? [...CELL_STYLE, 'highlight'] : CELL_STYLE)
+      const memberLook = [...CELL_STYLE, 'style'] // style reset: each member's own
+      const look = pick(props, staggered ? [...memberLook, 'highlight'] : memberLook)
       if (!Object.keys(look).length) return
       for (const key of Object.keys(look)) delete props[key]
       if (group.layout) withRowMax(group, look)
       // cells added to a row / column later take its look as it is now
-      if (group.cell) applyProps(group.cell, pick(look, CELL_STYLE.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
+      if (group.cell) applyProps(group.cell, pick(look, memberLook.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
       const used = new Set()
       for (const member of groupMembers(group)) {
         if (isGroup(member)) continue
-        const own = pick(look, Object.keys(look).filter((key) => key === 'highlight' || APPLIES[key].includes(member.type)))
+        const own = pick(look, Object.keys(look).filter((key) => !APPLIES[key] || APPLIES[key].includes(member.type)))
         if (!Object.keys(own).length) continue
         Object.keys(own).forEach((key) => used.add(key))
         const changed = structuredClone(member)
@@ -826,7 +837,7 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let addTo, assignValue, checkDigit, checkParts, createLayout, fitCode, fitDecimals, fitSpans, holderRef, readLines,
+    let addTo, assignValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
       refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
@@ -834,7 +845,7 @@
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ addTo, assignValue, checkDigit, checkParts, createLayout, fitCode, fitDecimals, fitSpans, holderRef, readLines,
+      ({ addTo, assignValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
         refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()

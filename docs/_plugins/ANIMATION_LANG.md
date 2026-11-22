@@ -120,7 +120,7 @@ r: row [
 | line style | `solid` · `dashed` · `dotted` |
 | flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |
 | angle / scale | `angle 45` (clockwise; 0 = as drawn, facing right) · `angle up` (`right` 0 · `down` 90 · `left` 180 · `up` -90; turns the short way) · `scale 1.5` (not lines) |
-| font | `font 1.5` · `bold` · `mono` |
+| font | `font 1.5` · `bold` · `regular` (not bold) · `mono` |
 | align | `align left` · `centre` · `right` (text) |
 | layer | `back` · `normal` · `front` |
 | image fit | `contain` (whole image in its box) · `cover` (fills the box, cropped) |
@@ -142,6 +142,15 @@ a: width +1          # 1 cell wider
 a: size +1           # 1 cell bigger each way
 a: angle +90         # a further quarter turn
 ```
+
+## Resetting looks
+
+```anim
+a: fill reset        # back as it started (its type's look, with the defaults then)
+a: style reset       # every look: fill stroke colour weight font bold mono line style flow corner
+```
+
+- `reset` goes after `fill` `stroke` `colour` `weight` `font` `bold` `mono` `corner`.
 
 ## Moving lines
 
@@ -281,7 +290,7 @@ b: powers clear                    # or decimal clear, indices clear
 
 - `at` places the leftmost bit. Default 8 bits, up to 32; `bits` is given when it's made.
 - A value that doesn't fit (too big, or below 0) wraps round (keeps its lowest bits), with a warning.
-- 0 bits are muted until given a colour (`colour clear` mutes them again).
+- Bits start at `font 1.5` with muted strokes, and 0s muted. A bit given a `colour` keeps it whatever its value, until `colour reset`.
 - Bits hold 0 or 1. No swap, insert or remove. Otherwise like a row (looks, `range`, spans, `name`).
 
 ## Variables
@@ -488,7 +497,6 @@ l: static
 l: solid
 a: highlight clear
 a: callout clear
-a: colour clear        # back to its own colour
 defaults clear
 camera reset
 ```

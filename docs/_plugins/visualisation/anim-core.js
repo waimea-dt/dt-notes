@@ -324,7 +324,8 @@
   //   label  label(k, layout): the text for place k (as numbered from the layout's base)
   const NUMBERINGS = {
     indices: { part: 'index', field: 'index', label: (k) => k },
-    powers: { part: 'power', field: 'power', label: (k, layout) => layout.radix ** k }, // a number's place values: 1, 2, 4 …
+    // a number's place values: 1, 2, 4 …, each lit (its look) while its digit isn't 0
+    powers: { part: 'power', field: 'power', label: (k, layout) => layout.radix ** k, lit: { colour: 'fg' } },
   }
 
   // Every layout: a group of cells (the type after "id:"), in one place:
@@ -363,10 +364,13 @@
   //               type ("b: binary 67"), and a value for it (b: 67) sets its cells, each a digit
   //               from 0 to radix - 1 (b.0 the lowest); flip turns each digit d to radix - 1 - d.
   //               digits: how many cells it has unless given (default), the most it can (max),
-  //               and the prop that gives it when it's made (prop: "bits 4"). zero: the colour a
-  //               0 digit's text shows in, until the digit is given a colour (colour clear: again)
+  //               and the prop that gives it when it's made (prop: "bits 4"). look: the look its
+  //               digits start with (after the defaults); looks: each digit's own look while it holds
+  //               that value, a look at a time until the digit is given that look ("colour reset":
+  //               again; digitLooks)
   //   power       where its place values go (NUMBERINGS: powers), as index does
-  //   decimal     where its value, written out, goes (side and gap, in cells) when shown
+  //   decimal     where its value, written out, goes (side and gap, in cells, and its text's
+  //               alignment, so it doesn't shift as it changes) when shown
   //   fixed       its cells stay as made: no swap, insert or remove (a value changes them)
   //   props       props only it (and other layouts listing them) takes (LAYOUT_PROPS)
   const INDEX_BELOW = { side: 'below', gap: 0.1 }
@@ -390,13 +394,16 @@
     },
     binary: {
       noun: 'binary number', item: 'bit', cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false,
-      arrange: 'line', bow: 'own', index: INDEX_BELOW, power: INDEX_ABOVE, radix: 2, digits: { default: 8, max: 32, prop: 'bits', zero: 'muted' }, decimal: { side: 'right-of', gap: 0.3 },
+      arrange: 'line', bow: 'own', index: INDEX_BELOW, power: INDEX_ABOVE, radix: 2, digits: { default: 8, max: 32, prop: 'bits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { colour: 'muted' } } },
+      decimal: { side: 'right-of', gap: 0.3, align: 'left' },
       fixed: true, props: ['bits', 'powers', 'decimal'],
     },
   }
   const LAYOUT_TYPES = Object.keys(LAYOUTS)
   // The props only some layouts take (LAYOUTS: props)
   const LAYOUT_PROPS = [...new Set(LAYOUT_TYPES.flatMap((layout) => LAYOUTS[layout].props || []))]
+  // The looks a layout's digits take from their values (LAYOUTS: digits.looks), e.g. ['colour']
+  const digitLooks = (layout) => Object.keys(Object.assign({}, ...Object.values(LAYOUTS[layout]?.digits?.looks || {})))
 
   // ease <name>: how a change speeds up and slows down (t: 0-1 of its time -> 0-1 of the way).
   // spring overshoots, then settles exactly on 1.
@@ -547,6 +554,9 @@
   const looksWith = (flag) => Object.keys(LOOKS).filter((key) => LOOKS[key][flag])
   // A row's or column's look, given to each of its cells (when made, and on a change to it)
   const CELL_STYLE = looksWith('cell')
+  // A shape's style: the looks "style reset" puts back as they started (and "fill reset" and the
+  // like, one at a time)
+  const STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner']
   // What a value on the move takes with it (keep-style): not its size, or highlights
   const KEPT_STYLE = looksWith('kept')
   // The shape fields that blend between beats: its place, and every number in its look
@@ -584,6 +594,8 @@
   const at = { key: 'at', sigs: POINT, build: buildPoint, help: '"x,y", a shape id, or a placement and a shape id, e.g. "below a"' }
   const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
   const colour = (key) => ({ key, sigs: [['colour']], help: `a colour, e.g. blue, ${Object.keys(COLOUR_VARIANTS).map((variant) => `blue-${variant}`).join(', ')}, #f80 or none` })
+  // a look that "reset" also puts back as it started ("fill reset")
+  const resettable = (keyword) => ({ ...keyword, sigs: [...keyword.sigs, ['reset']], help: `${keyword.help}, or reset` })
   const fixed = (key, value, extra = {}) => ({ key, sigs: [[]], build: () => value, ...extra })
   const words = (list, key, what) => Object.fromEntries(list.map((w) => [w, fixed(key, w, { what })]))
   const buildStagger = (v, reverse) => {
@@ -612,19 +624,21 @@
     width: number('width', 'a number of cells'),
     height: number('height', 'a number of cells'),
     radius: number('radius'),
-    corner: number('corner', 'a number of cells'),
+    corner: resettable(number('corner', 'a number of cells')),
     bend: number('bend', 'a number of cells (bowing to the left of the way it goes, or to the right when negative)'),
-    fill: colour('fill'),
-    stroke: colour('stroke'),
-    // colour clear: back to the shape's own (a digit: 0s in its zero colour again)
-    colour: { ...colour('colour'), sigs: [['colour'], ['clear']], help: `${colour('colour').help} or clear` },
-    weight: number('weight', 'a number (a multiple of the normal stroke thickness)'),
-    font: number('font', 'a number (a multiple of the normal size)'),
+    fill: resettable(colour('fill')),
+    stroke: resettable(colour('stroke')),
+    colour: resettable(colour('colour')),
+    weight: resettable(number('weight', 'a number (a multiple of the normal stroke thickness)')),
+    font: resettable(number('font', 'a number (a multiple of the normal size)')),
     angle: { key: 'angle', sigs: [['num'], ['direction']], help: `a number of degrees (clockwise, 0 = facing right, as drawn) or a direction: ${Object.keys(DIRECTIONS).join(', ')}` },
     scale: number('scale', 'a number (a multiple of the normal size)'),
     align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
-    bold: fixed('bold', true),
-    mono: fixed('mono', true), // a monospace font
+    bold: { key: 'bold', sigs: [['reset'], []], build: (v) => v[0] ?? true, help: 'nothing or reset' },
+    regular: fixed('bold', false, { what: 'bold' }), // not bold
+    mono: { key: 'mono', sigs: [['reset'], []], build: (v) => v[0] ?? true, help: 'nothing or reset' }, // a monospace font
+    // every look (STYLE) back as it started
+    style: { key: 'style', sigs: [['reset']], help: 'reset (every look back to how it started), e.g. "a: style reset"' },
     lang: { key: 'lang', sigs: [['lang']], help: 'a language, e.g. "lang python" or "lang js"' },
     // a var's or cell's value as a bar, max its full value, track the colour of the rest
     // (a kind of bar, BARS, other than the default, goes after it: "bar <kind>")
@@ -678,8 +692,8 @@
     // with it, rather than taking on the look of where it goes
     'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"' }),
     null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
-    // defaults only (elsewhere, clear goes after highlight, callout, name, indices or colour)
-    clear: fixed('reset', true, { modes: ['defaults'], where: 'after highlight, callout, name, indices or colour (e.g. "highlight clear"), or on its own on a defaults line' }),
+    // defaults only (elsewhere, clear goes after highlight, callout, name or indices)
+    clear: fixed('reset', true, { modes: ['defaults'], where: 'after highlight, callout, name or indices (e.g. "highlight clear"), or on its own on a defaults line' }),
     // camera only
     zoom: { ...number('zoom', 'a number (2 = twice as close)'), modes: ['camera'], where: 'on a camera line, e.g. "camera zoom 2"' },
     reset: fixed('reset', true, { modes: ['camera'], where: 'on a camera line, "camera reset"' }),
@@ -733,7 +747,7 @@
     line: { verb: true, on: (shape) => Boolean(SHAPES[shape?.type]?.script), takes: TIMING },
     flip: { verb: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "b: flip", "b: flip 0 3", "b.2: flip"
     range: { // some of a row's / column's cells, "arr: range 0 3 fill red": how they look, not where they are
-      verb: true, takes: [...CELL_STYLE, 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
+      verb: true, takes: [...CELL_STYLE, 'style', 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
       refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,
     },
     layout: { // "arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
@@ -742,7 +756,7 @@
     },
     camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
-      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'name', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
+      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" can't be a default`,
     },
   }
@@ -1293,7 +1307,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

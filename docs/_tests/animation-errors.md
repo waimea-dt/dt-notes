@@ -196,7 +196,10 @@ eb: remove 0
 eb: bits 8
 eb: flip 0 9
 eb: flip fill red
-eb: fill clear
+eb: colour clear
+eb: style
+defaults fill reset
+defaults style reset
 eb2: binary 1.5 at 1,1
 eb3: binary null at 1,1
 eb4: binary at 1,1

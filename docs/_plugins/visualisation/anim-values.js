@@ -109,7 +109,7 @@
     // for a number, a box round it (in its cells' look) holding its value
     function standIn(shape) {
       if (!shape.layout) return shape
-      return { ...structuredClone(shape.cell), ...boxCentre(shape), w: shape.w, h: shape.h, ...valueIn(shape), zero: null }
+      return { ...structuredClone(shape.cell), ...boxCentre(shape), w: shape.w, h: shape.h, ...valueIn(shape), auto: null }
     }
     // Where a value on the move leaves or arrives
     const pointOf = (shape) => { const at = standIn(shape); return { x: at.x, y: at.y } }

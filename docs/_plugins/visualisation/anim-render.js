@@ -76,6 +76,10 @@
     return [r, g, b, a / 255]
   }
 
+  // A shape's look (`field`): a digit's from its value (`label`, the one shown: it swaps halfway
+  // through a crossfade) while it still takes it (LAYOUTS: digits.looks, shape.auto), or its own
+  const lookOf = (s, field, label = s.label) => (s.auto?.includes(field) ? LAYOUTS[s.digit].digits.looks[label]?.[field] : undefined) ?? s[field]
+
   function colourCss(name, role) {
     if (!name) return 'none'
     if (HEX.test(name)) return name
@@ -406,7 +410,7 @@
       g.style.filter = filters.join(' ')
       const fontSize = FONT * s.font
       node.label.style.fontSize = `${fontSize}px`
-      node.label.style.fontWeight = s.bold ? '700' : ''
+      node.label.style.fontWeight = lookOf(s, 'bold', v.label) ? '700' : ''
       paint(node.label, 'fontFamily', s.mono ? MONO_FONT : '')
       paint(node.label, 'fontStyle', (v.nil ?? s.nil) ? 'italic' : '') // a null value
       node.label.style.opacity = v.labelOpacity
@@ -1113,8 +1117,8 @@
         const from = item.a || item.b
         const to = item.b || item.a
         const t = item.a && item.b ? clamp01(item.t) : 1
-        // a null value is muted (colour none still hides it); a digit's 0s, in its zero colour
-        const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : s.zero && s.label === '0' ? s.zero : s.colour)
+        // a null value is muted (colour none still hides it); a digit, its value's colour
+        const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : lookOf(s, 'colour'))
         const colours = {
           fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
           stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),

@@ -7,7 +7,7 @@
 ;(function () {
   const { CELL, placeNextTo, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
-    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, EDIT_WORDS,
+    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, digitLooks, EDIT_WORDS,
     LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
@@ -279,6 +279,7 @@
       }
       const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: newUid(), font: TAG_FONT, layer: owner.layer, part: owner.id, role }
       text.label = tag.text
+      if (tag.align) text.align = tag.align
       text.attach = besideOf(owner.id, tag.side, tag.gap * CELL)
       Object.assign(text, attachPos(text, owner, text.attach))
       shapes.set(id, text)
@@ -290,16 +291,33 @@
     // A number's value written out (LAYOUTS: decimal), beside it while shown ("b: decimal")
     const decimalTag = (row) => (row.decimal ? { text: `= ${valueIn(row).label}`, ...LAYOUTS[row.layout].decimal } : null)
 
-    // After every line: a number's decimal, when its digits have changed, takes its new value in the
-    // time its busiest digit takes this beat
-    function fitDecimals(meta) {
+    // After every line, a number's parts follow its digits, in the time the digits take this beat:
+    // its decimal takes its new value, and each mark of a numbering with a lit look (NUMBERINGS:
+    // powers) takes it while its digit isn't 0
+    function fitNumbers(meta) {
       for (const row of shapes.values()) {
+        if (!LAYOUTS[row.layout]?.radix) continue
+        const digits = row.members.map((cell) => shapes.get(cell))
         const text = row.decimal && shapes.get(decimalId(row.id))
-        if (!text || text.label === decimalTag(row).text) continue
-        text.label = decimalTag(row).text
-        retime(meta, text.uid, busiest(meta, row.members.map((cell) => shapes.get(cell)).filter(Boolean)))
+        if (text && text.label !== decimalTag(row).text) {
+          text.label = decimalTag(row).text
+          retime(meta, text.uid, busiest(meta, digits.filter(Boolean)))
+        }
+        for (const numbering of Object.values(NUMBERINGS).filter((n) => n.lit)) {
+          digits.forEach((digit, k) => {
+            const mark = digit && shapes.get(markId(row.id, numbering, k + baseOf(row.layout)))
+            if (!mark) return
+            const look = digit.label === '0' ? pick(MARK_LOOK, Object.keys(numbering.lit)) : numbering.lit
+            if (Object.entries(look).every(([key, value]) => mark[key] === value)) return
+            Object.assign(mark, look)
+            retime(meta, mark.uid, busiest(meta, [digit]))
+          })
+        }
       }
     }
+
+    // How a numbering's marks look (unless lit: fitNumbers)
+    const MARK_LOOK = { font: 0.88, colour: 'muted' }
 
     // Whether a layout shows any of its numberings (NUMBERINGS)
     const numbered = (row) => Object.keys(NUMBERINGS).some((key) => row[key])
@@ -319,7 +337,7 @@
         const old = shapes.get(id)
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
         // cell slides in or out of it; at the back, so a sliding cell passes over it
-        const text = old || { ...baseShape('text'), id, uid: newUid(), label: mark.label, font: 0.88, colour: 'muted', layer: 'back', part: row.id, role: numbering.part }
+        const text = old || { ...baseShape('text'), id, uid: newUid(), label: mark.label, ...MARK_LOOK, layer: 'back', part: row.id, role: numbering.part }
         if (numbers) text.font = 0.88 * mark.of.font // line numbers keep to the code's size
         const place = { ...mark.of, ...offsetIn(mark.of, row) }
         place.x += row.x
@@ -608,7 +626,8 @@
         // a number's cells are its digits (LAYOUTS: radix)
         const cell = { ...baseShape(kind.cell), id: ids[k], uid: newUid(), holds: true, ...(kind.radix && { digit: layout }), x: 0, y: 0 }
         applyDefaults(cell)
-        if (kind.radix) cell.zero = kind.digits.zero // after the defaults: only a colour on its line overrides it
+        // a digit's own looks come after the defaults, so only its line's override them
+        if (kind.radix) Object.assign(cell, kind.digits.look, { start: { ...cell.start, ...kind.digits.look }, auto: digitLooks(layout) })
         applyProps(cell, look, true, warn, meta)
         setValue(cell, value)
         cell.layer = layerOf(props)
@@ -720,7 +739,7 @@
     }
 
     return {
-      functions: { arranged, cellsBetween, checkParts, chunk, createLayout, fitCode, fitDecimals, fitLines, fitSpans, gridLines,
+      functions: { arranged, cellsBetween, checkParts, chunk, createLayout, fitCode, fitLines, fitNumbers, fitSpans, gridLines,
         gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, syncIndices, transpose,
         typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },

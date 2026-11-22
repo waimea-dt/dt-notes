@@ -591,14 +591,14 @@ b: v                              # v's value glides onto the bits
 +++
 
 ```anim
-w: var 0 at 7,5 name "w"
+w: var 0 at 6,5 name "w"
 w: b                              # and back off them
 ```
 
 +++
 
 ```anim
-n: binary v at 9,2 bits 4 decimal  # a var's value, in 4 bits (overflows to 13)
+n: binary v at 9,5 bits 4 decimal  # a var's value, in 4 bits (overflows to 13)
 ```
 
 ---
@@ -615,13 +615,21 @@ b: decimal clear
 +++
 
 ```anim
-b: colour blue                    # 0s are muted until a colour is given
+b: colour blue                    # 0s are muted until given a colour
+b.6: bold
 ```
 
 +++
 
 ```anim
-b: colour clear                   # back to its own colour, 0s muted
+b: colour reset                   # back as it started: 0s muted again
+b.5: fill red font 1
+```
+
++++
+
+```anim
+b: style reset                    # every look back as it started (b.6 not bold)
 ```
 
 +++
