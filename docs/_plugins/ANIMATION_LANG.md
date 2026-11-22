@@ -207,7 +207,7 @@ arr: delete                        # the whole row
 
 - Values go in `[ ]`: numbers or `"quoted"`, commas optional (`[5, 3, 8]`). A bare whole number makes that many empty cells.
 - `size` and `gap` (default 0), plus fill, stroke, font and the other looks, apply to every cell.
-- `at` places the first cell. `below b` etc. place the whole row.
+- `at` places the first cell by its top-left: it starts in that grid square, whatever its size. `below b` etc. place the whole row.
 - After a swap, insert or remove, ids stay with the places: what's attached to `arr.0` stays put, and `arr.2` is whichever cell is now third. Highlights move with the cell.
 - Cells come and go below a row, left of a column. New cells take the row's look (as changed by `arr: fill …`). `insert … at` goes from 0 to the length, or `end`. A row can be emptied and inserted into again.
 - A muted outline (a slot) shows the space while it plays: left behind as a cell goes, closing as the rest close up; or opening as cells move aside, for the new one to land in. At the end, one opens or closes on the end.
@@ -291,7 +291,7 @@ b.4: flip                          # one bit
 b: powers clear                    # or decimal clear, indices clear
 ```
 
-- `at` places the leftmost digit. `digits` is given when it's made: binary 8 (up to 32), hex 2 (up to 8), denary 3 (up to 10).
+- `at` places the leftmost digit (by its top-left, as a row). `digits` is given when it's made: binary 8 (up to 32), hex 2 (up to 8), denary 3 (up to 10).
 - Values are written in denary. One that doesn't fit (too big, or below 0) wraps round (keeps its lowest digits), with a warning.
 - Digits start at `font 1.5` with muted strokes, and 0s muted. A digit given a `colour` keeps it whatever its value, until `colour reset`. Place values light up while their digit isn't 0.
 - No swap, insert or remove. A denary number has no `decimal`. Otherwise like a row (looks, `range`, spans, `name`).

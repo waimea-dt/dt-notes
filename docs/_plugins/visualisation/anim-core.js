@@ -924,7 +924,7 @@
   const edgeOf = (shape) => ANCHORS[kindOf(shape).anchor] || (APPLIES.align.includes(shape.type) ? { x: ALIGN_EDGES[shape.align] ?? 0, y: 0 } : null)
 
   // How far a shape's box's centre is from the point it's placed by (its x, y): a row / column is
-  // placed by its first cell (cx, cy: from there to its middle), and a shape placed by an edge
+  // placed by the square its first cell starts in (cx, cy: from there to its middle), and a shape placed by an edge
   // (edgeOf) by that edge of its cell; any other by its centre. Worked out from its size as it is,
   // so that edge stays put as its size changes.
   function centreShift(shape) {

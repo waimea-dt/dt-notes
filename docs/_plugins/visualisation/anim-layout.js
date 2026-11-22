@@ -526,7 +526,7 @@
       const names = gridNames(grid.id, grid.layout, matrix.length, matrix[0].length)
       const widths = matrix[0].map((_, c) => Math.max(...matrix.map((line) => line[c].w)))
       const heights = matrix.map((line) => Math.max(...line.map((cell) => cell.h)))
-      const start = (sizes, n) => sizes.slice(0, n).reduce((sum, size) => sum + size + grid.gap, 0) + (sizes[n] - sizes[0]) / 2
+      const start = (sizes, n) => sizes.slice(0, n).reduce((sum, size) => sum + size + grid.gap, 0) + (sizes[n] - sizes[0]) / 2 + fromEdge(sizes[0])
       matrix.forEach((line, r) => line.forEach((cell, c) => {
         cell.id = names.cell(r, c)
         cell.attach = offsetFrom(grid.id, start(widths, c), start(heights, r))
@@ -665,10 +665,17 @@
       applyStagger(row, cells.map((cell) => [cell.uid]), { ...props, at: null, x: null, y: null }, meta, warn) // placing it isn't a move
     }
 
+    // A layout is placed (at) by the grid square its first cell starts in: the offset from the
+    // square's middle (the layout's place) to the middle of a cell `size` long whose start edge (left
+    // or top) is the square's. 0 for a one-square cell.
+    const fromEdge = (size) => (size - CELL) / 2
+
     // Lays a row's / column's cells out in order from its first cell: ids id.0, id.1, … and their
-    // offsets in it. Reversed (LAYOUTS: reverse), the first is last along, and the last at 0.
+    // offsets in it, the cell at its start (left / top) starting in its place's square (fromEdge).
+    // Reversed (LAYOUTS: reverse), the first is last along, and the last is at the start.
     function layoutCells(row, cells) {
       const { across, reverse } = LAYOUTS[row.layout]
+      const lead = reverse ? cells[cells.length - 1] : cells[0]
       let offset = 0
       const offsets = cells.map((cell, k) => {
         const before = cells[k - 1]
@@ -678,7 +685,7 @@
       cells.forEach((cell, k) => {
         const along = reverse ? offset - offsets[k] : offsets[k]
         cell.id = cellId(row.id, k + baseOf(row.layout))
-        cell.attach = offsetFrom(row.id, across ? along : 0, across ? 0 : along)
+        cell.attach = offsetFrom(row.id, (across ? along : 0) + fromEdge(lead.w), (across ? 0 : along) + fromEdge(lead.h))
       })
       row.members = cells.map((cell) => cell.id)
     }

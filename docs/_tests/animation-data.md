@@ -677,6 +677,42 @@ d: h                              # h's value glides over: 65535 wraps round to 
 
 </animation>
 
+## Feature: hex over binary
+
+<animation grid="20x7">
+
+Hex digits 4 squares wide, one over each nibble: `at` places a layout by the top-left of its first cell.
+
+```anim
+h: hex 51966 at 3,2 digits 4 size 4x1 name "hex" powers indices decimal   # CAFE
+b: binary 51966 at 3,5 digits 16 name "bin" indices powers decimal
+```
+
+---
+
+```anim
+b: range  0  3 fill blue
+h.0: fill blue
+
+b: range  4  7 fill cyan   delay 0.5
+h.1:           fill cyan   delay 0.5
+
+b: range  8 11 fill green  delay 1.0
+h.2:           fill green  delay 1.0
+
+b: range 12 15 fill yellow delay 1.5
+h.3:           fill yellow delay 1.5
+```
+
+---
+
+```anim
+b: 4660 speed slow                # 0001 0010 0011 0100
+h: b                              # = 1234
+```
+
+</animation>
+
 ## Feature: var
 
 <animation grid="12x4">
