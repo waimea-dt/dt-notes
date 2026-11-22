@@ -23,6 +23,7 @@
   const markId = (id, numbering, k) => `${id}.${numbering.part}.${k}`
   const indexId = (id, k) => markId(id, NUMBERINGS.indices, k)
   const nameId = (id) => `${id}.name`
+  const decimalId = (id) => `${id}.decimal` // a number's value, written out (LAYOUTS: decimal)
   const viewKey = (view, k) => (view.word ? `${view.word}.${k}` : String(k))
   const viewId = (id, view, k) => `${id}.${viewKey(view, k)}`
   const headId = (id, head) => `${id}.${head.word}`
@@ -128,7 +129,11 @@
         ...(props.travel || []).map((v) => v.ref)]) {
         if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
-      if (props.label !== undefined) { shape.label = props.label; if (shape.nil) shape.nil = false }
+      if (props.label !== undefined) {
+        if (shape.digit) checkDigit(shape.digit, { label: props.label })
+        shape.label = props.label
+        if (shape.nil) shape.nil = false
+      }
       applyLook(shape, props, creating, warn)
       if (kindOf(shape).script) fitScript(shape, props)
       // a script given new text has no map of where its blocks went (an edit gives one: editScript)
@@ -426,6 +431,7 @@
     function settle(meta) {
       fitCode(meta)
       fitSpans(meta)
+      fitDecimals(meta)
       for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
       resolveAttachments(shapes)
       for (const group of shapes.values()) {
@@ -619,6 +625,8 @@
       const newValue = existing.holds && first?.kind === 'word' ? valueOf(first) : undefined
       const props = propsOf(existing.type, tokens, newValue ? 1 : 0, 'change')
       if (newValue && props.label !== undefined) throw new Error('give one value: a number, "quoted" text or null')
+      // "b: 67": a number's digits (LAYOUTS: radix) take the value, each that changes crossfading
+      if (newValue && existing.layout) for (const cell of setNumber(existing, newValue, warn)) schedule(meta, cell.uid, props)
       // "s: "print(y)"": a one-line code block's text is its line's
       if (LAYOUTS[existing.layout]?.lines && props.label !== undefined) {
         const { item, base } = LAYOUTS[existing.layout]
@@ -631,7 +639,7 @@
       if (order && takeBareNumber(props)) numberEach(existing.members.map((m) => shapes.get(m)), props, meta, warn)
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
       const shape = structuredClone(existing)
-      if (newValue) setValue(shape, newValue)
+      if (newValue && !existing.layout) setValue(shape, newValue)
       const path = applyProps(shape, props, false, warn, meta)
       if (path) tween(meta, shape.uid).path = path
       else if (props.at || props.x || props.y) tween(meta, shape.uid).path = null // a later straight move wins
@@ -813,16 +821,16 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let assignValue, checkParts, createLayout, fitCode, fitSpans, holderRef, readLines, refuseView, setValue,
-      typeInTurn, updateParts, valueOf, withRowMax
+    let assignValue, checkDigit, checkParts, createLayout, fitCode, fitDecimals, fitSpans, holderRef, readLines,
+      refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ assignValue, checkParts, createLayout, fitCode, fitSpans, holderRef, readLines, refuseView, setValue,
-        typeInTurn, updateParts, valueOf, withRowMax } = cx)
+      ({ assignValue, checkDigit, checkParts, createLayout, fitCode, fitDecimals, fitSpans, holderRef, readLines,
+        refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 
@@ -931,5 +939,5 @@
     return { beats, errors, warnings, issues }
   }
 
-  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
+  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
 })()

@@ -6,14 +6,17 @@
 
 ;(function () {
   const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, LAYOUTS, BARS, cellId, baseOf, cellRange,
-    tween, baseShape, LAYOUT_NOUNS, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine } = window.Anim
+    tween, baseShape, LAYOUT_TYPES, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine } = window.Anim
+
+  // The layouts that can be edited (not LAYOUTS: fixed), for messages
+  const EDITABLE_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => !LAYOUTS[layout].fixed).map((layout) => LAYOUTS[layout].noun))
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
-      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, readLines, readList, refuseView, schedule,
-      setValue, speedOf, syncIndices, transpose, valueIn, valueOf
+      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, pointOf, readLines, readList, refuseView,
+      schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf
 
     // What a swap, insert or remove moves as one (a unit), read from the line at tokens[1] by its
     // arrangement (EDITS: axis): one of a row's / column's / code block's cells; a grid's rows, or
@@ -132,6 +135,12 @@
     }
     const edits = (row) => EDITS[LAYOUTS[row.layout].arrange]
 
+    // A layout whose cells stay as made (LAYOUTS: fixed, a number's digits) takes no swap, insert or remove
+    function refuseFixed(row, word) {
+      const { fixed, noun, item } = LAYOUTS[row.layout]
+      if (fixed) throw new Error(`"${word}" doesn't work on a ${noun}: its ${item}s stay in place (give one a value instead, e.g. "${cellId(row.id, baseOf(row.layout))}: 1")`)
+    }
+
     // "arr: swap 0 3": two cells change places, one arcing over and one under (a column's: to the
     // right and left). Ids go with the places, so afterwards arr.0 is the cell now first; whatever
     // is attached to arr.0 (a pointer) stays there, and highlights go with the cells. A grid's two
@@ -140,8 +149,9 @@
     function swapCells(id, row, tokens, meta, warn, word) {
       if (!row) throw noShape(id)
       if (scriptOf(row)) return editScript(id, row, tokens, meta, warn, word)
-      if (!row.layout) throw new Error(`"swap" swaps two cells of ${LAYOUT_NOUNS}, and "${id}" isn't one`)
+      if (!row.layout) throw new Error(`"swap" swaps two cells of ${EDITABLE_NOUNS}, and "${id}" isn't one`)
       refuseView(row, 'swap')
+      refuseFixed(row, 'swap')
       const axis = editAxis(row, tokens)
       const { base, noun, next } = axis
       const i = axis.place(tokens[next])
@@ -193,12 +203,13 @@
       if (!row) throw noShape(id)
       if (scriptOf(row)) return editScript(id, row, tokens, meta, warn, word)
       const removing = Boolean(LINES[word].takesOut)
-      if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} ${LAYOUT_NOUNS}, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
+      if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} ${EDITABLE_NOUNS}, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
       refuseView(row, word)
+      refuseFixed(row, word)
       const axis = editAxis(row, tokens)
       const edit = readEdit(row, axis, tokens, removing, word, warn)
       const slotUnit = moveUnits(row, axis, edit, removing, meta, warn)
-      flyEdited(row, axis, edit, slotUnit[0], meta)
+      flyEdited(row, axis, edit, slotUnit[0], meta, warn)
       addSlot(row, axis, slotUnit, removing, edit.props, meta)
     }
 
@@ -324,17 +335,17 @@
     // row's cells, which may have moved up a place, so it's found by its uid after the layout).
     // insert v1: a copy of the var or cell glides to just outside the opening slot (its look
     // turning into the row's on the way), then the new cell, solid from the start, slides in.
-    function flyEdited(row, axis, { source, target, props }, cell, meta) {
+    function flyEdited(row, axis, { source, target, props }, cell, meta, warn) {
       const out = asideOf(row, axis)(cell)
       if (target) {
         const to = [...shapes.values()].find((s) => s.uid === target.uid)
-        const hops = [{ x: cell.x, y: cell.y }, { x: cell.x + out.x, y: cell.y + out.y }, { x: to.x, y: to.y }]
-        flyValue(meta, cell, to, hops, props, C.arriveOut * speedOf(props))
+        const hops = [{ x: cell.x, y: cell.y }, { x: cell.x + out.x, y: cell.y + out.y }, pointOf(to)]
+        flyValue(meta, cell, to, hops, props, C.arriveOut * speedOf(props), warn)
       }
       if (source) {
         tween(meta, cell.uid).enter = 'appear' // there from the start: the flyer is on it
         const place = { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }
-        fly(meta, source, cell, [{ x: source.x, y: source.y }, { x: place.x + out.x, y: place.y + out.y }], props, { arrive: thenOf(props), linger: false })
+        fly(meta, source, cell, [pointOf(source), { x: place.x + out.x, y: place.y + out.y }], props, { arrive: thenOf(props), linger: false })
       }
     }
 
@@ -483,8 +494,8 @@
       verbs: { swap: swapCells, insert: editCells, remove: editCells, line: editScript },
       link: () => {
         ({ applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines,
-          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, readLines, readList,
-          refuseView, schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf } = cx)
+          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, pointOf, readLines,
+          readList, refuseView, schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf } = cx)
       },
     }
   })

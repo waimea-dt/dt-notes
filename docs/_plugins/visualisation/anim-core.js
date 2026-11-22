@@ -313,6 +313,8 @@
     index: { outline: true }, // a layout's cell, row or column number
     view: { bound: true }, // a grid's row or column, or a table's heading (LAYOUTS: views)
     span: {}, // a box round some of a layout's places (SHAPES: span)
+    power: { outline: true }, // a number's place value (NUMBERINGS: powers)
+    decimal: { outline: true }, // a number's value, written out (LAYOUTS: decimal)
   }
 
   // The ways a layout's places can be numbered, each a text beside every one, shown with its word
@@ -322,6 +324,7 @@
   //   label  label(k, layout): the text for place k (as numbered from the layout's base)
   const NUMBERINGS = {
     indices: { part: 'index', field: 'index', label: (k) => k },
+    powers: { part: 'power', field: 'power', label: (k, layout) => layout.radix ** k }, // a number's place values: 1, 2, 4 …
   }
 
   // Every layout: a group of cells (the type after "id:"), in one place:
@@ -356,7 +359,17 @@
   //   head        its first row is its headings, a view of its own (t.head; word, its id's last
   //               part), not counted with the rows (t.0 is the first row after it) or numbered;
   //               look, the props its cells start with
+  //   radix       it holds a whole number, written in this base: its value goes straight after its
+  //               type ("b: binary 67"), and a value for it (b: 67) sets its cells, each a digit
+  //               from 0 to radix - 1 (b.0 the lowest); flip turns each digit d to radix - 1 - d.
+  //               digits: how many cells it has unless given (default), the most it can (max),
+  //               and the prop that gives it when it's made (prop: "bits 4")
+  //   power       where its place values go (NUMBERINGS: powers), as index does
+  //   decimal     where its value, written out, goes (side and gap, in cells) when shown
+  //   fixed       its cells stay as made: no swap, insert or remove (a value changes them)
+  //   props       props only it (and other layouts listing them) takes (LAYOUT_PROPS)
   const INDEX_BELOW = { side: 'below', gap: 0.1 }
+  const INDEX_ABOVE = { side: 'above', gap: 0.1 }
   const INDEX_LEFT = { side: 'left-of', gap: 0.2 }
   const GRID_VIEWS = {
     row: { layout: 'row', index: INDEX_LEFT }, // numbered down the left, as a column's cells are
@@ -374,8 +387,15 @@
       noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS,
       head: { word: 'head', look: { bold: true } },
     },
+    binary: {
+      noun: 'binary number', item: 'bit', cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false,
+      arrange: 'line', bow: 'own', index: INDEX_BELOW, power: INDEX_ABOVE, radix: 2, digits: { default: 8, max: 32, prop: 'bits' }, decimal: { side: 'right-of', gap: 0.3 },
+      fixed: true, props: ['bits', 'powers', 'decimal'],
+    },
   }
   const LAYOUT_TYPES = Object.keys(LAYOUTS)
+  // The props only some layouts take (LAYOUTS: props)
+  const LAYOUT_PROPS = [...new Set(LAYOUT_TYPES.flatMap((layout) => LAYOUTS[layout].props || []))]
 
   // ease <name>: how a change speeds up and slows down (t: 0-1 of its time -> 0-1 of the way).
   // spring overshoots, then settles exactly on 1.
@@ -539,8 +559,10 @@
   // The layouts' names: "a row, column, code block, grid or table"
   const LAYOUT_NAMES = LAYOUT_TYPES.map((layout) => LAYOUTS[layout].noun)
   const LAYOUT_NOUNS = nounList(LAYOUT_NAMES)
-  // What [ ] can follow: the layouts, and shapes whose label is lines (SHAPES: lines)
-  const BRACKET_NOUNS = nounList([...LAYOUT_NAMES, ...typesWhere((kind) => kind.lines).map((type) => nounOf({ type }))])
+  // What [ ] can follow: the layouts given values in it (not a number: LAYOUTS: radix), and shapes
+  // whose label is lines (SHAPES: lines)
+  const BRACKET_NOUNS = nounList([...LAYOUT_TYPES.filter((layout) => !LAYOUTS[layout].radix).map((layout) => LAYOUTS[layout].noun),
+    ...typesWhere((kind) => kind.lines).map((type) => nounOf({ type }))])
 
   // A group of shapes: a group, a layout, or a grid's row or column (it has no SHAPES entry, and
   // isn't drawn)
@@ -644,6 +666,11 @@
       help: 'quoted text (e.g. name "total"), optionally then a side (above, below, left-of, right-of), or clear',
     },
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
+    // a number's place values (NUMBERINGS: powers), its value written out (LAYOUTS: decimal), and
+    // how many bits it has (LAYOUTS: digits), given as it's made
+    powers: { key: 'powers', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
+    decimal: { key: 'decimal', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show it) or clear' },
+    bits: { ...number('bits', 'a whole number of bits'), modes: ['layout'], where: 'when a binary number is made, e.g. "b: binary 67 bits 4"' },
     numbered: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear', what: 'indices' },
     // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
     // with it, rather than taking on the look of where it goes
@@ -702,17 +729,18 @@
     },
     // "s: line 3 "…"": a script's line, replaced (on a script only: elsewhere "line" makes a line)
     line: { verb: true, on: (shape) => Boolean(SHAPES[shape?.type]?.script), takes: TIMING },
+    flip: { verb: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "b: flip", "b: flip 0 3", "b.2: flip"
     range: { // some of a row's / column's cells, "arr: range 0 3 fill red": how they look, not where they are
       verb: true, takes: [...CELL_STYLE, 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
       refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,
     },
     layout: { // "arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
-      takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices'],
+      takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices', ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" doesn't apply to ${LAYOUT_NOUNS}`,
     },
     camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
-      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'name', 'indices'],
+      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'name', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" can't be a default`,
     },
   }
@@ -1264,7 +1292,7 @@
   }
 
   Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
-    LAYOUTS, LAYOUT_NAMES, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,

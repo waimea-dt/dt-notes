@@ -7,15 +7,15 @@
 ;(function () {
   const { CELL, placeNextTo, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
-    markId, NUMBERINGS, nameId, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, EDIT_WORDS,
+    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, EDIT_WORDS,
     LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, effectOf, inTurn, layerOf, noShape,
-      numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf, takeBareNumber,
-      valueOf, warnEffect
+    let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, holderRef, inTurn,
+      layerOf, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
+      takeBareNumber, valueIn, valueOf, warnEffect
 
     // A cell's number as written after a verb ("swap 0 3", "range 3 end"): a whole number, or end,
     // the last cell (after: the place after it, where an insert goes on the end). Undefined if it's
@@ -224,6 +224,11 @@
       if (props.name && !shape.var && !shape.layout && !shape.span) throw new Error(`"name" is for ${nounList(['var', ...LAYOUT_NAMES, 'span'])}`)
       if (props.indices !== undefined && !shape.layout) throw new Error(`"indices" is for ${LAYOUT_NOUNS}`)
       if (props.indices !== undefined && bound(shape)) throw new Error(`a grid's indices number all its rows and columns, so they go on the whole grid: "${shape.part}: indices"`)
+      // props only some layouts take (LAYOUTS: props)
+      for (const key of LAYOUT_PROPS) {
+        if (props[key] === undefined || LAYOUTS[shape.layout]?.props?.includes(key)) continue
+        throw new Error(`"${wordFor(key)}" is for ${nounList(LAYOUT_TYPES.filter((layout) => LAYOUTS[layout].props?.includes(key)).map((layout) => LAYOUTS[layout].noun))}`)
+      }
     }
 
     // A grid's row or column (a view) belongs to its grid, so it can't be deleted or edited on its own
@@ -233,13 +238,16 @@
 
     function updateParts(shape, props, meta, warn) {
       if (props.name) setName(shape, props.name, props, meta, warn)
-      const given = Object.keys(NUMBERINGS).filter((key) => props[key] !== undefined)
-      for (const key of given) {
+      // a part shown or hidden by its word ("indices", "decimal clear"): whether it was given
+      const shown = (key) => {
+        if (props[key] === undefined) return false
         const word = wordFor(key)
         if (shape[key] === props[key]) warn(props[key] ? `"${shape.id}" already shows its ${word}` : `"${shape.id}" isn't showing its ${word}`)
         shape[key] = props[key]
+        return true
       }
-      if (given.length) syncIndices(shape, props, meta)
+      if (Object.keys(NUMBERINGS).map(shown).some(Boolean)) syncIndices(shape, props, meta)
+      if (shown('decimal')) setTag(shape, decimalId(shape.id), 'decimal', decimalTag(shape), props, meta)
     }
 
     // The side a name goes, unless given: its layout's (LAYOUTS: name), a span's by its row's layout
@@ -252,20 +260,45 @@
     function setName(owner, name, props, meta, warn) {
       const id = nameId(owner.id)
       const old = shapes.get(id)
-      if (name.none) {
-        if (!old) return warn(`"${owner.id}" has no name to clear`)
+      if (name.none && !old) return warn(`"${owner.id}" has no name to clear`)
+      const side = name.side || old?.attach?.side || nameSide(owner)
+      setTag(owner, id, 'name', name.none ? null : { text: name.text, side, gap: NAME_GAP }, props, meta)
+    }
+    const NAME_GAP = 0.2 // in cells, between a name and its owner
+
+    // A text beside its owner (a part with this role): its name, a number's decimal. tag: its text,
+    // side and gap (in cells); none, it goes.
+    function setTag(owner, id, role, tag, props, meta) {
+      const old = shapes.get(id)
+      if (!tag) {
+        if (!old) return
         shapes.delete(id)
         tween(meta, old.uid).exit = 'fade'
         schedule(meta, old.uid, props)
         return
       }
-      const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: newUid(), font: 1.2, layer: owner.layer, part: owner.id, role: 'name' }
-      text.label = name.text
-      text.attach = besideOf(owner.id, name.side || old?.attach?.side || nameSide(owner), 0.2 * CELL)
+      const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: newUid(), font: TAG_FONT, layer: owner.layer, part: owner.id, role }
+      text.label = tag.text
+      text.attach = besideOf(owner.id, tag.side, tag.gap * CELL)
       Object.assign(text, attachPos(text, owner, text.attach))
       shapes.set(id, text)
       if (!old) tween(meta, text.uid).enter = 'fade'
       schedule(meta, text.uid, props)
+    }
+    const TAG_FONT = 1.2 // a name's and a decimal's font
+
+    // A number's value written out (LAYOUTS: decimal), beside it while shown ("b: decimal")
+    const decimalTag = (row) => (row.decimal ? { text: `= ${valueIn(row).label}`, ...LAYOUTS[row.layout].decimal } : null)
+
+    // After every line: a number's decimal, when its digits have changed, takes its new value in the
+    // time its busiest digit takes this beat
+    function fitDecimals(meta) {
+      for (const row of shapes.values()) {
+        const text = row.decimal && shapes.get(decimalId(row.id))
+        if (!text || text.label === decimalTag(row).text) continue
+        text.label = decimalTag(row).text
+        retime(meta, text.uid, busiest(meta, row.members.map((cell) => shapes.get(cell)).filter(Boolean)))
+      }
     }
 
     // Whether a layout shows any of its numberings (NUMBERINGS)
@@ -335,6 +368,7 @@
     // the look apply to every cell. A code block's are lines (LAYOUTS: lines).
     function createLine(id, layout, tokens, existing, meta, warn) {
       if (LAYOUTS[layout].lines) return createLines(id, layout, tokens, existing, meta, warn)
+      if (LAYOUTS[layout].radix) return createNumber(id, layout, tokens, existing, meta, warn)
       const example = `e.g. "${id}: ${layout} [5 3 8 1] at 2,3" (words in quotes: ["A" "B"]), or a number of empty cells: "${id}: ${layout} 4 at 2,3"`
       const count = tokens[1]?.kind === 'word' && NUMBER.test(tokens[1].value) ? tokens[1].value : null
       if (count !== null && !/^\d+$/.test(count)) throw new Error(`a ${layout}'s number of cells is a whole number, e.g. "${id}: ${layout} 4", not "${count}"`)
@@ -371,6 +405,23 @@
       const sized = ['size', 'width', 'height'].find((key) => props[key])
       if (sized) throw new Error(`a ${noun} is as big as its ${item}s, so it takes no "${sized}" (use font to make it bigger or smaller)`)
       makeLayout(id, layout, values, props, existing, meta, warn)
+    }
+
+    // A number (LAYOUTS: radix), "b: binary 67 at 2,3 bits 8", or a var's or cell's value
+    // ("b: binary v1"): a row of its digits, lowest first (b.0) and numbered from the right, as many
+    // as its bits (LAYOUTS: digits)
+    function createNumber(id, layout, tokens, existing, meta, warn) {
+      const { noun, digits } = LAYOUTS[layout]
+      const example = `e.g. "${id}: ${layout} 67 at 2,3", or a var's value: "${id}: ${layout} v1 at 2,3"`
+      const source = !valueOf(tokens[1]) && holderRef(tokens[1]) ? holderRef(tokens[1], `make ${article(noun)} ${noun} from`) : undefined
+      const value = valueOf(tokens[1]) || (source && valueIn(source))
+      if (!value) throw new Error(`a ${noun}'s value goes straight after "${layout}", ${example}`)
+      const props = parseProps(tokens, 2, 'layout', shapes)
+      if (props.label !== undefined) throw new Error(`a ${noun} holds one value, straight after "${layout}", ${example}`)
+      const given = props[digits.prop]
+      const count = given ? given.v : digits.default
+      if (given && (given.rel || !Number.isInteger(count) || count < 1 || count > digits.max)) throw new Error(`"${wordFor(digits.prop)}" is a whole number from 1 to ${digits.max}`)
+      makeLayout(id, layout, digitsFor(layout, value, count, warn).map((label) => ({ label })), props, existing, meta, warn)
     }
 
     // "Quoted" lines in [ ] from the "[" at tokens[j] (a code block's, a script's): the lines, and
@@ -535,6 +586,7 @@
     // Makes a row / column / code block from its cells' values (a grid / table: its rows of values)
     // and the line's props.
     function makeLayout(id, layout, values, props, existing, meta, warn) {
+      checkParts({ layout }, props)
       if (existing) {
         replaced(id, warn)
         removeShape(existing, props, meta, warn)
@@ -553,7 +605,8 @@
       const look = pick(props, ['size', 'width', 'height', ...CELL_STYLE])
       withRowMax(null, look, flat)
       const cells = flat.map((value, k) => {
-        const cell = { ...baseShape(kind.cell), id: ids[k], uid: newUid(), holds: true, x: 0, y: 0 }
+        // a number's cells are its digits (LAYOUTS: radix)
+        const cell = { ...baseShape(kind.cell), id: ids[k], uid: newUid(), holds: true, ...(kind.radix && { digit: layout }), x: 0, y: 0 }
         applyDefaults(cell)
         applyProps(cell, look, true, warn, meta)
         setValue(cell, value)
@@ -573,7 +626,7 @@
       if (takeBareNumber(props)) numberEach(cells, props, meta, warn)
       const b = unionBounds(cells, shapes)
       const row = {
-        ...baseShape(GROUP), id, uid: newUid(), layout, members: ids, gap, cell: blank,
+        ...baseShape(GROUP), id, uid: newUid(), layout, members: ids, gap, cell: blank, ...(kind.radix && { holds: true }),
         w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2,
       }
       Object.assign(row, pick(frame, ['views', 'heading'])) // a grid's
@@ -666,14 +719,14 @@
     }
 
     return {
-      functions: { arranged, checkParts, chunk, createLayout, fitCode, fitLines, fitSpans, gridLines,
-        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, readLines, readList, refuseView, syncIndices, transpose,
+      functions: { arranged, cellsBetween, checkParts, chunk, createLayout, fitCode, fitDecimals, fitLines, fitSpans, gridLines,
+        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, syncIndices, transpose,
         typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },
       link: () => {
-        ({ applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, effectOf, inTurn, layerOf,
-          noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
-          takeBareNumber, valueOf, warnEffect } = cx)
+        ({ applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, holderRef,
+          inTurn, layerOf, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue,
+          speedOf, takeBareNumber, valueIn, valueOf, warnEffect } = cx)
       },
     }
   })

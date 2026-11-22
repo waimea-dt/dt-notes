@@ -520,6 +520,94 @@ t: insert [7 8 9] at end
 
 </animation>
 
+## Feature: binary
+
+<animation grid="14x7">
+
+A row of bits, numbered from the right: b.0 is the lowest.
+
+```anim
+b: binary 123 at 3,2 indices powers decimal name "b"
+v: var 125 at 3,5 name "v"
+```
+
+---
+
+## A bit, or a new value
+
+```anim
+b.0: 0                            # = 122
+b.7: 1                            # = 250
+```
+
++++
+
+```anim
+b: 67 speed slow                  # only the bits that change crossfade
+```
+
+---
+
+## flip
+
+```anim
+b: flip stagger                   # every bit, from b.0
+```
+
++++
+
+```anim
+b: flip 0 3                       # the low four
+b.7: flip
+```
+
++++
+
+```anim
+b: 300                            # too big for 8 bits: it overflows to 44
+```
+
+---
+
+## Moving values
+
+```anim
+b: v                              # v's value glides onto the bits
+```
+
++++
+
+```anim
+w: var 0 at 7,5 name "w"
+w: b                              # and back off them
+```
+
++++
+
+```anim
+n: binary v at 9,2 bits 4 decimal  # a var's value, in 4 bits (overflows to 13)
+```
+
+---
+
+## Looks, range, span and switching off
+
+```anim
+b: range 4 7 fill blue            # the high four
+s: span b 0 3 stroke amber
+b: powers clear
+b: decimal clear
+```
+
++++
+
+```anim
+b: highlight outline
+n: delete
+```
+
+</animation>
+
 ## Feature: var
 
 <animation grid="12x4">
