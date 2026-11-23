@@ -784,7 +784,7 @@ st: delete
 <animation grid="13x6">
 
 ```anim
-arr: row [5, 3, 8, 1, 9, 2] at 2,4 bar stroke none fill pink-bright size 0.6x3 gap 0.15 indices
+arr: row [5, 3, 8, 1, 9, 2] at 2,3 bar stroke none fill pink-bright size 0.6x3 gap 0.15 indices
 hp: var 67 name "health" at 10,2 size 3x0.7 bar fill green-bright track red corner 0.25
 ```
 
@@ -850,7 +850,7 @@ A column of wide bars is a bar chart: the bars grow from the left, with their va
 <animation grid="10x6">
 
 ```anim
-votes: column [12 7 15 4 9] at 4,1.5 bar stroke none fill teal size 4x0.7 gap 0.15 name "Votes" indices
+votes: column [12 7 15 4 9] at 4,2 bar stroke none fill teal size 4x0.7 gap 0.15 name "Votes" indices
 ```
 
 ---
@@ -877,6 +877,90 @@ votes: range 0 1 fill amber
 
 ```anim
 votes: remove 4
+```
+
+</animation>
+
+
+## Feature: Rings and pies
+
+A ring or pie shows a var's or cell's value round a circle, clockwise from the top. It's always round: it takes one size, and a box that isn't square is made square as it's turned on.
+
+<animation grid="14x7">
+
+```anim
+done: var 25 name "done" at 3,2 size 2 stroke none ring fill teal-bright track muted
+left: var 60 at 7,2 size 2 stroke none pie fill purple-bright track muted
+cpu: var 45 at 11,2 size 2 ring fill orange-bright
+arr: row [3 8 5 9] at 2,5 size 1.2 gap 0.3 stroke none pie fill pink-bright track muted max 10
+```
+
+---
+
+## New values
+
+```anim
+done: 75
+left: 5
+cpu: 100
+arr.1: 2
+```
+
++++
+
+```anim
+done: +25
+left: 0
+cpu: highlight outline
+arr: swap 0 3
+```
+
+---
+
+## A value on the move
+
+```anim
+cpu: highlight clear
+done: arr.2
+```
+
+---
+
+## Changing kind, and back to a box
+
+```anim
+done: pie
+left: ring
+cpu: bar
+```
+
++++
+
+```anim
+done: bar
+left: corner 0.2
+```
+
++++
+
+```anim
+done: ring clear
+left: pie clear
+```
+
+---
+
+## A wide box turned into a ring is made square
+
+```anim
+wide: var 40 at 11,5 size 3x1 track muted
+```
+
++++
+
+```anim
+wide: ring fill green-bright
+arr: ring
 ```
 
 </animation>
@@ -1079,7 +1163,112 @@ h: b                              # = 1234
 </animation>
 
 
-## Binary and Colours
+## Demo: RGB Colours
+
+<animation grid="12x7">
+
+## Three colour values: R, G, B
+
+```anim
+defaults corner 0.1 max 255 size 5x1 track black stroke muted
+r: var 0 name "r" bar at 4,2 fill #f00
+g: var 0 name "g" bar at 4,4 fill #0f0
+b: var 0 name "b" bar at 4,6 fill #00f
+```
+
++++
+
+Mixed together...
+
+```anim
+defaults stroke fg
+plus: circle at 8.5,4 "+"
+ra: arrow from 6.5,2.5 to plus stroke red
+ga: arrow from 6.5,4.0 to plus stroke green
+ba: arrow from 6.5,5.5 to plus stroke blue
+```
+
++++
+
+... to form a colour
+
+```anim
+col: rect at 11,4 size 2x5 fill #000
+ca: arrow from plus to col
+```
+
+---
+
+## Changing the RGB values, changes the colour
+
+```anim
+r: 0
+g: 0
+b: 0
+col: fill #000
+```
++++
+
+```anim
+r: 64
+col: fill #400
+```
++++
+
+```anim
+r: 128
+col: fill #800
+```
++++
+
+```anim
+r: 255
+col: fill #f00
+```
++++
+
+```anim
+r: 0
+g: 255
+col: fill #0f0
+```
++++
+
+```anim
+g: 0
+b: 255
+col: fill #00f
+```
++++
+
+```anim
+g: 255
+col: fill #0ff
+```
++++
+
+```anim
+b: 0
+r: 255
+col: fill #ff0
+```
++++
+
+```anim
+g: 0
+b: 255
+col: fill #f0f
+```
++++
+
+```anim
+g: 255
+col: fill #fff
+```
+
+</animation>
+
+## Demo: Binary and Colours
 
 <animation grid="16x7">
 
@@ -1107,7 +1296,7 @@ ba: arrow from 11,5.5 to plus stroke blue
 ... to form a colour
 
 ```anim
-col: rect at 15,4 size 2x5 fill black
+col: rect at 15,4 size 2x5 fill black corner 0.1
 ca: arrow from plus to col
 ```
 
@@ -1135,82 +1324,6 @@ col: fill #00f
 ```
 +++
 
-
-</animation>
-
-## Feature: Rings and pies
-
-A ring or pie shows a var's or cell's value round a circle, clockwise from the top. It's always round: it takes one size, and a box that isn't square is made square as it's turned on.
-
-<animation grid="14x7">
-
-```anim
-done: var 25 name "done" at 3,2 size 2 stroke none ring fill teal-bright track muted
-left: var 60 at 7,2 size 2 stroke none pie fill purple-bright track muted
-cpu: var 45 at 11,2 size 2 ring fill orange-bright
-arr: row [3 8 5 9] at 2,5 size 1.2 gap 0.3 stroke none pie fill pink-bright track muted max 10
-```
-
----
-
-## New values
-
-```anim
-done: 75
-left: 5
-cpu: 100
-arr.1: 2
-```
-
-+++
-
-```anim
-done: +25
-left: 0
-cpu: highlight outline
-arr: swap 0 3
-```
-
----
-
-## A value on the move
-
-```anim
-cpu: highlight clear
-done: arr.2
-```
-
----
-
-## Changing kind, and back to a box
-
-```anim
-done: pie
-left: ring
-cpu: bar
-```
-
-+++
-
-```anim
-done: ring clear
-left: corner 0.2
-```
-
----
-
-## A wide box turned into a ring is made square
-
-```anim
-wide: var 40 at 11,5 size 3x1 track muted
-```
-
-+++
-
-```anim
-wide: ring fill green-bright
-arr: ring
-```
 
 </animation>
 
