@@ -99,6 +99,7 @@ r: row [
 | `scratch` | `s: scratch "move (10) steps" at 4,3` | its blocks' size (see Scratch) |
 
 - Arrowhead: `l: line from a to b arrow`, or `l: arrow` on an existing line. Put it before any `highlight`.
+- Labels take `<sup>` and `<sub>`: `t: text "x<sup>2</sup> + log<sub>2</sub> N" at 3,1`.
 - Via: a corner on a line, a turn on a curve. A signed via is relative to the point before.
 - Bend: bows a curve to its left (`bend -0.5`: right). Replaces any via points.
 - Loop: `angle` is the way it faces, `size 1.2x0.6` how wide and how far out.

@@ -149,6 +149,45 @@ f2: font 1
 
 </animation>
 
+## Feature: sup and sub
+
+<animation grid="12x5">
+
+```anim
+t1: text "x<sup>2</sup> + y<sup>2</sup>" at 3,1
+t2: text "log<sub>2</sub> N" at 9,1
+t3: text "g<sup>a</sup> mod p" at 3,2.5 font 1.5
+v: var "2<sup>8</sup>" at 9,2.5 size 2x1
+l: arrow from 2,4 to 10,4 "H<sub>2</sub>O"
+```
+
+---
+
+## Changed and typed
+
+```anim
+t1: "O(N<sup>2</sup>)"
+t2: delete typed
+v: "1010<sub>2</sub>"
+```
+
++++
+
+```anim
+t2: text "a<sub>i</sub> + a<sub>i+1</sub>" at 9,1 typed
+t3: font 1 bold
+```
+
+---
+
+## Unclosed tags show as written
+
+```anim
+t1: "x<sup>2"
+```
+
+</animation>
+
 ## Feature: line and arrow
 
 <animation grid="12x8">

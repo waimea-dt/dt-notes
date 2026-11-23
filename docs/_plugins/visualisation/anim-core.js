@@ -864,6 +864,40 @@
     return (textWidths.get(key) * size) / MEASURE_SIZE || 0.55 * size * shown.length
   }
   window.addEventListener?.('docsify-theme-change', () => fonts.clear())
+
+  // Marks a label's text can have, written as tags round it ("x<sup>2</sup>", "log<sub>2</sub> N"):
+  // each run is drawn smaller (size, × the label's font) and raised or lowered (shift, × the label's
+  // font: - up). A tag with no closing tag shows as written. Not in code or scripts.
+  const TEXT_MARKS = {
+    sup: { size: 0.7, shift: -0.4 },
+    sub: { size: 0.7, shift: 0.25 },
+  }
+  const MARKED = new RegExp(`<(${Object.keys(TEXT_MARKS).join('|')})>(.*?)</\\1>`, 'g')
+  // A label's text as runs ({ text, mark }: mark a TEXT_MARKS key, or null): one plain run unless
+  // it has marks. Its spaces are collapsed as SVG shows them, so the runs measure as drawn.
+  function textRuns(label) {
+    const text = label ?? ''
+    if (!text.includes('<')) return [{ text, mark: null }]
+    const runs = []
+    let at = 0
+    for (const m of text.matchAll(MARKED)) {
+      if (m.index > at) runs.push({ text: text.slice(at, m.index), mark: null })
+      runs.push({ text: m[2], mark: m[1] })
+      at = m.index + m[0].length
+    }
+    if (at < text.length) runs.push({ text: text.slice(at), mark: null })
+    if (runs.length === 1 && !runs[0].mark) return runs
+    const collapsed = runs.map((run) => ({ ...run, text: run.text.replace(/\s+/g, ' ') })).filter((run) => run.text)
+    if (collapsed.length) collapsed[0].text = collapsed[0].text.trimStart()
+    if (collapsed.length) collapsed[collapsed.length - 1].text = collapsed[collapsed.length - 1].text.trimEnd()
+    return collapsed
+  }
+  // A label's width as drawn: each run at its own size
+  function labelWidth(label, size, bold = false, mono = false) {
+    const runs = textRuns(label)
+    if (runs.length === 1 && !runs[0].mark) return textWidth(label, size, bold, mono)
+    return runs.reduce((w, run) => w + textWidth(run.text, size * (TEXT_MARKS[run.mark]?.size ?? 1), bold, mono, true), 0)
+  }
   // text measured before its web font loaded (in a fallback font) is measured again once it has
   document.fonts?.addEventListener?.('loadingdone', () => textWidths.clear())
 
@@ -907,7 +941,7 @@
     if (kind.outline === 'round') return { hw: shape.r, hh: shape.r, round: true }
     if (kind.label === 'content') {
       const size = FONT * shape.font
-      return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
+      return { hw: Math.max(0.3 * size, labelWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
     }
     return { hw: shape.w / 2, hh: shape.h / 2, diamond: kind.outline === 'diamond' || undefined }
   }
@@ -1334,5 +1368,5 @@
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

@@ -8,7 +8,8 @@
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
-    entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf } = window.Anim
+    entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
+    TEXT_MARKS, textRuns } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -235,8 +236,9 @@
     // changing a text node's data doesn't. Each run of text is a leaf: { text, a } when it all
     // shows, or { text, a, b } while typing, a and b being the text of two tspans, the part before
     // the cut and the part after it, one shown and one hidden. A plain label is one leaf (text:
-    // null, the whole label); a code line's are the strings among Prism's tokens.
-    function buildLabel(label, code, lang, typing, erase) {
+    // null, the whole label); a marked one's (runs) a leaf per run; a code line's are the strings
+    // among Prism's tokens.
+    function buildLabel(label, code, lang, typing, erase, runs) {
       const leaves = []
       const tspanText = (parent, shown) => parent.appendChild(svgEl('tspan', shown ? {} : { visibility: 'hidden' })).appendChild(document.createTextNode(''))
       const leaf = (parent, text) => {
@@ -244,9 +246,24 @@
         else leaves.push({ text, a: tspanText(parent, !erase), b: tspanText(parent, erase) })
       }
       label.replaceChildren()
-      if (code === null) leaf(label, null)
+      if (runs) markedRuns(runs, label, leaf)
+      else if (code === null) leaf(label, null)
       else codeTokens(code, lang, label, leaf)
       return leaves
+    }
+
+    // A marked label's runs (textRuns), each in a tspan: a mark's smaller and raised or lowered
+    // (TEXT_MARKS), and the next run back on the line. dy is in each run's own size (em), so it
+    // holds as the font changes.
+    function markedRuns(runs, parent, leaf) {
+      let shift = 0
+      for (const run of runs) {
+        const mark = TEXT_MARKS[run.mark] || { size: 1, shift: 0 }
+        const span = parent.appendChild(svgEl('tspan', mark.size === 1 ? {} : { 'font-size': `${mark.size * 100}%` }))
+        if (mark.shift !== shift) attr(span, 'dy', `${(mark.shift - shift) / mark.size}em`)
+        shift = mark.shift
+        leaf(span, run.text)
+      }
     }
 
     // A code line's text, highlighted by Prism (lang: Prism's name for the language) as nested
@@ -274,16 +291,18 @@
       const text = label ?? ''
       const typing = typed !== undefined
       const erase = Boolean(erasing)
-      const chars = [...text]
+      const code = kindOf(node).pre ? text : null
+      const runs = code === null ? textRuns(text) : null
+      const marked = runs && (runs.length > 1 || runs[0].mark) ? runs : null
+      const chars = [...(marked ? marked.map((run) => run.text).join('') : text)]
       const shown = typing ? Math.round(chars.length * clamp01(typed)) : -1
       const key = `${shown}|${erase}|${lang}|${text}`
       if (node.labelKey === key) return
       node.labelKey = key
-      const code = kindOf(node).pre ? text : null
-      const build = `${typing}|${typing && erase}|${code === null ? '' : `${lang}|${code}`}`
+      const build = `${typing}|${typing && erase}|${code === null ? (marked ? `marked|${text}` : '') : `${lang}|${code}`}`
       if (node.labelBuild !== build) {
         node.labelBuild = build
-        node.leaves = buildLabel(node.label, code, lang, typing, erase)
+        node.leaves = buildLabel(node.label, code, lang, typing, erase, marked)
       }
       // the characters before the cut are the first part of each leaf: shown while typing, hidden
       // while erasing
