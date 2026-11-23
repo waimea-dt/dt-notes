@@ -7,9 +7,9 @@
   const { PARTS, HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE,
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
-    linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
+    linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    TEXT_MARKS, textRuns } = window.Anim
+    HEADS, TEXT_MARKS, textRuns } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -19,8 +19,10 @@
   const TOP_PAD = 0.75
   const RIGHT_PAD = 0.3
 
-  // An arrowhead's strength (0-1): arrows have one, and lines or curves given "arrow"
-  const headOf = (shape) => (SHAPES[shape.type]?.head || shape.head ? 1 : 0)
+  // A line's arrowheads' strengths (0-1) at each end (HEADS), blended as they're added or taken off
+  const LINE_ENDS = ['from', 'to']
+  const headsOf = (shape) => Object.fromEntries(LINE_ENDS.map((end) => [end, HEADS[shape.head]?.ends.includes(end) ? 1 : 0]))
+  const noHeads = Object.fromEntries(LINE_ENDS.map((end) => [end, 0]))
 
   // A var's or cell's bar (LOOKS: bar, BARS): the share of it its value fills (held to 0-1; a value
   // that isn't a number fills none), or 1, all of it, when it shows none (hasBar), so turning one on
@@ -142,9 +144,9 @@
       const g = svgEl('g', { class: `anim-shape anim-${shape.type}` })
       const node = { g, type: shape.type, uid: shape.uid }
       if (LINE_TYPES.includes(shape.type)) {
-        // one path for lines, arrows and curves; every line has a head, hidden unless it has one
+        // one path for lines, arrows and curves; every line has a head at each end, hidden unless it has one
         node.body = g.appendChild(svgEl('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' }))
-        node.head = g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))
+        node.heads = Object.fromEntries(LINE_ENDS.map((end) => [end, g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))]))
       }
       BODIES[shape.type]?.make(node, shape)
       node.label = g.appendChild(svgEl('text', { class: 'anim-label', 'dominant-baseline': 'central' }))
@@ -452,28 +454,33 @@
         const total = path[path.length - 1].at
         const at = (d) => pointAt(path, d)
         const pathTo = (d) => [...path.filter((p) => p.at < d), at(d)]
+        const pathBetween = (d0, d1) => [at(d0), ...path.filter((p) => p.at > d0 && p.at < d1), at(d1)]
 
-        // The head (fading in or out as it's added or taken off) sits on the end, or on the tip
-        // while drawing in; the stroke stops at its back. Erasing, it stays on the end.
-        let bodyLen = total
-        if (v.head) {
-          const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
-          const reach = v.erase ? total : total * v.draw
-          const tip = at(reach)
-          const behind = at(Math.max(0, reach - head))
+        // Each head (fading in or out as it's added or taken off) sits on its end; the stroke stops
+        // at its back. While drawing in, the end's head rides on the tip; erasing, the start's rides
+        // on the erased edge. tip: how far along its point is; way: +1 pointing on along the line
+        // (the end's), -1 back (the start's).
+        const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
+        const placeHead = (el, tipAt, way) => {
+          const tip = at(tipAt)
+          const behind = at(Math.min(total, Math.max(0, tipAt - way * head)))
           const dl = Math.hypot(tip.x - behind.x, tip.y - behind.y)
-          const last = path[path.length - 2] || path[0]
-          const [ux, uy] = dl > 1e-6 ? [(tip.x - behind.x) / dl, (tip.y - behind.y) / dl] : [Math.sign(tip.x - last.x), Math.sign(tip.y - last.y)]
+          const near = way > 0 ? path[path.length - 2] || path[0] : path[1] || path[0] // for its way when it's too short to measure
+          const [ux, uy] = dl > 1e-6 ? [(tip.x - behind.x) / dl, (tip.y - behind.y) / dl] : [Math.sign(tip.x - near.x), Math.sign(tip.y - near.y)]
           const base = { x: tip.x - ux * head, y: tip.y - uy * head }
           const half = head * 0.55
-          attr(node.head, 'points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
-          node.head.style.strokeWidth = strokeWidth
-          paint(node.head, 'fill', colours.stroke)
-          paint(node.head, 'stroke', colours.stroke)
-          bodyLen = total - head * v.head
+          attr(el, 'points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
+          el.style.strokeWidth = strokeWidth
+          paint(el, 'fill', colours.stroke)
+          paint(el, 'stroke', colours.stroke)
         }
-        node.head.style.opacity = v.head ? clamp01(v.draw * 4 - 0.2) * v.head : 0
-        attr(node.body, 'd', `M ${pathTo(bodyLen).map((p) => `${p.x} ${p.y}`).join(' L ')}`)
+        const heads = v.heads || noHeads
+        if (heads.to) placeHead(node.heads.to, v.erase ? total : total * v.draw, 1)
+        if (heads.from) placeHead(node.heads.from, v.erase ? total * (1 - v.draw) : 0, -1)
+        for (const end of LINE_ENDS) node.heads[end].style.opacity = heads[end] ? clamp01(v.draw * 4 - 0.2) * heads[end] : 0
+        const bodyStart = head * heads.from
+        const bodyLen = total - head * heads.to
+        attr(node.body, 'd', `M ${(bodyStart ? pathBetween(bodyStart, bodyLen) : pathTo(bodyLen)).map((p) => `${p.x} ${p.y}`).join(' L ')}`)
         node.body.style.strokeWidth = strokeWidth
         if (v.draw < 1) {
           setFlow(node.body) // off while drawing in
@@ -486,8 +493,8 @@
           attr(node.body, 'pathLength', null)
           node.body.style.strokeDasharray = dash
           node.body.style.strokeLinecap = cap
-          setFlow(node.body, pattern, dashBase)
-          syncGhost(node.body, dashBase)
+          setFlow(node.body, pattern, dashBase + bodyStart) // the pattern keeps its place along the line
+          syncGhost(node.body, dashBase + bodyStart)
         }
         paint(node.body, 'stroke', colours.stroke)
         drawSignal(node, v.signal, path, strokeWidth)
@@ -1083,7 +1090,10 @@
         if (v.barKind) v.bar = !(a && b) ? barShare(shape) : tw?.lands ? barShare(t < 0.5 ? a : b) : lerp(barShare(a), barShare(b), t)
         v.round = a && b ? lerp(roundness(a), roundness(b), t) : roundness(shape)
         // an arrowhead fades in or out as it's added to or taken off a line
-        v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
+        if (LINE_TYPES.includes(shape.type)) {
+          const [ha, hb] = [a, b].map((s) => s && headsOf(s))
+          v.heads = ha && hb ? Object.fromEntries(LINE_ENDS.map((end) => [end, lerp(ha[end], hb[end], t)])) : headsOf(shape)
+        }
         v.label ??= shape.label
         v.labelOpacity ??= 1
         const node = nodes.get(uid) || makeNode(shape)
@@ -1140,7 +1150,7 @@
         const k = easing(u)
         const shape = { ...interpolate(flyer.from, flyer.to, k), ...pointOnHops(flyer.hops, u, easing) }
         const opacity = flyer.move < 1 ? 1 - clamp01((raw - flyer.move) / (1 - flyer.move)) : raw < 1 ? 1 : 0
-        const v = { opacity, scale: 1, draw: 1, dx: 0, dy: 0, head: 0, label: flyer.from.label, nil: flyer.from.nil, labelOpacity: 1 }
+        const v = { opacity, scale: 1, draw: 1, dx: 0, dy: 0, label: flyer.from.label, nil: flyer.from.nil, labelOpacity: 1 }
         // the value it carries, as a bar from its source's to its target's
         v.barKind = barKindOf(flyer.to, flyer.from)
         if (v.barKind) v.bar = lerp(barShare(flyer.from), barShare(flyer.to, flyer.from.label, flyer.from.nil), k)

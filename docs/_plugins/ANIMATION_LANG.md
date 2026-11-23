@@ -92,13 +92,13 @@ r: row [
 | `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
 | `diamond` | `d: diamond "x > 3?" at 4,3 size 3x1.5` | 1×1 |
 | `text` | `t: text "Hi" at 7,1 align left` | |
-| `line` / `arrow` | `l: arrow from a to 9,3 "label"` · `l: line from 2,5 via 6,5 via 6,6 to 10,6 corner 0.3` | |
+| `line` / `arrow` / `arrows` | `l: arrow from a to 9,3 "label"` · `l: arrows from a to b` · `l: line from 2,5 via 6,5 via 6,6 to 10,6 corner 0.3` | |
 | `curve` | `c: curve from a to b via 5,1 via 7,3` · `c: curve from a to b bend 0.5` · `c: curve from a to a angle right` (a loop) | loop: up, 1×1 |
 | `image(path)` | `p: image(../_assets/x.svg) "Alt" at 3,4 size 2` | 1×1 |
 | `icon(name)` | `i: icon(laptop) "Laptop" at 10,2` | 1×1, Lucide |
 | `scratch` | `s: scratch "move (10) steps" at 4,3` | its blocks' size (see Scratch) |
 
-- Arrowhead: `l: line from a to b arrow`, or `l: arrow` on an existing line. Put it before any `highlight`.
+- Heads: `arrow` (end), `arrows` (both ends), `line` (none). After the ends (`l: line from a to b arrows`), or on an existing line (`l: arrows`). Put it before any `highlight`.
 - Labels take `<sup>` and `<sub>`: `t: text "x<sup>2</sup> + log<sub>2</sub> N" at 3,1`.
 - Via: a corner on a line, a turn on a curve. A signed via is relative to the point before.
 - Bend: bows a curve to its left (`bend -0.5`: right). Replaces any via points.
@@ -487,6 +487,7 @@ Takes `at` `x` `y` `travel` `zoom` `reset` `speed` `delay` `ease`.
 a: delete
 g: ungroup
 a: detach
+l: line
 l: static
 l: solid
 a: highlight clear

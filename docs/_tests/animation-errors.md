@@ -229,6 +229,8 @@ dw: decimal
 dw: flip
 eb.0: flip 0 1
 defaults decimal
+tr: rect at 1,1
+tr: fill red line
 ```
 
 </animation>

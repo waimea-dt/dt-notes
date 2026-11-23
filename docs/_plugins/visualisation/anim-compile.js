@@ -7,7 +7,7 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
-    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks,
+    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, HEADS,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
     NUMBERINGS, roundBar } = window.Anim
@@ -614,11 +614,12 @@
       // a verb: delete, swap, insert, remove, copy, group, ungroup (LINES)
       if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
 
-      // "l: arrow …" on a line or curve that already exists, with no new ends, puts a head on it
-      // (rather than replacing it with an arrow shape): read as a change, where "arrow" is the flag
-      const addsHead = SHAPES[type]?.head && existing && LINE_TYPES.includes(existing.type)
+      // "l: arrows …" (or arrow, line) on a line or curve that already exists, with no new ends,
+      // changes its heads (rather than replacing it with that shape): read as a change, where the
+      // word is the flag (HEADS)
+      const setsHeads = HEADS[type] && existing && LINE_TYPES.includes(existing.type)
         && !tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
-      if (type && !addsHead) {
+      if (type && !setsHeads) {
         const props = propsOf(type, tokens, varValue ? 2 : 1, 'create')
         if (isVar && props.label !== undefined) throw new Error(`a var's value goes straight after "var", e.g. "${id}: var 67" or "${id}: var "Dog""`)
         if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)

@@ -264,6 +264,71 @@ l5: corner 0.5 speed slow
 
 </animation>
 
+## Feature: arrows and line
+
+<animation grid="12x6">
+
+```anim
+a: circle "a" at 2,2
+b: rect "b" at 10,2
+l1: arrows from a to b "arrows"
+l2: line from 2,4 to 10,4 arrows draw
+c1: curve from 2,5 to 10,5 bend 0.6 arrows
+```
+
+---
+
+## l1: line
+
+Takes the heads off.
+
+```anim
+l1: line
+```
+
++++
+
+```anim
+l1: arrow
+```
+
++++
+
+```anim
+l1: arrows
+```
+
+---
+
+## l2: arrow, l1: line
+
+One head goes, the other stays.
+
+```anim
+l2: arrow
+l1: line
+```
+
++++
+
+Both ends follow their shapes, heads and all.
+
+```anim
+b: move 9,1
+c1: dashed flow
+```
+
+---
+
+## Erased
+
+```anim
+l2: delete draw
+c1: delete draw
+```
+
+</animation>
+
 ## Feature: curve
 
 <animation grid="12x6">

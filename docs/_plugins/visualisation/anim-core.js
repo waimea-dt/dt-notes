@@ -85,6 +85,10 @@
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
   const PATTERNS = { dashed: { d: 4, g: 4 }, dotted: { d: 1, g: 1.5 } }
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
+  // A line's arrowheads (LOOKS: head), each its own word: straight after "id:" a line type (on an
+  // existing line, with no new ends, it changes its heads), and elsewhere a flag ("l: from a to b
+  // arrows"). ends: the ends that have one.
+  const HEADS = { line: { ends: [] }, arrow: { ends: ['to'] }, arrows: { ends: ['from', 'to'] } }
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
@@ -149,7 +153,7 @@
   //             (the label is the shape's script, drawn to fit its box: see script). A bar
   //             (BAR_DRAWS: label) can put it elsewhere: 'top' or 'right', inside that edge of the box
   //   inside    it has an inside to highlight (highlight inside)
-  //   line      it runs from / to, through any via points; head: it has an arrowhead; bends: its
+  //   line      it runs from / to, through any via points (its arrowheads: its head, HEADS); bends: its
   //             via points are smooth bends (otherwise they're corners, joined by straight lines)
   //   loop      with no via points, from a shape to itself, it loops out from the shape and back
   //             (loopEnds): the way out is its angle, its size how wide (w) and how far out (h)
@@ -208,11 +212,12 @@
       takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height', 'opacity'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
-    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true },
-    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, head: true },
+    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'line' } },
+    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'arrow' } },
+    arrows: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'arrows' } },
     curve: {
       takes: [...LINE_PROPS, ...LOOP_PROPS, 'bend'], label: 'along', line: true, bends: true,
-      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
+      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0, head: 'line' }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
     },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
@@ -559,7 +564,7 @@
     bold: { field: 'bold', cell: true },
     mono: { field: 'mono', cell: true },
     lang: { field: 'lang', cell: true, check: langWarning }, // a code block's language (Prism's name for it)
-    head: { field: 'head' },
+    head: { field: 'head' }, // its arrowheads (HEADS)
     opacity: { field: 'opacity', unit: 1, min: 0, max: 1, cell: true },
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
@@ -666,8 +671,8 @@
     max: number('max', 'a number (the value of a full bar)'),
     track: colour('track'),
     opacity: resettable(number('opacity', 'a number from 0 (hidden) to 1 (solid)')),
-    // "arrow" here (not straight after the id, where it's the arrow shape) puts a head on a line
-    arrow: fixed('head', true),
+    // its arrowheads (HEADS): here, not straight after the id, where each is a line type
+    ...words(Object.keys(HEADS), 'head', 'arrowheads'),
     ...words(LINE_STYLES, 'linestyle', 'line style'),
     ...words(Object.keys(FLOWS), 'flow', 'flow'),
     ...words(Object.keys(LAYERS), 'layer', 'layer'),
@@ -1368,5 +1373,5 @@
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, HEADS, unionBounds, viewBoxFor, warnOutsideGrid })
 })()
