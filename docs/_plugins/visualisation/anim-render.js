@@ -1024,6 +1024,21 @@
       return glowCache.get(state)
     }
 
+    // A growing trail's ends (tween: grow): its kept points, then its new ones as far as its shape
+    // has got (its progress, eased as its shape's move is, or raw for a travel's hops)
+    function grownEnds(trail, tw, raw) {
+      const { kept, steps } = tw.grow
+      const points = [trail.from, ...trail.via, trail.to]
+      const u = clamp01(tw.grow.raw ? clamp01(raw) : easeFn(tw.ease)(clamp01(raw))) * steps
+      const whole = Math.min(steps, Math.floor(u))
+      const drawn = points.slice(0, kept + whole)
+      if (whole < steps) {
+        const [p, q] = [points[kept + whole - 1], points[kept + whole]]
+        drawn.push({ x: lerp(p.x, q.x, u - whole), y: lerp(p.y, q.y, u - whole) })
+      }
+      return { from: drawn[0], to: drawn[drawn.length - 1], vias: drawn.slice(1, -1), smooth: false, corner: 0 }
+    }
+
     const DIM = 0.2 // opacity of shapes outside the spotlight
     const BLOCK_DIM = 0.45 // opacity of a script's other blocks (highlight line N): lighter, as they sit close together
 
@@ -1131,8 +1146,11 @@
       // An end on an id that passes to another shape goes from its place in A to its place in B.
       const at = (state) => (passed.size ? { get: (id) => (passed.has(id) ? state.get(id) : now.get(id)) } : now)
       for (const item of items) {
-        if (!LINE_TYPES.includes(item.shape.type) || !item.a || !item.b) continue
+        if (!LINE_TYPES.includes(item.shape.type)) continue
         const tw = meta.tweens.get(item.uid)
+        // a trail is drawn as far as its shape has got along its new points
+        if (tw?.grow && item.b) { item.v.ends = grownEnds(item.b, tw, progress(item.uid)); continue }
+        if (!item.a || !item.b) continue
         // turning about a point: its free ends and via points go round it, its ends on shapes stay on them
         if (tw?.turn) {
           const spun = (p) => (p.ref ? p : rotateAbout(p, tw.turn.pivot, tw.turn.by * item.t))

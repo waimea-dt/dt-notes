@@ -238,6 +238,13 @@ tln: line from tr to dw
 tln: angle +90 about 2,2
 tln2: line from 1,1 to 2,2 angle 45
 er: angle +90 about 1,1
+tr: trail
+tr: trail
+dw: trail clear
+tln3: line from 1,1 to 2,2
+tln3: trail
+tr.trail: from 1,1
+defaults trail
 defaults about 1,1
 tr: fill red line
 ```

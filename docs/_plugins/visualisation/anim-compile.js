@@ -24,6 +24,7 @@
   const indexId = (id, k) => markId(id, NUMBERINGS.indices, k)
   const nameId = (id) => `${id}.name`
   const decimalId = (id) => `${id}.decimal` // a number's value, written out (LAYOUTS: decimal)
+  const trailId = (id) => `${id}.trail` // where a shape has been (SHAPES: trail)
   const viewKey = (view, k) => (view.word ? `${view.word}.${k}` : String(k))
   const viewId = (id, view, k) => `${id}.${viewKey(view, k)}`
   const headId = (id, head) => `${id}.${head.word}`
@@ -260,6 +261,8 @@
     // A line's ends (from / to, or the whole line shifted by a relative move) and its via points
     // (a curve's bends, a line's corners). A line has no route of its own, so this returns null.
     function placeLine(shape, props, creating, warn) {
+      const owned = kindOf(shape).owned
+      if (owned && (props.at || props.from || props.to || props.via || props.bend)) throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
       if (props.angle && !props.about && !kindOf(shape).loop) throw new Error(`a line's angle turns it about a point, e.g. "${shape.id}: angle +90 about 5,5" (a loop's angle is a curve's)`)
       if (props.travel || props.follow || props.attach) throw new Error('a line has no single position, so it can\'t travel, follow or attach (its ends can follow shapes)')
       if (props.x || props.y || props.at?.kind === 'ref' || props.at?.kind === 'place') throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
@@ -696,6 +699,7 @@
         schedule(meta, shape.uid, props).enter = effectOf(props)
         if (props.effect) warnEffect(shape, props.effect, warn)
         updateParts(shape, props, meta, warn)
+        if (props.trail !== undefined) setTrail(shape, shape, props, meta, warn)
         return
       }
 
@@ -737,6 +741,7 @@
       shapes.set(id, shape)
       schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }) // travel: speed per hop
       updateParts(shape, props, meta, warn)
+      if (props.trail !== undefined) setTrail(existing, shape, props, meta, warn)
       if (order) applyStagger(shape, order, props, meta, warn)
       else if (props.stagger) warn(`"stagger" works on ${GROUPS}, and "${id}" isn't one`)
     }
@@ -782,6 +787,7 @@
       }
       shapes.set(id, shape)
       schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }).enter = 'copy' // travel: speed per hop
+      if (props.trail !== undefined) setTrail(src, shape, props, meta, warn) // from the original, where the copy starts
     }
 
     // "g: group [a b c]": shapes that act as one, riding on the group at their offsets. The shapes
@@ -816,6 +822,7 @@
       applyProps(group, props, false, warn, meta)
       shapes.set(id, group)
       schedule(meta, group.uid, props).enter = 'fade'
+      if (props.trail !== undefined) setTrail(group, group, props, meta, warn)
     }
 
     // "g: ungroup": the group goes, its shapes stay where they are
@@ -918,7 +925,7 @@
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
-      refuseView, relayLayout, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax
+      refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, updateParts, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
@@ -926,14 +933,17 @@
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
       ({ addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
-        refuseView, relayLayout, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
+        refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 
     // The verbs (LINES with verb: true), each run as (id, existing shape, tokens, meta, warn, word)
     const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, ...Object.assign({}, ...parts.map((part) => part.verbs)) }
 
-    return { shapes, runLine, settle, camera: () => ({ ...camera }) }
+    // What the parts do once a beat's lines have all run (finish: a trail grows along its shape's move)
+    const finishBeat = (meta) => parts.forEach((part) => part.finish?.(meta))
+
+    return { shapes, runLine, settle, finishBeat, camera: () => ({ ...camera }) }
   }
 
   // A comment starts at "#" followed by a space (or the end of the line), outside quotes, so hex
@@ -973,7 +983,8 @@
   // `lands`, its new value arrives on a flyer, so it's taken halfway through (as it lands), not
   // blended; `arc`, how far it bows out on the way (a swap); `raise`, it's drawn on top of its layer
   // while it moves (the unit a swap passes in front); `turn`, it turns about a point (pivot, by
-  // degrees; carried: as a member of a group that turns), going round it in an arc.
+  // degrees; carried: as a member of a group that turns), going round it in an arc; `grow`, a
+  // trail's new points are drawn as its shape moves (anim-trail.js).
   function tween(meta, uid) {
     let record = meta.tweens.get(uid)
     if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))
@@ -1028,6 +1039,7 @@
             issues.push({ error: true, step: si, beat: bi, line: li, message: error.message })
           }
         })
+        compiler.finishBeat(meta)
         const state = new Map([...compiler.shapes].map(([id, shape]) => [id, structuredClone(shape)]))
         beats.push({ step: si, beat: bi, state, meta, camera: compiler.camera() })
       })
@@ -1036,5 +1048,5 @@
     return { beats, errors, warnings, issues }
   }
 
-  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
+  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, trailId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
 })()

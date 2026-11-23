@@ -179,6 +179,17 @@ car: angle +180 about 9,6     # a group, as one
 - `about` goes with an angle. An absolute angle turns from as drawn.
 - Not on rows, columns, grids or tables, or a line with both ends on shapes.
 
+## Trails
+
+```anim
+a: trail                      # a line where it goes from now on
+a: move 9,3 trail             # from where the move starts
+a.trail: stroke red solid     # dashed and muted unless styled
+a: trail clear
+```
+
+- Follows the real path: via, travel, follow and about. Stays until `trail clear`.
+
 ## Copy, attach, group
 
 ```anim
@@ -495,6 +506,7 @@ Takes `at` `x` `y` `travel` `zoom` `reset` `speed` `delay` `ease`.
 a: delete
 g: ungroup
 a: detach
+a: trail clear
 l: line
 l: static
 l: solid

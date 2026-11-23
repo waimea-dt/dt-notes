@@ -321,6 +321,98 @@ car: angle +90 about p
 
 </animation>
 
+## Feature: trail
+
+<animation grid="12x6">
+
+```anim
+a: circle "a" at 2,2 radius 0.4 fill teal
+b: rect "b" at 2,5
+r: line from 6,1 via 8,4 to 11,2
+```
+
+---
+
+## trail
+
+From where it is now.
+
+```anim
+a: trail
+```
+
++++
+
+```anim
+a: move 6,2
+```
+
++++
+
+Along the real path.
+
+```anim
+a: move 10,4 via 8,1
+```
+
++++
+
+```anim
+a: travel 10,1 7,4 3,3
+```
+
+---
+
+## Turned on with a move
+
+```anim
+b: move 5,5 trail
+```
+
++++
+
+```anim
+b: follow r
+b.trail: stroke pink solid
+```
+
++++
+
+```anim
+b: angle +180 about 8,3.5 speed slow
+```
+
+---
+
+## Styled
+
+```anim
+a.trail: stroke teal solid weight 2
+b.trail: dotted opacity 0.5 arrow
+```
+
++++
+
+```anim
+a: move 2,2
+```
+
+---
+
+## trail clear
+
+```anim
+a: trail clear
+```
+
++++
+
+```anim
+b: delete
+```
+
+</animation>
+
 ## Feature: copy
 
 The copy starts on the original and moves off.

@@ -14,14 +14,15 @@ Loaded in this order (`docs/index.html`), sharing `window.Anim`. Each part takes
 | `anim-layout.js` | Compiler part: rows, columns, code blocks, grids and tables; their views, spans, ranges, names and indices |
 | `anim-values.js` | Compiler part: the values vars and cells hold, and flyers |
 | `anim-edit.js` | Compiler part: swap, insert and remove |
+| `anim-trail.js` | Compiler part: trails (`a: trail`), grown along each move once a beat's lines have run |
 | `anim-render.js` | Draws a beat, or a blend between two, into the SVG |
 | `animation.js` | The widget: controls, captions, playback, camera, intro |
 
-**Compiler parts:** `createCompiler` (anim-compile.js) holds the shared state and core functions. Each part file pushes a factory onto `COMPILER_PARTS`: given `cx` (the state: `shapes`, `defaults`, `newUid`, `context`, and the core's functions), it returns `functions` (added to `cx`), `verbs` (merged into `VERBS`) and `link`, which fills in the other parts' functions it uses (its `let` list) once every part is made. A new part goes in `docs/index.html` after `anim-compile.js`; the VS Code extension reads the parts from there. Keep `defaults` the same object (change it in place) and make uids with `newUid()`.
+**Compiler parts:** `createCompiler` (anim-compile.js) holds the shared state and core functions. Each part file pushes a factory onto `COMPILER_PARTS`: given `cx` (the state: `shapes`, `defaults`, `newUid`, `context`, and the core's functions), it returns `functions` (added to `cx`), `verbs` (merged into `VERBS`), optionally `finish(meta)` (run once a beat's lines have all run, before its snapshot) and `link`, which fills in the other parts' functions it uses (its `let` list) once every part is made. A new part goes in `docs/index.html` after `anim-compile.js`; the VS Code extension reads the parts from there. Keep `defaults` the same object (change it in place) and make uids with `newUid()`.
 
 **Widget input** all goes through the `user*` functions in `animation.js` (`userNext`, `userBack`, `userJump`, `userPlay`): buttons, keys, the progress bar, and gestures from `DocsifyUtils.addSwipeSupport` (touch swipe left / right, double click / tap to play), and scrolling while focused (`DocsifyUtils.addWheelStepping`, which gives the page its scrolling back at either end). `GESTURE_IGNORE` keeps gestures off the controls, notes and help. A new input calls these, so autoplay and `pause` waits stay right.
 
-The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `turn`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`, `lands`).
+The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `turn`, `grow`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`, `lands`).
 
 ## Extending
 
@@ -90,6 +91,7 @@ In your summary, say that you checked, and name any exception you kept.
 - **Opacity:** a look like any other (`LOOKS: opacity`, `min`/`max`, in `STYLE`), multiplied into the shape's group opacity at render, with the spotlight's dimming on top.
 - **Text marks:** only labels drawn as plain text (not `pre` code, not scripts, not callouts). A label with no marks keeps its one plain leaf, so typing, measuring and drawing are as before; a marked one is a leaf per run in its own tspan (rebuilt only when its text changes), and typing counts only the shown characters.
 - **Turns** (`angle … about p`): `turnOf` works out the turn (`by`: an absolute angle turns by the difference; `pivot`: fixed where it is now), and the angle is kept out of `applyLook`. `turnAbout` turns the shape rigidly: a boxed shape's centre round the pivot (`placeFor`), a line's free ends and via points, and a group's members, each `carried` (its offset turned). Each records `tween.turn`; the renderer turns `a` by `by × t` (boxed: in the main loop; a carried member: its offset, in the attachments callback; lines: their free points, then `resolveEnds`), so it goes round in an arc. A turning shape of its own in a group keeps its own place (the callback returns null).
+- **Trails** (`SHAPES: trail`, `PARTS: trail`, id `trailId`): a line part with free points, made by `setTrail` (at the shape's centre before the line) and grown by `growTrails` (`finish`): each moved shape's trail takes the way it went (`wayOf`: a turn's arc, its mover's path or hops shifted by the shape's offset from it, or straight), sampled at `TRAIL_STEPS`, from its `moverOf` (the shape, or what it rides on, with a route or a change this beat), whose timing it takes. `tween.grow` (`kept`, `steps`, `raw`) tells the renderer (`grownEnds`) how many points to draw as the move goes. Not followed yet: a swap's bow (`arc`) and a row edit's slide, which grow straight.
 - **Warnings** are given once per line, so a check on each of a row's cells says it once.
 
 For every new word:

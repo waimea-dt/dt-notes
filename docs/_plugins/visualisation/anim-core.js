@@ -220,6 +220,13 @@
       takes: [...LINE_PROPS, ...LOOP_PROPS, 'bend'], label: 'along', line: true, bends: true,
       defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0, head: 'line' }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
     },
+    // where a shape has been ("a: trail"): a line through the points it's passed, made and grown by
+    // the shape's moves (anim-trail.js), dashed and muted unless styled ("a.trail: stroke red")
+    trail: {
+      takes: ['stroke', 'weight', 'linestyle', 'flow', 'opacity', 'head'], label: 'along', line: true,
+      defaults: { stroke: 'muted', linestyle: 'dashed', layer: 'back', head: 'line' },
+      internal: true, owned: 'it follows its shape, so to start it again, "clear" it and turn it on again',
+    },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
     codeline: {
@@ -321,6 +328,7 @@
     span: {}, // a box round some of a layout's places (SHAPES: span)
     power: { outline: true }, // a number's place value (NUMBERINGS: powers)
     decimal: { outline: true }, // a number's value, written out (LAYOUTS: decimal)
+    trail: {}, // where a shape has been (SHAPES: trail)
   }
 
   // The ways a layout's places can be numbered, each a text beside every one, shown with its word
@@ -711,6 +719,8 @@
       help: 'quoted text (e.g. name "total"), optionally then a side (above, below, left-of, right-of), or clear',
     },
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
+    // a line where it goes from now on (SHAPES: trail)
+    trail: { key: 'trail', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (leave a trail where it goes) or clear' },
     // a number's place values (NUMBERINGS: powers), its value written out (LAYOUTS: decimal), and
     // how many digits it has (LAYOUTS: digits), given as it's made
     powers: { key: 'powers', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
@@ -785,7 +795,7 @@
     },
     camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
-      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
+      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'trail', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" can't be a default`,
     },
   }
