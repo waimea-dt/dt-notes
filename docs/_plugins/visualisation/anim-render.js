@@ -18,11 +18,29 @@
   // the box's top edge; one at its right (label place 'right') ends this share in from its right edge
   const TOP_PAD = 0.75
   const RIGHT_PAD = 0.3
-  // The places a label goes (SHAPES: label, BAR_DRAWS: label). over: it sits on its shape, so a
-  // colour picked from what's behind it (COLOUR_PICKS) is picked against the shape's fill
+  // A label below its shape is centred this share of its font size below the shape's bottom edge
+  const BELOW_GAP = 0.75
+  // How text is anchored for each alignment (ALIGNS), and which side of its box it's placed by
+  const ANCHORS = { left: { anchor: 'start', side: -1 }, centre: { anchor: 'middle', side: 0 }, right: { anchor: 'end', side: 1 } }
+  // The places a label goes (SHAPES: label, BAR_DRAWS: label):
+  //   at       where it's drawn ({ x, y, anchor }), from the shape s, its half-sizes and the font
+  //            size in px; none: it isn't placed here (along: a line places it halfway along
+  //            itself; script: drawScript draws it)
+  //   over     it sits on its shape, so a colour picked from what's behind it (COLOUR_PICKS) is
+  //            picked against the shape's fill
+  //   own      the label is the shape itself (text), so it glows its own colour
+  //   outside  it's outside its shape, so an outline round the shape goes round it too, as a box
+  const lifted = (font) => -LABEL_LIFT * font // "central" sits text a little low in a shape
   const LABEL_PLACES = {
-    centre: { over: true }, top: { over: true }, right: { over: true }, code: { over: true },
-    content: {}, below: {}, along: {}, script: {},
+    centre: { over: true, at: (s, hw, hh, font) => ({ x: 0, y: lifted(font), anchor: ANCHORS.centre.anchor }) },
+    // inside the top of the box, or in the middle of one too short for that
+    top: { over: true, at: (s, hw, hh, font) => ({ x: 0, y: Math.min(-hh + TOP_PAD * font, 0) + lifted(font), anchor: ANCHORS.centre.anchor }) },
+    right: { over: true, at: (s, hw, hh, font) => ({ x: hw - RIGHT_PAD * font, y: lifted(font), anchor: ANCHORS.right.anchor }) },
+    code: { over: true, at: (s, hw, hh, font) => ({ x: -hw + kindOf(s).pre.pad * font, y: lifted(font), anchor: ANCHORS.left.anchor }) },
+    content: { own: true, at: (s, hw) => { const { anchor, side } = ANCHORS[s.align] || ANCHORS.centre; return { x: side * hw, y: 0, anchor } } },
+    below: { outside: true, at: (s, hw, hh, font) => ({ x: 0, y: hh + font * BELOW_GAP, anchor: ANCHORS.centre.anchor }) },
+    along: {},
+    script: {},
   }
 
   // A line's arrowheads' strengths (0-1) at each end (HEADS), blended as they're added or taken off
@@ -455,7 +473,7 @@
       g.style.opacity = v.opacity * (s.opacity ?? 1)
       // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
       // (the highlight colour if it has none); highlight glow (v.hlGlow) the highlight colour.
-      const glowColour = kindOf(s).label === 'content' ? colours.colour : colours.stroke // text glows its own colour
+      const glowColour = LABEL_PLACES[kindOf(s).label]?.own ? colours.colour : colours.stroke // text glows its own colour
       const halo = (k, colour) => `drop-shadow(0 0 ${0.15 * CELL * k}px ${colour})`
       const filters = []
       const bright = Math.max(v.glow || 0, v.hlGlow || 0)
@@ -567,34 +585,16 @@
       }
       if (node.title) setText(node.title, s.label ?? '')
 
-      // Label: where its type puts it (SHAPES): in the middle, below, or (text) the shape itself; or
-      // where its bar puts it (labelPlace)
-      const label = node.label
-      const place = labelPlace(node, s, v, hw, hh)
-      attr(label, 'x', 0)
-      attr(label, 'text-anchor', 'middle')
-      if (place === 'content') {
-        const anchor = s.align === 'left' ? 'start' : s.align === 'right' ? 'end' : 'middle'
-        attr(label, 'text-anchor', anchor)
-        attr(label, 'x', anchor === 'start' ? -hw : anchor === 'end' ? hw : 0)
-        attr(label, 'y', 0)
-      } else if (place === 'code') {
-        attr(label, 'text-anchor', 'start')
-        attr(label, 'x', -hw + kindOf(s).pre.pad * fontSize)
-        attr(label, 'y', -LABEL_LIFT * fontSize)
-      } else if (place === 'script') {
-        drawScript(node, s, v.script, colours)
-      } else if (place === 'below') {
-        attr(label, 'y', hh + fontSize * 0.75)
-      } else if (place === 'top') {
-        // inside the top of the box, or in the middle of one too short for that
-        attr(label, 'y', Math.min(-hh + TOP_PAD * fontSize, 0) - LABEL_LIFT * fontSize)
-      } else if (place === 'right') {
-        attr(label, 'text-anchor', 'end')
-        attr(label, 'x', hw - RIGHT_PAD * fontSize)
-        attr(label, 'y', -LABEL_LIFT * fontSize)
-      } else {
-        attr(label, 'y', -LABEL_LIFT * fontSize) // "central" sits text a little low in a shape
+      // Label: where its type puts it (SHAPES: label, LABEL_PLACES), or where its bar puts it
+      // (labelPlace); a script is drawn by drawScript
+      if (kindOf(s).script) drawScript(node, s, v.script, colours)
+      const { place, fade } = labelPlace(s, v, hw, hh)
+      if (fade !== 1) node.label.style.opacity = v.labelOpacity * fade
+      const at = LABEL_PLACES[place].at?.(s, hw, hh, fontSize)
+      if (at) {
+        attr(node.label, 'x', at.x)
+        attr(node.label, 'y', at.y)
+        attr(node.label, 'text-anchor', at.anchor)
       }
       drawCover(node, v, hw, hh, colours)
       if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); setText(node.debugId, s.id) }
@@ -875,8 +875,11 @@
 
     // A label whose colour is picked from what's behind it (colours.cover), on a bar that has a
     // cover (BAR_DRAWS): a copy of it on top, clipped to the bar's filled part and coloured for
-    // that, so a label half on the bar and half off reads on both. Copied each frame, as the
-    // label is (it may be typing, or change its marks); taken away when it isn't needed.
+    // that, so a label half on the bar and half off reads on both. Its text is copied again only
+    // when the label's changes (setLabel: labelKey, as it types or its marks change); its place and
+    // look follow the label's each frame. Taken away when it isn't needed.
+    const COVER_ATTRS = ['x', 'y', 'text-anchor']
+    const COVER_STYLES = ['fontSize', 'fontWeight', 'fontFamily', 'fontStyle', 'opacity']
     function drawCover(node, v, hw, hh, colours) {
       const cover = colours.cover && !v.barFades && BAR_DRAWS[v.barKind]?.cover?.(clamp01(v.bar), hw, hh)
       if (!cover) {
@@ -889,12 +892,18 @@
         node.clip.appendChild(svgEl('path'))
       }
       attr(node.clip.firstChild, 'd', cover)
-      const copy = node.label.cloneNode(true)
-      copy.setAttribute('clip-path', `url(#${node.clip.id})`)
-      copy.style.fill = colours.cover
-      if (node.cover) node.cover.replaceWith(copy)
-      else node.label.after(copy)
-      node.cover = copy
+      if (!node.cover) {
+        node.cover = svgEl('text', { class: node.label.getAttribute('class'), 'dominant-baseline': 'central', 'clip-path': `url(#${node.clip.id})` })
+        node.label.after(node.cover)
+        node.coverKey = null
+      }
+      if (node.coverKey !== node.labelKey) {
+        node.coverKey = node.labelKey
+        node.cover.replaceChildren(...node.label.cloneNode(true).childNodes)
+      }
+      for (const name of COVER_ATTRS) attr(node.cover, name, node.label.getAttribute(name))
+      for (const prop of COVER_STYLES) paint(node.cover, prop, node.label.style[prop])
+      paint(node.cover, 'fill', colours.cover)
     }
     // A wedge of a circle of radius r, its share of it (0-1) clockwise from the top
     function wedgePath(r, share) {
@@ -906,8 +915,10 @@
 
     // A shape's bar (v.bar: how full, v.barKind: its kind), its parts made once per kind and hidden
     // while that kind isn't showing. Changing kind, both show, cross-fading (v.barFades).
+    const NO_BARS = new Map()
     function drawBars(node, s, v, hw, hh, colours) {
-      const shown = v.barFades || new Map(v.barKind ? [[v.barKind, 1]] : [])
+      if (!node.bars && !v.barKind && !v.barFades) return // it's never had a bar
+      const shown = v.barFades || (v.barKind ? new Map([[v.barKind, 1]]) : NO_BARS)
       for (const [kind, parts] of Object.entries(node.bars || {})) {
         if (!shown.has(kind)) parts.forEach((el) => paint(el, 'display', 'none'))
       }
@@ -919,17 +930,17 @@
         BAR_DRAWS[kind].draw(parts, s, clamp01(v.bar), hw, hh, colours, v)
       }
     }
-    // Where a shape's label goes: where its bar puts it (BAR_DRAWS: label), or its type (SHAPES).
-    // Changing bar kind (v.barFades) to one that puts it elsewhere, it fades out at the old place
-    // and back in at the new, rather than jumping.
-    function labelPlace(node, s, v, hw, hh) {
+    // Where a shape's label goes (place: a LABEL_PLACES key): where its bar puts it (BAR_DRAWS:
+    // label), or its type (SHAPES); fade, how much of it shows there (0-1). Changing bar kind
+    // (v.barFades) to one that puts it elsewhere, it fades out at the old place and back in at the
+    // new, rather than jumping.
+    function labelPlace(s, v, hw, hh) {
       const placeOf = (kind) => (kind && BAR_DRAWS[kind].label?.(s, hw, hh)) || kindOf(s).label
-      if (!v.barFades) return placeOf(v.barKind)
+      if (!v.barFades) return { place: placeOf(v.barKind), fade: 1 }
       const [[kindA], [kindB, u]] = [...v.barFades]
       const [from, to] = [kindA, kindB].map(placeOf)
-      if (from === to) return to
-      node.label.style.opacity = v.labelOpacity * Math.abs(2 * u - 1)
-      return u < 0.5 ? from : to
+      if (from === to) return { place: to, fade: 1 }
+      return { place: u < 0.5 ? from : to, fade: Math.abs(2 * u - 1) }
     }
     // How much of a shape's plain fill shows: all of it without a bar, none with one, and between
     // as a bar turns on or off (v.barFades)
@@ -1326,16 +1337,18 @@
         // against the backdrop, or, where the label sits on the shape (LABEL_PLACES: over), its fill
         // and its bar's track (unless the label is clear of it: BAR_DRAWS: holed) over that. Where it
         // sits on a bar, the part of it over the bar is drawn again in the colour picked against
-        // the bar (colours.cover: drawCover).
-        const backdrop = rgba(COLOURS.bg)
-        const onShape = LABEL_PLACES[kindOf(item.shape).label]?.over
-        const bar = BAR_DRAWS[item.v.barKind]
-        const base = onShape ? over(track && !bar?.holed ? track : null, backdrop) : backdrop
-        const behind = onShape ? over(fill && [...fill.slice(0, 3), fill[3] * plainFill(item.v)], base) : backdrop
-        const picked = [from, to].some((s) => COLOUR_PICKS[ink(s)])
+        // the bar (colours.cover: drawCover). What's behind is only worked out for a picked colour.
         const inkOn = (backing) => mixRgba(...[from, to].map((s) => (COLOUR_PICKS[ink(s)] ? pickInk(COLOUR_PICKS[ink(s)], backing) : rgba(colourCss(ink(s), 'stroke')))), t)
-        colours.colour = cssOf(inkOn(behind))
-        if (picked && onShape && raw && bar?.cover) colours.cover = cssOf(inkOn(over(raw, base)))
+        if (![from, to].some((s) => COLOUR_PICKS[ink(s)])) colours.colour = cssOf(inkOn(null))
+        else {
+          const backdrop = rgba(COLOURS.bg)
+          const onShape = LABEL_PLACES[kindOf(item.shape).label]?.over
+          const bar = BAR_DRAWS[item.v.barKind]
+          const base = onShape ? over(track && !bar?.holed ? track : null, backdrop) : backdrop
+          const behind = onShape ? over(fill && [...fill.slice(0, 3), fill[3] * plainFill(item.v)], base) : backdrop
+          colours.colour = cssOf(inkOn(behind))
+          if (onShape && raw && bar?.cover) colours.cover = cssOf(inkOn(over(raw, base)))
+        }
         // highlight glow fades in / out like the box; a shape glows too when one covering it does
         // (a span's cells: covers)
         item.v.hlGlow = blend(item, (s) => s.hl?.glow || (s === item.a ? glowA : glowB).has(s.id))
@@ -1427,7 +1440,7 @@
       }
       // its outline (SHAPES); a group, or an outline round a label below its shape, is a box
       const kind = kindOf(s)
-      const boxed = boxedToo || !kind.outline || (offset > 0 && kind.label === 'below')
+      const boxed = boxedToo || !kind.outline || (offset > 0 && LABEL_PLACES[kind.label]?.outside)
       if (boxed) {
         const hw = (b.x1 - b.x0) / 2 + offset
         const hh = (b.y1 - b.y0) / 2 + offset

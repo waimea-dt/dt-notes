@@ -32,8 +32,12 @@
       shape.label = value.label
       shape.nil = Boolean(value.nil)
     }
+    // Whether a shape's value is held in its digits (a number: LAYOUTS: radix), not its own label,
+    // and those digits (the shapes that change as its value does)
+    const inDigits = (shape) => Boolean(LAYOUTS[shape.layout]?.radix)
+    const digitsOf = (row) => row.members.map((id) => shapes.get(id)).filter(Boolean)
     // A shape's value: a var's or cell's, or a number's, from its digits
-    const valueIn = (shape) => (shape.layout ? { label: String(wholeOf(shape)), nil: false } : { label: shape.label, nil: shape.nil })
+    const valueIn = (shape) => (inDigits(shape) ? { label: String(wholeOf(shape)), nil: false } : { label: shape.label, nil: shape.nil })
 
     // A digit of a number (layout: LAYOUTS: radix) is a symbol for 0 to radix - 1 (0-9, A-F)
     function checkDigit(layout, value) {
@@ -57,7 +61,7 @@
       }
       const now = valueIn(shape)
       if (now.nil || !NUMBER.test(now.label)) throw new Error(`"${shape.id}" holds ${now.nil ? 'null' : `"${now.label}"`}, not a number, so there's nothing to add ${value.label} to`)
-      if (!shape.layout) return { label: String(Number((Number(now.label) + Number(value.label)).toPrecision(12))) }
+      if (!inDigits(shape)) return { label: String(Number((Number(now.label) + Number(value.label)).toPrecision(12))) }
       const { noun } = LAYOUTS[shape.layout]
       if (!/^[+-]\d+$/.test(value.label)) throw new Error(`a ${noun} adds whole numbers, not ${value.label}`)
       return { label: String(BigInt(now.label) + BigInt(value.label)) }
@@ -102,7 +106,7 @@
       if (!shape) throw noShape(id)
       const row = shape.digit ? null : shape
       if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or one, e.g. "b.0: flip"), and "${id}" isn't one`)
-      let cells = row ? row.members.map((cell) => shapes.get(cell)).filter(Boolean) : [shape]
+      let cells = row ? digitsOf(row) : [shape]
       let next = 1
       if (row && placeOf(row, tokens[1]) !== undefined) {
         ({ cells } = cellsBetween(row, tokens, 1, 'flip', (a, b) => `"${id}: flip ${a} ${b}"`))
@@ -122,7 +126,7 @@
     // How a value on the move shows, leaving or arriving at a shape: as the var or cell itself, or
     // for a number, a box round it (in its cells' look) holding its value
     function standIn(shape) {
-      if (!shape.layout) return shape
+      if (!inDigits(shape)) return shape
       return { ...structuredClone(shape.cell), ...boxCentre(shape), w: shape.w, h: shape.h, ...valueIn(shape), auto: null }
     }
     // Where a value on the move leaves or arrives
@@ -197,9 +201,10 @@
     // After every line: each linked colour follows its sources, changing in the time they take
     // this beat (a number's: its digits')
     function fitColours(meta, warn) {
-      const changing = (source) => (source.layout ? source.members.map((id) => shapes.get(id)).filter(Boolean) : [source])
+      const changing = (source) => (inDigits(source) ? digitsOf(source) : [source])
       for (const shape of shapes.values()) {
-        for (const field of Object.keys(shape.links || {})) {
+        if (!shape.links) continue
+        for (const field of Object.keys(shape.links)) {
           if (!fitColour(shape, field, warn)) continue
           const sources = shape.links[field].args.map((arg) => shapes.get(arg.ref)).filter(Boolean)
           retime(meta, shape.uid, busiest(meta, sources.flatMap(changing)))
@@ -235,8 +240,8 @@
     // crossfading in, centred on the landing, and with keep-style taking the look it came with.
     function flyValue(meta, source, target, hops, props, arrive, warn) {
       const look = keptStyle(props, standIn(source))
-      const landing = target.layout ? setNumber(target, valueIn(source), warn, look) : [restyled(target, look)]
-      if (!target.layout) {
+      const landing = inDigits(target) ? setNumber(target, valueIn(source), warn, look) : [restyled(target, look)]
+      if (!inDigits(target)) {
         setValue(landing[0], valueIn(source))
         shapes.set(landing[0].id, landing[0])
       }
@@ -244,7 +249,7 @@
       // lands: the flyer has already shown the value on the way, so the target takes it as it lands
       // rather than blending to it (a bar would fill a second time under the flyer)
       for (const changed of landing) schedule(meta, changed.uid, props, { dur: fade, after: arrive - fade / 2 }).lands = true
-      fly(meta, source, target.layout ? target : landing[0], hops, props, { arrive })
+      fly(meta, source, inDigits(target) ? target : landing[0], hops, props, { arrive })
     }
 
     // "v1: a.1": a copy of a.1 glides onto v1, which takes its value as it lands
