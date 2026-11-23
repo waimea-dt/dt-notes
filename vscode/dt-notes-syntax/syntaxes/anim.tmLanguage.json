@@ -254,7 +254,7 @@
     "flag": {
       "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, an arrowhead)",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(keep-style|bar|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|arrow)(?![\\w-])"
+      "match": "(?<![\\w-])(keep-style|bar|ring|pie|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|arrow)(?![\\w-])"
     },
     "value": {
       "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",

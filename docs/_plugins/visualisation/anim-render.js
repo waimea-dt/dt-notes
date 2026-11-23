@@ -8,7 +8,7 @@
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
-    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf } = window.Anim
+    entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -21,10 +21,9 @@
   // An arrowhead's strength (0-1): arrows have one, and lines or curves given "arrow"
   const headOf = (shape) => (SHAPES[shape.type]?.head || shape.head ? 1 : 0)
 
-  // A var's or cell's bar (LOOKS: bar, BARS): whether it shows one (a kind that fits its outline),
-  // and the share of it its value fills (held to 0-1; a value that isn't a number fills none), or 1,
-  // all of it, when it has no bar, so turning one on or off blends.
-  const hasBar = (shape) => Boolean(shape?.bar && shape.holds && barFits(shape.bar, shape))
+  // A var's or cell's bar (LOOKS: bar, BARS): the share of it its value fills (held to 0-1; a value
+  // that isn't a number fills none), or 1, all of it, when it shows none (hasBar), so turning one on
+  // or off blends.
   function barShare(shape, label = shape.label, nil = shape.nil) {
     if (!hasBar(shape)) return 1
     const max = shape.max ?? LOOKS.max.default
@@ -32,7 +31,12 @@
     return max > 0 && Number.isFinite(value) ? clamp01(value / max) : 0
   }
   // The kind of bar drawn for a blend of two shapes: the one it's going to, or the one it had
-  const barKindOf = (...shapes) => shapes.find(hasBar)?.bar
+  const barKindOf = (...shapes) => shapes.find((shape) => shape && hasBar(shape))?.bar
+  // How round a box is drawn (v.round, 0-1): round while it shows a round bar (BARS: round), blending
+  // as one turns on or off
+  const roundness = (shape) => (roundBar(shape) ? 1 : 0)
+  // A box's corner as drawn: its own, or all the way round as it's round (v.round)
+  const cornerOf = (s, v, hw, hh) => Math.max(0, lerp(Math.min(s.corner || 0, hw, hh), Math.min(hw, hh), v.round || 0))
 
   // ---------------------------------------------------------------------------
   // SVG rendering
@@ -163,14 +167,14 @@
 
     // How each boxed shape type is drawn (lines: in drawNode). make adds its elements to the node
     // (node.body, when it has one, takes the stroke, and the fill if its type takes fill); size
-    // sets them to the shape's half-sizes each frame. edge: false, its stroke is its drawing, not an
+    // sets them to the shape's half-sizes each frame (v: how it's drawn now). edge: false, its stroke is its drawing, not an
     // edge round it (an icon), so an inside highlight needn't clear it.
     const setBox = (el, hw, hh) => { attr(el, 'x', -hw); attr(el, 'y', -hh); attr(el, 'width', 2 * hw); attr(el, 'height', 2 * hh) }
     const rectBody = {
       make: (node) => { node.body = node.g.appendChild(svgEl('rect')) },
-      size: (node, s, hw, hh) => {
+      size: (node, s, hw, hh, colours, v) => {
         setBox(node.body, hw, hh)
-        const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
+        const corner = cornerOf(s, v, hw, hh)
         attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
       },
     }
@@ -481,7 +485,7 @@
       attr(g, 'transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle + (v.rot || 0)}) scale(${v.scale * s.scale})`)
       const { hw, hh } = extents(s)
 
-      BODIES[node.type].size(node, s, hw, hh, colours)
+      BODIES[node.type].size(node, s, hw, hh, colours, v)
       // highlight line: a band behind the text (SHAPES: band), fading in and out with it
       const band = kindOf(node).band
       if (band && (v.hlLine || node.band)) {
@@ -744,12 +748,13 @@
 
     // How each kind of bar (BARS in anim-core.js) is drawn, in place of the shape's fill: over its
     // track and under its edge. make(node) adds its parts under the shape's body and returns them;
-    // draw(parts, s, share, hw, hh, colours) sets them each frame, share (0-1) being how full it is,
+    // draw(parts, s, share, hw, hh, colours, v) sets them each frame, share (0-1) being how full it is,
     // colours.fill its fill tinted as a fill, colours.raw the same as it is (like a stroke), and
     // colours.track the rest's (tinted). label(s, hw, hh), if given, is where the
-    // value goes (a label place: SHAPES), in place of the shape's own.
+    // value goes (a label place: SHAPES), in place of the shape's own. A round one (BARS: round) is
+    // drawn in the circle that fits its box, clockwise from the top.
     const under = (node, tag) => node.g.insertBefore(svgEl(tag, { stroke: 'none' }), node.body)
-    const tall = (hw, hh) => hh > hw // a linear bar fills up, rather than across
+    const tall = (hw, hh) => hh > hw // a bar fills up, rather than across
     const hasTrack = (s) => colourCss(s.track) !== 'none'
     const BAR_DRAWS = {
       // the track and a full-size box cut down to the share (clip-path inset), so a rounded corner
@@ -757,11 +762,11 @@
       // Its value is in the middle of a track; with none, at the end it grows towards (the top, or
       // the right), as on a bar chart. The bar is its fill colour as it is (stronger than a tinted
       // fill), over the tinted track.
-      linear: {
+      bar: {
         make: (node) => [under(node, 'rect'), under(node, 'rect')],
         label: (s, hw, hh) => (hasTrack(s) ? 'centre' : tall(hw, hh) ? 'top' : 'right'),
-        draw: ([track, fill], s, share, hw, hh, colours) => {
-          const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
+        draw: ([track, fill], s, share, hw, hh, colours, v) => {
+          const corner = cornerOf(s, v, hw, hh)
           for (const el of [track, fill]) { setBox(el, hw, hh); attr(el, 'rx', corner); attr(el, 'ry', corner) }
           paint(track, 'fill', colours.track)
           paint(fill, 'fill', colours.raw)
@@ -769,6 +774,43 @@
           paint(fill, 'clipPath', tall(hw, hh) ? `inset(${cut} 0 0 0)` : `inset(0 ${cut} 0 0)`)
         },
       },
+      // a band round the inside of the circle, `width` (× its radius) wide: the track, and an arc
+      // over it (a dash, its length the share, with flat ends)
+      ring: {
+        width: 0.3,
+        make: (node) => [under(node, 'circle'), under(node, 'circle')].map((el) => {
+          attr(el, 'pathLength', 1); attr(el, 'transform', 'rotate(-90)'); paint(el, 'fill', 'none')
+          return el
+        }),
+        label: () => 'centre',
+        draw: ([track, arc], s, share, hw, hh, colours) => {
+          const r = Math.min(hw, hh)
+          const width = BAR_DRAWS.ring.width * r
+          for (const el of [track, arc]) { attr(el, 'r', r - width / 2); paint(el, 'strokeWidth', `${width}px`) }
+          paint(track, 'stroke', colours.track)
+          paint(arc, 'stroke', colours.raw)
+          paint(arc, 'strokeDasharray', `${share.toFixed(4)} 1`)
+        },
+      },
+      // a disc, the track, and a wedge over it
+      pie: {
+        make: (node) => [under(node, 'circle'), under(node, 'path')],
+        label: () => 'centre',
+        draw: ([track, wedge], s, share, hw, hh, colours) => {
+          const r = Math.min(hw, hh)
+          attr(track, 'r', r)
+          attr(wedge, 'd', wedgePath(r, share))
+          paint(track, 'fill', colours.track)
+          paint(wedge, 'fill', colours.raw)
+        },
+      },
+    }
+    // A wedge of a circle of radius r, its share of it (0-1) clockwise from the top
+    function wedgePath(r, share) {
+      if (share <= 0) return ''
+      if (share >= 1) return `M 0 ${-r} A ${r} ${r} 0 1 1 0 ${r} A ${r} ${r} 0 1 1 0 ${-r} Z`
+      const turn = share * 2 * Math.PI
+      return `M 0 0 L 0 ${-r} A ${r} ${r} 0 ${share > 0.5 ? 1 : 0} 1 ${r * Math.sin(turn)} ${-r * Math.cos(turn)} Z`
     }
 
     // A shape's bar (v.bar: how full, v.barKind: its kind), its parts made once per kind and hidden
@@ -781,7 +823,7 @@
       node.bars ||= {}
       const parts = (node.bars[v.barKind] ||= BAR_DRAWS[v.barKind].make(node))
       parts.forEach((el) => paint(el, 'display', ''))
-      BAR_DRAWS[v.barKind].draw(parts, s, clamp01(v.bar), hw, hh, colours)
+      BAR_DRAWS[v.barKind].draw(parts, s, clamp01(v.bar), hw, hh, colours, v)
     }
 
     // signal: a glowing blip running along a line once (signal: { t: 0-1, reverse }), its tail
@@ -1020,6 +1062,7 @@
         // lands from a flyer (tween: lands), which showed it on the way, is taken as it lands
         v.barKind = a && b ? barKindOf(b, a) : barKindOf(shape)
         if (v.barKind) v.bar = !(a && b) ? barShare(shape) : tw?.lands ? barShare(t < 0.5 ? a : b) : lerp(barShare(a), barShare(b), t)
+        v.round = a && b ? lerp(roundness(a), roundness(b), t) : roundness(shape)
         // an arrowhead fades in or out as it's added to or taken off a line
         v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
         v.label ??= shape.label
@@ -1082,6 +1125,7 @@
         // the value it carries, as a bar from its source's to its target's
         v.barKind = barKindOf(flyer.to, flyer.from)
         if (v.barKind) v.bar = lerp(barShare(flyer.from), barShare(flyer.to, flyer.from.label, flyer.from.nil), k)
+        v.round = lerp(roundness(flyer.from), roundness(flyer.to), k)
         items.push({ uid: flyer.uid, shape, v, node: nodes.get(flyer.uid) || makeNode(shape), a: flyer.from, b: flyer.to, t: k, flyer: true })
       }
 
@@ -1247,7 +1291,7 @@
       }
       // a box: its corners (if it has them) grown or shrunk with it, or rounded on the way out
       const cornered = APPLIES.corner.includes(s.type)
-      const corner = cornered ? Math.min(s.corner || 0, hw, hh) * k : 0
+      const corner = cornered ? cornerOf(s, v, hw, hh) * k : 0
       const r = cornered ? corner + offset : offset > 0 ? offset : 0
       return { d: rectPath(w, h, r), transform }
     }

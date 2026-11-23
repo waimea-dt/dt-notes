@@ -496,7 +496,7 @@
   const APPLIES = {}
   for (const [type, kind] of Object.entries(SHAPES)) for (const key of kind.takes) (APPLIES[key] ||= []).push(type)
 
-  // How each look prop is applied to a shape (applyLook, in this order, after size):
+  // How each look prop is applied to a shape (applyLook, in this order, after size, apart from early):
   //   field  the shape field it sets
   //   unit   for a number: CELL (given in cells) or 1 (a multiplier); min, its least value
   //   map    for a word: the value it stores (flow-reverse -> reverse)
@@ -507,36 +507,44 @@
   //   check  check(value, shape): a warning when the value can't be shown as asked (null if it can);
   //          shape is left out on a defaults line
   //   default  its value on a shape that hasn't been given one (read where it's used)
+  //   early  applied before size, as it decides what size a shape takes (a round bar: one)
+  //   side   sets one side, so a shape showing a round bar (BARS: round) refuses it
   // bar: a var's or cell's value shown as the share of its shape that its value is of max (a value
   // over max shows full, below 0 empty). The kinds of bar (BARS: drawn by BAR_DRAWS in
-  // anim-render.js), each for the outlines it fits (SHAPES: outline); a shape it doesn't fit shows
-  // its value plainly, with a warning.
-  //   default  the kind "bar" on its own gives (the others are written after it: "bar <kind>")
+  // anim-render.js), each written as its key ("bar", "ring", "pie"), for the outlines it fits
+  // (SHAPES: outline); a shape it doesn't fit shows its value plainly, with a warning.
   //   outlines the outlines it can be drawn in
   //   slot     false: a row's / column's insert and remove show no slot (LAYOUTS: slot) for its cells,
   //            where an empty outline would look like a bar
+  //   round    it's round (roundBar): the shape is made square (at its shorter side) as it's turned
+  //            on and takes one size, not width or height; its corner is drawn round, whatever it's set to
   // (where its value goes is its drawer's choice, BAR_DRAWS: label, as it depends on the shape's size)
   const BARS = {
     // a box filled part-way: up from the bottom of a box taller than it is wide, otherwise from the left
-    linear: { default: true, outlines: ['box'], slot: false },
+    bar: { outlines: ['box'], slot: false },
+    ring: { outlines: ['box'], slot: false, round: true }, // an arc round its middle, clockwise from the top
+    pie: { outlines: ['box'], slot: false, round: true }, // a wedge, clockwise from the top
   }
-  const BAR_DEFAULT = Object.keys(BARS).find((kind) => BARS[kind].default)
-  const BAR_KINDS = Object.keys(BARS).filter((kind) => !BARS[kind].default) // written after "bar"
-  // Whether a shape's bar can be drawn: it has one, holds a value, and the kind fits its outline
+  // Whether a kind of bar fits a shape's outline, and whether it shows one (hasBar: it has one, holds
+  // a value, and the kind fits)
   const barFits = (kind, shape) => Boolean(BARS[kind]?.outlines.includes(SHAPES[shape.type]?.outline))
+  const hasBar = (shape, kind = shape?.bar) => Boolean(kind && shape?.holds && barFits(kind, shape))
+  // The round bar a shape shows (BARS: round), or null; `kind` for one it's about to be given
+  const roundBar = (shape, kind = shape?.bar) => (hasBar(shape, kind) && BARS[kind].round ? kind : null)
   function barCheck(kind, shape) {
     if (!shape || !BARS[kind]) return null
-    if (!shape.holds) return '"bar" shows the value of a var or a row\'s / column\'s cell, and this has none'
-    if (!barFits(kind, shape)) return `this bar doesn't fit ${article(nounOf(shape))} ${nounOf(shape)}, so its value shows plainly`
+    if (!shape.holds) return `"${kind}" shows the value of a var or a row's / column's cell, and this has none`
+    if (!barFits(kind, shape)) return `"${kind}" doesn't fit ${article(nounOf(shape))} ${nounOf(shape)}, so its value shows plainly`
     return null
   }
+  const cornerCheck = (value, shape) => (shape && roundBar(shape) ? `${article(roundBar(shape))} ${roundBar(shape)} is always round, so its corner doesn't show` : null)
   const maxCheck = (value) => (!value.rel && value.v <= 0 ? '"max" must be more than 0, so the bar stays empty' : null)
   const LOOKS = {
     font: { field: 'font', unit: 1, min: 0.1, cell: true },
-    width: { field: 'w', unit: CELL, min: 0 },
-    height: { field: 'h', unit: CELL, min: 0 },
+    width: { field: 'w', unit: CELL, min: 0, side: true },
+    height: { field: 'h', unit: CELL, min: 0, side: true },
     radius: { field: 'r', unit: CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
-    corner: { field: 'corner', unit: CELL, min: 0, cell: true },
+    corner: { field: 'corner', unit: CELL, min: 0, cell: true, check: cornerCheck },
     bend: { field: 'bend', unit: CELL }, // how far a curve bows out halfway along (+ to its left, - right)
     fill: { field: 'fill', cell: true, kept: true },
     stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use colour' } },
@@ -553,8 +561,8 @@
     flow: { field: 'flow', map: FLOWS, cell: true },
     layer: { field: 'layer', default: 'normal' },
     fit: { field: 'fit', default: 'contain' }, // an image's fit in its box (IMAGE_FITS)
-    // a var's or cell's value as a bar (bar clear: back to a plain box)
-    bar: { field: 'bar', map: { clear: false }, cell: true, check: barCheck }, // a kind (BARS), or false
+    // a var's or cell's value as a bar, ring or pie (BARS; "bar clear": back to a plain box)
+    bar: { field: 'bar', map: { clear: false }, cell: true, check: barCheck, early: true }, // a kind (BARS), or false
     // a full bar's value (a row's or column's: its biggest when its bar is turned on, unless given)
     max: { field: 'max', unit: 1, min: 0, cell: true, check: maxCheck, default: 100 },
     track: { field: 'track', cell: true },
@@ -648,9 +656,9 @@
     // every look (STYLE) back as it started
     style: { key: 'style', sigs: [['reset']], help: 'reset (every look back to how it started), e.g. "a: style reset"' },
     lang: { key: 'lang', sigs: [['lang']], help: 'a language, e.g. "lang python" or "lang js"' },
-    // a var's or cell's value as a bar, max its full value, track the colour of the rest
-    // (a kind of bar, BARS, other than the default, goes after it: "bar <kind>")
-    bar: { key: 'bar', sigs: [['clear'], ['bar'], []], build: (v) => v[0] ?? BAR_DEFAULT, help: `nothing (show the value as a bar)${BAR_KINDS.map((kind) => `, ${kind}`).join('')} or clear` },
+    // a var's or cell's value as a bar, ring or pie (BARS: each its own word, "ring clear" turning it
+    // off), max its full value, track the colour of the rest
+    ...Object.fromEntries(Object.keys(BARS).map((kind) => [kind, { key: 'bar', sigs: [['clear'], []], build: (v) => v[0] ?? kind, help: `nothing (show the value as a ${kind}) or clear` }])),
     max: number('max', 'a number (the value of a full bar)'),
     track: colour('track'),
     // "arrow" here (not straight after the id, where it's the arrow shape) puts a head on a line
@@ -775,7 +783,7 @@
   const EDIT_WORDS = { end: 'end', into: 'into' }
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), ...BAR_KINDS, 'pause', 'auto', 'defaults', 'camera',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), 'pause', 'auto', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -1315,7 +1323,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

@@ -10,7 +10,7 @@
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
-    NUMBERINGS } = window.Anim
+    NUMBERINGS, roundBar } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
@@ -80,6 +80,8 @@
       const hint = LOOKS[key]?.hints?.[shape.type]
       if (hint) throw new Error(hint)
       if (APPLIES[key] && !APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${article(nounOf(shape))} ${nounOf(shape)}`)
+      const round = LOOKS[key]?.side && roundBar(shape)
+      if (round) throw new Error(`${article(round)} ${round} is round, so it takes one size (e.g. "size 2"), not "${word}"`)
     }
 
     // Applies a shape's look (size, then LOOKS): absolute when creating; on a change, a signed
@@ -87,14 +89,34 @@
     function applyLook(shape, props, creating, warn) {
       const now = (value) => (creating ? undefined : value)
       const cells = (n, current) => numberValue(n, now(current), { unit: CELL })
+      const setLooks = (early) => {
+        for (const [key, look] of Object.entries(LOOKS)) {
+          const value = props[key]
+          if (value === undefined || Boolean(look.early) !== early) continue
+          const word = wordFor(key, value)
+          check(shape, key, word)
+          if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
+          const problem = look.check?.(value, shape)
+          if (problem) warn(problem)
+          if (value === 'reset') resetLook(shape, key)
+          else if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
+          else shape[look.field] = look.map && value in look.map ? look.map[value] : value
+          // a digit given a look no longer takes that look from its value
+          if (value !== 'reset' && shape.auto?.includes(key)) shape.auto = shape.auto.filter((field) => field !== key)
+        }
+      }
+      if (props.style) STYLE.forEach((key) => resetLook(shape, key))
+      setLooks(true)
       // size: absolute, or one signed number on a change (both sides by that amount). A relative
       // pair (size +1x+0) isn't allowed: width / height change one side.
       if (props.size) {
         check(shape, 'size')
         const relative = !creating && (props.size.w.rel || props.size.h.rel)
         if (relative && !props.size.one) throw new Error('a relative size takes one number (e.g. "size +1"): use "width +1" / "height +1" to change one side')
-        if (kindOf(shape).outline === 'round') { // one size: the diameter
-          if (!props.size.one) throw new Error(`${article(shape.type)} ${shape.type} takes one size (or use radius)`)
+        const circle = kindOf(shape).outline === 'round'
+        const round = circle ? shape.type : roundBar(shape)
+        if (round && !props.size.one) throw new Error(`${article(round)} ${round} takes one size${circle ? ' (or use radius)' : ''}`)
+        if (circle) { // one size: the diameter
           shape.r = Math.max(0, cells(props.size.w, shape.r * 2) / 2)
         } else {
           shape.w = Math.max(0, cells(props.size.w, shape.w))
@@ -102,21 +124,9 @@
         }
       }
       if (props.size && (props.width || props.height)) throw new Error('give either "size" or "width" / "height", not both')
-      if (props.style) STYLE.forEach((key) => resetLook(shape, key))
-      for (const [key, look] of Object.entries(LOOKS)) {
-        const value = props[key]
-        if (value === undefined) continue
-        const word = wordFor(key, value)
-        check(shape, key, word)
-        if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
-        const problem = look.check?.(value, shape)
-        if (problem) warn(problem)
-        if (value === 'reset') resetLook(shape, key)
-        else if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
-        else shape[look.field] = look.map && value in look.map ? look.map[value] : value
-        // a digit given a look no longer takes that look from its value
-        if (value !== 'reset' && shape.auto?.includes(key)) shape.auto = shape.auto.filter((field) => field !== key)
-      }
+      setLooks(false)
+      // a round bar's shape is square, at its shorter side
+      if (roundBar(shape)) shape.w = shape.h = Math.min(shape.w, shape.h)
       // flow only shows on a dashed or dotted line
       if (props.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
       if (props.flow && shape.flow !== 'none' && shape.linestyle === 'solid') warn(`"${props.flow}" only shows on a dashed or dotted line`)
@@ -364,7 +374,11 @@
     function applyDefaults(shape) {
       const fits = (key) => !APPLIES[key] || APPLIES[key].includes(shape.type)
       const look = pick(defaults, ['size', ...Object.keys(LOOKS)].filter(fits))
-      if (look.size && kindOf(shape).outline === 'round' && !look.size.one) delete look.size // a round shape takes one size
+      const round = kindOf(shape).outline === 'round' || roundBar(shape, look.bar ?? shape.bar)
+      if (round) { // a round shape takes one size
+        if (look.size && !look.size.one) delete look.size
+        for (const key of Object.keys(look)) if (LOOKS[key]?.side) delete look[key]
+      }
       applyLook(shape, look, true, () => {})
       shape.start = pick(shape, STYLE)
     }
@@ -786,6 +800,7 @@
       // cells added to a row / column later take its look as it is now
       if (group.cell) applyProps(group.cell, pick(look, memberLook.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
       const used = new Set()
+      let resized = false
       for (const member of groupMembers(group)) {
         if (isGroup(member)) continue
         const own = pick(look, Object.keys(look).filter((key) => !APPLIES[key] || APPLIES[key].includes(member.type)))
@@ -793,9 +808,12 @@
         Object.keys(own).forEach((key) => used.add(key))
         const changed = structuredClone(member)
         applyProps(changed, own, false, warn, meta)
+        resized ||= changed.w !== member.w || changed.h !== member.h
         shapes.set(changed.id, changed)
         schedule(meta, changed.uid, props)
       }
+      // cells resized (a round bar squares them): the layout they're in closes up round them
+      if (resized && group.layout) relayLayout(bound(group) ? shapes.get(group.part) : group, props, meta, warn)
       const unused = Object.keys(look).find((key) => !used.has(key))
       if (unused) warn(`"${wordFor(unused, look[unused])}" doesn't apply to any of the shapes in "${group.id}"`)
     }
@@ -842,7 +860,7 @@
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
-      refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax
+      refuseView, relayLayout, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
@@ -850,7 +868,7 @@
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
       ({ addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
-        refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
+        refuseView, relayLayout, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 

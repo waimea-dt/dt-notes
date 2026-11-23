@@ -149,6 +149,11 @@ ec: range 1 2 bar
 defaults range 0 1
 br: rect at 1,1 bar
 bm: var 5 at 1,1 bar max 0
+rg1: var 5 at 1,1 ring size 2x1
+rg2: var 5 at 1,1 size 2 pie
+rg2: width 3
+rg2: corner 0.2
+rg3: rect at 1,1 ring
 cv: rect at 1,1 fill muted-bright
 cv2: rect at 1,1 fill red-vivid
 sp1: span er 0 9

@@ -666,7 +666,7 @@ Style changes cross-fade.
 
 ```anim
 l: line from 1,2 to 7,2 weight 2
-ring: circle at 10,2 radius 0.7 weight 1.5 stroke teal
+hoop: circle at 10,2 radius 0.7 weight 1.5 stroke teal
 ```
 
 ---
@@ -675,7 +675,7 @@ ring: circle at 10,2 radius 0.7 weight 1.5 stroke teal
 
 ```anim
 l: dashed speed slow
-ring: dashed speed slow
+hoop: dashed speed slow
 ```
 
 ---
@@ -684,7 +684,7 @@ ring: dashed speed slow
 
 ```anim
 l: dotted speed slow
-ring: dotted speed slow
+hoop: dotted speed slow
 ```
 
 ---
@@ -693,7 +693,7 @@ ring: dotted speed slow
 
 ```anim
 l: solid speed slow
-ring: solid speed slow
+hoop: solid speed slow
 ```
 
 </animation>
@@ -706,7 +706,7 @@ ring: solid speed slow
 a: circle "A" at 2,2
 b: circle "B" at 7,2
 l: line from a to b dotted weight 2
-ring: circle at 10,2 radius 0.7 dashed weight 1.5 stroke teal
+hoop: circle at 10,2 radius 0.7 dashed weight 1.5 stroke teal
 ```
 
 ---
@@ -715,7 +715,7 @@ ring: circle at 10,2 radius 0.7 dashed weight 1.5 stroke teal
 
 ```anim
 l: flow
-ring: flow
+hoop: flow
 ```
 
 ---
@@ -724,7 +724,7 @@ ring: flow
 
 ```anim
 l: flow-reverse
-ring: flow-reverse
+hoop: flow-reverse
 ```
 
 ---
@@ -733,7 +733,7 @@ ring: flow-reverse
 
 ```anim
 l: static
-ring: static
+hoop: static
 ```
 
 </animation>
