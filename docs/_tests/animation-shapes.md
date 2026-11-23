@@ -738,6 +738,58 @@ oth.3: colour white
 
 </animation>
 
+## Feature: contrast
+
+`colour contrast`: black or white text, whichever reads on what's behind it. On a bar, the part of the label over the bar is picked against the bar.
+
+<animation grid="14x7">
+
+```anim
+defaults colour contrast size 2.4x1
+c1: rect "black" at 2,1.5 fill black
+c2: rect "white" at 5,1.5 fill white
+c3: rect "yellow" at 8,1.5 fill #ff0
+c4: rect "blue" at 11,1.5 fill #00f
+defaults clear
+t: text "on the page" at 1,3.2 align left colour contrast
+h: var 50 at 7,3.2 size 6x1 bar fill #f00 track black colour contrast font 1.4
+v: var 50 at 13,4 size 1x4 bar fill #ff0 track #004 colour contrast
+p: var 40 at 3,5.5 size 2 pie fill #ff0 track #000 colour contrast
+r: var 60 at 7,5.5 size 2 ring fill #ff0 track #000 colour contrast
+```
+
+---
+
+## The fill changes and the text follows
+
+```anim
+c1: fill white
+c2: fill black
+c3: fill #008
+c4: fill #8ff
+h: 20
+v: 20
+p: 75
+```
+
++++
+
+Across the label, slowly.
+
+```anim
+h: 90 speed vslow
+v: 90 speed vslow
+```
+
++++
+
+```anim
+c3: colour amber
+h: colour fg
+```
+
+</animation>
+
 ## Feature: weight
 
 <animation grid="12x4">

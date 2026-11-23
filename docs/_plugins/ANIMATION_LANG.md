@@ -114,7 +114,7 @@ r: row [
 | line ends | `from 2,3 to b` (an end on a shape follows it) |
 | size | `size 2x1` · `size 2` (circle: diameter) · `width 3` · `height 0.5` |
 | radius / corner | `radius 0.5` (circle) · `corner 0.2` (rect; line, arrow: rounds its corners) |
-| colour | `fill blue` · `stroke #f80` · `colour amber` (text and labels) |
+| colour | `fill blue` · `stroke #f80` · `colour amber` (text and labels) · `fill rgb(255 128 0)` |
 | weight | `weight 2` (× normal, `0` hides) |
 | opacity | `opacity 0.5` (`0` hidden … `1` solid) |
 | line style | `solid` · `dashed` · `dotted` |
@@ -130,6 +130,8 @@ r: row [
 `bg`: the backdrop · `bg-shape`: a shape's default fill.
 
 **Variants** of `red` … `theme`: `-bright` (`red-bright`) · `-muted` (`blue-muted`).
+
+`colour contrast`: black or white text, whichever reads on what's behind it (on a bar, each part).
 
 ## Relative values
 
@@ -339,6 +341,17 @@ done: ring clear
 - `max`: 100, or a row's / column's biggest value.
 - `bar` fills up a tall box, across a wide one. Its value goes in the middle with a track, otherwise at the end.
 - `ring` and `pie` are round: one `size`, no `width` / `height`. A box that isn't square is made square.
+
+## Colours from values
+
+```anim
+sw: rect at 8,3 fill rgb(r g b)    # red, green, blue (0-255): follows vars r, g, b
+sw: stroke rgb(arr.0, 255, n)      # cells, numbers (binary, hex, denary) and plain numbers
+r: 200                             # sw changes with r
+sw: fill red                       # stops following
+```
+
+- For `fill`, `stroke`, `colour` and `track`. Values outside 0-255 are held in range.
 
 ## Moving values
 

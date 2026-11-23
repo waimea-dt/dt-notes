@@ -6,7 +6,7 @@
 
 ;(function () {
   const { parseProps, ID, RESERVED, KEYWORDS, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
-    nounList, boxCentre } = window.Anim
+    nounList, boxCentre, COLOUR_FUNCTIONS } = window.Anim
 
   // The numbers whose digits flip (LAYOUTS: flip), for messages: "a binary number"
   const FLIP_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => LAYOUTS[layout].flip).map((layout) => LAYOUTS[layout].noun))
@@ -18,7 +18,7 @@
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyStagger, cellsBetween, noShape, placeOf, schedule, speedOf
+    let applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf
 
     // A value a var or a row's / column's cell holds: a number, "quoted" text or null (shown muted)
     function valueOf(token) {
@@ -89,7 +89,7 @@
     function setNumber(row, value, warn, look = {}) {
       const labels = digitsFor(row.layout, value, row.members.length, warn)
       return row.members.map((id, k) => [shapes.get(id), labels[k]]).filter(([cell, label]) => cell && cell.label !== label).map(([cell, label]) => {
-        const changed = { ...structuredClone(cell), ...look }
+        const changed = restyled(cell, look)
         setValue(changed, { label })
         shapes.set(changed.id, changed)
         return changed
@@ -129,6 +129,83 @@
     const pointOf = (shape) => { const at = standIn(shape); return { x: at.x, y: at.y } }
     // keep-style: the look a value takes with it (not its size, or highlights)
     const keptStyle = (props, shape) => ((props.keepStyle ?? defaults.keepStyle) ? pick(shape, KEPT_STYLE) : {})
+    // A copy of a shape given the look a value came with (keep-style), which no longer follows values
+    function restyled(shape, look) {
+      const changed = { ...structuredClone(shape), ...look }
+      for (const key of Object.keys(look)) unlinkColour(changed, key)
+      return changed
+    }
+
+    // A colour worked out from values ("fill rgb(r g b)", COLOUR_FUNCTIONS): the look's field
+    // follows them, set now and again after every line (fitColours). Kept in shape.links[field]:
+    // fn; args, each { v } (a number) or { ref } (the id of a var, cell or number); values, the
+    // numbers it was last worked out from; and seen, what each argument held then.
+    function linkColour(shape, field, { fn, args }, warn) {
+      const { args: names, max, example: written } = COLOUR_FUNCTIONS[fn]
+      const example = `e.g. "${written}" or "${fn}(${names.map((name) => name[0]).join(' ')})"`
+      if (args.length !== names.length) throw new Error(`"${fn}(…)" takes ${names.length} values (${names.join(', ')}): numbers from 0 to ${max}, or vars or cells, ${example}`)
+      const read = args.map((token) => {
+        if (token.kind === 'word' && NUMBER.test(token.value)) return { v: Number(token.value) }
+        const source = holderRef(token, `use in "${fn}(…)"`)
+        if (!source) throw new Error(`"${fn}(…)" takes numbers from 0 to ${max}, or vars or cells, not "${token.value ?? token.name}", ${example}`)
+        return { ref: source.id }
+      })
+      shape.links = { ...shape.links, [field]: { fn, args: read, values: null, seen: null } }
+      fitColour(shape, field, warn)
+    }
+    // A look set or reset no longer follows any values
+    function unlinkColour(shape, field) {
+      if (!shape.links?.[field]) return
+      const rest = pick(shape.links, Object.keys(shape.links).filter((key) => key !== field))
+      shape.links = Object.keys(rest).length ? rest : undefined
+    }
+
+    // Works a linked colour out again when what its sources hold has changed: true if the colour
+    // changes. A source that's gone, or holds no number, leaves its share as it was (a gone one for
+    // good); a number out of range is held in it. Each is warned about as its source changes.
+    function fitColour(shape, field, warn) {
+      const link = shape.links[field]
+      const seen = link.args.map((arg) => JSON.stringify(arg.ref === undefined ? arg.v : shapes.has(arg.ref) ? valueIn(shapes.get(arg.ref)) : null))
+      if (seen.every((input, k) => input === link.seen?.[k])) return false
+      const { args: names, max, css } = COLOUR_FUNCTIONS[link.fn]
+      const values = link.args.map((arg, k) => {
+        const was = link.values?.[k] ?? 0
+        if (seen[k] === link.seen?.[k]) return was
+        const share = `the ${names[k]} in "${shape.id}"'s ${field}`
+        if (arg.ref !== undefined && !shapes.has(arg.ref)) {
+          warn(`"${arg.ref}" has gone, so ${share} stays at ${was}`)
+          link.args[k] = { v: was }
+          return was
+        }
+        const value = arg.ref === undefined ? { label: String(arg.v) } : valueIn(shapes.get(arg.ref))
+        if (value.nil || !NUMBER.test(value.label)) {
+          warn(`"${arg.ref}" holds ${value.nil ? 'null' : `"${value.label}"`}, not a number, so ${share} stays at ${was}`)
+          return was
+        }
+        const n = Math.round(Number(value.label))
+        const held = Math.min(max, Math.max(0, n))
+        if (held !== n) warn(`${value.label} is outside 0 to ${max}, so ${share} is ${held}`)
+        return held
+      })
+      Object.assign(link, { values, seen })
+      const colour = css(values)
+      if (shape[field] === colour) return false
+      shape[field] = colour
+      return true
+    }
+
+    // After every line: each linked colour follows its sources, changing in the time they take
+    // this beat (a number's: its digits')
+    function fitColours(meta, warn) {
+      const changing = (source) => (source.layout ? source.members.map((id) => shapes.get(id)).filter(Boolean) : [source])
+      for (const shape of shapes.values()) {
+        for (const field of Object.keys(shape.links || {})) {
+          if (!fitColour(shape, field, warn)) continue
+          const sources = shape.links[field].args.map((arg) => shapes.get(arg.ref)).filter(Boolean)
+          retime(meta, shape.uid, busiest(meta, sources.flatMap(changing)))
+        }
+      }
+    }
 
     // A word naming another shape (not a keyword or a value): the var or cell it names, or, with
     // `use` (what it's for), an error if it isn't one. Without `use`, undefined if it isn't a name.
@@ -158,7 +235,7 @@
     // crossfading in, centred on the landing, and with keep-style taking the look it came with.
     function flyValue(meta, source, target, hops, props, arrive, warn) {
       const look = keptStyle(props, standIn(source))
-      const landing = target.layout ? setNumber(target, valueIn(source), warn, look) : [{ ...structuredClone(target), ...look }]
+      const landing = target.layout ? setNumber(target, valueIn(source), warn, look) : [restyled(target, look)]
       if (!target.layout) {
         setValue(landing[0], valueIn(source))
         shapes.set(landing[0].id, landing[0])
@@ -178,10 +255,11 @@
     }
 
     return {
-      functions: { addTo, assignValue, symbolValue, checkDigit, digitsFor, fly, flyValue, holderRef, keptStyle, pointOf, setNumber, setValue, valueIn, valueOf },
+      functions: { addTo, assignValue, symbolValue, checkDigit, digitsFor, fitColours, fly, flyValue, holderRef, keptStyle, linkColour, pointOf,
+        setNumber, setValue, unlinkColour, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {
-        ({ applyStagger, cellsBetween, noShape, placeOf, schedule, speedOf } = cx)
+        ({ applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf } = cx)
       },
     }
   })

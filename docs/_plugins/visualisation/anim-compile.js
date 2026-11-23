@@ -10,7 +10,7 @@
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, HEADS, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
-    NUMBERINGS, roundBar } = window.Anim
+    NUMBERINGS, roundBar, COLOUR_FUNCTIONS } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
@@ -99,7 +99,9 @@
           if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
           const problem = look.check?.(value, shape)
           if (problem) warn(problem)
+          unlinkColour(shape, look.field) // a look given again no longer follows any values
           if (value === 'reset') resetLook(shape, key)
+          else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, look.field, value, warn) // "rgb(r g b)"
           else if (look.unit) shape[look.field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit })))
           else shape[look.field] = look.map && value in look.map ? look.map[value] : value
           // a digit given a look no longer takes that look from its value
@@ -423,6 +425,7 @@
     // "fill reset" / "style reset": a look (STYLE) back to how the shape started (its type's look,
     // with the defaults when it was made: applyDefaults). A digit takes it from its value again.
     function resetLook(shape, key) {
+      unlinkColour(shape, key)
       shape[key] = (shape.start || baseShape(shape.type))[key]
       if (shape.auto) shape.auto = digitLooks(shape.digit).filter((field) => field === key || shape.auto.includes(field))
     }
@@ -511,12 +514,14 @@
       shape.attach = null
     }
 
-    // After every line: put attached shapes and group members where their refs now are
-    // (several passes, for chains), and fit each group's box round its members.
-    function settle(meta) {
+    // After every line: colours worked out from values follow them, put attached shapes and group
+    // members where their refs now are (several passes, for chains), and fit each group's box
+    // round its members.
+    function settle(meta, warn) {
       fitCode(meta)
       fitSpans(meta)
       fitNumbers(meta)
+      fitColours(meta, warn)
       for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
       resolveAttachments(shapes)
       for (const group of shapes.values()) {
@@ -924,16 +929,16 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
-      refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, updateParts, valueOf, withRowMax
+    let addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitColours, fitNumbers, fitSpans, holderRef, linkColour,
+      readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlinkColour, updateParts, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
-        refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
+      ({ addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitColours, fitNumbers, fitSpans, holderRef, linkColour,
+        readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlinkColour, updateParts, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 
@@ -1033,7 +1038,7 @@
           try {
             if (runTimingLine(text, meta)) return
             compiler.runLine(text, meta, warn)
-            compiler.settle(meta)
+            compiler.settle(meta, warn)
           } catch (error) {
             errors.push(`${where(li)}: ${error.message} — "${text}"`)
             issues.push({ error: true, step: si, beat: bi, line: li, message: error.message })

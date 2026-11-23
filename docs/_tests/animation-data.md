@@ -966,6 +966,83 @@ arr: ring
 </animation>
 
 
+## Feature: Colours from values
+
+`rgb(r g b)` works a colour out from three values from 0 to 255: numbers, or vars, cells and numbers that it follows as they change. It goes wherever a colour does: `fill`, `stroke`, `colour` and `track`.
+
+<animation grid="16x7">
+
+```anim
+defaults max 255 size 4x0.8 track black stroke muted colour contrast
+r: var 255 name "r" bar at 3,1.5 fill #f00
+g: var 128 name "g" bar at 3,2.5 fill #0f0
+b: var 0 name "b" bar at 3,3.5 fill #00f
+defaults clear
+sw: rect "fill and stroke" at 11,2.5 size 4x2.4 fill rgb(r g b) stroke rgb(255, g, b) weight 4 colour contrast
+arr: row [0 128 255] at 2,6 indices
+hx: hex 255 at 7,6 name "hx"
+cell: rect "cells" at 12,6 size 3x1 fill rgb(arr.2 hx arr.0) colour contrast
+```
+
+---
+
+## New values
+
+```anim
+r: 0
+g: 255
+```
+
++++
+
+```anim
+b: 200 speed slow
+```
+
+---
+
+## A value on the move: the colour changes as it lands
+
+```anim
+b: arr.0
+r: hx
+```
+
+---
+
+## A number's digits, and a cell
+
+```anim
+hx: 0
+arr.2: 64
+```
+
+---
+
+## Given a colour again, it stops following
+
+```anim
+sw: stroke fg
+```
+
++++
+
+The fill still follows; the stroke doesn't.
+
+```anim
+g: 0
+b: 255
+```
+
++++
+
+```anim
+sw: fill rgb(b 0 r)
+```
+
+</animation>
+
+
 ## Feature: binary
 
 <animation grid="14x8">
@@ -1170,7 +1247,7 @@ h: b                              # = 1234
 ## Three colour values: R, G, B
 
 ```anim
-defaults corner 0.1 max 255 size 5x1 track black stroke muted
+defaults corner 0.1 max 255 size 5x1 track black stroke muted colour contrast
 r: var 0 name "r" bar at 4,2 fill #f00
 g: var 0 name "g" bar at 4,4 fill #0f0
 b: var 0 name "b" bar at 4,6 fill #00f
@@ -1193,7 +1270,7 @@ ba: arrow from 6.5,5.5 to plus stroke blue
 ... to form a colour
 
 ```anim
-col: rect at 11,4 size 2x5 fill #000
+col: rect at 11,4 size 2x5 fill rgb(r g b)    # follows r, g and b
 ca: arrow from plus to col
 ```
 
@@ -1202,68 +1279,60 @@ ca: arrow from plus to col
 ## Changing the RGB values, changes the colour
 
 ```anim
-r: 0
-g: 0
-b: 0
-col: fill #000
-```
-+++
-
-```anim
 r: 64
-col: fill #400
 ```
 +++
 
 ```anim
 r: 128
-col: fill #800
 ```
 +++
 
 ```anim
 r: 255
-col: fill #f00
 ```
 +++
 
 ```anim
 r: 0
 g: 255
-col: fill #0f0
 ```
 +++
 
 ```anim
 g: 0
 b: 255
-col: fill #00f
 ```
 +++
 
 ```anim
 g: 255
-col: fill #0ff
 ```
 +++
 
 ```anim
 b: 0
 r: 255
-col: fill #ff0
 ```
 +++
 
 ```anim
 g: 0
 b: 255
-col: fill #f0f
 ```
 +++
 
 ```anim
 g: 255
-col: fill #fff
+```
++++
+
+A value moved in: the colour changes as it lands.
+
+```anim
+r: b
+g: 0
+b: 0
 ```
 
 </animation>
@@ -1296,7 +1365,7 @@ ba: arrow from 11,5.5 to plus stroke blue
 ... to form a colour
 
 ```anim
-col: rect at 15,4 size 2x5 fill black corner 0.1
+col: rect at 15,4 size 2x5 fill rgb(r g b) corner 0.1    # follows the three numbers
 ca: arrow from plus to col
 ```
 
@@ -1306,24 +1375,24 @@ ca: arrow from plus to col
 
 ```anim
 r: 255 fill #f00
-col: fill #f00
 ```
 +++
 
 ```anim
 r: 0 fill #000
 g: 255 fill #0f0
-col: fill #0f0
 ```
 +++
 
 ```anim
 g: 0 fill #000
 b: 255 fill #00f
-col: fill #00f
 ```
 +++
 
+```anim
+r: 255 fill #f00
+```
 
 </animation>
 

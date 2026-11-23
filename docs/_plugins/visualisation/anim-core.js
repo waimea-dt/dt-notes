@@ -508,6 +508,29 @@
     }
   }
 
+  // Colours worked out from values, written as a call where a colour goes: "fill rgb(r g b)". Each
+  // argument is a number, or the id of a var, cell or number, whose value it follows: the colour is
+  // worked out again whenever one changes (fitColours in anim-values.js), until that look is given
+  // again. The colour is used as it is (a #hex), never tinted as a named fill is.
+  //   args  what each argument is, in order (their count, and names for messages)
+  //   max   each argument's greatest value (from 0); one outside that is held in range, with a warning
+  //   css      the colour from the arguments' values (whole numbers, in range)
+  //   example  one written out, for messages
+  const COLOUR_FUNCTIONS = {
+    rgb: { args: ['red', 'green', 'blue'], max: 255, css: (values) => `#${values.map((v) => v.toString(16).padStart(2, '0')).join('')}`, example: 'rgb(255 128 0)' },
+  }
+  // Colours picked as a shape is drawn, from what's behind its label (pickInk in anim-render.js):
+  //   looks      the looks that take it
+  //   dark       the colour (a COLOURS name) on a backdrop lighter than `threshold`, light on a darker one
+  //   threshold  the backdrop's relative luminance (0-1) where they swap. Above 0.179 (where black
+  //              and white have the same contrast ratio) so strong mid colours, such as pure red
+  //              (0.21) and magenta (0.28), keep white text; orange (#f80, 0.39) and lighter go black
+  //   soft       how far either side of the threshold they blend, so a backdrop changing colour
+  //              doesn't make the text flick from one to the other
+  const COLOUR_PICKS = {
+    contrast: { looks: ['colour'], dark: 'black', light: 'white', threshold: 0.32, soft: 0.03 },
+  }
+
   // Which shape types each prop applies to (from SHAPES' takes)
   const APPLIES = {}
   for (const [type, kind] of Object.entries(SHAPES)) for (const key of kind.takes) (APPLIES[key] ||= []).push(type)
@@ -627,7 +650,21 @@
     : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] })
   const at = { key: 'at', sigs: POINT, build: buildPoint, help: '"x,y", a shape id, or a placement and a shape id, e.g. "below a"' }
   const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
-  const colour = (key) => ({ key, sigs: [['colour']], help: `a colour, e.g. blue, ${Object.keys(COLOUR_VARIANTS).map((variant) => `blue-${variant}`).join(', ')}, #f80 or none` })
+  // a colour look: a colour (a name, #hex or a call: COLOUR_FUNCTIONS), or one picked as it's drawn
+  // (COLOUR_PICKS) if any is for this look
+  const colour = (key) => {
+    const picks = Object.keys(COLOUR_PICKS).filter((name) => COLOUR_PICKS[name].looks.includes(key))
+    const calls = Object.values(COLOUR_FUNCTIONS).map((fn) => fn.example)
+    const examples = ['blue', ...Object.keys(COLOUR_VARIANTS).map((variant) => `blue-${variant}`), '#f80', ...calls, ...picks]
+    return {
+      key, sigs: [['colour'], ...(picks.length ? [['pick']] : [])],
+      build: (v, sig) => {
+        if (sig[0] === 'pick' && !picks.includes(v[0])) throw new Error(`"${v[0]}" is for ${COLOUR_PICKS[v[0]].looks.join(' / ')}, not ${key}`)
+        return v[0]
+      },
+      help: `a colour, e.g. ${examples.join(', ')} or none`,
+    }
+  }
   // a look that "reset" also puts back as it started ("fill reset")
   const resettable = (keyword) => ({ ...keyword, sigs: [...keyword.sigs, ['reset']], help: `${keyword.help}, or reset` })
   const fixed = (key, value, extra = {}) => ({ key, sigs: [[]], build: () => value, ...extra })
@@ -1390,7 +1427,7 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

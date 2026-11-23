@@ -19,6 +19,9 @@
       "include": "#resource"
     },
     {
+      "include": "#colour-function"
+    },
+    {
       "include": "#edit-axis"
     },
     {
@@ -141,6 +144,35 @@
           "name": "punctuation.definition.arguments.end.anim"
         }
       }
+    },
+    "colour-function": {
+      "$comment": "a colour worked out from values, rgb(r g b) (COLOUR_FUNCTIONS in anim-core.js): a colour value, its arguments numbers and ids",
+      "begin": "(?<![\\w-])(rgb)(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "support.constant.color.anim"
+        },
+        "2": {
+          "name": "punctuation.definition.arguments.begin.anim"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.arguments.end.anim"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#shape-ref"
+        },
+        {
+          "include": "#punctuation"
+        }
+      ]
     },
     "edit-axis": {
       "$comment": "the word for a grid's columns straight after a row edit (g: swap col 1 3): a param. Only there, as col is often an id",
@@ -306,8 +338,8 @@
         },
         {
           "name": "support.constant.color.anim",
-          "$comment": "the named colours, and the hues' variants (hue-bright, hue-muted: COLOUR_VARIANTS in anim-core.js)",
-          "match": "(?<![\\w-])((?:red|orange|amber|yellow|green|teal|cyan|blue|purple|pink|magenta|theme)(?:-(?:bright|muted))?|muted|fg|bg-shape|bg|black|white|none)(?![\\w-])"
+          "$comment": "the named colours, the hues' variants (hue-bright, hue-muted: COLOUR_VARIANTS in anim-core.js) and colours picked as they're drawn (COLOUR_PICKS: contrast)",
+          "match": "(?<![\\w-])((?:red|orange|amber|yellow|green|teal|cyan|blue|purple|pink|magenta|theme)(?:-(?:bright|muted))?|muted|fg|bg-shape|bg|black|white|none|contrast)(?![\\w-])"
         }
       ]
     },

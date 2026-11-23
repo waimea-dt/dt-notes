@@ -42,6 +42,9 @@ function saturate(hex, k) {
 }
 // the words a colour follows (the engine's colour props: KEYWORDS in anim-core.js)
 const NAMED = new RegExp(`\\b(fill|stroke|colour|track)(\\s+)(${Object.keys(COLOURS).join('|')})(?![\\w-])`, 'g')
+// rgb(…) written with three numbers (COLOUR_FUNCTIONS in anim-core.js; one following vars has no swatch)
+const RGB = /\b(fill|stroke|colour|track)(\s+)(rgb\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*\))/g
+const RGB_CALL = /^rgb\(/
 const FENCE = /^\s*(`{3,}|~{3,})\s*([\w-]*)/
 
 // Blanks out quoted labels and # comments (keeping columns), so names in them aren't matched.
@@ -75,18 +78,22 @@ const provider = {
         if (m && fence && m[1][0] === fence.marker[0] && m[1].length >= fence.marker.length && !m[2]) { fence = null; continue }
         if (!fence?.anim) continue
       }
-      for (const match of codeOnly(line).matchAll(NAMED)) {
+      const code = codeOnly(line)
+      const swatch = (match, colour) => {
         const start = match.index + match[1].length + match[2].length
-        const range = new vscode.Range(n, start, n, start + match[3].length)
-        found.push(new vscode.ColorInformation(range, toColour(COLOURS[match[3]])))
+        found.push(new vscode.ColorInformation(new vscode.Range(n, start, n, start + match[3].length), colour))
       }
+      for (const match of code.matchAll(NAMED)) swatch(match, toColour(COLOURS[match[3]]))
+      for (const match of code.matchAll(RGB)) swatch(match, new vscode.Color(...match.slice(4, 7).map((v) => Math.min(255, +v) / 255), 1))
     }
     return found
   },
-  // Picking a new colour in the swatch's picker writes it as a hex code
-  provideColorPresentations(colour) {
-    const hex = (v) => Math.round(v * 255).toString(16).padStart(2, '0')
-    return [new vscode.ColorPresentation(`#${hex(colour.red)}${hex(colour.green)}${hex(colour.blue)}`)]
+  // Picking a new colour in the swatch's picker writes it as an rgb(…) if it was one, or a hex code
+  provideColorPresentations(colour, { document, range }) {
+    const byte = (v) => Math.round(v * 255)
+    const hex = (v) => byte(v).toString(16).padStart(2, '0')
+    const rgb = RGB_CALL.test(document.getText(range))
+    return [new vscode.ColorPresentation(rgb ? `rgb(${byte(colour.red)} ${byte(colour.green)} ${byte(colour.blue)})` : `#${hex(colour.red)}${hex(colour.green)}${hex(colour.blue)}`)]
   },
 }
 

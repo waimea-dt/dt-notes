@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, DIRECTIONS, COLOURS, SPEEDS, EASES, RESERVED,
+  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, DIRECTIONS, COLOURS, COLOUR_FUNCTIONS, COLOUR_PICKS, SPEEDS, EASES, RESERVED,
     KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, BRACKET_NOUNS, LINE_STARTS, LINES, listProps } = window.Anim
 
   // ---------------------------------------------------------------------------
@@ -187,6 +187,9 @@
 
   function parseAs(type, token, shapes) {
     if (type === 'str') return token?.kind === 'str' ? token.value : undefined
+    // a colour worked out from values, "rgb(r g b)" (COLOUR_FUNCTIONS): its arguments as tokens,
+    // read when it's applied (linkColour)
+    if (type === 'colour' && token?.kind === 'res' && COLOUR_FUNCTIONS[token.name]) return { fn: token.name, args: tokenize(token.arg) }
     if (!token || token.kind !== 'word') return undefined
     const word = token.lower
     switch (type) {
@@ -203,6 +206,7 @@
       // a direction word as an absolute angle, turned to the short way (numberValue: turn)
       case 'direction': return word in DIRECTIONS ? { v: DIRECTIONS[word], rel: false, turn: true } : undefined
       case 'colour': return COLOURS[word] !== undefined || HEX.test(word) ? word : undefined
+      case 'pick': return COLOUR_PICKS[word] ? word : undefined // a colour picked as it's drawn (contrast)
       case 'speed': return word in SPEEDS ? SPEEDS[word] : NUMBER.test(word) && !/^[+-]/.test(word) ? parseFloat(word) * 1000 : undefined
       case 'ease': return word in EASES ? word : undefined
       // a language (Prism's name, e.g. python, js, cpp, csharp): any word that isn't a keyword

@@ -156,6 +156,12 @@ rg2: corner 0.2
 rg3: rect at 1,1 ring
 cv: rect at 1,1 fill muted-bright
 cv2: rect at 1,1 fill red-vivid
+cf1: rect at 1,1 fill rgb(1 2)
+cf2: rect at 1,1 fill rgb(red 0 0)
+cf3: rect at 1,1 fill rgb(er 0 0)
+cf4: rect at 1,1 fill rgb(300 0 0)
+cf5: rect at 1,1 fill contrast
+cf6: rect at 1,1 fill hsl(0 50 50)
 sp1: span er 0 9
 sp2: span dw 0 1
 sp3: span er 0

@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    HEADS, TEXT_MARKS, textRuns, rotateAbout, placeFor } = window.Anim
+    HEADS, TEXT_MARKS, textRuns, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -18,6 +18,12 @@
   // the box's top edge; one at its right (label place 'right') ends this share in from its right edge
   const TOP_PAD = 0.75
   const RIGHT_PAD = 0.3
+  // The places a label goes (SHAPES: label, BAR_DRAWS: label). over: it sits on its shape, so a
+  // colour picked from what's behind it (COLOUR_PICKS) is picked against the shape's fill
+  const LABEL_PLACES = {
+    centre: { over: true }, top: { over: true }, right: { over: true }, code: { over: true },
+    content: {}, below: {}, along: {}, script: {},
+  }
 
   // A line's arrowheads' strengths (0-1) at each end (HEADS), blended as they're added or taken off
   const LINE_ENDS = ['from', 'to']
@@ -60,6 +66,7 @@
   // the browser re-check the element's layout even when the value is the same, and every shape is
   // drawn on every frame of a transition. Each element's last values are remembered here.
   const attrCache = new WeakMap()
+  let clipCount = 0 // clip paths made (drawCover), for ids unique on the page
   function attr(el, name, value) {
     let cache = attrCache.get(el)
     if (!cache) attrCache.set(el, (cache = new Map()))
@@ -167,13 +174,27 @@
     }
 
     const rgba = (css) => rgbaOf(svg, css)
-    // A colour part-way from a to b (either may be null = none: it fades in or out)
-    function mixColour(a, b, t) {
-      if (!a && !b) return 'none'
+    // A colour part-way from a to b, as [r, g, b, a] (either may be null = none: it fades in or out),
+    // and as CSS (mixColour)
+    function mixRgba(a, b, t) {
+      if (!a && !b) return null
       const from = a || [...b.slice(0, 3), 0]
       const to = b || [...a.slice(0, 3), 0]
-      const [r, g, bl, al] = from.map((v, i) => lerp(v, to[i], t))
-      return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(bl)}, ${al.toFixed(3)})`
+      return from.map((v, i) => lerp(v, to[i], t))
+    }
+    const cssOf = (c) => (c ? `rgba(${Math.round(c[0])}, ${Math.round(c[1])}, ${Math.round(c[2])}, ${c[3].toFixed(3)})` : 'none')
+    const mixColour = (a, b, t) => cssOf(mixRgba(a, b, t))
+    // A colour seen over another (an opaque one): the top's alpha mixes them
+    const over = (top, under) => (top ? mixRgba(under, [...top.slice(0, 3), 1], top[3]) : under)
+    // A colour picked from what's behind (COLOUR_PICKS: contrast): its dark colour on a backdrop
+    // lighter than the threshold (by relative luminance), its light one on a darker one, blending
+    // between them within `soft` of it
+    function pickInk(pick, behind) {
+      const linear = (v) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4 }
+      const [r, g, b] = (behind || [0, 0, 0]).map(linear)
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+      const dark = clamp01((lum - pick.threshold + pick.soft) / (2 * pick.soft))
+      return mixRgba(rgba(colourCss(pick.light, 'stroke')), rgba(colourCss(pick.dark, 'stroke')), dark)
     }
     const paint = (el, prop, value) => { if (el.style[prop] !== value) el.style[prop] = value }
 
@@ -575,6 +596,7 @@
       } else {
         attr(label, 'y', -LABEL_LIFT * fontSize) // "central" sits text a little low in a shape
       }
+      drawCover(node, v, hw, hh, colours)
       if (node.debugId) { attr(node.debugId, 'x', -hw); attr(node.debugId, 'y', -hh - 4); setText(node.debugId, s.id) }
     }
 
@@ -790,7 +812,10 @@
     // colours.fill its fill tinted as a fill, colours.raw the same as it is (like a stroke), and
     // colours.track the rest's (tinted). label(s, hw, hh), if given, is where the
     // value goes (a label place: SHAPES), in place of the shape's own. A round one (BARS: round) is
-    // drawn in the circle that fits its box, clockwise from the top.
+    // drawn in the circle that fits its box, clockwise from the top. For a label whose colour is
+    // picked from what's behind it (COLOUR_PICKS): cover(share, hw, hh) is the path of the bar's
+    // filled part, where the label is drawn again in the colour picked against it (drawCover);
+    // holed, the label sits clear of the track.
     const under = (node, tag) => node.g.insertBefore(svgEl(tag, { stroke: 'none' }), node.body)
     const tall = (hw, hh) => hh > hw // a bar fills up, rather than across
     const hasTrack = (s) => colourCss(s.track) !== 'none'
@@ -811,6 +836,7 @@
           const cut = `${(100 * (1 - share)).toFixed(2)}%`
           paint(fill, 'clipPath', tall(hw, hh) ? `inset(${cut} 0 0 0)` : `inset(0 ${cut} 0 0)`)
         },
+        cover: (share, hw, hh) => (tall(hw, hh) ? boxPath(-hw, hh - 2 * hh * share, 2 * hw, 2 * hh * share) : boxPath(-hw, -hh, 2 * hw * share, 2 * hh)),
       },
       // a band round the inside of the circle, `width` (× its radius) wide: the track, and an arc
       // over it (a dash, its length the share, with flat ends)
@@ -821,6 +847,7 @@
           return el
         }),
         label: () => 'centre',
+        holed: true, // its value is in the hole in the middle
         draw: ([track, arc], s, share, hw, hh, colours) => {
           const r = Math.min(hw, hh)
           const width = BAR_DRAWS.ring.width * r
@@ -841,7 +868,33 @@
           paint(track, 'fill', colours.track)
           paint(wedge, 'fill', colours.raw)
         },
+        cover: (share, hw, hh) => wedgePath(Math.min(hw, hh), share),
       },
+    }
+    const boxPath = (x, y, w, h) => `M ${x} ${y} h ${w} v ${h} h ${-w} Z`
+
+    // A label whose colour is picked from what's behind it (colours.cover), on a bar that has a
+    // cover (BAR_DRAWS): a copy of it on top, clipped to the bar's filled part and coloured for
+    // that, so a label half on the bar and half off reads on both. Copied each frame, as the
+    // label is (it may be typing, or change its marks); taken away when it isn't needed.
+    function drawCover(node, v, hw, hh, colours) {
+      const cover = colours.cover && !v.barFades && BAR_DRAWS[v.barKind]?.cover?.(clamp01(v.bar), hw, hh)
+      if (!cover) {
+        node.cover?.remove()
+        node.cover = null
+        return
+      }
+      if (!node.clip) {
+        node.clip = node.g.appendChild(svgEl('clipPath', { id: `anim-cover-${++clipCount}` }))
+        node.clip.appendChild(svgEl('path'))
+      }
+      attr(node.clip.firstChild, 'd', cover)
+      const copy = node.label.cloneNode(true)
+      copy.setAttribute('clip-path', `url(#${node.clip.id})`)
+      copy.style.fill = colours.cover
+      if (node.cover) node.cover.replaceWith(copy)
+      else node.label.after(copy)
+      node.cover = copy
     }
     // A wedge of a circle of radius r, its share of it (0-1) clockwise from the top
     function wedgePath(r, share) {
@@ -1254,18 +1307,35 @@
         const t = item.a && item.b ? clamp01(item.t) : 1
         // a null value is muted (colour none still hides it); a digit, its value's colour
         const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : lookOf(s, 'colour'))
+        const fill = mixRgba(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t)
         const colours = {
-          fill: mixColour(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t),
+          fill: cssOf(fill),
           stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),
-          colour: mixColour(rgba(colourCss(ink(from), 'stroke')), rgba(colourCss(ink(to), 'stroke')), t),
         }
         // a bar's track: none on a shape without a bar, so it fades in and out as the bar turns on and off
+        let track = null
+        let raw = null
         if (item.v.bar !== undefined) {
-          const track = (s) => rgba(colourCss(hasBar(s) ? s.track : 'none', 'fill'))
-          colours.track = mixColour(track(from), track(to), t)
+          const trackOf = (s) => rgba(colourCss(hasBar(s) ? s.track : 'none', 'fill'))
+          track = mixRgba(trackOf(from), trackOf(to), t)
           // its fill as it is, not tinted as a fill (BAR_DRAWS choose which to use)
-          colours.raw = mixColour(rgba(colourCss(from.fill, 'stroke')), rgba(colourCss(to.fill, 'stroke')), t)
+          raw = mixRgba(rgba(colourCss(from.fill, 'stroke')), rgba(colourCss(to.fill, 'stroke')), t)
+          Object.assign(colours, { track: cssOf(track), raw: cssOf(raw) })
         }
+        // The label's colour. One picked from what's behind it (COLOUR_PICKS: contrast) is picked
+        // against the backdrop, or, where the label sits on the shape (LABEL_PLACES: over), its fill
+        // and its bar's track (unless the label is clear of it: BAR_DRAWS: holed) over that. Where it
+        // sits on a bar, the part of it over the bar is drawn again in the colour picked against
+        // the bar (colours.cover: drawCover).
+        const backdrop = rgba(COLOURS.bg)
+        const onShape = LABEL_PLACES[kindOf(item.shape).label]?.over
+        const bar = BAR_DRAWS[item.v.barKind]
+        const base = onShape ? over(track && !bar?.holed ? track : null, backdrop) : backdrop
+        const behind = onShape ? over(fill && [...fill.slice(0, 3), fill[3] * plainFill(item.v)], base) : backdrop
+        const picked = [from, to].some((s) => COLOUR_PICKS[ink(s)])
+        const inkOn = (backing) => mixRgba(...[from, to].map((s) => (COLOUR_PICKS[ink(s)] ? pickInk(COLOUR_PICKS[ink(s)], backing) : rgba(colourCss(ink(s), 'stroke')))), t)
+        colours.colour = cssOf(inkOn(behind))
+        if (picked && onShape && raw && bar?.cover) colours.cover = cssOf(inkOn(over(raw, base)))
         // highlight glow fades in / out like the box; a shape glows too when one covering it does
         // (a span's cells: covers)
         item.v.hlGlow = blend(item, (s) => s.hl?.glow || (s === item.a ? glowA : glowB).has(s.id))
