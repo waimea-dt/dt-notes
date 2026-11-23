@@ -176,7 +176,7 @@
   //   lines     its label can be given as "quoted" lines in [ ], where the label would go
   //   anchor    it's placed by a corner (ANCHORS), not its centre: at x,y puts that corner of its
   //             box at that corner of the cell, and it stays put as its size changes (centreShift)
-  const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
+  const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
   const CORNERED_LINE_PROPS = [...LINE_PROPS, 'corner'] // a straight line's corners (via) can be rounded
@@ -205,7 +205,7 @@
     },
     // a Scratch script (SCRIPTS: scratch), as big as it is (× its font) or fitted in the size given
     scratch: {
-      takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height'],
+      takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height', 'opacity'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
     line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true },
@@ -225,7 +225,7 @@
     // (fitSpans in anim-compile.js), invisible unless given a fill or stroke, for highlights, a
     // callout and a name. Made by the span verb (LINES).
     span: {
-      takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight'],
+      takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight', 'opacity'],
       defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', corner: 0.15 * CELL, layer: 'back' }, outline: 'box', label: 'centre',
       internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again, e.g. "s: span arr 2 4"',
     },
@@ -500,7 +500,8 @@
 
   // How each look prop is applied to a shape (applyLook, in this order, after size, apart from early):
   //   field  the shape field it sets
-  //   unit   for a number: CELL (given in cells) or 1 (a multiplier); min, its least value
+  //   unit   for a number: CELL (given in cells) or 1 (a multiplier); min and max, its least and
+  //          greatest values
   //   map    for a word: the value it stores (flow-reverse -> reverse)
   //   hints  a message for a type it doesn't apply to, pointing at the prop that does
   //   quiet  types it has no effect on (a warning, not an error)
@@ -559,6 +560,7 @@
     mono: { field: 'mono', cell: true },
     lang: { field: 'lang', cell: true, check: langWarning }, // a code block's language (Prism's name for it)
     head: { field: 'head' },
+    opacity: { field: 'opacity', unit: 1, min: 0, max: 1, cell: true },
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
     layer: { field: 'layer', default: 'normal' },
@@ -574,7 +576,7 @@
   const CELL_STYLE = looksWith('cell')
   // A shape's style: the looks "style reset" puts back as they started (and "fill reset" and the
   // like, one at a time)
-  const STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner']
+  const STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner', 'opacity']
   // What a value on the move takes with it (keep-style): not its size, or highlights
   const KEPT_STYLE = looksWith('kept')
   // The shape fields that blend between beats: its place, and every number in its look
@@ -663,6 +665,7 @@
     ...Object.fromEntries(Object.keys(BARS).map((kind) => [kind, { key: 'bar', sigs: [['clear'], []], build: (v) => v[0] ?? kind, help: `nothing (show the value as a ${kind}) or clear` }])),
     max: number('max', 'a number (the value of a full bar)'),
     track: colour('track'),
+    opacity: resettable(number('opacity', 'a number from 0 (hidden) to 1 (solid)')),
     // "arrow" here (not straight after the id, where it's the arrow shape) puts a head on a line
     arrow: fixed('head', true),
     ...words(LINE_STYLES, 'linestyle', 'line style'),

@@ -656,6 +656,48 @@ w4: weight 0.5
 
 </animation>
 
+## Feature: opacity
+
+<animation grid="12x4">
+
+```anim
+r1: rect "1" at 2,2 fill blue
+r2: rect "0.6" at 4,2 fill blue opacity 0.6
+r3: rect "0.3" at 6,2 fill blue opacity 0.3
+l: arrow from 8,1 to 11,1 opacity 0.5
+t: text "faded" at 9.5,2 opacity 0.4
+arr: row [5 3 8] at 8,3
+```
+
+---
+
+## Changes tween
+
+```anim
+r1: opacity 0.2
+r3: opacity +0.7
+l: opacity 1
+arr: opacity 0.3 stagger
+```
+
++++
+
+```anim
+r1: opacity reset
+arr.1: opacity 1
+t: style reset
+```
+
++++
+
+A spotlight dims the rest on top of their own opacity.
+
+```anim
+r2: highlight spotlight
+```
+
+</animation>
+
 ## Feature: Line styles
 
 Style changes cross-fade.

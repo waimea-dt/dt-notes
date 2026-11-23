@@ -115,6 +115,7 @@ r: row [
 | radius / corner | `radius 0.5` (circle) · `corner 0.2` (rect; line, arrow: rounds its corners) |
 | colour | `fill blue` · `stroke #f80` · `colour amber` (text and labels) |
 | weight | `weight 2` (× normal, `0` hides) |
+| opacity | `opacity 0.5` (`0` hidden … `1` solid) |
 | line style | `solid` · `dashed` · `dotted` |
 | flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |
 | angle / scale | `angle 45` (clockwise, 0 = right) · `angle up` (`right` `down` `left` `up`) · `scale 1.5` (not lines) |
@@ -148,7 +149,7 @@ a: fill reset        # back as it started
 a: style reset       # every look
 ```
 
-- `reset` goes after `fill` `stroke` `colour` `weight` `font` `bold` `mono` `corner`.
+- `reset` goes after `fill` `stroke` `colour` `weight` `font` `bold` `mono` `corner` `opacity`.
 
 ## Moving lines
 

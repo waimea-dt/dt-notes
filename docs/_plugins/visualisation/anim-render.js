@@ -401,7 +401,7 @@
         }
         el.style.strokeDashoffset = `${base + state.shift}px`
       }
-      g.style.opacity = v.opacity
+      g.style.opacity = v.opacity * (s.opacity ?? 1)
       // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
       // (the highlight colour if it has none); highlight glow (v.hlGlow) the highlight colour.
       const glowColour = kindOf(s).label === 'content' ? colours.colour : colours.stroke // text glows its own colour

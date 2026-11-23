@@ -37,7 +37,7 @@
   // ---------------------------------------------------------------------------
 
   function baseShape(type) {
-    const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
+    const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, opacity: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
     return Object.assign(shape, SHAPES[type]?.defaults)
   }
 
@@ -99,7 +99,7 @@
           const problem = look.check?.(value, shape)
           if (problem) warn(problem)
           if (value === 'reset') resetLook(shape, key)
-          else if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
+          else if (look.unit) shape[look.field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit })))
           else shape[look.field] = look.map && value in look.map ? look.map[value] : value
           // a digit given a look no longer takes that look from its value
           if (value !== 'reset' && shape.auto?.includes(key)) shape.auto = shape.auto.filter((field) => field !== key)
