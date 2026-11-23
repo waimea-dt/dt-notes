@@ -440,25 +440,27 @@
 
   // Named colours map to the site's theme variables, so light and dark themes both work.
   const COLOURS = {
-    red: 'var(--color-attention)',
-    orange: 'var(--palette-color-3)',
-    amber: 'var(--color-warning)',
-    yellow: 'var(--color-important)',
-    green: 'var(--palette-color-4)',
-    teal: 'var(--palette-color-1)',
-    cyan: 'var(--palette-color-8)',
-    blue: 'var(--palette-color-5)',
-    purple: 'var(--palette-color-2)',
-    pink: 'var(--palette-color-6)',
+    red:     'var(--color-attention)',
+    orange:  'var(--palette-color-3)',
+    amber:   'var(--color-warning)',
+    yellow:  'var(--color-important)',
+    green:   'var(--palette-color-4)',
+    teal:    'var(--palette-color-1)',
+    cyan:    'var(--palette-color-8)',
+    blue:    'var(--palette-color-5)',
+    purple:  'var(--palette-color-2)',
+    pink:    'var(--palette-color-6)',
     magenta: 'var(--palette-color-9)',
-    theme: 'var(--theme-color)',
-    muted: 'var(--color-mono-5)',
-    fg: 'var(--anim-fg)',
-    bg: 'var(--anim-bg)',
+    black:   '#000',
+    white:   '#fff',
+    none:    'none',
+
+    fg:      'var(--anim-fg)',
+    bg:      'var(--anim-bg)',
+    theme:   'var(--anim-accent)',
+    muted:   'var(--anim-muted)',
+
     'bg-shape': 'var(--anim-shape)', // a shape's default fill: a little darker than the backdrop (bg)
-    black: '#000',
-    white: '#fff',
-    none: 'none',
   }
   // Named colours used as a fill are tinted towards the background, so labels stay readable: a fill
   // keeps FILL_MIX % of its colour (a variant: its own fillMix). These are never tinted.
