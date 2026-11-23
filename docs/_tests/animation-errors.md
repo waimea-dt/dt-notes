@@ -149,6 +149,11 @@ ec: range 1 2 bar
 defaults range 0 1
 br: rect at 1,1 bar
 bm: var 5 at 1,1 bar max 0
+rg1: var 5 at 1,1 ring size 2x1
+rg2: var 5 at 1,1 size 2 pie
+rg2: width 3
+rg2: corner 0.2
+rg3: rect at 1,1 ring
 cv: rect at 1,1 fill muted-bright
 cv2: rect at 1,1 fill red-vivid
 sp1: span er 0 9
@@ -224,6 +229,24 @@ dw: decimal
 dw: flip
 eb.0: flip 0 1
 defaults decimal
+tr: rect at 1,1
+tr2: rect at 3,1 about 2,2
+tr: about 2,2
+tr: angle +90 about 2,2 move 3,3
+tr: angle +90 about zz
+tln: line from tr to dw
+tln: angle +90 about 2,2
+tln2: line from 1,1 to 2,2 angle 45
+er: angle +90 about 1,1
+tr: trail
+tr: trail
+dw: trail clear
+tln3: line from 1,1 to 2,2
+tln3: trail
+tr.trail: from 1,1
+defaults trail
+defaults about 1,1
+tr: fill red line
 ```
 
 </animation>

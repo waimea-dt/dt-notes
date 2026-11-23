@@ -7,10 +7,10 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
-    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks,
+    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, HEADS, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
-    NUMBERINGS } = window.Anim
+    NUMBERINGS, roundBar } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
@@ -24,6 +24,7 @@
   const indexId = (id, k) => markId(id, NUMBERINGS.indices, k)
   const nameId = (id) => `${id}.name`
   const decimalId = (id) => `${id}.decimal` // a number's value, written out (LAYOUTS: decimal)
+  const trailId = (id) => `${id}.trail` // where a shape has been (SHAPES: trail)
   const viewKey = (view, k) => (view.word ? `${view.word}.${k}` : String(k))
   const viewId = (id, view, k) => `${id}.${viewKey(view, k)}`
   const headId = (id, head) => `${id}.${head.word}`
@@ -37,7 +38,7 @@
   // ---------------------------------------------------------------------------
 
   function baseShape(type) {
-    const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
+    const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, opacity: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
     return Object.assign(shape, SHAPES[type]?.defaults)
   }
 
@@ -80,6 +81,8 @@
       const hint = LOOKS[key]?.hints?.[shape.type]
       if (hint) throw new Error(hint)
       if (APPLIES[key] && !APPLIES[key].includes(shape.type)) throw new Error(`"${word}" doesn't apply to ${article(nounOf(shape))} ${nounOf(shape)}`)
+      const round = LOOKS[key]?.side && roundBar(shape)
+      if (round) throw new Error(`${article(round)} ${round} is round, so it takes one size (e.g. "size 2"), not "${word}"`)
     }
 
     // Applies a shape's look (size, then LOOKS): absolute when creating; on a change, a signed
@@ -87,14 +90,34 @@
     function applyLook(shape, props, creating, warn) {
       const now = (value) => (creating ? undefined : value)
       const cells = (n, current) => numberValue(n, now(current), { unit: CELL })
+      const setLooks = (early) => {
+        for (const [key, look] of Object.entries(LOOKS)) {
+          const value = props[key]
+          if (value === undefined || Boolean(look.early) !== early) continue
+          const word = wordFor(key, value)
+          check(shape, key, word)
+          if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
+          const problem = look.check?.(value, shape)
+          if (problem) warn(problem)
+          if (value === 'reset') resetLook(shape, key)
+          else if (look.unit) shape[look.field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit })))
+          else shape[look.field] = look.map && value in look.map ? look.map[value] : value
+          // a digit given a look no longer takes that look from its value
+          if (value !== 'reset' && shape.auto?.includes(key)) shape.auto = shape.auto.filter((field) => field !== key)
+        }
+      }
+      if (props.style) STYLE.forEach((key) => resetLook(shape, key))
+      setLooks(true)
       // size: absolute, or one signed number on a change (both sides by that amount). A relative
       // pair (size +1x+0) isn't allowed: width / height change one side.
       if (props.size) {
         check(shape, 'size')
         const relative = !creating && (props.size.w.rel || props.size.h.rel)
         if (relative && !props.size.one) throw new Error('a relative size takes one number (e.g. "size +1"): use "width +1" / "height +1" to change one side')
-        if (kindOf(shape).outline === 'round') { // one size: the diameter
-          if (!props.size.one) throw new Error(`${article(shape.type)} ${shape.type} takes one size (or use radius)`)
+        const circle = kindOf(shape).outline === 'round'
+        const round = circle ? shape.type : roundBar(shape)
+        if (round && !props.size.one) throw new Error(`${article(round)} ${round} takes one size${circle ? ' (or use radius)' : ''}`)
+        if (circle) { // one size: the diameter
           shape.r = Math.max(0, cells(props.size.w, shape.r * 2) / 2)
         } else {
           shape.w = Math.max(0, cells(props.size.w, shape.w))
@@ -102,21 +125,9 @@
         }
       }
       if (props.size && (props.width || props.height)) throw new Error('give either "size" or "width" / "height", not both')
-      if (props.style) STYLE.forEach((key) => resetLook(shape, key))
-      for (const [key, look] of Object.entries(LOOKS)) {
-        const value = props[key]
-        if (value === undefined) continue
-        const word = wordFor(key, value)
-        check(shape, key, word)
-        if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
-        const problem = look.check?.(value, shape)
-        if (problem) warn(problem)
-        if (value === 'reset') resetLook(shape, key)
-        else if (look.unit) shape[look.field] = Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit }))
-        else shape[look.field] = look.map && value in look.map ? look.map[value] : value
-        // a digit given a look no longer takes that look from its value
-        if (value !== 'reset' && shape.auto?.includes(key)) shape.auto = shape.auto.filter((field) => field !== key)
-      }
+      setLooks(false)
+      // a round bar's shape is square, at its shorter side
+      if (roundBar(shape)) shape.w = shape.h = Math.min(shape.w, shape.h)
       // flow only shows on a dashed or dotted line
       if (props.linestyle === 'solid' && shape.flow !== 'none' && !props.flow) warn('this line is still flowing, but flow only shows on a dashed or dotted line (add static to stop it)')
       if (props.flow && shape.flow !== 'none' && shape.linestyle === 'solid') warn(`"${props.flow}" only shows on a dashed or dotted line`)
@@ -129,7 +140,7 @@
     // Returns the route it moves along (a curve through via points, travel's hops, a followed
     // line), or null for a straight move.
     function applyProps(shape, props, creating, warn, meta) {
-      for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, ...(props.via || []).map((v) => v.ref),
+      for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, props.about?.ref, ...(props.via || []).map((v) => v.ref),
         ...(props.travel || []).map((v) => v.ref)]) {
         if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
@@ -138,14 +149,69 @@
         shape.label = props.label
         if (shape.nil) shape.nil = false
       }
-      applyLook(shape, props, creating, warn)
+      // a turn about a point sets the angle itself (turnAbout), so it isn't a look here
+      const turn = props.about ? turnOf(shape, props, creating) : null
+      applyLook(shape, turn ? pick(props, Object.keys(props).filter((key) => key !== 'angle')) : props, creating, warn)
       if (kindOf(shape).script) fitScript(shape, props)
       // a script given new text has no map of where its blocks went (an edit gives one: editScript)
       if (kindOf(shape).script && props.label !== undefined && meta) tween(meta, shape.uid).script = null
       if (props.highlight) applyHighlight(shape, props.highlight)
       if (props.emphasis) applyEmphasis(shape, props, creating, warn, meta)
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
-      return LINE_TYPES.includes(shape.type) ? placeLine(shape, props, creating, warn) : placeShape(shape, props, creating, warn)
+      const route = LINE_TYPES.includes(shape.type) ? placeLine(shape, props, creating, warn) : placeShape(shape, props, creating, warn)
+      if (turn) turnAbout(shape, turn, props, meta)
+      return route
+    }
+
+    // "a: angle +90 about 5,5": how far a shape turns (by, in degrees: an absolute angle turns it
+    // by the difference, as a direction word turns it the short way) and the point it turns about
+    // (a shape's centre, or a point: signed, from the shape's own centre, or a line's start)
+    function turnOf(shape, props, creating) {
+      const example = `e.g. "${shape.id}: angle +90 about 5,5"`
+      if (creating) throw new Error(`"about" turns a shape that's already there, ${example}`)
+      if (!props.angle) throw new Error(`"about" goes with an angle, ${example}`)
+      const layout = LAYOUTS[shape.layout]
+      if (layout) throw new Error(`${article(layout.noun)} ${layout.noun} can't be turned`)
+      if (props.at || props.x || props.y || props.via || props.travel || props.follow || props.attach || props.from || props.to) {
+        throw new Error('"about" sets the route, so it can\'t go with at / move / x / y / via / travel / follow / attach / from / to')
+      }
+      const by = numberValue(props.angle, shape.angle) - shape.angle
+      const { about } = props
+      const own = LINE_TYPES.includes(shape.type) ? resolveEnds(shape, shapes).from : boxCentre(shape)
+      const pivot = about.kind === 'ref' ? boxCentre(shapes.get(about.ref)) : { x: coord(about.x, own.x), y: coord(about.y, own.y) }
+      return { by, pivot }
+    }
+
+    // Turns a shape rigidly by `by` degrees about the pivot: a boxed shape goes round it and turns
+    // with it; a line's free ends and via points go round it (those on shapes stay on them); a
+    // group's members all turn as one (carried: the turn is its group's). Each records the turn,
+    // so it plays as an arc, not a straight move.
+    function turnAbout(shape, { by, pivot }, props, meta, carried = false) {
+      const turned = (p) => rotateAbout(p, pivot, by)
+      if (LINE_TYPES.includes(shape.type)) {
+        const free = [shape.from, shape.to, ...(shape.via || [])].some((p) => !p.ref)
+        if (!free && !carried) throw new Error(`"${shape.id}" has its ends on shapes, so it turns with them: turn the shapes`)
+        for (const key of ['from', 'to']) if (!shape[key].ref) shape[key] = turned(shape[key])
+        if (shape.via) shape.via = shape.via.map((p) => (p.ref ? p : turned(p)))
+      } else if (shape.attach?.kind === 'offset' && carried) {
+        // a member rides on its group at its offset, which turns with it
+        const offset = rotateAbout({ x: shape.attach.dx, y: shape.attach.dy }, null, by)
+        shape.attach = { ...shape.attach, dx: offset.x, dy: offset.y }
+      } else {
+        Object.assign(shape, placeFor(shape, turned(boxCentre(shape))))
+      }
+      shape.angle += by
+      const record = tween(meta, shape.uid)
+      Object.assign(record, { path: null, turn: { pivot, by, carried } })
+      if (!isGroup(shape)) return
+      for (const id of shape.members) {
+        const member = shapes.get(id)
+        if (!member) continue
+        const changed = structuredClone(member)
+        turnAbout(changed, { by, pivot }, props, meta, true)
+        shapes.set(id, changed)
+        schedule(meta, changed.uid, props)
+      }
     }
 
     // highlight: each kind (HIGHLIGHT_KINDS) stays until clear. One that takes a number is
@@ -195,6 +261,9 @@
     // A line's ends (from / to, or the whole line shifted by a relative move) and its via points
     // (a curve's bends, a line's corners). A line has no route of its own, so this returns null.
     function placeLine(shape, props, creating, warn) {
+      const owned = kindOf(shape).owned
+      if (owned && (props.at || props.from || props.to || props.via || props.bend)) throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
+      if (props.angle && !props.about && !kindOf(shape).loop) throw new Error(`a line's angle turns it about a point, e.g. "${shape.id}: angle +90 about 5,5" (a loop's angle is a curve's)`)
       if (props.travel || props.follow || props.attach) throw new Error('a line has no single position, so it can\'t travel, follow or attach (its ends can follow shapes)')
       if (props.x || props.y || props.at?.kind === 'ref' || props.at?.kind === 'place') throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
       if (props.at) {
@@ -258,7 +327,7 @@
       // a shape placed by what it belongs to (SHAPES: owned), or a grid's row or column (a view),
       // laid out in its grid, can't be moved on its own
       const owned = kindOf(shape).owned
-      if ((owned || bound(shape)) && (positioned || props.via || props.travel || props.follow || props.attach || props.detach)) {
+      if ((owned || bound(shape)) && (positioned || props.via || props.travel || props.follow || props.attach || props.detach || props.about)) {
         throw new Error(bound(shape) ? `"${shape.id}" is laid out in "${shape.part}", so it can't be moved on its own: move "${shape.part}"`
           : `${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
       }
@@ -343,7 +412,7 @@
     // Moving an attached shape releases it; moving a group member keeps it in the group (at its
     // new place in it)
     function keepOffset(shape, props) {
-      const moved = props.at || props.x || props.y || props.via || props.travel || props.follow
+      const moved = props.at || props.x || props.y || props.via || props.travel || props.follow || props.about
       if (!moved || !shape.attach || props.attach) return
       if (shape.attach.kind !== 'offset') { shape.attach = null; return }
       const parent = shapes.get(shape.attach.ref)
@@ -364,7 +433,11 @@
     function applyDefaults(shape) {
       const fits = (key) => !APPLIES[key] || APPLIES[key].includes(shape.type)
       const look = pick(defaults, ['size', ...Object.keys(LOOKS)].filter(fits))
-      if (look.size && kindOf(shape).outline === 'round' && !look.size.one) delete look.size // a round shape takes one size
+      const round = kindOf(shape).outline === 'round' || roundBar(shape, look.bar ?? shape.bar)
+      if (round) { // a round shape takes one size
+        if (look.size && !look.size.one) delete look.size
+        for (const key of Object.keys(look)) if (LOOKS[key]?.side) delete look[key]
+      }
       applyLook(shape, look, true, () => {})
       shape.start = pick(shape, STYLE)
     }
@@ -600,11 +673,12 @@
       // a verb: delete, swap, insert, remove, copy, group, ungroup (LINES)
       if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
 
-      // "l: arrow …" on a line or curve that already exists, with no new ends, puts a head on it
-      // (rather than replacing it with an arrow shape): read as a change, where "arrow" is the flag
-      const addsHead = SHAPES[type]?.head && existing && LINE_TYPES.includes(existing.type)
+      // "l: arrows …" (or arrow, line) on a line or curve that already exists, with no new ends,
+      // changes its heads (rather than replacing it with that shape): read as a change, where the
+      // word is the flag (HEADS)
+      const setsHeads = HEADS[type] && existing && LINE_TYPES.includes(existing.type)
         && !tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
-      if (type && !addsHead) {
+      if (type && !setsHeads) {
         const props = propsOf(type, tokens, varValue ? 2 : 1, 'create')
         if (isVar && props.label !== undefined) throw new Error(`a var's value goes straight after "var", e.g. "${id}: var 67" or "${id}: var "Dog""`)
         if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
@@ -625,6 +699,7 @@
         schedule(meta, shape.uid, props).enter = effectOf(props)
         if (props.effect) warnEffect(shape, props.effect, warn)
         updateParts(shape, props, meta, warn)
+        if (props.trail !== undefined) setTrail(shape, shape, props, meta, warn)
         return
       }
 
@@ -660,11 +735,13 @@
       const shape = structuredClone(existing)
       if (newValue && !existing.layout) setValue(shape, newValue)
       const path = applyProps(shape, props, false, warn, meta)
-      if (path) tween(meta, shape.uid).path = path
-      else if (props.at || props.x || props.y) tween(meta, shape.uid).path = null // a later straight move wins
+      // a later move wins: a route, or a straight move (a turn sets its own: turnAbout)
+      if (path) Object.assign(tween(meta, shape.uid), { path, turn: null })
+      else if (props.at || props.x || props.y) Object.assign(tween(meta, shape.uid), { path: null, turn: null })
       shapes.set(id, shape)
       schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }) // travel: speed per hop
       updateParts(shape, props, meta, warn)
+      if (props.trail !== undefined) setTrail(existing, shape, props, meta, warn)
       if (order) applyStagger(shape, order, props, meta, warn)
       else if (props.stagger) warn(`"stagger" works on ${GROUPS}, and "${id}" isn't one`)
     }
@@ -703,13 +780,14 @@
       const shape = { ...structuredClone(src), ...fresh, id, uid: newUid() }
       tween(meta, shape.uid).from = { ...structuredClone(src), ...fresh, uid: shape.uid }
       const path = applyProps(shape, props, false, warn, meta)
-      if (path) tween(meta, shape.uid).path = path
+      if (path) Object.assign(tween(meta, shape.uid), { path, turn: null })
       if (existing) {
         replaced(id, warn)
         schedule(meta, existing.uid, props).exit = 'fade'
       }
       shapes.set(id, shape)
       schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }).enter = 'copy' // travel: speed per hop
+      if (props.trail !== undefined) setTrail(src, shape, props, meta, warn) // from the original, where the copy starts
     }
 
     // "g: group [a b c]": shapes that act as one, riding on the group at their offsets. The shapes
@@ -744,6 +822,7 @@
       applyProps(group, props, false, warn, meta)
       shapes.set(id, group)
       schedule(meta, group.uid, props).enter = 'fade'
+      if (props.trail !== undefined) setTrail(group, group, props, meta, warn)
     }
 
     // "g: ungroup": the group goes, its shapes stay where they are
@@ -786,6 +865,7 @@
       // cells added to a row / column later take its look as it is now
       if (group.cell) applyProps(group.cell, pick(look, memberLook.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
       const used = new Set()
+      let resized = false
       for (const member of groupMembers(group)) {
         if (isGroup(member)) continue
         const own = pick(look, Object.keys(look).filter((key) => !APPLIES[key] || APPLIES[key].includes(member.type)))
@@ -793,9 +873,12 @@
         Object.keys(own).forEach((key) => used.add(key))
         const changed = structuredClone(member)
         applyProps(changed, own, false, warn, meta)
+        resized ||= changed.w !== member.w || changed.h !== member.h
         shapes.set(changed.id, changed)
         schedule(meta, changed.uid, props)
       }
+      // cells resized (a round bar squares them): the layout they're in closes up round them
+      if (resized && group.layout) relayLayout(bound(group) ? shapes.get(group.part) : group, props, meta, warn)
       const unused = Object.keys(look).find((key) => !used.has(key))
       if (unused) warn(`"${wordFor(unused, look[unused])}" doesn't apply to any of the shapes in "${group.id}"`)
     }
@@ -842,7 +925,7 @@
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
-      refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax
+      refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, updateParts, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
@@ -850,14 +933,17 @@
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
       ({ addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitNumbers, fitSpans, holderRef, readLines,
-        refuseView, setNumber, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
+        refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, updateParts, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 
     // The verbs (LINES with verb: true), each run as (id, existing shape, tokens, meta, warn, word)
     const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, ...Object.assign({}, ...parts.map((part) => part.verbs)) }
 
-    return { shapes, runLine, settle, camera: () => ({ ...camera }) }
+    // What the parts do once a beat's lines have all run (finish: a trail grows along its shape's move)
+    const finishBeat = (meta) => parts.forEach((part) => part.finish?.(meta))
+
+    return { shapes, runLine, settle, finishBeat, camera: () => ({ ...camera }) }
   }
 
   // A comment starts at "#" followed by a space (or the end of the line), outside quotes, so hex
@@ -896,7 +982,9 @@
   // `offset`: how far it slides as it enters or leaves, as a row's cell does). Set only where used:
   // `lands`, its new value arrives on a flyer, so it's taken halfway through (as it lands), not
   // blended; `arc`, how far it bows out on the way (a swap); `raise`, it's drawn on top of its layer
-  // while it moves (the unit a swap passes in front).
+  // while it moves (the unit a swap passes in front); `turn`, it turns about a point (pivot, by
+  // degrees; carried: as a member of a group that turns), going round it in an arc; `grow`, a
+  // trail's new points are drawn as its shape moves (anim-trail.js).
   function tween(meta, uid) {
     let record = meta.tweens.get(uid)
     if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))
@@ -951,6 +1039,7 @@
             issues.push({ error: true, step: si, beat: bi, line: li, message: error.message })
           }
         })
+        compiler.finishBeat(meta)
         const state = new Map([...compiler.shapes].map(([id, shape]) => [id, structuredClone(shape)]))
         beats.push({ step: si, beat: bi, state, meta, camera: compiler.camera() })
       })
@@ -959,5 +1048,5 @@
     return { beats, errors, warnings, issues }
   }
 
-  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
+  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, trailId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
 })()

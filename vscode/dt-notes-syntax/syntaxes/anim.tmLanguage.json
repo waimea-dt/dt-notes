@@ -87,12 +87,17 @@
         {
           "name": "constant.character.escape.anim",
           "match": "\\\\."
+        },
+        {
+          "$comment": "a label's marks: <sup>…</sup>, <sub>…</sub> (TEXT_MARKS)",
+          "name": "entity.name.tag.anim",
+          "match": "</?(?:sup|sub)>"
         }
       ]
     },
     "line-head": {
       "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is the arrowhead param). line followed by a number is the verb that replaces a script's line (s: line 3 \"...\"): a command",
-      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(?:(rect|circle|diamond|text|line(?!\\s+\\d)|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])|(line)(?=\\s+\\d)))?",
+      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(?:(rect|circle|diamond|text|line(?!\\s+\\d)|arrows|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])|(line)(?=\\s+\\d)))?",
       "captures": {
         "1": {
           "name": "entity.name.tag.anim"
@@ -239,7 +244,7 @@
     },
     "shape-type": {
       "$comment": "a shape type starting a continuation line (an indented line of a long command)",
-      "match": "^\\s+(rect|circle|diamond|text|line|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])",
+      "match": "^\\s+(rect|circle|diamond|text|line|arrows|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])",
       "captures": {
         "1": {
           "name": "storage.type.anim"
@@ -249,12 +254,12 @@
     "property": {
       "$comment": "named params, which a value follows",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|font|style|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|powers|decimal|digits|max|track|zoom|into|above|below|left-of|right-of)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|opacity|about|trail|font|style|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|powers|decimal|digits|max|track|zoom|into|above|below|left-of|right-of)(?![\\w-])"
     },
     "flag": {
       "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, an arrowhead)",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(keep-style|bar|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|arrow)(?![\\w-])"
+      "match": "(?<![\\w-])(keep-style|bar|ring|pie|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|arrows|arrow|line)(?![\\w-])"
     },
     "value": {
       "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",

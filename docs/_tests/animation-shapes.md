@@ -149,6 +149,45 @@ f2: font 1
 
 </animation>
 
+## Feature: sup and sub
+
+<animation grid="12x5">
+
+```anim
+t1: text "x<sup>2</sup> + y<sup>2</sup>" at 3,1
+t2: text "log<sub>2</sub> N" at 9,1
+t3: text "g<sup>a</sup> mod p" at 3,2.5 font 1.5
+v: var "2<sup>8</sup>" at 9,2.5 size 2x1
+l: arrow from 2,4 to 10,4 "H<sub>2</sub>O"
+```
+
+---
+
+## Changed and typed
+
+```anim
+t1: "O(N<sup>2</sup>)"
+t2: delete typed
+v: "1010<sub>2</sub>"
+```
+
++++
+
+```anim
+t2: text "a<sub>i</sub> + a<sub>i+1</sub>" at 9,1 typed
+t3: font 1 bold
+```
+
+---
+
+## Unclosed tags show as written
+
+```anim
+t1: "x<sup>2"
+```
+
+</animation>
+
 ## Feature: line and arrow
 
 <animation grid="12x8">
@@ -221,6 +260,71 @@ Rounds the corners, as on a rect. A tight corner gets as much as fits.
 ```anim
 l4: corner 0.5 arrow flow
 l5: corner 0.5 speed slow
+```
+
+</animation>
+
+## Feature: arrows and line
+
+<animation grid="12x6">
+
+```anim
+a: circle "a" at 2,2
+b: rect "b" at 10,2
+l1: arrows from a to b "arrows"
+l2: line from 2,4 to 10,4 arrows draw
+c1: curve from 2,5 to 10,5 bend 0.6 arrows
+```
+
+---
+
+## l1: line
+
+Takes the heads off.
+
+```anim
+l1: line
+```
+
++++
+
+```anim
+l1: arrow
+```
+
++++
+
+```anim
+l1: arrows
+```
+
+---
+
+## l2: arrow, l1: line
+
+One head goes, the other stays.
+
+```anim
+l2: arrow
+l1: line
+```
+
++++
+
+Both ends follow their shapes, heads and all.
+
+```anim
+b: move 9,1
+c1: dashed flow
+```
+
+---
+
+## Erased
+
+```anim
+l2: delete draw
+c1: delete draw
 ```
 
 </animation>
@@ -656,6 +760,48 @@ w4: weight 0.5
 
 </animation>
 
+## Feature: opacity
+
+<animation grid="12x4">
+
+```anim
+r1: rect "1" at 2,2 fill blue
+r2: rect "0.6" at 4,2 fill blue opacity 0.6
+r3: rect "0.3" at 6,2 fill blue opacity 0.3
+l: arrow from 8,1 to 11,1 opacity 0.5
+t: text "faded" at 9.5,2 opacity 0.4
+arr: row [5 3 8] at 8,3
+```
+
+---
+
+## Changes tween
+
+```anim
+r1: opacity 0.2
+r3: opacity +0.7
+l: opacity 1
+arr: opacity 0.3 stagger
+```
+
++++
+
+```anim
+r1: opacity reset
+arr.1: opacity 1
+t: style reset
+```
+
++++
+
+A spotlight dims the rest on top of their own opacity.
+
+```anim
+r2: highlight spotlight
+```
+
+</animation>
+
 ## Feature: Line styles
 
 Style changes cross-fade.
@@ -666,7 +812,7 @@ Style changes cross-fade.
 
 ```anim
 l: line from 1,2 to 7,2 weight 2
-ring: circle at 10,2 radius 0.7 weight 1.5 stroke teal
+hoop: circle at 10,2 radius 0.7 weight 1.5 stroke teal
 ```
 
 ---
@@ -675,7 +821,7 @@ ring: circle at 10,2 radius 0.7 weight 1.5 stroke teal
 
 ```anim
 l: dashed speed slow
-ring: dashed speed slow
+hoop: dashed speed slow
 ```
 
 ---
@@ -684,7 +830,7 @@ ring: dashed speed slow
 
 ```anim
 l: dotted speed slow
-ring: dotted speed slow
+hoop: dotted speed slow
 ```
 
 ---
@@ -693,7 +839,7 @@ ring: dotted speed slow
 
 ```anim
 l: solid speed slow
-ring: solid speed slow
+hoop: solid speed slow
 ```
 
 </animation>
@@ -706,7 +852,7 @@ ring: solid speed slow
 a: circle "A" at 2,2
 b: circle "B" at 7,2
 l: line from a to b dotted weight 2
-ring: circle at 10,2 radius 0.7 dashed weight 1.5 stroke teal
+hoop: circle at 10,2 radius 0.7 dashed weight 1.5 stroke teal
 ```
 
 ---
@@ -715,7 +861,7 @@ ring: circle at 10,2 radius 0.7 dashed weight 1.5 stroke teal
 
 ```anim
 l: flow
-ring: flow
+hoop: flow
 ```
 
 ---
@@ -724,7 +870,7 @@ ring: flow
 
 ```anim
 l: flow-reverse
-ring: flow-reverse
+hoop: flow-reverse
 ```
 
 ---
@@ -733,7 +879,7 @@ ring: flow-reverse
 
 ```anim
 l: static
-ring: static
+hoop: static
 ```
 
 </animation>

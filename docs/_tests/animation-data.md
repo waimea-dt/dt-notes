@@ -1012,6 +1012,7 @@ Numbers in base 16 and base 10: like binary, with digits 0-9, then A-F.
 ```anim
 h: hex 123 at 3,2 digits 4 name "h" powers decimal  # 007B = 123
 d: denary 123 at 3,5 name "d" indices powers         # 3 digits by default
+
 ```
 
 ---
@@ -1021,6 +1022,7 @@ d: denary 123 at 3,5 name "d" indices powers         # 3 digits by default
 ```anim
 h.0: f                            # = 127 (any case, shown upper)
 d.2: 9                            # = 923
+
 ```
 
 +++
@@ -1029,6 +1031,7 @@ d.2: 9                            # = 923
 h.1: +1                           # 8: a digit adds in its base, = 143
 h: 65535 speed slow               # FFFF
 d: +100                           # wraps round to 23
+
 ```
 
 +++
@@ -1134,3 +1137,80 @@ col: fill #00f
 
 
 </animation>
+
+## Feature: Rings and pies
+
+A ring or pie shows a var's or cell's value round a circle, clockwise from the top. It's always round: it takes one size, and a box that isn't square is made square as it's turned on.
+
+<animation grid="14x7">
+
+```anim
+done: var 25 name "done" at 3,2 size 2 stroke none ring fill teal-bright track muted
+left: var 60 at 7,2 size 2 stroke none pie fill purple-bright track muted
+cpu: var 45 at 11,2 size 2 ring fill orange-bright
+arr: row [3 8 5 9] at 2,5 size 1.2 gap 0.3 stroke none pie fill pink-bright track muted max 10
+```
+
+---
+
+## New values
+
+```anim
+done: 75
+left: 5
+cpu: 100
+arr.1: 2
+```
+
++++
+
+```anim
+done: +25
+left: 0
+cpu: highlight outline
+arr: swap 0 3
+```
+
+---
+
+## A value on the move
+
+```anim
+cpu: highlight clear
+done: arr.2
+```
+
+---
+
+## Changing kind, and back to a box
+
+```anim
+done: pie
+left: ring
+cpu: bar
+```
+
++++
+
+```anim
+done: ring clear
+left: corner 0.2
+```
+
+---
+
+## A wide box turned into a ring is made square
+
+```anim
+wide: var 40 at 11,5 size 3x1 track muted
+```
+
++++
+
+```anim
+wide: ring fill green-bright
+arr: ring
+```
+
+</animation>
+

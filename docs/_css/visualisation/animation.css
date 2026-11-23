@@ -6,13 +6,12 @@
     /* Same surface as a slide deck, so the two sit together on a page */
     --anim-bg:          var(--theme-color-0);
     --anim-fg:          var(--color-text);
-    /* A shape's default fill (bg-shape): the backdrop moved a little towards the theme's extreme
-       (--color-min: black on a dark theme, white on a light one), so shapes stand out */
-    --anim-shape:       color-mix(in srgb, var(--anim-bg), var(--color-min) 25%);
+
+    --anim-accent:      var(--theme-color);
+    --anim-muted:       var(--color-mono-5);
 
     --anim-line:        var(--border-color);
-    --anim-muted:       var(--color-mono-5);
-    --anim-accent:      var(--theme-color);
+    --anim-shape:       color-mix(in srgb, var(--anim-bg), var(--color-min) 25%);
 
     --anim-highlight:   color-mix(in srgb, var(--anim-accent) 55%, transparent);
 

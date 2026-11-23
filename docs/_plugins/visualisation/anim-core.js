@@ -85,6 +85,10 @@
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
   const PATTERNS = { dashed: { d: 4, g: 4 }, dotted: { d: 1, g: 1.5 } }
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
+  // A line's arrowheads (LOOKS: head), each its own word: straight after "id:" a line type (on an
+  // existing line, with no new ends, it changes its heads), and elsewhere a flag ("l: from a to b
+  // arrows"). ends: the ends that have one.
+  const HEADS = { line: { ends: [] }, arrow: { ends: ['to'] }, arrows: { ends: ['from', 'to'] } }
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
@@ -149,7 +153,7 @@
   //             (the label is the shape's script, drawn to fit its box: see script). A bar
   //             (BAR_DRAWS: label) can put it elsewhere: 'top' or 'right', inside that edge of the box
   //   inside    it has an inside to highlight (highlight inside)
-  //   line      it runs from / to, through any via points; head: it has an arrowhead; bends: its
+  //   line      it runs from / to, through any via points (its arrowheads: its head, HEADS); bends: its
   //             via points are smooth bends (otherwise they're corners, joined by straight lines)
   //   loop      with no via points, from a shape to itself, it loops out from the shape and back
   //             (loopEnds): the way out is its angle, its size how wide (w) and how far out (h)
@@ -176,9 +180,10 @@
   //   lines     its label can be given as "quoted" lines in [ ], where the label would go
   //   anchor    it's placed by a corner (ANCHORS), not its centre: at x,y puts that corner of its
   //             box at that corner of the cell, and it stays put as its size changes (centreShift)
-  const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono']
+  const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
-  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
+  // a line's angle only turns it about a point ("angle +90 about 5,5"), apart from a loop's
+  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head', 'angle']
   const CORNERED_LINE_PROPS = [...LINE_PROPS, 'corner'] // a straight line's corners (via) can be rounded
   const LOOP_PROPS = ['angle', 'size', 'width', 'height'] // the way a loop faces, and its size
   const SHAPES = {
@@ -205,14 +210,22 @@
     },
     // a Scratch script (SCRIPTS: scratch), as big as it is (× its font) or fitted in the size given
     scratch: {
-      takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height'],
+      takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height', 'opacity'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
-    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true },
-    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, head: true },
+    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'line' } },
+    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'arrow' } },
+    arrows: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'arrows' } },
     curve: {
       takes: [...LINE_PROPS, ...LOOP_PROPS, 'bend'], label: 'along', line: true, bends: true,
-      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
+      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0, head: 'line' }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
+    },
+    // where a shape has been ("a: trail"): a line through the points it's passed, made and grown by
+    // the shape's moves (anim-trail.js), dashed and muted unless styled ("a.trail: stroke red")
+    trail: {
+      takes: ['stroke', 'weight', 'linestyle', 'flow', 'opacity', 'head'], label: 'along', line: true,
+      defaults: { stroke: 'muted', linestyle: 'dashed', layer: 'back', head: 'line' },
+      internal: true, owned: 'it follows its shape, so to start it again, "clear" it and turn it on again',
     },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
@@ -225,7 +238,7 @@
     // (fitSpans in anim-compile.js), invisible unless given a fill or stroke, for highlights, a
     // callout and a name. Made by the span verb (LINES).
     span: {
-      takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight'],
+      takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight', 'opacity'],
       defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', corner: 0.15 * CELL, layer: 'back' }, outline: 'box', label: 'centre',
       internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again, e.g. "s: span arr 2 4"',
     },
@@ -315,6 +328,7 @@
     span: {}, // a box round some of a layout's places (SHAPES: span)
     power: { outline: true }, // a number's place value (NUMBERINGS: powers)
     decimal: { outline: true }, // a number's value, written out (LAYOUTS: decimal)
+    trail: {}, // where a shape has been (SHAPES: trail)
   }
 
   // The ways a layout's places can be numbered, each a text beside every one, shown with its word
@@ -440,25 +454,27 @@
 
   // Named colours map to the site's theme variables, so light and dark themes both work.
   const COLOURS = {
-    red: 'var(--color-attention)',
-    orange: 'var(--palette-color-3)',
-    amber: 'var(--color-warning)',
-    yellow: 'var(--color-important)',
-    green: 'var(--palette-color-4)',
-    teal: 'var(--palette-color-1)',
-    cyan: 'var(--palette-color-8)',
-    blue: 'var(--palette-color-5)',
-    purple: 'var(--palette-color-2)',
-    pink: 'var(--palette-color-6)',
+    red:     'var(--color-attention)',
+    orange:  'var(--palette-color-3)',
+    amber:   'var(--color-warning)',
+    yellow:  'var(--color-important)',
+    green:   'var(--palette-color-4)',
+    teal:    'var(--palette-color-1)',
+    cyan:    'var(--palette-color-8)',
+    blue:    'var(--palette-color-5)',
+    purple:  'var(--palette-color-2)',
+    pink:    'var(--palette-color-6)',
     magenta: 'var(--palette-color-9)',
-    theme: 'var(--theme-color)',
-    muted: 'var(--color-mono-5)',
-    fg: 'var(--anim-fg)',
-    bg: 'var(--anim-bg)',
+    black:   '#000',
+    white:   '#fff',
+    none:    'none',
+
+    fg:      'var(--anim-fg)',
+    bg:      'var(--anim-bg)',
+    theme:   'var(--anim-accent)',
+    muted:   'var(--anim-muted)',
+
     'bg-shape': 'var(--anim-shape)', // a shape's default fill: a little darker than the backdrop (bg)
-    black: '#000',
-    white: '#fff',
-    none: 'none',
   }
   // Named colours used as a fill are tinted towards the background, so labels stay readable: a fill
   // keeps FILL_MIX % of its colour (a variant: its own fillMix). These are never tinted.
@@ -496,9 +512,10 @@
   const APPLIES = {}
   for (const [type, kind] of Object.entries(SHAPES)) for (const key of kind.takes) (APPLIES[key] ||= []).push(type)
 
-  // How each look prop is applied to a shape (applyLook, in this order, after size):
+  // How each look prop is applied to a shape (applyLook, in this order, after size, apart from early):
   //   field  the shape field it sets
-  //   unit   for a number: CELL (given in cells) or 1 (a multiplier); min, its least value
+  //   unit   for a number: CELL (given in cells) or 1 (a multiplier); min and max, its least and
+  //          greatest values
   //   map    for a word: the value it stores (flow-reverse -> reverse)
   //   hints  a message for a type it doesn't apply to, pointing at the prop that does
   //   quiet  types it has no effect on (a warning, not an error)
@@ -507,36 +524,44 @@
   //   check  check(value, shape): a warning when the value can't be shown as asked (null if it can);
   //          shape is left out on a defaults line
   //   default  its value on a shape that hasn't been given one (read where it's used)
+  //   early  applied before size, as it decides what size a shape takes (a round bar: one)
+  //   side   sets one side, so a shape showing a round bar (BARS: round) refuses it
   // bar: a var's or cell's value shown as the share of its shape that its value is of max (a value
   // over max shows full, below 0 empty). The kinds of bar (BARS: drawn by BAR_DRAWS in
-  // anim-render.js), each for the outlines it fits (SHAPES: outline); a shape it doesn't fit shows
-  // its value plainly, with a warning.
-  //   default  the kind "bar" on its own gives (the others are written after it: "bar <kind>")
+  // anim-render.js), each written as its key ("bar", "ring", "pie"), for the outlines it fits
+  // (SHAPES: outline); a shape it doesn't fit shows its value plainly, with a warning.
   //   outlines the outlines it can be drawn in
   //   slot     false: a row's / column's insert and remove show no slot (LAYOUTS: slot) for its cells,
   //            where an empty outline would look like a bar
+  //   round    it's round (roundBar): the shape is made square (at its shorter side) as it's turned
+  //            on and takes one size, not width or height; its corner is drawn round, whatever it's set to
   // (where its value goes is its drawer's choice, BAR_DRAWS: label, as it depends on the shape's size)
   const BARS = {
     // a box filled part-way: up from the bottom of a box taller than it is wide, otherwise from the left
-    linear: { default: true, outlines: ['box'], slot: false },
+    bar: { outlines: ['box'], slot: false },
+    ring: { outlines: ['box'], slot: false, round: true }, // an arc round its middle, clockwise from the top
+    pie: { outlines: ['box'], slot: false, round: true }, // a wedge, clockwise from the top
   }
-  const BAR_DEFAULT = Object.keys(BARS).find((kind) => BARS[kind].default)
-  const BAR_KINDS = Object.keys(BARS).filter((kind) => !BARS[kind].default) // written after "bar"
-  // Whether a shape's bar can be drawn: it has one, holds a value, and the kind fits its outline
+  // Whether a kind of bar fits a shape's outline, and whether it shows one (hasBar: it has one, holds
+  // a value, and the kind fits)
   const barFits = (kind, shape) => Boolean(BARS[kind]?.outlines.includes(SHAPES[shape.type]?.outline))
+  const hasBar = (shape, kind = shape?.bar) => Boolean(kind && shape?.holds && barFits(kind, shape))
+  // The round bar a shape shows (BARS: round), or null; `kind` for one it's about to be given
+  const roundBar = (shape, kind = shape?.bar) => (hasBar(shape, kind) && BARS[kind].round ? kind : null)
   function barCheck(kind, shape) {
     if (!shape || !BARS[kind]) return null
-    if (!shape.holds) return '"bar" shows the value of a var or a row\'s / column\'s cell, and this has none'
-    if (!barFits(kind, shape)) return `this bar doesn't fit ${article(nounOf(shape))} ${nounOf(shape)}, so its value shows plainly`
+    if (!shape.holds) return `"${kind}" shows the value of a var or a row's / column's cell, and this has none`
+    if (!barFits(kind, shape)) return `"${kind}" doesn't fit ${article(nounOf(shape))} ${nounOf(shape)}, so its value shows plainly`
     return null
   }
+  const cornerCheck = (value, shape) => (shape && roundBar(shape) ? `${article(roundBar(shape))} ${roundBar(shape)} is always round, so its corner doesn't show` : null)
   const maxCheck = (value) => (!value.rel && value.v <= 0 ? '"max" must be more than 0, so the bar stays empty' : null)
   const LOOKS = {
     font: { field: 'font', unit: 1, min: 0.1, cell: true },
-    width: { field: 'w', unit: CELL, min: 0 },
-    height: { field: 'h', unit: CELL, min: 0 },
+    width: { field: 'w', unit: CELL, min: 0, side: true },
+    height: { field: 'h', unit: CELL, min: 0, side: true },
     radius: { field: 'r', unit: CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
-    corner: { field: 'corner', unit: CELL, min: 0, cell: true },
+    corner: { field: 'corner', unit: CELL, min: 0, cell: true, check: cornerCheck },
     bend: { field: 'bend', unit: CELL }, // how far a curve bows out halfway along (+ to its left, - right)
     fill: { field: 'fill', cell: true, kept: true },
     stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use colour' } },
@@ -548,13 +573,14 @@
     bold: { field: 'bold', cell: true },
     mono: { field: 'mono', cell: true },
     lang: { field: 'lang', cell: true, check: langWarning }, // a code block's language (Prism's name for it)
-    head: { field: 'head' },
+    head: { field: 'head' }, // its arrowheads (HEADS)
+    opacity: { field: 'opacity', unit: 1, min: 0, max: 1, cell: true },
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
     layer: { field: 'layer', default: 'normal' },
     fit: { field: 'fit', default: 'contain' }, // an image's fit in its box (IMAGE_FITS)
-    // a var's or cell's value as a bar (bar clear: back to a plain box)
-    bar: { field: 'bar', map: { clear: false }, cell: true, check: barCheck }, // a kind (BARS), or false
+    // a var's or cell's value as a bar, ring or pie (BARS; "bar clear": back to a plain box)
+    bar: { field: 'bar', map: { clear: false }, cell: true, check: barCheck, early: true }, // a kind (BARS), or false
     // a full bar's value (a row's or column's: its biggest when its bar is turned on, unless given)
     max: { field: 'max', unit: 1, min: 0, cell: true, check: maxCheck, default: 100 },
     track: { field: 'track', cell: true },
@@ -564,7 +590,7 @@
   const CELL_STYLE = looksWith('cell')
   // A shape's style: the looks "style reset" puts back as they started (and "fill reset" and the
   // like, one at a time)
-  const STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner']
+  const STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner', 'opacity']
   // What a value on the move takes with it (keep-style): not its size, or highlights
   const KEPT_STYLE = looksWith('kept')
   // The shape fields that blend between beats: its place, and every number in its look
@@ -623,6 +649,8 @@
     via: { ...at, key: 'via', repeat: true, help: '"x,y", a shape id, or a placement and a shape id, e.g. "via above b"' },
     gap: number('gap'),
     travel: { key: 'travel', list: [['num', 'num'], ['id']], build: buildPoint, help: 'shape ids and/or x,y points, e.g. "travel r1 r2 b"' },
+    // the point a turn goes round ("angle +90 about 5,5"): fixed where it is now
+    about: { key: 'about', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id, after an angle, e.g. "angle +90 about 5,5"' },
     follow: { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: false }), help: 'a line or arrow id' },
     'follow-reverse': { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: true }), help: 'a line or arrow id', what: 'follow' },
     attach: { key: 'attach', sigs: [['placement', 'id'], ['id']], build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : { side: 'centre', ref: v[0] }), help: 'a shape id, optionally after a side, e.g. "attach right-of a"' },
@@ -648,13 +676,14 @@
     // every look (STYLE) back as it started
     style: { key: 'style', sigs: [['reset']], help: 'reset (every look back to how it started), e.g. "a: style reset"' },
     lang: { key: 'lang', sigs: [['lang']], help: 'a language, e.g. "lang python" or "lang js"' },
-    // a var's or cell's value as a bar, max its full value, track the colour of the rest
-    // (a kind of bar, BARS, other than the default, goes after it: "bar <kind>")
-    bar: { key: 'bar', sigs: [['clear'], ['bar'], []], build: (v) => v[0] ?? BAR_DEFAULT, help: `nothing (show the value as a bar)${BAR_KINDS.map((kind) => `, ${kind}`).join('')} or clear` },
+    // a var's or cell's value as a bar, ring or pie (BARS: each its own word, "ring clear" turning it
+    // off), max its full value, track the colour of the rest
+    ...Object.fromEntries(Object.keys(BARS).map((kind) => [kind, { key: 'bar', sigs: [['clear'], []], build: (v) => v[0] ?? kind, help: `nothing (show the value as a ${kind}) or clear` }])),
     max: number('max', 'a number (the value of a full bar)'),
     track: colour('track'),
-    // "arrow" here (not straight after the id, where it's the arrow shape) puts a head on a line
-    arrow: fixed('head', true),
+    opacity: resettable(number('opacity', 'a number from 0 (hidden) to 1 (solid)')),
+    // its arrowheads (HEADS): here, not straight after the id, where each is a line type
+    ...words(Object.keys(HEADS), 'head', 'arrowheads'),
     ...words(LINE_STYLES, 'linestyle', 'line style'),
     ...words(Object.keys(FLOWS), 'flow', 'flow'),
     ...words(Object.keys(LAYERS), 'layer', 'layer'),
@@ -690,6 +719,8 @@
       help: 'quoted text (e.g. name "total"), optionally then a side (above, below, left-of, right-of), or clear',
     },
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
+    // a line where it goes from now on (SHAPES: trail)
+    trail: { key: 'trail', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (leave a trail where it goes) or clear' },
     // a number's place values (NUMBERINGS: powers), its value written out (LAYOUTS: decimal), and
     // how many digits it has (LAYOUTS: digits), given as it's made
     powers: { key: 'powers', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
@@ -738,7 +769,7 @@
     copy: { verb: true }, // "b: copy a …", then any change
     group: {
       verb: true,
-      refuses: ['at', 'x', 'y', 'via', 'travel', 'follow', 'attach'],
+      refuses: ['at', 'x', 'y', 'via', 'travel', 'follow', 'attach', 'about'],
       refuse: () => 'create the group first, then move it on the next line',
     },
     ungroup: { verb: true, takes: [] },
@@ -764,7 +795,7 @@
     },
     camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
-      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
+      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'trail', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" can't be a default`,
     },
   }
@@ -775,7 +806,7 @@
   const EDIT_WORDS = { end: 'end', into: 'into' }
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), ...BAR_KINDS, 'pause', 'auto', 'defaults', 'camera',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), 'pause', 'auto', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -851,6 +882,40 @@
     return (textWidths.get(key) * size) / MEASURE_SIZE || 0.55 * size * shown.length
   }
   window.addEventListener?.('docsify-theme-change', () => fonts.clear())
+
+  // Marks a label's text can have, written as tags round it ("x<sup>2</sup>", "log<sub>2</sub> N"):
+  // each run is drawn smaller (size, × the label's font) and raised or lowered (shift, × the label's
+  // font: - up). A tag with no closing tag shows as written. Not in code or scripts.
+  const TEXT_MARKS = {
+    sup: { size: 0.7, shift: -0.4 },
+    sub: { size: 0.7, shift: 0.25 },
+  }
+  const MARKED = new RegExp(`<(${Object.keys(TEXT_MARKS).join('|')})>(.*?)</\\1>`, 'g')
+  // A label's text as runs ({ text, mark }: mark a TEXT_MARKS key, or null): one plain run unless
+  // it has marks. Its spaces are collapsed as SVG shows them, so the runs measure as drawn.
+  function textRuns(label) {
+    const text = label ?? ''
+    if (!text.includes('<')) return [{ text, mark: null }]
+    const runs = []
+    let at = 0
+    for (const m of text.matchAll(MARKED)) {
+      if (m.index > at) runs.push({ text: text.slice(at, m.index), mark: null })
+      runs.push({ text: m[2], mark: m[1] })
+      at = m.index + m[0].length
+    }
+    if (at < text.length) runs.push({ text: text.slice(at), mark: null })
+    if (runs.length === 1 && !runs[0].mark) return runs
+    const collapsed = runs.map((run) => ({ ...run, text: run.text.replace(/\s+/g, ' ') })).filter((run) => run.text)
+    if (collapsed.length) collapsed[0].text = collapsed[0].text.trimStart()
+    if (collapsed.length) collapsed[collapsed.length - 1].text = collapsed[collapsed.length - 1].text.trimEnd()
+    return collapsed
+  }
+  // A label's width as drawn: each run at its own size
+  function labelWidth(label, size, bold = false, mono = false) {
+    const runs = textRuns(label)
+    if (runs.length === 1 && !runs[0].mark) return textWidth(label, size, bold, mono)
+    return runs.reduce((w, run) => w + textWidth(run.text, size * (TEXT_MARKS[run.mark]?.size ?? 1), bold, mono, true), 0)
+  }
   // text measured before its web font loaded (in a fallback font) is measured again once it has
   document.fonts?.addEventListener?.('loadingdone', () => textWidths.clear())
 
@@ -894,7 +959,7 @@
     if (kind.outline === 'round') return { hw: shape.r, hh: shape.r, round: true }
     if (kind.label === 'content') {
       const size = FONT * shape.font
-      return { hw: Math.max(0.3 * size, textWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
+      return { hw: Math.max(0.3 * size, labelWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
     }
     return { hw: shape.w / 2, hh: shape.h / 2, diamond: kind.outline === 'diamond' || undefined }
   }
@@ -1246,6 +1311,16 @@
     return { x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) }
   }
 
+  // A point turned `degrees` clockwise about a pivot (or, with no pivot, a vector turned)
+  function rotateAbout(p, pivot, degrees) {
+    const r = (degrees * Math.PI) / 180
+    const [cos, sin] = [Math.cos(r), Math.sin(r)]
+    const o = pivot || { x: 0, y: 0 }
+    const dx = p.x - o.x
+    const dy = p.y - o.y
+    return { x: o.x + dx * cos - dy * sin, y: o.y + dx * sin + dy * cos }
+  }
+
   // The point a fraction t (0-1) of the way along a path, by distance.
   const pointOnPath = (samples, t) => pointAt(samples, clamp01(t) * samples[samples.length - 1].at)
 
@@ -1315,11 +1390,11 @@
     }))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, BAR_KINDS, barFits, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, HEADS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

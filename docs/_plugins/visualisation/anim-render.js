@@ -7,8 +7,9 @@
   const { PARTS, HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE,
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
-    linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, SHAPES, kindOf, APPLIES,
-    entranceFor, XML_NS, LAYOUTS, LOOKS, barFits, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf } = window.Anim
+    linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
+    entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
+    HEADS, TEXT_MARKS, textRuns, rotateAbout, placeFor } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -18,13 +19,14 @@
   const TOP_PAD = 0.75
   const RIGHT_PAD = 0.3
 
-  // An arrowhead's strength (0-1): arrows have one, and lines or curves given "arrow"
-  const headOf = (shape) => (SHAPES[shape.type]?.head || shape.head ? 1 : 0)
+  // A line's arrowheads' strengths (0-1) at each end (HEADS), blended as they're added or taken off
+  const LINE_ENDS = ['from', 'to']
+  const headsOf = (shape) => Object.fromEntries(LINE_ENDS.map((end) => [end, HEADS[shape.head]?.ends.includes(end) ? 1 : 0]))
+  const noHeads = Object.fromEntries(LINE_ENDS.map((end) => [end, 0]))
 
-  // A var's or cell's bar (LOOKS: bar, BARS): whether it shows one (a kind that fits its outline),
-  // and the share of it its value fills (held to 0-1; a value that isn't a number fills none), or 1,
-  // all of it, when it has no bar, so turning one on or off blends.
-  const hasBar = (shape) => Boolean(shape?.bar && shape.holds && barFits(shape.bar, shape))
+  // A var's or cell's bar (LOOKS: bar, BARS): the share of it its value fills (held to 0-1; a value
+  // that isn't a number fills none), or 1, all of it, when it shows none (hasBar), so turning one on
+  // or off blends.
   function barShare(shape, label = shape.label, nil = shape.nil) {
     if (!hasBar(shape)) return 1
     const max = shape.max ?? LOOKS.max.default
@@ -32,7 +34,12 @@
     return max > 0 && Number.isFinite(value) ? clamp01(value / max) : 0
   }
   // The kind of bar drawn for a blend of two shapes: the one it's going to, or the one it had
-  const barKindOf = (...shapes) => shapes.find(hasBar)?.bar
+  const barKindOf = (...shapes) => shapes.find((shape) => shape && hasBar(shape))?.bar
+  // How round a box is drawn (v.round, 0-1): round while it shows a round bar (BARS: round), blending
+  // as one turns on or off
+  const roundness = (shape) => (roundBar(shape) ? 1 : 0)
+  // A box's corner as drawn: its own, or all the way round as it's round (v.round)
+  const cornerOf = (s, v, hw, hh) => Math.max(0, lerp(Math.min(s.corner || 0, hw, hh), Math.min(hw, hh), v.round || 0))
 
   // ---------------------------------------------------------------------------
   // SVG rendering
@@ -137,9 +144,9 @@
       const g = svgEl('g', { class: `anim-shape anim-${shape.type}` })
       const node = { g, type: shape.type, uid: shape.uid }
       if (LINE_TYPES.includes(shape.type)) {
-        // one path for lines, arrows and curves; every line has a head, hidden unless it has one
+        // one path for lines, arrows and curves; every line has a head at each end, hidden unless it has one
         node.body = g.appendChild(svgEl('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' }))
-        node.head = g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))
+        node.heads = Object.fromEntries(LINE_ENDS.map((end) => [end, g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))]))
       }
       BODIES[shape.type]?.make(node, shape)
       node.label = g.appendChild(svgEl('text', { class: 'anim-label', 'dominant-baseline': 'central' }))
@@ -163,14 +170,14 @@
 
     // How each boxed shape type is drawn (lines: in drawNode). make adds its elements to the node
     // (node.body, when it has one, takes the stroke, and the fill if its type takes fill); size
-    // sets them to the shape's half-sizes each frame. edge: false, its stroke is its drawing, not an
+    // sets them to the shape's half-sizes each frame (v: how it's drawn now). edge: false, its stroke is its drawing, not an
     // edge round it (an icon), so an inside highlight needn't clear it.
     const setBox = (el, hw, hh) => { attr(el, 'x', -hw); attr(el, 'y', -hh); attr(el, 'width', 2 * hw); attr(el, 'height', 2 * hh) }
     const rectBody = {
       make: (node) => { node.body = node.g.appendChild(svgEl('rect')) },
-      size: (node, s, hw, hh) => {
+      size: (node, s, hw, hh, colours, v) => {
         setBox(node.body, hw, hh)
-        const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
+        const corner = cornerOf(s, v, hw, hh)
         attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
       },
     }
@@ -231,8 +238,9 @@
     // changing a text node's data doesn't. Each run of text is a leaf: { text, a } when it all
     // shows, or { text, a, b } while typing, a and b being the text of two tspans, the part before
     // the cut and the part after it, one shown and one hidden. A plain label is one leaf (text:
-    // null, the whole label); a code line's are the strings among Prism's tokens.
-    function buildLabel(label, code, lang, typing, erase) {
+    // null, the whole label); a marked one's (runs) a leaf per run; a code line's are the strings
+    // among Prism's tokens.
+    function buildLabel(label, code, lang, typing, erase, runs) {
       const leaves = []
       const tspanText = (parent, shown) => parent.appendChild(svgEl('tspan', shown ? {} : { visibility: 'hidden' })).appendChild(document.createTextNode(''))
       const leaf = (parent, text) => {
@@ -240,9 +248,24 @@
         else leaves.push({ text, a: tspanText(parent, !erase), b: tspanText(parent, erase) })
       }
       label.replaceChildren()
-      if (code === null) leaf(label, null)
+      if (runs) markedRuns(runs, label, leaf)
+      else if (code === null) leaf(label, null)
       else codeTokens(code, lang, label, leaf)
       return leaves
+    }
+
+    // A marked label's runs (textRuns), each in a tspan: a mark's smaller and raised or lowered
+    // (TEXT_MARKS), and the next run back on the line. dy is in each run's own size (em), so it
+    // holds as the font changes.
+    function markedRuns(runs, parent, leaf) {
+      let shift = 0
+      for (const run of runs) {
+        const mark = TEXT_MARKS[run.mark] || { size: 1, shift: 0 }
+        const span = parent.appendChild(svgEl('tspan', mark.size === 1 ? {} : { 'font-size': `${mark.size * 100}%` }))
+        if (mark.shift !== shift) attr(span, 'dy', `${(mark.shift - shift) / mark.size}em`)
+        shift = mark.shift
+        leaf(span, run.text)
+      }
     }
 
     // A code line's text, highlighted by Prism (lang: Prism's name for the language) as nested
@@ -270,16 +293,18 @@
       const text = label ?? ''
       const typing = typed !== undefined
       const erase = Boolean(erasing)
-      const chars = [...text]
+      const code = kindOf(node).pre ? text : null
+      const runs = code === null ? textRuns(text) : null
+      const marked = runs && (runs.length > 1 || runs[0].mark) ? runs : null
+      const chars = [...(marked ? marked.map((run) => run.text).join('') : text)]
       const shown = typing ? Math.round(chars.length * clamp01(typed)) : -1
       const key = `${shown}|${erase}|${lang}|${text}`
       if (node.labelKey === key) return
       node.labelKey = key
-      const code = kindOf(node).pre ? text : null
-      const build = `${typing}|${typing && erase}|${code === null ? '' : `${lang}|${code}`}`
+      const build = `${typing}|${typing && erase}|${code === null ? (marked ? `marked|${text}` : '') : `${lang}|${code}`}`
       if (node.labelBuild !== build) {
         node.labelBuild = build
-        node.leaves = buildLabel(node.label, code, lang, typing, erase)
+        node.leaves = buildLabel(node.label, code, lang, typing, erase, marked)
       }
       // the characters before the cut are the first part of each leaf: shown while typing, hidden
       // while erasing
@@ -397,7 +422,7 @@
         }
         el.style.strokeDashoffset = `${base + state.shift}px`
       }
-      g.style.opacity = v.opacity
+      g.style.opacity = v.opacity * (s.opacity ?? 1)
       // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
       // (the highlight colour if it has none); highlight glow (v.hlGlow) the highlight colour.
       const glowColour = kindOf(s).label === 'content' ? colours.colour : colours.stroke // text glows its own colour
@@ -429,28 +454,33 @@
         const total = path[path.length - 1].at
         const at = (d) => pointAt(path, d)
         const pathTo = (d) => [...path.filter((p) => p.at < d), at(d)]
+        const pathBetween = (d0, d1) => [at(d0), ...path.filter((p) => p.at > d0 && p.at < d1), at(d1)]
 
-        // The head (fading in or out as it's added or taken off) sits on the end, or on the tip
-        // while drawing in; the stroke stops at its back. Erasing, it stays on the end.
-        let bodyLen = total
-        if (v.head) {
-          const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
-          const reach = v.erase ? total : total * v.draw
-          const tip = at(reach)
-          const behind = at(Math.max(0, reach - head))
+        // Each head (fading in or out as it's added or taken off) sits on its end; the stroke stops
+        // at its back. While drawing in, the end's head rides on the tip; erasing, the start's rides
+        // on the erased edge. tip: how far along its point is; way: +1 pointing on along the line
+        // (the end's), -1 back (the start's).
+        const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
+        const placeHead = (el, tipAt, way) => {
+          const tip = at(tipAt)
+          const behind = at(Math.min(total, Math.max(0, tipAt - way * head)))
           const dl = Math.hypot(tip.x - behind.x, tip.y - behind.y)
-          const last = path[path.length - 2] || path[0]
-          const [ux, uy] = dl > 1e-6 ? [(tip.x - behind.x) / dl, (tip.y - behind.y) / dl] : [Math.sign(tip.x - last.x), Math.sign(tip.y - last.y)]
+          const near = way > 0 ? path[path.length - 2] || path[0] : path[1] || path[0] // for its way when it's too short to measure
+          const [ux, uy] = dl > 1e-6 ? [(tip.x - behind.x) / dl, (tip.y - behind.y) / dl] : [Math.sign(tip.x - near.x), Math.sign(tip.y - near.y)]
           const base = { x: tip.x - ux * head, y: tip.y - uy * head }
           const half = head * 0.55
-          attr(node.head, 'points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
-          node.head.style.strokeWidth = strokeWidth
-          paint(node.head, 'fill', colours.stroke)
-          paint(node.head, 'stroke', colours.stroke)
-          bodyLen = total - head * v.head
+          attr(el, 'points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
+          el.style.strokeWidth = strokeWidth
+          paint(el, 'fill', colours.stroke)
+          paint(el, 'stroke', colours.stroke)
         }
-        node.head.style.opacity = v.head ? clamp01(v.draw * 4 - 0.2) * v.head : 0
-        attr(node.body, 'd', `M ${pathTo(bodyLen).map((p) => `${p.x} ${p.y}`).join(' L ')}`)
+        const heads = v.heads || noHeads
+        if (heads.to) placeHead(node.heads.to, v.erase ? total : total * v.draw, 1)
+        if (heads.from) placeHead(node.heads.from, v.erase ? total * (1 - v.draw) : 0, -1)
+        for (const end of LINE_ENDS) node.heads[end].style.opacity = heads[end] ? clamp01(v.draw * 4 - 0.2) * heads[end] : 0
+        const bodyStart = head * heads.from
+        const bodyLen = total - head * heads.to
+        attr(node.body, 'd', `M ${(bodyStart ? pathBetween(bodyStart, bodyLen) : pathTo(bodyLen)).map((p) => `${p.x} ${p.y}`).join(' L ')}`)
         node.body.style.strokeWidth = strokeWidth
         if (v.draw < 1) {
           setFlow(node.body) // off while drawing in
@@ -463,8 +493,8 @@
           attr(node.body, 'pathLength', null)
           node.body.style.strokeDasharray = dash
           node.body.style.strokeLinecap = cap
-          setFlow(node.body, pattern, dashBase)
-          syncGhost(node.body, dashBase)
+          setFlow(node.body, pattern, dashBase + bodyStart) // the pattern keeps its place along the line
+          syncGhost(node.body, dashBase + bodyStart)
         }
         paint(node.body, 'stroke', colours.stroke)
         drawSignal(node, v.signal, path, strokeWidth)
@@ -481,7 +511,7 @@
       attr(g, 'transform', `translate(${c.x + v.dx} ${c.y + v.dy}) rotate(${s.angle + (v.rot || 0)}) scale(${v.scale * s.scale})`)
       const { hw, hh } = extents(s)
 
-      BODIES[node.type].size(node, s, hw, hh, colours)
+      BODIES[node.type].size(node, s, hw, hh, colours, v)
       // highlight line: a band behind the text (SHAPES: band), fading in and out with it
       const band = kindOf(node).band
       if (band && (v.hlLine || node.band)) {
@@ -744,12 +774,13 @@
 
     // How each kind of bar (BARS in anim-core.js) is drawn, in place of the shape's fill: over its
     // track and under its edge. make(node) adds its parts under the shape's body and returns them;
-    // draw(parts, s, share, hw, hh, colours) sets them each frame, share (0-1) being how full it is,
+    // draw(parts, s, share, hw, hh, colours, v) sets them each frame, share (0-1) being how full it is,
     // colours.fill its fill tinted as a fill, colours.raw the same as it is (like a stroke), and
     // colours.track the rest's (tinted). label(s, hw, hh), if given, is where the
-    // value goes (a label place: SHAPES), in place of the shape's own.
+    // value goes (a label place: SHAPES), in place of the shape's own. A round one (BARS: round) is
+    // drawn in the circle that fits its box, clockwise from the top.
     const under = (node, tag) => node.g.insertBefore(svgEl(tag, { stroke: 'none' }), node.body)
-    const tall = (hw, hh) => hh > hw // a linear bar fills up, rather than across
+    const tall = (hw, hh) => hh > hw // a bar fills up, rather than across
     const hasTrack = (s) => colourCss(s.track) !== 'none'
     const BAR_DRAWS = {
       // the track and a full-size box cut down to the share (clip-path inset), so a rounded corner
@@ -757,11 +788,11 @@
       // Its value is in the middle of a track; with none, at the end it grows towards (the top, or
       // the right), as on a bar chart. The bar is its fill colour as it is (stronger than a tinted
       // fill), over the tinted track.
-      linear: {
+      bar: {
         make: (node) => [under(node, 'rect'), under(node, 'rect')],
         label: (s, hw, hh) => (hasTrack(s) ? 'centre' : tall(hw, hh) ? 'top' : 'right'),
-        draw: ([track, fill], s, share, hw, hh, colours) => {
-          const corner = Math.max(0, Math.min(s.corner || 0, hw, hh))
+        draw: ([track, fill], s, share, hw, hh, colours, v) => {
+          const corner = cornerOf(s, v, hw, hh)
           for (const el of [track, fill]) { setBox(el, hw, hh); attr(el, 'rx', corner); attr(el, 'ry', corner) }
           paint(track, 'fill', colours.track)
           paint(fill, 'fill', colours.raw)
@@ -769,6 +800,43 @@
           paint(fill, 'clipPath', tall(hw, hh) ? `inset(${cut} 0 0 0)` : `inset(0 ${cut} 0 0)`)
         },
       },
+      // a band round the inside of the circle, `width` (× its radius) wide: the track, and an arc
+      // over it (a dash, its length the share, with flat ends)
+      ring: {
+        width: 0.3,
+        make: (node) => [under(node, 'circle'), under(node, 'circle')].map((el) => {
+          attr(el, 'pathLength', 1); attr(el, 'transform', 'rotate(-90)'); paint(el, 'fill', 'none')
+          return el
+        }),
+        label: () => 'centre',
+        draw: ([track, arc], s, share, hw, hh, colours) => {
+          const r = Math.min(hw, hh)
+          const width = BAR_DRAWS.ring.width * r
+          for (const el of [track, arc]) { attr(el, 'r', r - width / 2); paint(el, 'strokeWidth', `${width}px`) }
+          paint(track, 'stroke', colours.track)
+          paint(arc, 'stroke', colours.raw)
+          paint(arc, 'strokeDasharray', `${share.toFixed(4)} 1`)
+        },
+      },
+      // a disc, the track, and a wedge over it
+      pie: {
+        make: (node) => [under(node, 'circle'), under(node, 'path')],
+        label: () => 'centre',
+        draw: ([track, wedge], s, share, hw, hh, colours) => {
+          const r = Math.min(hw, hh)
+          attr(track, 'r', r)
+          attr(wedge, 'd', wedgePath(r, share))
+          paint(track, 'fill', colours.track)
+          paint(wedge, 'fill', colours.raw)
+        },
+      },
+    }
+    // A wedge of a circle of radius r, its share of it (0-1) clockwise from the top
+    function wedgePath(r, share) {
+      if (share <= 0) return ''
+      if (share >= 1) return `M 0 ${-r} A ${r} ${r} 0 1 1 0 ${r} A ${r} ${r} 0 1 1 0 ${-r} Z`
+      const turn = share * 2 * Math.PI
+      return `M 0 0 L 0 ${-r} A ${r} ${r} 0 ${share > 0.5 ? 1 : 0} 1 ${r * Math.sin(turn)} ${-r * Math.cos(turn)} Z`
     }
 
     // A shape's bar (v.bar: how full, v.barKind: its kind), its parts made once per kind and hidden
@@ -781,7 +849,7 @@
       node.bars ||= {}
       const parts = (node.bars[v.barKind] ||= BAR_DRAWS[v.barKind].make(node))
       parts.forEach((el) => paint(el, 'display', ''))
-      BAR_DRAWS[v.barKind].draw(parts, s, clamp01(v.bar), hw, hh, colours)
+      BAR_DRAWS[v.barKind].draw(parts, s, clamp01(v.bar), hw, hh, colours, v)
     }
 
     // signal: a glowing blip running along a line once (signal: { t: 0-1, reverse }), its tail
@@ -956,6 +1024,21 @@
       return glowCache.get(state)
     }
 
+    // A growing trail's ends (tween: grow): its kept points, then its new ones as far as its shape
+    // has got (its progress, eased as its shape's move is, or raw for a travel's hops)
+    function grownEnds(trail, tw, raw) {
+      const { kept, steps } = tw.grow
+      const points = [trail.from, ...trail.via, trail.to]
+      const u = clamp01(tw.grow.raw ? clamp01(raw) : easeFn(tw.ease)(clamp01(raw))) * steps
+      const whole = Math.min(steps, Math.floor(u))
+      const drawn = points.slice(0, kept + whole)
+      if (whole < steps) {
+        const [p, q] = [points[kept + whole - 1], points[kept + whole]]
+        drawn.push({ x: lerp(p.x, q.x, u - whole), y: lerp(p.y, q.y, u - whole) })
+      }
+      return { from: drawn[0], to: drawn[drawn.length - 1], vias: drawn.slice(1, -1), smooth: false, corner: 0 }
+    }
+
     const DIM = 0.2 // opacity of shapes outside the spotlight
     const BLOCK_DIM = 0.45 // opacity of a script's other blocks (highlight line N): lighter, as they sit close together
 
@@ -990,6 +1073,8 @@
           shape = interpolate(a, b, t)
           if (!extra.forward) shape.flow = a.flow // flow switches to where we're going (A, going back)
           if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw, easing) : pointOnPath(tw.path, t))
+          // a turn about a point goes round it (a group's members ride round on it: carried)
+          if (tw?.turn && !tw.turn.carried && !LINE_TYPES.includes(shape.type)) Object.assign(shape, placeFor(shape, rotateAbout(boxCentre(a), tw.turn.pivot, tw.turn.by * t)))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           // code text changes while its box is at its wider (see fitPhase)
@@ -1020,8 +1105,12 @@
         // lands from a flyer (tween: lands), which showed it on the way, is taken as it lands
         v.barKind = a && b ? barKindOf(b, a) : barKindOf(shape)
         if (v.barKind) v.bar = !(a && b) ? barShare(shape) : tw?.lands ? barShare(t < 0.5 ? a : b) : lerp(barShare(a), barShare(b), t)
+        v.round = a && b ? lerp(roundness(a), roundness(b), t) : roundness(shape)
         // an arrowhead fades in or out as it's added to or taken off a line
-        v.head = a && b ? lerp(headOf(a), headOf(b), t) : headOf(shape)
+        if (LINE_TYPES.includes(shape.type)) {
+          const [ha, hb] = [a, b].map((s) => s && headsOf(s))
+          v.heads = ha && hb ? Object.fromEntries(LINE_ENDS.map((end) => [end, lerp(ha[end], hb[end], t)])) : headsOf(shape)
+        }
         v.label ??= shape.label
         v.labelOpacity ??= 1
         const node = nodes.get(uid) || makeNode(shape)
@@ -1041,7 +1130,11 @@
         if (!spec || passed.has(spec.ref)) return null
         const before = item.a?.attach
         if (item.a && item.b && !(before && before.kind === spec.kind && before.ref === spec.ref && before.side === spec.side)) return null
+        const turn = meta.tweens.get(item.uid)?.turn
+        if (turn && !turn.carried) return null // turning on its own, round its own pivot
         if (spec.kind !== 'offset' || before?.kind !== 'offset') return spec
+        // turning with its group, its offset turns with it
+        if (turn) { const offset = rotateAbout({ x: before.dx, y: before.dy }, null, turn.by * item.t); return { ...spec, dx: offset.x, dy: offset.y } }
         return { ...spec, dx: lerp(before.dx, spec.dx, item.t), dy: lerp(before.dy, spec.dy, item.t) }
       }, (shape, p) => {
         const item = byItem.get(shape.id)
@@ -1053,7 +1146,17 @@
       // An end on an id that passes to another shape goes from its place in A to its place in B.
       const at = (state) => (passed.size ? { get: (id) => (passed.has(id) ? state.get(id) : now.get(id)) } : now)
       for (const item of items) {
-        if (!LINE_TYPES.includes(item.shape.type) || !item.a || !item.b) continue
+        if (!LINE_TYPES.includes(item.shape.type)) continue
+        const tw = meta.tweens.get(item.uid)
+        // a trail is drawn as far as its shape has got along its new points
+        if (tw?.grow && item.b) { item.v.ends = grownEnds(item.b, tw, progress(item.uid)); continue }
+        if (!item.a || !item.b) continue
+        // turning about a point: its free ends and via points go round it, its ends on shapes stay on them
+        if (tw?.turn) {
+          const spun = (p) => (p.ref ? p : rotateAbout(p, tw.turn.pivot, tw.turn.by * item.t))
+          item.v.ends = resolveEnds({ ...item.shape, from: spun(item.a.from), to: spun(item.a.to), via: item.a.via?.map(spun) }, at(B))
+          continue
+        }
         const ea = resolveEnds(item.a, at(A))
         const eb = resolveEnds(item.b, at(B))
         const mix = (p, q) => ({ x: lerp(p.x, q.x, item.t), y: lerp(p.y, q.y, item.t) })
@@ -1078,10 +1181,11 @@
         const k = easing(u)
         const shape = { ...interpolate(flyer.from, flyer.to, k), ...pointOnHops(flyer.hops, u, easing) }
         const opacity = flyer.move < 1 ? 1 - clamp01((raw - flyer.move) / (1 - flyer.move)) : raw < 1 ? 1 : 0
-        const v = { opacity, scale: 1, draw: 1, dx: 0, dy: 0, head: 0, label: flyer.from.label, nil: flyer.from.nil, labelOpacity: 1 }
+        const v = { opacity, scale: 1, draw: 1, dx: 0, dy: 0, label: flyer.from.label, nil: flyer.from.nil, labelOpacity: 1 }
         // the value it carries, as a bar from its source's to its target's
         v.barKind = barKindOf(flyer.to, flyer.from)
         if (v.barKind) v.bar = lerp(barShare(flyer.from), barShare(flyer.to, flyer.from.label, flyer.from.nil), k)
+        v.round = lerp(roundness(flyer.from), roundness(flyer.to), k)
         items.push({ uid: flyer.uid, shape, v, node: nodes.get(flyer.uid) || makeNode(shape), a: flyer.from, b: flyer.to, t: k, flyer: true })
       }
 
@@ -1247,7 +1351,7 @@
       }
       // a box: its corners (if it has them) grown or shrunk with it, or rounded on the way out
       const cornered = APPLIES.corner.includes(s.type)
-      const corner = cornered ? Math.min(s.corner || 0, hw, hh) * k : 0
+      const corner = cornered ? cornerOf(s, v, hw, hh) * k : 0
       const r = cornered ? corner + offset : offset > 0 ? offset : 0
       return { d: rectPath(w, h, r), transform }
     }

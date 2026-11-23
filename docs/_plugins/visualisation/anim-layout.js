@@ -584,17 +584,19 @@
     //   ids(id, layout, values)  its cells' ids from its values (lineIds, gridIds)
     //   lay(frame, cells, values)  lays new cells out from the first (ids, offsets), and sets the
     //                              layout's members (frame: its id, layout and gap)
+    //   relay(row, cells)  lays its cells out again, in order, as they are now (relayLayout)
     //   sync(row, props, meta, warn)  after it's made or edited: a grid's views
     //   between(row, tokens, word, example)  two places written after a verb, lowest first
     //   cells(row, places)  the ids at some places
     //   marks(row, numbering)  what its numbers go beside (indexMarks)
     const ARRANGE = {
       line: {
-        create: createLine, ids: lineIds, lay: (frame, cells) => layoutCells(frame, cells), sync: () => {},
+        create: createLine, ids: lineIds, lay: (frame, cells) => layoutCells(frame, cells), relay: layoutCells, sync: () => {},
         between: lineBetween, cells: lineCells, marks: lineMarks,
       },
       grid: {
         create: createGrid, ids: gridIds, lay: (frame, cells, values) => layoutGrid(frame, chunk(cells, values[0].length)), sync: syncViews,
+        relay: (grid, cells) => layoutGrid(grid, chunk(cells, cells.length / gridLines(grid).length)),
         between: gridBetween, cells: gridCells, marks: gridMarks,
       },
     }
@@ -663,6 +665,18 @@
       updateParts(row, props, meta, warn)
       if (LAYOUTS[layout].typeInTurn && inTurn(props)) typeInTurn(row, cells, partsOf(row), props, meta)
       applyStagger(row, cells.map((cell) => [cell.uid]), { ...props, at: null, x: null, y: null }, meta, warn) // placing it isn't a move
+    }
+
+    // A layout's cells laid out again where their sizes have changed (a round bar squares them), each
+    // moving to its new place with the line (ARRANGE: relay)
+    function relayLayout(row, props, meta, warn) {
+      const cells = row.members.map((id) => shapes.get(id)).filter(Boolean)
+      const before = cells.map((cell) => [cell.attach.dx, cell.attach.dy].join())
+      arranged(row).relay(row, cells)
+      if (cells.every((cell, k) => [cell.attach.dx, cell.attach.dy].join() === before[k])) return
+      cells.forEach((cell) => Object.assign(cell, { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }))
+      arranged(row).sync(row, props, meta, warn)
+      if (numbered(row)) syncIndices(row, props, meta)
     }
 
     // A layout is placed (at) by the grid square its first cell starts in: the offset from the
@@ -747,7 +761,7 @@
 
     return {
       functions: { arranged, cellsBetween, checkParts, chunk, createLayout, fitCode, fitLines, fitNumbers, fitSpans, gridLines,
-        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, syncIndices, transpose,
+        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, relayLayout, syncIndices, transpose,
         typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },
       link: () => {
