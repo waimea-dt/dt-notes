@@ -230,6 +230,15 @@ dw: flip
 eb.0: flip 0 1
 defaults decimal
 tr: rect at 1,1
+tr2: rect at 3,1 about 2,2
+tr: about 2,2
+tr: angle +90 about 2,2 move 3,3
+tr: angle +90 about zz
+tln: line from tr to dw
+tln: angle +90 about 2,2
+tln2: line from 1,1 to 2,2 angle 45
+er: angle +90 about 1,1
+defaults about 1,1
 tr: fill red line
 ```
 

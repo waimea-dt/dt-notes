@@ -21,7 +21,7 @@ Loaded in this order (`docs/index.html`), sharing `window.Anim`. Each part takes
 
 **Widget input** all goes through the `user*` functions in `animation.js` (`userNext`, `userBack`, `userJump`, `userPlay`): buttons, keys, the progress bar, and gestures from `DocsifyUtils.addSwipeSupport` (touch swipe left / right, double click / tap to play), and scrolling while focused (`DocsifyUtils.addWheelStepping`, which gives the page its scrolling back at either end). `GESTURE_IGNORE` keeps gestures off the controls, notes and help. A new input calls these, so autoplay and `pause` waits stay right.
 
-The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`, `lands`).
+The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `turn`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`, `lands`).
 
 ## Extending
 
@@ -89,6 +89,7 @@ In your summary, say that you checked, and name any exception you kept.
 - **Arrowheads:** a line's `head` is a `HEADS` key, set by its type's `defaults` and changed by the word (`KEYWORDS`, or the type word on an existing line with no new ends: `setsHeads` in `runLine`). The renderer draws a polygon per end (`node.heads`, `LINE_ENDS`), each fading by `v.heads[end]`, and the stroke stops at each head's back (`bodyStart`, `bodyLen`).
 - **Opacity:** a look like any other (`LOOKS: opacity`, `min`/`max`, in `STYLE`), multiplied into the shape's group opacity at render, with the spotlight's dimming on top.
 - **Text marks:** only labels drawn as plain text (not `pre` code, not scripts, not callouts). A label with no marks keeps its one plain leaf, so typing, measuring and drawing are as before; a marked one is a leaf per run in its own tspan (rebuilt only when its text changes), and typing counts only the shown characters.
+- **Turns** (`angle … about p`): `turnOf` works out the turn (`by`: an absolute angle turns by the difference; `pivot`: fixed where it is now), and the angle is kept out of `applyLook`. `turnAbout` turns the shape rigidly: a boxed shape's centre round the pivot (`placeFor`), a line's free ends and via points, and a group's members, each `carried` (its offset turned). Each records `tween.turn`; the renderer turns `a` by `by × t` (boxed: in the main loop; a carried member: its offset, in the attachments callback; lines: their free points, then `resolveEnds`), so it goes round in an arc. A turning shape of its own in a group keeps its own place (the callback returns null).
 - **Warnings** are given once per line, so a check on each of a row's cells says it once.
 
 For every new word:

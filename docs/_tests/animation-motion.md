@@ -237,6 +237,90 @@ dot: follow f speed slow
 
 </animation>
 
+## Feature: about
+
+<animation grid="14x7">
+
+```anim
+face: circle at 3,4 radius 2.2 fill none
+hub: circle at 3,4 radius 0.15 fill fg
+hand: arrow from 3,4 to 3,2.3 weight 2
+box: rect "A" at 9,2 size 1.4x0.8
+p: circle at 9,4 radius 0.08 fill red stroke none
+```
+
+---
+
+## A line turns about a point
+
+Its free ends go round it.
+
+```anim
+hand: angle +90 about 3,4
+```
+
++++
+
+An absolute angle turns from as drawn.
+
+```anim
+hand: angle 210 about hub speed slow
+```
+
++++
+
+```anim
+hand: angle +360 about hub speed vslow ease linear
+```
+
+---
+
+## A shape goes round, and turns with it
+
+```anim
+box: angle +90 about p
+```
+
++++
+
+```anim
+box: angle +180 about p speed slow
+```
+
++++
+
+Signed: from its own centre.
+
+```anim
+box: angle +90 about +0,+1
+```
+
+---
+
+## A group turns as one
+
+```anim
+box: angle 0 about p speed instant
+w1: circle "1" at 11,6 radius 0.4
+w2: circle "2" at 13,6 radius 0.4
+spoke: line from w1 to w2
+car: group [w1 w2 spoke]
+```
+
++++
+
+```anim
+car: angle +180 about 12,6 speed slow
+```
+
++++
+
+```anim
+car: angle +90 about p
+```
+
+</animation>
+
 ## Feature: copy
 
 The copy starts on the original and moves off.

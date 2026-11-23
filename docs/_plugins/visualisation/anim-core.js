@@ -182,7 +182,8 @@
   //             box at that corner of the cell, and it stays put as its size changes (centreShift)
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
-  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head']
+  // a line's angle only turns it about a point ("angle +90 about 5,5"), apart from a loop's
+  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head', 'angle']
   const CORNERED_LINE_PROPS = [...LINE_PROPS, 'corner'] // a straight line's corners (via) can be rounded
   const LOOP_PROPS = ['angle', 'size', 'width', 'height'] // the way a loop faces, and its size
   const SHAPES = {
@@ -640,6 +641,8 @@
     via: { ...at, key: 'via', repeat: true, help: '"x,y", a shape id, or a placement and a shape id, e.g. "via above b"' },
     gap: number('gap'),
     travel: { key: 'travel', list: [['num', 'num'], ['id']], build: buildPoint, help: 'shape ids and/or x,y points, e.g. "travel r1 r2 b"' },
+    // the point a turn goes round ("angle +90 about 5,5"): fixed where it is now
+    about: { key: 'about', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id, after an angle, e.g. "angle +90 about 5,5"' },
     follow: { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: false }), help: 'a line or arrow id' },
     'follow-reverse': { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: true }), help: 'a line or arrow id', what: 'follow' },
     attach: { key: 'attach', sigs: [['placement', 'id'], ['id']], build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : { side: 'centre', ref: v[0] }), help: 'a shape id, optionally after a side, e.g. "attach right-of a"' },
@@ -756,7 +759,7 @@
     copy: { verb: true }, // "b: copy a …", then any change
     group: {
       verb: true,
-      refuses: ['at', 'x', 'y', 'via', 'travel', 'follow', 'attach'],
+      refuses: ['at', 'x', 'y', 'via', 'travel', 'follow', 'attach', 'about'],
       refuse: () => 'create the group first, then move it on the next line',
     },
     ungroup: { verb: true, takes: [] },
@@ -782,7 +785,7 @@
     },
     camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
-      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
+      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" can't be a default`,
     },
   }
@@ -1298,6 +1301,16 @@
     return { x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) }
   }
 
+  // A point turned `degrees` clockwise about a pivot (or, with no pivot, a vector turned)
+  function rotateAbout(p, pivot, degrees) {
+    const r = (degrees * Math.PI) / 180
+    const [cos, sin] = [Math.cos(r), Math.sin(r)]
+    const o = pivot || { x: 0, y: 0 }
+    const dx = p.x - o.x
+    const dy = p.y - o.y
+    return { x: o.x + dx * cos - dy * sin, y: o.y + dx * sin + dy * cos }
+  }
+
   // The point a fraction t (0-1) of the way along a path, by distance.
   const pointOnPath = (samples, t) => pointAt(samples, clamp01(t) * samples[samples.length - 1].at)
 
@@ -1373,5 +1386,5 @@
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, HEADS, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, HEADS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

@@ -169,7 +169,15 @@ a: move 9,3 via 3,1 via 6,5   # a wave through several
 a: travel r1 r2 4,3           # hop by hop (speed per hop)
 a: follow l                   # along line / curve l
 a: follow-reverse l           # from its end
+a: angle +90 about 5,5        # round a point, turning with it
+a: angle +90 about b          # round b's centre
+a: angle +90 about +0,+1      # signed: from its own centre
+hand: angle 210 about hub     # a line: its free ends go round
+car: angle +180 about 9,6     # a group, as one
 ```
+
+- `about` goes with an angle. An absolute angle turns from as drawn.
+- Not on rows, columns, grids or tables, or a line with both ends on shapes.
 
 ## Copy, attach, group
 

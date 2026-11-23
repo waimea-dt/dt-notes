@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    HEADS, TEXT_MARKS, textRuns } = window.Anim
+    HEADS, TEXT_MARKS, textRuns, rotateAbout, placeFor } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -1058,6 +1058,8 @@
           shape = interpolate(a, b, t)
           if (!extra.forward) shape.flow = a.flow // flow switches to where we're going (A, going back)
           if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw, easing) : pointOnPath(tw.path, t))
+          // a turn about a point goes round it (a group's members ride round on it: carried)
+          if (tw?.turn && !tw.turn.carried && !LINE_TYPES.includes(shape.type)) Object.assign(shape, placeFor(shape, rotateAbout(boxCentre(a), tw.turn.pivot, tw.turn.by * t)))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           // code text changes while its box is at its wider (see fitPhase)
@@ -1113,7 +1115,11 @@
         if (!spec || passed.has(spec.ref)) return null
         const before = item.a?.attach
         if (item.a && item.b && !(before && before.kind === spec.kind && before.ref === spec.ref && before.side === spec.side)) return null
+        const turn = meta.tweens.get(item.uid)?.turn
+        if (turn && !turn.carried) return null // turning on its own, round its own pivot
         if (spec.kind !== 'offset' || before?.kind !== 'offset') return spec
+        // turning with its group, its offset turns with it
+        if (turn) { const offset = rotateAbout({ x: before.dx, y: before.dy }, null, turn.by * item.t); return { ...spec, dx: offset.x, dy: offset.y } }
         return { ...spec, dx: lerp(before.dx, spec.dx, item.t), dy: lerp(before.dy, spec.dy, item.t) }
       }, (shape, p) => {
         const item = byItem.get(shape.id)
@@ -1126,6 +1132,13 @@
       const at = (state) => (passed.size ? { get: (id) => (passed.has(id) ? state.get(id) : now.get(id)) } : now)
       for (const item of items) {
         if (!LINE_TYPES.includes(item.shape.type) || !item.a || !item.b) continue
+        const tw = meta.tweens.get(item.uid)
+        // turning about a point: its free ends and via points go round it, its ends on shapes stay on them
+        if (tw?.turn) {
+          const spun = (p) => (p.ref ? p : rotateAbout(p, tw.turn.pivot, tw.turn.by * item.t))
+          item.v.ends = resolveEnds({ ...item.shape, from: spun(item.a.from), to: spun(item.a.to), via: item.a.via?.map(spun) }, at(B))
+          continue
+        }
         const ea = resolveEnds(item.a, at(A))
         const eb = resolveEnds(item.b, at(B))
         const mix = (p, q) => ({ x: lerp(p.x, q.x, item.t), y: lerp(p.y, q.y, item.t) })
