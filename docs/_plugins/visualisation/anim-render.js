@@ -35,6 +35,15 @@
   }
   // The kind of bar drawn for a blend of two shapes: the one it's going to, or the one it had
   const barKindOf = (...shapes) => shapes.find((shape) => shape && hasBar(shape))?.bar
+  // How much of each kind of bar shows (0-1) while a shape changes from one kind to another, or
+  // turns one on or off: the old fading out as the new fades in, as their parts can't morph into
+  // each other. Kind null is the shape's own plain fill. None (null) while it keeps its kind.
+  function barFades(a, b, t) {
+    const [from, to] = [a, b].map((s) => (hasBar(s) ? s.bar : null))
+    if (from === to) return null
+    const u = clamp01(t)
+    return new Map([[from, 1 - u], [to, u]])
+  }
   // How round a box is drawn (v.round, 0-1): round while it shows a round bar (BARS: round), blending
   // as one turns on or off
   const roundness = (shape) => (roundBar(shape) ? 1 : 0)
@@ -522,8 +531,11 @@
         node.band.style.opacity = v.hlLine
       }
       if (node.body) {
-        const bar = v.bar !== undefined
-        if (APPLIES.fill.includes(node.type)) paint(node.body, 'fill', bar ? 'none' : colours.fill)
+        if (APPLIES.fill.includes(node.type)) {
+          const plain = plainFill(v)
+          paint(node.body, 'fill', plain > 0 ? colours.fill : 'none')
+          paint(node.body, 'fillOpacity', plain > 0 && plain < 1 ? String(plain) : '')
+        }
         drawBars(node, s, v, hw, hh, colours)
         paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
         node.body.style.strokeWidth = strokeWidth
@@ -535,9 +547,9 @@
       if (node.title) setText(node.title, s.label ?? '')
 
       // Label: where its type puts it (SHAPES): in the middle, below, or (text) the shape itself; or
-      // where its bar puts it (BAR_DRAWS: label)
+      // where its bar puts it (labelPlace)
       const label = node.label
-      const place = (v.barKind && BAR_DRAWS[v.barKind].label?.(s, hw, hh)) || kindOf(s).label
+      const place = labelPlace(node, s, v, hw, hh)
       attr(label, 'x', 0)
       attr(label, 'text-anchor', 'middle')
       if (place === 'content') {
@@ -840,17 +852,35 @@
     }
 
     // A shape's bar (v.bar: how full, v.barKind: its kind), its parts made once per kind and hidden
-    // while that kind isn't showing.
+    // while that kind isn't showing. Changing kind, both show, cross-fading (v.barFades).
     function drawBars(node, s, v, hw, hh, colours) {
+      const shown = v.barFades || new Map(v.barKind ? [[v.barKind, 1]] : [])
       for (const [kind, parts] of Object.entries(node.bars || {})) {
-        if (kind !== v.barKind) parts.forEach((el) => paint(el, 'display', 'none'))
+        if (!shown.has(kind)) parts.forEach((el) => paint(el, 'display', 'none'))
       }
-      if (!v.barKind) return
-      node.bars ||= {}
-      const parts = (node.bars[v.barKind] ||= BAR_DRAWS[v.barKind].make(node))
-      parts.forEach((el) => paint(el, 'display', ''))
-      BAR_DRAWS[v.barKind].draw(parts, s, clamp01(v.bar), hw, hh, colours, v)
+      for (const [kind, fade] of shown) {
+        if (!kind) continue // the plain fill, drawn by the body
+        node.bars ||= {}
+        const parts = (node.bars[kind] ||= BAR_DRAWS[kind].make(node))
+        parts.forEach((el) => { paint(el, 'display', ''); paint(el, 'opacity', fade < 1 ? String(fade) : '') })
+        BAR_DRAWS[kind].draw(parts, s, clamp01(v.bar), hw, hh, colours, v)
+      }
     }
+    // Where a shape's label goes: where its bar puts it (BAR_DRAWS: label), or its type (SHAPES).
+    // Changing bar kind (v.barFades) to one that puts it elsewhere, it fades out at the old place
+    // and back in at the new, rather than jumping.
+    function labelPlace(node, s, v, hw, hh) {
+      const placeOf = (kind) => (kind && BAR_DRAWS[kind].label?.(s, hw, hh)) || kindOf(s).label
+      if (!v.barFades) return placeOf(v.barKind)
+      const [[kindA], [kindB, u]] = [...v.barFades]
+      const [from, to] = [kindA, kindB].map(placeOf)
+      if (from === to) return to
+      node.label.style.opacity = v.labelOpacity * Math.abs(2 * u - 1)
+      return u < 0.5 ? from : to
+    }
+    // How much of a shape's plain fill shows: all of it without a bar, none with one, and between
+    // as a bar turns on or off (v.barFades)
+    const plainFill = (v) => (v.barFades?.has(null) ? v.barFades.get(null) : v.bar === undefined ? 1 : 0)
 
     // signal: a glowing blip running along a line once (signal: { t: 0-1, reverse }), its tail
     // fading behind it. It runs on until the tail has gone past the end.
@@ -1104,6 +1134,7 @@
         // a bar grows or shrinks to its new value (or turns on or off) with the change; a value that
         // lands from a flyer (tween: lands), which showed it on the way, is taken as it lands
         v.barKind = a && b ? barKindOf(b, a) : barKindOf(shape)
+        v.barFades = a && b ? barFades(a, b, t) : null
         if (v.barKind) v.bar = !(a && b) ? barShare(shape) : tw?.lands ? barShare(t < 0.5 ? a : b) : lerp(barShare(a), barShare(b), t)
         v.round = a && b ? lerp(roundness(a), roundness(b), t) : roundness(shape)
         // an arrowhead fades in or out as it's added to or taken off a line
