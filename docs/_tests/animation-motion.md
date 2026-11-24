@@ -463,20 +463,22 @@ b: delete
 A cell's trail stays with the cell, bow and all.
 
 ```anim
-arr: row [5 3 8 1] at 3,5
+arr: row [5 3 8 1 6 7] at 2,5
 arr.0: trail
+arr.3: trail
 ```
 
 +++
 
 ```anim
-arr: swap 0 3 speed slow
+arr: swap 0 5 speed slow
 ```
 
 +++
 
 ```anim
 arr: swap 3 1 speed slow
+arr: swap 5 2 speed slow
 ```
 
 </animation>
