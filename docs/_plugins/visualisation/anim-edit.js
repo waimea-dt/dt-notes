@@ -168,13 +168,14 @@
       const [a, b] = [axis.units[i], axis.units[j]]
       const way = { x: b[0].attach.dx - a[0].attach.dx, y: b[0].attach.dy - a[0].attach.dy }
       const length = Math.hypot(way.x, way.y)
-      const lift = C.swapLift[axis.steps(i, j) > 1 ? 'far' : 'near'] * Math.max(...[...a, ...b].map((cell) => bowOf(row, cell, way)))
+      const most = C.swapLift[axis.steps(i, j) > 1 ? 'far' : 'near'] * Math.max(...[...a, ...b].map((cell) => bowOf(row, cell, way)))
+      const lift = Math.min(length / 2, most) // round: a semicircle, flatter for long swaps
       const moves = [[a, b, 1], [b, a, -1]].flatMap(([unit, other, sign]) => unit.map((cell, k) => {
         const moved = structuredClone(cell)
         moved.id = other[k].id
         moved.attach = offsetFrom(id, other[k].attach.dx, other[k].attach.dy)
         const record = tween(meta, moved.uid)
-        record.arc = { x: (sign * lift * way.y) / length, y: (-sign * lift * way.x) / length }
+        record.arc = { side: { x: (sign * lift * way.y) / length, y: (-sign * lift * way.x) / length }, along: { x: sign * way.x, y: sign * way.y } }
         if (sign > 0) record.raise = true
         return moved
       }))

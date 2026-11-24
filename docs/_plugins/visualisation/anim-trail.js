@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { boxCentre, LINE_TYPES, STYLE, pick, baseShape, tween, trailId, rotateAbout, pointOnHops, pointOnPath,
+  const { boxCentre, LINE_TYPES, STYLE, pick, baseShape, tween, trailId, rotateAbout, arcOffset, pointOnHops, pointOnPath,
     easeFn, lerp } = window.Anim
 
   // How finely a trail follows a move: points per hop of a travel, along a route (via, follow), and
@@ -74,7 +74,7 @@
       if (record?.arc) {
         // a swapped cell bows out to one side on its way, as the renderer draws it (tween: arc)
         const { arc } = record
-        return { at: (u) => { const p = straight(u); const k = Math.sin(Math.PI * u); return { x: p.x + arc.x * k, y: p.y + arc.y * k } }, steps: TRAIL_STEPS.route }
+        return { at: (u) => { const p = straight(u); const off = arcOffset(arc, u); return { x: p.x + off.x, y: p.y + off.y } }, steps: TRAIL_STEPS.route }
       }
       return { at: straight, steps: 1 }
     }

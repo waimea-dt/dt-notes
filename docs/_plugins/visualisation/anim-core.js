@@ -35,7 +35,7 @@
   const CHOREOGRAPHY = {
     then: 0.6,        // insert / remove are two moves in turn: the second starts this far in
     aside: 1.2,       // a cell slides in from / out to this far below a row (left of a column)
-    swapLift: { near: 0.6, far: 1.1 }, // how far a swapped cell bows out (neighbours / further apart)
+    swapLift: { near: 0.6, far: 1.1 }, // how far a swapped cell bows out at most (neighbours / further apart): a semicircle when closer
     arrive: 1,        // a value copied to a var or cell (v1: a.1) lands after this
     arriveOut: 1.2,   // a cell removed into a var drops out, then lands after this
     flyMove: 0.8,     // a flyer moves for this share of its time, then fades out where it landed
@@ -1520,6 +1520,14 @@
   }
 
   // A point turned `degrees` clockwise about a pivot (or, with no pivot, a vector turned)
+  // A swapped cell's way round as an offset from its straight move, a fraction t of the way
+  // (tween: arc): half an ellipse, its sideways radius `side` and the move along it `along`
+  function arcOffset(arc, t) {
+    const k = Math.sin(Math.PI * t)
+    const lag = (1 - Math.cos(Math.PI * t)) / 2 - t // going round, not straight along
+    return { x: arc.side.x * k + arc.along.x * lag, y: arc.side.y * k + arc.along.y * lag }
+  }
+
   function rotateAbout(p, pivot, degrees) {
     const r = (degrees * Math.PI) / 180
     const [cos, sin] = [Math.cos(r), Math.sin(r)]
@@ -1605,5 +1613,5 @@
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, OUTLINES, ANCHORS, anchorPoint, refPoint, polygonPoints, roundCorners, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, OUTLINES, ANCHORS, anchorPoint, refPoint, polygonPoints, roundCorners, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

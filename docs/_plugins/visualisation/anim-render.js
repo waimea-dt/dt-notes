@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, placeFor, COLOUR_PICKS, applyOps } = window.Anim
+    END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, applyOps } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -1342,9 +1342,9 @@
           if (extra.forward && tw?.effect) EMPHASIS_FRAMES[tw.effect](v, rounds ? rounds.raw : raw) // once a round
           // swap: the cell bows out to one side on its way to the other's place
           if (tw?.arc) {
-            const k = Math.sin(Math.PI * clamp01(t))
-            v.dx += tw.arc.x * k
-            v.dy += tw.arc.y * k
+            const off = arcOffset(tw.arc, clamp01(t))
+            v.dx += off.x
+            v.dy += off.y
           }
         } else if (b) {
           shape = b
