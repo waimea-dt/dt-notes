@@ -225,6 +225,7 @@
   // resolves every named colour at once (all probes set, then all read: one restyle). The cache is
   // cleared when the theme changes.
   const colourCache = new Map()
+  const cssCache = new Map() // CSS colour -> it as drawn (rgba, or none): mixCss
   const namedColours = () => Object.keys(COLOURS).flatMap((name) => [colourCss(name, 'fill'), colourCss(name, 'stroke')])
   function resolveColours(host, list) {
     const probes = [...new Set(list)].map((css) => {
@@ -249,7 +250,7 @@
     return colourCache.get(css)
   }
   // before any animation redraws for the new theme (each one's listener is added later)
-  window.addEventListener?.('docsify-theme-change', () => { colourCache.clear(); warmed = false })
+  window.addEventListener?.('docsify-theme-change', () => { colourCache.clear(); cssCache.clear(); warmed = false })
 
   function createRenderer(svg, viewBox, debug) {
     const layers = [0, 1, 2].map(() => svg.appendChild(svgEl('g')))
@@ -290,6 +291,13 @@
     }
     const cssOf = (c) => (c ? `rgba(${Math.round(c[0])}, ${Math.round(c[1])}, ${Math.round(c[2])}, ${c[3].toFixed(3)})` : 'none')
     const mixColour = (a, b, t) => cssOf(mixRgba(a, b, t))
+    // Two CSS colours part-way from a to b, as CSS: one that isn't changing (a is b, as for most
+    // shapes on most frames) is worked out once (cssCache), not mixed again every frame
+    function mixCss(a, b, t) {
+      if (a !== b) return mixColour(rgba(a), rgba(b), t)
+      if (!cssCache.has(a)) cssCache.set(a, cssOf(rgba(a)))
+      return cssCache.get(a)
+    }
     // A colour seen over another (an opaque one): the top's alpha mixes them
     const over = (top, under) => (top ? mixRgba(under, [...top.slice(0, 3), 1], top[3]) : under)
     // A colour picked from what's behind (COLOUR_PICKS: contrast): its dark colour on a backdrop
@@ -302,7 +310,17 @@
       const dark = clamp01((lum - pick.threshold + pick.soft) / (2 * pick.soft))
       return mixRgba(rgba(colourCss(pick.light, 'stroke')), rgba(colourCss(pick.dark, 'stroke')), dark)
     }
-    const paint = (el, prop, value) => { if (el.style[prop] !== value) el.style[prop] = value }
+    // Sets an inline style property only when it changes, remembering what it set (as attr does):
+    // reading el.style back each frame costs as much as drawing. A property set here is only ever
+    // set here, so what it remembers stays true.
+    const styleCache = new WeakMap()
+    function paint(el, prop, value) {
+      let cache = styleCache.get(el)
+      if (!cache) styleCache.set(el, (cache = new Map()))
+      if (cache.get(prop) === value) return
+      cache.set(prop, value)
+      el.style[prop] = value
+    }
 
     // How each boxed shape type is drawn (lines: in drawNode). make adds its elements to the node
     // (node.body, when it has one, takes the stroke, and the fill if its type takes fill); size
@@ -1223,6 +1241,23 @@
       return lit
     }
 
+    // A state's shapes by uid, worked out once: a beat's state never changes once compiled
+    const uidMaps = new WeakMap()
+    function byUidOf(state) {
+      if (!uidMaps.has(state)) uidMaps.set(state, new Map([...state.values()].map((s) => [s.uid, s])))
+      return uidMaps.get(state)
+    }
+    // Ids that pass from one shape to another from A to B (cells that swap, a shape replaced): what's
+    // attached to them stays with the id's place rather than riding along with either shape. Once
+    // per pair of states.
+    const passedCache = new WeakMap() // A -> B -> ids
+    function passedOf(A, B) {
+      if (!passedCache.has(A)) passedCache.set(A, new WeakMap())
+      const byB = passedCache.get(A)
+      if (!byB.has(B)) byB.set(B, new Set([...B.keys()].filter((id) => A.has(id) && A.get(id).uid !== B.get(id).uid)))
+      return byB.get(B)
+    }
+
     // A beat's state never changes once compiled, so its spotlit shapes are worked out once
     const litCache = new WeakMap()
     function litFor(state) {
@@ -1265,14 +1300,12 @@
      * highlight effects only play forwards).
      */
     function render(A, B, meta, progress, final, extra = { forward: true, beatT: 1 }) {
-      const aByUid = new Map([...A.values()].map((s) => [s.uid, s]))
-      const bByUid = new Map([...B.values()].map((s) => [s.uid, s]))
-      const uids = new Set([...aByUid.keys(), ...bByUid.keys()])
+      const aByUid = byUidOf(A)
+      const bByUid = byUidOf(B)
+      const uids = new Set([...aByUid.keys(), ...bByUid.keys()]) // flyers are added to it below
       const items = []
       const now = new Map() // id -> interpolated shape, for attached line ends and shapes
-      // Ids that pass from one shape to another (cells that swap, a shape replaced): what's
-      // attached to them stays with the id's place rather than riding along with either shape.
-      const passed = new Set([...B.keys()].filter((id) => A.has(id) && A.get(id).uid !== B.get(id).uid))
+      const passed = passedOf(A, B)
 
       for (const uid of uids) {
         // A copy starts as its original, so it animates away from it
@@ -1434,7 +1467,7 @@
 
       const glowA = glowFor(A)
       const glowB = glowFor(B)
-      const finalByUid = new Map([...final.values()].map((s) => [s.uid, s]))
+      const finalByUid = byUidOf(final)
       order(items.map(({ node, shape, uid, t }) => ({ node, shape: finalByUid.get(uid) || shape, raised: meta.tweens.get(uid)?.raise && t > 0 && t < 1 })))
 
       for (const item of items) {
@@ -1444,10 +1477,10 @@
         const t = item.a && item.b ? clamp01(item.tOnce ?? item.t) : 1 // a repeated change's colours change in its first round
         // a null value is muted (colour none still hides it); a digit, its value's colour
         const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : lookOf(s, 'colour'))
-        const fill = mixRgba(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t)
+        const [fillA, fillB] = [colourCss(from.fill, 'fill'), colourCss(to.fill, 'fill')]
         const colours = {
-          fill: cssOf(fill),
-          stroke: mixColour(rgba(colourCss(from.stroke, 'stroke')), rgba(colourCss(to.stroke, 'stroke')), t),
+          fill: mixCss(fillA, fillB, t),
+          stroke: mixCss(colourCss(from.stroke, 'stroke'), colourCss(to.stroke, 'stroke'), t),
         }
         // a bar's track: none on a shape without a bar, so it fades in and out as the bar turns on and off
         let track = null
@@ -1465,8 +1498,9 @@
         // sits on a bar, the part of it over the bar is drawn again in the colour picked against
         // the bar (colours.cover: drawCover). What's behind is only worked out for a picked colour.
         const inkOn = (backing) => mixRgba(...[from, to].map((s) => (COLOUR_PICKS[ink(s)] ? pickInk(COLOUR_PICKS[ink(s)], backing) : rgba(colourCss(ink(s), 'stroke')))), t)
-        if (![from, to].some((s) => COLOUR_PICKS[ink(s)])) colours.colour = cssOf(inkOn(null))
+        if (![from, to].some((s) => COLOUR_PICKS[ink(s)])) colours.colour = mixCss(colourCss(ink(from), 'stroke'), colourCss(ink(to), 'stroke'), t)
         else {
+          const fill = mixRgba(rgba(fillA), rgba(fillB), t)
           const backdrop = rgba(COLOURS.bg)
           const onShape = LABEL_PLACES[kindOf(item.shape).label]?.over
           const bar = BAR_DRAWS[item.v.barKind]
