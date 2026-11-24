@@ -43,6 +43,9 @@
       "include": "#speed"
     },
     {
+      "include": "#repeat"
+    },
+    {
       "include": "#align"
     },
     {
@@ -298,6 +301,18 @@
               "include": "#number"
             }
           ]
+        }
+      }
+    },
+    "repeat": {
+      "$comment": "repeat and its forever (REPEATS); a number of times is a number",
+      "match": "(?<![\\w-])(repeat)(?:\\s+(forever)(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
         }
       }
     },
