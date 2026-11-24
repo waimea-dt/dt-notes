@@ -99,9 +99,10 @@
           if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
           const problem = look.check?.(value, shape)
           if (problem) warn(problem)
-          unlinkColour(shape, look.field) // a look given again no longer follows any values
+          unlink(shape, key) // a look given again no longer follows any values
           if (value === 'reset') resetLook(shape, key)
-          else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, look.field, value, warn) // "rgb(r g b)"
+          else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, key, value, warn) // "rgb(r g b)"
+          else if (value?.bind) linkNumber(shape, key, value.bind, warn) // "weight v1", "angle {v1 * 2}"
           else if (look.unit) for (const field of fieldsOf(look)) shape[field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[field]), { unit: look.unit })))
           else shape[look.field] = look.map && value in look.map ? look.map[value] : value
           // a digit given a look no longer takes that look from its value
@@ -145,6 +146,7 @@
         if (shape.digit) checkDigit(shape.digit, { label: props.label })
         shape.label = props.label
         if (shape.nil) shape.nil = false
+        linkText(shape, warn) // "Total: {v1}"
       }
       if (props.points) setPoints(shape, props.points) // before its look, so a size given with them stretches them
       // a turn about a point sets the angle itself (turnAbout), so it isn't a look here
@@ -168,6 +170,7 @@
       const example = `e.g. "${shape.id}: angle +90 about 5,5"`
       if (creating) throw new Error(`"about" turns a shape that's already there, ${example}`)
       if (!props.angle) throw new Error(`"about" goes with an angle, ${example}`)
+      if (props.angle.bind) throw new Error(`"about" turns by a number of degrees, not one that follows values, ${example}`)
       const layout = LAYOUTS[shape.layout]
       if (layout) throw new Error(`${article(layout.noun)} ${layout.noun} can't be turned`)
       if (props.at || props.x || props.y || props.via || props.travel || props.follow || props.attach || props.from || props.to) {
@@ -315,7 +318,7 @@
     function placeShape(shape, props, creating, warn) {
       checkMove(shape, props, creating)
       const start = { x: shape.x, y: shape.y }
-      setPosition(shape, props, creating)
+      setPosition(shape, props, creating, warn)
       if (props.attach || props.detach) attachShape(shape, props, warn)
       if (creating && (shape.x === undefined || shape.y === undefined)) throw new Error('needs a position, e.g. "at 3,2"')
       const route = routeOf(shape, props, start)
@@ -343,17 +346,21 @@
 
     // at / x / y: a point, a shape's centre, or beside a shape (relative values need something to
     // be relative to: never when creating)
-    function setPosition(shape, props, creating) {
+    function setPosition(shape, props, creating, warn) {
       const now = (value) => (creating ? undefined : value)
       const { at } = props
+      // a new place no longer follows values; "x v1": x (or y) follows one (KEYWORDS: bound)
+      const placed = at || props.travel || props.follow || props.attach || props.about
+      for (const axis of ['x', 'y']) if (placed || props[axis]) unlink(shape, axis)
+      for (const axis of ['x', 'y']) if (props[axis]?.bind) linkNumber(shape, axis, props[axis].bind, warn)
       if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
       if (at?.kind === 'ref') Object.assign(shape, placeFor(shape, refPoint(at, shapes)))
       if (at?.kind === 'place') {
         const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
         Object.assign(shape, placeNextTo(shape, shapes.get(at.ref), at.place, gap))
       }
-      if (props.x) shape.x = coord(props.x, now(shape.x))
-      if (props.y) shape.y = coord(props.y, now(shape.y))
+      if (props.x && !props.x.bind) shape.x = coord(props.x, now(shape.x))
+      if (props.y && !props.y.bind) shape.y = coord(props.y, now(shape.y))
     }
 
     // attach (beside or on top of another shape) / detach
@@ -425,7 +432,7 @@
     // "fill reset" / "style reset": a look (STYLE) back to how the shape started (its type's look,
     // with the defaults when it was made: applyDefaults). A digit takes it from its value again.
     function resetLook(shape, key) {
-      unlinkColour(shape, key)
+      unlink(shape, key)
       shape[key] = (shape.start || baseShape(shape.type))[key]
       if (shape.auto) shape.auto = digitLooks(shape.digit).filter((field) => field === key || shape.auto.includes(field))
     }
@@ -556,7 +563,7 @@
       fitCode(meta)
       fitSpans(meta)
       fitNumbers(meta)
-      fitColours(meta, warn)
+      fitLinks(meta, warn)
       for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
       resolveAttachments(shapes)
       for (const group of shapes.values()) {
@@ -628,6 +635,7 @@
       if (colon) throw new Error('"camera" takes no colon, e.g. "camera at 4,3 zoom 2"')
       const props = parseProps(tokenize(rest), 0, 'camera', shapes)
       if (props.at?.kind === 'place') throw new Error('"camera at" takes "x,y" or a shape id')
+      if (props.x?.bind || props.y?.bind) throw new Error('the camera goes to a number, not one that follows values, e.g. "camera x 4"')
       if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'travel', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects at, travel, zoom or reset, e.g. "camera at 4,3 zoom 2"')
       if (props.reset && (props.at || props.x || props.y || props.travel || props.zoom)) throw new Error('"camera reset" takes only a speed, a delay and an ease')
       if (props.travel && (props.at || props.x || props.y)) throw new Error('"camera travel" sets the route, so it can\'t go with at / x / y')
@@ -751,17 +759,21 @@
         const known = !word || KEYWORDS[word] || RESERVED.has(word)
         throw new Error(known ? `no shape called "${id}" (to create one, put a type after the colon, e.g. "${id}: rect")` : `unknown shape type "${first.value}"`)
       }
+      // "v3: v1 + v2": a value worked out from others, once (OPERATORS)
+      const worked = exprValue(existing, tokens)
       // "v1: a.1" / "a.2: v2": a copy of another var's or cell's value glides over
-      const symbol = symbolValue(existing, first)
+      const symbol = !worked && symbolValue(existing, first)
       // a digit given a word that isn't its symbol or a name: what it holds ("h.0: G")
-      if (existing.digit && !symbol && holderRef(first) && !shapes.has(first.value)) checkDigit(existing.digit, { label: first.value })
-      if (existing.holds && !symbol && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
+      if (existing.digit && !worked && !symbol && holderRef(first) && !shapes.has(first.value)) checkDigit(existing.digit, { label: first.value })
+      if (existing.holds && !worked && !symbol && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
       // "v: 123" / "arr.2: null": a new value for a var or a row's / column's cell ("text" is a
       // label); "h.0: F" a digit's symbol
       const given = symbol || (existing.holds && first?.kind === 'word' ? valueOf(first) : undefined)
-      const newValue = given && addTo(existing, given)
-      const props = propsOf(existing.type, tokens, newValue ? 1 : 0, 'change')
+      const newValue = worked ? { label: worked.label } : given && addTo(existing, given)
+      const props = propsOf(existing.type, tokens, worked ? worked.next : newValue ? 1 : 0, 'change')
       if (newValue && props.label !== undefined) throw new Error('give one value: a number, "quoted" text or null')
+      if (props.count && !newValue) warn('"counter" goes with a new value, e.g. "v1: 100 counter"')
+      const before = newValue && valueIn(existing) // what it held, for counter
       // "b: 67": a number's digits (LAYOUTS: radix) take the value, each that changes crossfading
       if (newValue && existing.layout) for (const cell of setNumber(existing, newValue, warn)) schedule(meta, cell.uid, props)
       // "s: "print(y)"": a one-line code block's text is its line's
@@ -783,6 +795,7 @@
       else if (props.at || props.x || props.y) Object.assign(tween(meta, shape.uid), { path: null, turn: null })
       shapes.set(id, shape)
       schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }) // travel: speed per hop
+      if (newValue && (props.count ?? defaults.count)) countUp(shape, before, props, meta, warn)
       updateParts(shape, props, meta, warn)
       if (props.trail !== undefined) setTrail(existing, shape, props, meta, warn)
       if (order) applyStagger(shape, order, props, meta, warn)
@@ -967,16 +980,16 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitColours, fitNumbers, fitSpans, holderRef, linkColour,
-      readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlinkColour, updateParts, valueOf, withRowMax
+    let addTo, assignValue, symbolValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+      readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ addTo, assignValue, symbolValue, checkDigit, checkParts, createLayout, fitCode, fitColours, fitNumbers, fitSpans, holderRef, linkColour,
-        readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlinkColour, updateParts, valueOf, withRowMax } = cx)
+      ({ addTo, assignValue, symbolValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+        readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 
@@ -1039,9 +1052,9 @@
   // part before the last is in the beat's `chain`), and play as one beat. Returns the wait (ms)
   // before the next part, or null if the line isn't a `then`.
   function thenLine(text) {
-    const match = text.match(/^then\b\s*(.*)$/i)
+    const match = text.match(/^then(?:\s+(.*))?$/i)
     if (!match) return null
-    const rest = match[1]
+    const rest = match[1] || ''
     if (!rest) return 0
     if (!NUMBER.test(rest) || /^[+-]/.test(rest)) throw new Error('"then" takes nothing (start when the lines before it finish) or a number of seconds to wait first, e.g. "then 0.5"')
     return parseFloat(rest) * 1000

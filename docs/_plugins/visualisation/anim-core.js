@@ -433,6 +433,8 @@
     denary: { noun: 'denary number', item: 'digit', ...NUMBER, radix: 10, digits: { ...NUMBER_DIGITS, default: 3, max: 10 }, props: ['digits', 'powers'] },
   }
   const LAYOUT_TYPES = Object.keys(LAYOUTS)
+  // A digit's symbol (LAYOUTS: radix): 0-9, then A-F
+  const digitSymbol = (d) => d.toString(36).toUpperCase()
   // The props only some layouts take (LAYOUTS: props)
   const LAYOUT_PROPS = [...new Set(LAYOUT_TYPES.flatMap((layout) => LAYOUTS[layout].props || []))]
   // The looks a layout's digits take from their values (LAYOUTS: digits.looks), e.g. ['colour']
@@ -521,7 +523,7 @@
 
   // Colours worked out from values, written as a call where a colour goes: "fill rgb(r g b)". Each
   // argument is a number, or the id of a var, cell or number, whose value it follows: the colour is
-  // worked out again whenever one changes (fitColours in anim-values.js), until that look is given
+  // worked out again whenever one changes (fitLinks in anim-values.js), until that look is given
   // again. The colour is used as it is (a #hex), never tinted as a named fill is.
   //   args  what each argument is, in order (their count, and names for messages)
   //   max   each argument's greatest value (from 0); one outside that is held in range, with a warning
@@ -529,6 +531,19 @@
   //   example  one written out, for messages
   const COLOUR_FUNCTIONS = {
     rgb: { args: ['red', 'green', 'blue'], max: 255, css: (values) => `#${values.map((v) => v.toString(16).padStart(2, '0')).join('')}`, example: 'rgb(255 128 0)' },
+  }
+  // What an expression can do with numbers ("v3: v1 + v2", "x {n * 2}", "{total / 4}" in a label:
+  // readExpr and workOut in anim-values.js). Each operator is its own word, with spaces round it (an
+  // id can have a "-" in it):
+  //   rank     how tightly it binds: higher ranks are worked out first, then left to right
+  //   apply    apply(a, b): its result
+  //   problem  problem(a, b): why it can't be worked out (an error), or null
+  const OPERATORS = {
+    '*': { rank: 2, apply: (a, b) => a * b },
+    '/': { rank: 2, apply: (a, b) => a / b, problem: (a, b) => (b === 0 ? 'can\'t divide by 0' : null) },
+    mod: { rank: 2, apply: (a, b) => ((a % b) + b) % b, problem: (a, b) => (b === 0 ? 'can\'t take mod 0' : null) }, // as Python's %: the sign of b
+    '+': { rank: 1, apply: (a, b) => a + b },
+    '-': { rank: 1, apply: (a, b) => a - b },
   }
   // Colours picked as a shape is drawn, from what's behind its label (pickInk in anim-render.js):
   //   looks      the looks that take it
@@ -671,6 +686,9 @@
   const SPOT_HELP = '"x,y", a shape id or a point on its edge (e.g. a.top, a.bottom-left)'
   const at = { key: 'at', sigs: POINT, build: buildPoint, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "below a"` }
   const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
+  // a number that can follow values instead: a var's, cell's or number's ("x v1"), or an
+  // expression's in { } ("x {v1 * 2}"), worked out again as they change (linkNumber in anim-values.js)
+  const bound = (keyword) => ({ ...keyword, sigs: [...keyword.sigs, ['bound']], help: `${keyword.help}, or a var or cell to follow (e.g. v1, or {v1 * 2})` })
   // a colour look: a colour (a name, #hex or a call: COLOUR_FUNCTIONS), or one picked as it's drawn
   // (COLOUR_PICKS) if any is for this look
   const colour = (key) => {
@@ -700,8 +718,8 @@
     // position
     at, move: at, goto: at,
     ...Object.fromEntries(PLACEMENTS.map((place) => [place, { key: 'at', sigs: [['id']], build: (v) => ({ kind: 'place', place, ref: v[0] }), help: 'a shape id' }])),
-    x: number('x'),
-    y: number('y'),
+    x: bound(number('x')),
+    y: bound(number('y')),
     from: { key: 'from', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
     to: { key: 'to', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
     via: { ...at, key: 'via', repeat: true, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "via above b"` },
@@ -719,18 +737,18 @@
     detach: fixed('detach', true),
     // size and look
     size: { key: 'size', sigs: [['num', 'num'], ['num']], build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }), help: '"w,h", "wxh" or one number' },
-    width: number('width', 'a number of cells'),
-    height: number('height', 'a number of cells'),
-    radius: number('radius'),
-    corner: resettable(number('corner', 'a number of cells')),
+    width: bound(number('width', 'a number of cells')),
+    height: bound(number('height', 'a number of cells')),
+    radius: bound(number('radius')),
+    corner: resettable(bound(number('corner', 'a number of cells'))),
     bend: number('bend', 'a number of cells (bowing to the left of the way it goes, or to the right when negative)'),
     fill: resettable(colour('fill')),
     stroke: resettable(colour('stroke')),
     colour: resettable(colour('colour')),
-    weight: resettable(number('weight', 'a number (a multiple of the normal stroke thickness)')),
-    font: resettable(number('font', 'a number (a multiple of the normal size)')),
-    angle: { key: 'angle', sigs: [['num'], ['direction']], help: `a number of degrees (clockwise, 0 = facing right, as drawn) or a direction: ${Object.keys(DIRECTIONS).join(', ')}` },
-    scale: number('scale', 'a number (a multiple of the normal size)'),
+    weight: resettable(bound(number('weight', 'a number (a multiple of the normal stroke thickness)'))),
+    font: resettable(bound(number('font', 'a number (a multiple of the normal size)'))),
+    angle: bound({ key: 'angle', sigs: [['num'], ['direction']], help: `a number of degrees (clockwise, 0 = facing right, as drawn) or a direction: ${Object.keys(DIRECTIONS).join(', ')}` }),
+    scale: bound(number('scale', 'a number (a multiple of the normal size)')),
     align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
     bold: { key: 'bold', sigs: [['reset'], []], build: (v) => v[0] ?? true, help: 'nothing or reset' },
     regular: fixed('bold', false, { what: 'bold' }), // not bold
@@ -742,9 +760,9 @@
     // off), max its full value, track the colour of the rest
     ...Object.fromEntries(Object.keys(BARS).map((kind) => [kind, { key: 'bar', sigs: [['clear'], []], build: (v) => v[0] ?? kind, help: `nothing (show the value as a ${kind}) or clear` }])),
     max: number('max', 'a number (the value of a full bar)'),
-    show: number('show', 'a share of the line, from its start: 0 (none of it) to 1 (all of it)'),
+    show: bound(number('show', 'a share of the line, from its start: 0 (none of it) to 1 (all of it)')),
     track: colour('track'),
-    opacity: resettable(number('opacity', 'a number from 0 (hidden) to 1 (solid)')),
+    opacity: resettable(bound(number('opacity', 'a number from 0 (hidden) to 1 (solid)'))),
     // what a line has at each end (END_MARKS)
     ...Object.fromEntries(['start', 'end'].map((key) => [key, { key, sigs: [['mark']], help: `${orList(Object.keys(END_MARKS))}, e.g. "${key} arrow"` }])),
     ...words(LINE_STYLES, 'linestyle', 'line style'),
@@ -792,6 +810,8 @@
     numbered: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear', what: 'indices' },
     // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
     // with it, rather than taking on the look of where it goes
+    // a new value for a var, cell or number counts its way there, showing each value in between
+    counter: fixed('count', true),
     'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"' }),
     null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
     // defaults only (elsewhere, clear goes after highlight, callout, name or indices)
@@ -869,7 +889,7 @@
   const EDIT_WORDS = { end: 'end', into: 'into' }
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), 'pause', 'auto', 'then', 'defaults', 'camera',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), ...Object.keys(OPERATORS), 'pause', 'auto', 'then', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -1507,7 +1527,7 @@
     })))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, beatStates, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

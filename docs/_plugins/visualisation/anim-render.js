@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    END_MARKS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
+    END_MARKS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -101,6 +101,16 @@
   const roundness = (shape) => (roundBar(shape) ? 1 : 0)
   // A box's corner as drawn: its own, or all the way round as it's round (v.round)
   const cornerOf = (s, v, hw, hh) => Math.max(0, lerp(Math.min(s.corner || 0, hw, hh), Math.min(hw, hh), v.round || 0))
+
+  // A value part-way (t) through counting ("counter", tween: count): a whole number steps through
+  // each one between; any other shows as many decimal places as either end has. A digit (radix,
+  // place) shows its place's digit of the whole number counted to.
+  function countLabel({ from, to, radix, place }, t) {
+    const n = lerp(from, to, t)
+    if (radix) return digitSymbol(Math.floor(Math.abs(Math.round(n)) / radix ** place) % radix)
+    const places = Math.max(...[from, to].map((x) => (String(x).split('.')[1] || '').length))
+    return places ? n.toFixed(places) : String(Math.round(n))
+  }
 
   // A polygon's outline (SHAPES: points) in a box of half-sizes hw, hh, as a closed path, its
   // corners rounded by r (each as much as fits): from the middle of its first side round to it
@@ -1243,6 +1253,8 @@
           v.label = swap && u < 0.5 ? a.label : b.label
           v.nil = swap && u < 0.5 ? a.nil : b.nil
           v.labelOpacity = swap ? Math.abs(2 * u - 1) : 1
+          // counter: the value counts its way there instead (tween: count)
+          if (tw?.count) Object.assign(v, { label: countLabel(tw.count, clamp01(t)), nil: false, labelOpacity: 1 })
           // One-off effects, forwards only (going back doesn't replay them)
           if (extra.forward && tw?.effect) EMPHASIS_FRAMES[tw.effect](v, raw)
           // swap: the cell bows out to one side on its way to the other's place

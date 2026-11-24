@@ -163,7 +163,9 @@
   // Scene parsing
   // ---------------------------------------------------------------------------
 
-  const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([[\]])|([^\s,[\]]+)/g
+  // a "quoted" label, a call (image(…), rgb(…)), an unclosed quote, a bracket, an expression in
+  // { } ("x {v1 * 2}"), or a word
+  const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([[\]])|\{([^{}]*)\}|([^\s,[\]{}]+)/g
   const NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/
   const ID = /^[A-Za-z][\w.-]*$/
   const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
@@ -175,10 +177,11 @@
       else if (m[2] !== undefined) tokens.push({ kind: 'res', name: m[2].toLowerCase(), arg: m[3].trim() })
       else if (m[4] !== undefined) throw new Error('a label is missing its closing quote')
       else if (m[5] !== undefined) tokens.push({ kind: 'bracket', value: m[5] }) // a row's / column's [values]
+      else if (m[6] !== undefined) tokens.push({ kind: 'expr', text: m[6].trim() }) // read when it's used (readExpr)
       else {
         // "2x1" (a size) is two numbers
-        const pair = m[6].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
-        const words = pair ? [pair[1], pair[2]] : [m[6]]
+        const pair = m[7].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
+        const words = pair ? [pair[1], pair[2]] : [m[7]]
         words.forEach((word) => tokens.push({ kind: 'word', value: word, lower: word.toLowerCase() }))
       }
     }
@@ -190,6 +193,10 @@
     // a colour worked out from values, "rgb(r g b)" (COLOUR_FUNCTIONS): its arguments as tokens,
     // read when it's applied (linkColour)
     if (type === 'colour' && token?.kind === 'res' && COLOUR_FUNCTIONS[token.name]) return { fn: token.name, args: tokenize(token.arg) }
+    // a number that follows values (KEYWORDS: bound): an expression in { }, or a var, cell or
+    // number by name, as tokens, read when it's applied (linkNumber)
+    if (type === 'bound' && token?.kind === 'expr') return { bind: tokenize(token.text) }
+    if (type === 'bound' && token?.kind === 'word' && shapes.get(token.value)?.holds) return { bind: [token] }
     if (!token || token.kind !== 'word') return undefined
     const word = token.lower
     switch (type) {
@@ -268,6 +275,7 @@
       const token = tokens[i]
       if (token.kind === 'str') { allow('label', 'quoted text'); set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
+      if (token.kind === 'expr') throw new Error(`{ } holds a sum for a number to follow, after its word, e.g. "x {v1 * 2}"`)
       if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${BRACKET_NOUNS}, straight after its type, e.g. "row [5 3 8]"`)
       const word = token.lower
       const entry = KEYWORDS[word]
