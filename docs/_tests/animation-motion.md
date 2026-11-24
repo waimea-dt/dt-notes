@@ -30,6 +30,60 @@ on: at lt
 
 </animation>
 
+## Feature: Points on an edge
+
+`a.top` … `a.bottom-right`: the middle of a side, or a corner. They turn with the shape, and a line end on one follows it.
+
+<animation grid="14x7">
+
+```anim
+q: diamond "yes?" at 4,3 size 3x2 fill amber
+yes: rect "yes" at 10,2 size 2x1
+no: rect "no" at 4,6 size 2x1
+ly: arrow from q.right to yes.left "yes"
+ln: arrow from q.bottom to no.top "no"
+lb: arrow from no.right via 10,6 to yes.bottom
+c: circle at 12,5.5 size 2x1.2
+dot: circle at c.top-right size 0.3 fill red front
+```
+
+---
+
+## Moving and turning
+
+```anim
+yes: move 10,4
+q: angle 20
+c: angle 90
+dot: attach c.top-right
+```
+
++++
+
+The dot rides on its corner.
+
+```anim
+c: move 7.5,5
+```
+
++++
+
+A point on an edge works for a turn's pivot, travel and the camera too.
+
+```anim
+dot: angle +360 about c.bottom
+camera at q.top zoom 1.5
+```
+
++++
+
+```anim
+camera reset
+c: travel yes.bottom-right no.top-left
+```
+
+</animation>
+
 ## Feature: Relative values
 
 <animation grid="12x5">
@@ -388,7 +442,7 @@ b: angle +180 about 8,3.5 speed slow
 
 ```anim
 a.trail: stroke teal solid weight 2
-b.trail: dotted opacity 0.5 arrow
+b.trail: dotted opacity 0.5 end arrow
 ```
 
 +++

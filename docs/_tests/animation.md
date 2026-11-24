@@ -389,6 +389,46 @@ a: fill green
 
 </animation>
 
+## Feature: then
+
+The lines after `then` start once those before it have finished, all in one beat. Back undoes the whole beat. `pause` waits after it all.
+
+<animation grid="12x4">
+
+```anim
+a: rect "a" at 2,2 pop
+then
+b: circle "b" at 6,2 pop
+then 0.5
+l: arrow from a to b draw
+```
+
+---
+
+## The same shape, in turn
+
+```anim
+a: move 2,3.5
+then
+a: move 10,3.5 fill amber
+b: pulse
+then
+a: move 10,1 fill green
+camera at a zoom 1.5
+pause 1
+```
+
+---
+
+## Back as it was
+
+```anim
+camera reset
+a: move 2,2 fill bg-shape
+```
+
+</animation>
+
 ## Feature: Intro
 
 The first beat uses `typed`, `pop` and `delay`, so it plays in when it comes into view, and after rewinding.

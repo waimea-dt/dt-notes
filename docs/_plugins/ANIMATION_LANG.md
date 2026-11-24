@@ -62,6 +62,7 @@ Markers go alone on their line. Everything in a beat plays at once.
 
 - Cells from 1, top-left. `at 3,2` = centre of column 3, row 2. Fractions OK.
 - Points `5,4`, sizes `2x1`, all in cells.
+- A point can be a shape (`a`: its centre) or a point on its edge: `a.top` `a.bottom` `a.left` `a.right` `a.top-left` `a.top-right` `a.bottom-left` `a.bottom-right`.
 
 ## Lines
 
@@ -89,17 +90,18 @@ r: row [
 | Type | Example | Default |
 |---|---|---|
 | `rect` | `a: rect "A" at 2,3 size 2x1 corner 0.1` | 1×1 |
-| `circle` | `c: circle "C" at 4,3 radius 0.8` | radius 0.5 |
+| `circle` | `c: circle "C" at 4,3 radius 0.8` · `e: circle at 4,3 size 3x1.5` (an ellipse) | radius 0.5 |
 | `diamond` | `d: diamond "x > 3?" at 4,3 size 3x1.5` | 1×1 |
+| `polygon` | `p: polygon [0,-1 1,1 -1,1] at 5,4 "P"` (points from `at`, in cells) · `p: [0,-1 1,0 0,1 -1,0]` (new points) | its points' size |
 | `text` | `t: text "Hi" at 7,1 align left` | |
-| `line` / `arrow` / `arrows` | `l: arrow from a to 9,3 "label"` · `l: arrows from a to b` · `l: line from 2,5 via 6,5 via 6,6 to 10,6 corner 0.3` | |
+| `line` / `arrow` | `l: arrow from a to 9,3 "label"` · `l: line from a to b start bar end crow` · `l: line from 2,5 via 6,5 via 6,6 to 10,6 corner 0.3` | |
 | `curve` | `c: curve from a to b via 5,1 via 7,3` · `c: curve from a to b bend 0.5` · `c: curve from a to a angle right` (a loop) | loop: up, 1×1 |
 | `image(path)` | `p: image(../_assets/x.svg) "Alt" at 3,4 size 2` | 1×1 |
 | `icon(name)` | `i: icon(laptop) "Laptop" at 10,2` | 1×1, Lucide |
 | `scratch` | `s: scratch "move (10) steps" at 4,3` | its blocks' size (see Scratch) |
 
-- Heads: `arrow` (end), `arrows` (both ends), `line` (none). After the ends (`l: line from a to b arrows`), or on an existing line (`l: arrows`). Put it before any `highlight`.
-- Labels take `<sup>` and `<sub>`: `t: text "x<sup>2</sup> + log<sub>2</sub> N" at 3,1`.
+- Ends: `start` / `end`, each `none` `arrow` `dot` `crow` `bar` (`l: end dot`). An `arrow` is a line with `end arrow`.
+- Labels take `<sup>` `<sub>` `<b>` `<i>`, one at a time: `t: text "x<sup>2</sup> is <b>big</b>" at 3,1`.
 - Via: a corner on a line, a turn on a curve. A signed via is relative to the point before.
 - Bend: bows a curve to its left (`bend -0.5`: right). Replaces any via points.
 - Loop: `angle` is the way it faces, `size 1.2x0.6` how wide and how far out.
@@ -111,13 +113,14 @@ r: row [
 |---|---|
 | position | `at 3,2` · `at b` · `x 3` · `y 2` (`move` / `goto` = `at`) |
 | placement | `below b` · `above b` · `left-of b` · `right-of b` · `gap 1` |
-| line ends | `from 2,3 to b` (an end on a shape follows it) |
+| line ends | `from 2,3 to b` (an end on a shape follows it) · `from a.right to b.left` · `start dot` · `end arrow` |
 | size | `size 2x1` · `size 2` (circle: diameter) · `width 3` · `height 0.5` |
-| radius / corner | `radius 0.5` (circle) · `corner 0.2` (rect; line, arrow: rounds its corners) |
+| radius / corner | `radius 0.5` (circle: both ways) · `corner 0.2` (rect; line, arrow: rounds its corners) |
 | colour | `fill blue` · `stroke #f80` · `colour amber` (text and labels) · `fill rgb(255 128 0)` |
 | weight | `weight 2` (× normal, `0` hides) |
 | opacity | `opacity 0.5` (`0` hidden … `1` solid) |
 | line style | `solid` · `dashed` · `dotted` |
+| show | `show 0.5` (lines: how much, from the start, as if drawn that far) |
 | flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |
 | angle / scale | `angle 45` (clockwise, 0 = right) · `angle up` (`right` `down` `left` `up`) · `scale 1.5` (not lines) |
 | font | `font 1.5` · `bold` · `regular` (not bold) · `mono` |
@@ -198,6 +201,7 @@ a: trail clear
 k2: copy key move 8,1          # copy, then move off
 lock: attach right-of msg      # rides beside msg
 lock: attach msg               # on top of msg
+lock: attach msg.top-right     # on its corner
 lock: detach
 pkt: group [msg lock]          # acts as one
 pkt: ungroup
@@ -348,10 +352,47 @@ done: ring clear
 sw: rect at 8,3 fill rgb(r g b)    # red, green, blue (0-255): follows vars r, g, b
 sw: stroke rgb(arr.0, 255, n)      # cells, numbers (binary, hex, denary) and plain numbers
 r: 200                             # sw changes with r
+r: binary 0 at 2,2 fill rgb(r 0 0) # a number following its own value
 sw: fill red                       # stops following
 ```
 
 - For `fill`, `stroke`, `colour` and `track`. Values outside 0-255 are held in range.
+
+## Sums
+
+```anim
+c: a + b * 2                       # worked out once, as in code
+arr.3: arr.0 mod 4                 # + - * / mod, spaces round each
+b: v1 * 2                          # a number's value too
+```
+
+## Values in labels
+
+```anim
+t: text "{n} × {s} = {n * s}" at 8,2   # kept up to date
+t: text "{1, 2, 3}" at 8,3             # not a sum: shows as written
+```
+
+- Not in values, code or Scratch.
+
+## Following values
+
+```anim
+dot: circle y 4 x px               # x follows px (in cells)
+hand: rect at 9,4 angle {turn * 3} # a sum in { }
+hand: angle 0                      # a number again: stops following
+w: var 2 at 2,2 width w height 1   # its own value
+```
+
+- For `x` `y` `width` `height` `radius` `corner` `weight` `font` `angle` `scale` `opacity` `show`.
+
+## Counting
+
+```anim
+score: 25 counter                  # counts its way there
+b: 11 counter                      # a number's digits too
+defaults counter
+```
 
 ## Moving values
 
@@ -498,7 +539,11 @@ defaults clear
 pause                            # while playing: wait for Next
 pause 2                          # while playing: hold 2 s
 auto                             # go straight on to the next beat
+then                             # the lines after start when those before finish
+then 0.5                         # 0.5 s after that
 ```
+
+- `then` splits a beat into parts that play in turn: still one beat for Next and Back. `pause` and `auto` come after the last part.
 
 ## Camera (no id, no colon)
 
@@ -520,7 +565,7 @@ a: delete
 g: ungroup
 a: detach
 a: trail clear
-l: line
+l: end none
 l: static
 l: solid
 a: highlight clear

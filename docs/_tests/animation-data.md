@@ -1042,6 +1042,140 @@ sw: fill rgb(b 0 r)
 
 </animation>
 
+## Feature: Sums
+
+`+ - * / mod`, with spaces round each: worked out once, when the line runs (as in code).
+
+<animation grid="12x5">
+
+```anim
+a: var 7 name "a" at 2,2
+b: var 3 name "b" at 5,2
+c: var 0 name "c" at 8,2
+arr: row [1 2 3 4] at 2,4 name "arr"
+```
+
+---
+
+## c: a + b * 2
+
+```anim
+c: a + b * 2
+```
+
++++
+
+```anim
+c: a mod b
+arr.3: arr.0 + arr.1 * 10
+```
+
++++
+
+Changing `a` leaves `c` as it is.
+
+```anim
+a: 100
+c: c / 4
+```
+
+</animation>
+
+## Feature: Values in labels
+
+`{ }` in a label shows a sum's value, kept up to date. Anything else in `{ }` shows as written.
+
+<animation grid="12x5">
+
+```anim
+n: var 3 name "n" at 2,2
+s: var 4 name "s" at 4,2
+t: text "{n} × {s} = {n * s}" at 8,2
+box: rect "sides: {s}" at 8,4 size 3x1
+set: text "{1, 2, 3}" at 3,4
+```
+
+---
+
+## New values
+
+The labels change with their values.
+
+```anim
+n: 5 speed slow
+s: 6
+```
+
+</animation>
+
+## Feature: Following values
+
+A number given a var or cell (or `{ }`) follows it as it changes.
+
+<animation grid="12x6">
+
+```anim
+px: var 2 name "px" at 2,1
+turn: var 0 name "turn" at 5,1
+w: var 1 name "w" at 8,1
+dot: circle y 4 x px size 0.6 fill amber
+hand: rect at 9,4 height 0.2 angle {turn * 3} width w fill teal
+arr: arrow from 2,5.5 to 11,5.5 show {w / 4}
+```
+
+---
+
+## Changing the values
+
+```anim
+px: 10 speed slow
+turn: 60 speed slow
+w: 3 speed slow
+```
+
++++
+
+A number given again stops following.
+
+```anim
+dot: x 2
+px: 4
+```
+
+</animation>
+
+## Feature: counter
+
+A new value counts its way there.
+
+<animation grid="12x5">
+
+```anim
+score: var 0 name "score" at 3,2 size 2x1
+hp: var 100 at 7,2 size 4x0.6 bar fill green track muted
+b: binary 0 at 3,4 digits 4 decimal
+```
+
+---
+
+## Counting
+
+```anim
+score: 25 counter speed slow
+hp: 37 counter speed slow
+b: 11 counter speed slow
+```
+
++++
+
+```anim
+defaults counter
+score: score * 4
+b: 3
+```
+
+</animation>
+
 
 ## Feature: binary
 
@@ -1259,7 +1393,7 @@ Mixed together...
 
 ```anim
 defaults stroke fg
-plus: circle at 8.5,4 "+"
+plus: circle at 8.5,4 size 1 "+"
 ra: arrow from 6.5,2.5 to plus stroke red
 ga: arrow from 6.5,4.0 to plus stroke green
 ba: arrow from 6.5,5.5 to plus stroke blue
@@ -1344,9 +1478,9 @@ b: 0
 ## Three binary values: R, G, B
 
 ```anim
-r: binary 0 name "r" at 2,2 powers fill black stroke red decimal
-g: binary 0 name "g" at 2,4 powers fill black stroke green decimal
-b: binary 0 name "b" at 2,6 powers fill black stroke blue decimal
+r: binary 0 name "r" at 2,2 powers fill rgb(r 0 0) stroke red decimal   # its fill follows its own value
+g: binary 0 name "g" at 2,4 powers fill rgb(0 g 0) stroke green decimal
+b: binary 0 name "b" at 2,6 powers fill rgb(0 0 b) stroke blue decimal
 ```
 
 +++
@@ -1374,24 +1508,24 @@ ca: arrow from plus to col
 ## Changing the RGB values, changes the colour
 
 ```anim
-r: 255 fill #f00
+r: 255
 ```
 +++
 
 ```anim
-r: 0 fill #000
-g: 255 fill #0f0
+r: 0
+g: 255
 ```
 +++
 
 ```anim
-g: 0 fill #000
-b: 255 fill #00f
+g: 0
+b: 255
 ```
 +++
 
 ```anim
-r: 255 fill #f00
+r: 255
 ```
 
 </animation>

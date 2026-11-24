@@ -11,6 +11,8 @@ Bad lines are listed under the animation and skipped; the rest still draws.
 ```anim
 pause -1
 auto now
+then -1
+then: rect at 1,1
 defaults: fill red
 camera: at 2,2
 hb: rect at 1,1 highlight box
@@ -40,11 +42,10 @@ a: wibble 3
 a: angle sideways
 d: line from a to zz
 e: rect "x" "y" at 4,2
-f: circle at 5,2 size 1x2
+f: circle at 5,2 corner 0.2
 g: rect at 6,2 x 3
 h: rect at 7,2
 h: size +1x0
-k: circle at 1,1 width 2
 defaults fill none
 defaults fill none
 remove: rect at 1,1
@@ -95,7 +96,7 @@ dw: clear
 dw: delete fill red
 gb5: group [a] at 2,2
 defaults "x"
-er2: row [1 2] at 1,3 arrow
+er2: row [1 2] at 1,3 end arrow
 er3: row [1 2] at 1,4 "x"
 vv: er.0 fill red
 er: swap 0 1 fill red
@@ -253,6 +254,28 @@ tr.trail: from 1,1
 defaults trail
 defaults about 1,1
 tr: fill red line
+tln3: end blob
+tln3: arrow
+tln3: arrows
+pg1: polygon at 1,1
+pg2: polygon [0 0 1 1] at 1,1
+pg3: polygon [0 0 1 1 2] at 1,1
+pg4: polygon [0 0 1 x 2 2] at 1,1
+pg5: polygon [0 0 1 0 1 1 at 1,1
+ex1: var 4 at 1,1
+ex1: ex1 + zz
+ex1: ex1 / 0
+ex1: ex1 * 
+ex1: er.0 + "x"
+ex2: rect at 1,1
+ex2: x {ex1 +}
+ex2: width {ex1 * speed}
+ex2: {ex1}
+ex2: angle ex1 about 1,1
+ex2: counter
+camera x ex1
+ex3: text "{zz + 1}" at 1,1
+ex4: rect at 1,1 width ex4
 ```
 
 </animation>

@@ -30,21 +30,29 @@ r4: corner 0
 
 ## Feature: circle
 
-<animation grid="12x3">
+Two sizes make an ellipse. Lines stop at its edge, turned or not.
+
+<animation grid="14x4">
 
 ```anim
 c1: circle "0.5" at 2,2
 c2: circle "0.8" at 5,2 radius 0.8
 c3: circle "size 1.2" at 8.5,2 size 1.2 font 0.7
+e1: circle "ellipse" at 12,2 size 3x1.4 fill teal
+hub: rect "hub" at 12,4 size 1x0.6
+l1: arrow from hub to e1
+l2: arrow from 9,4 to e1
 ```
 
 ---
 
-## radius, size
+## radius, size, width, height
 
 ```anim
 c1: radius 0.8
 c3: size +0.4
+c2: width 2.4
+e1: angle 30 height 2 highlight outline
 ```
 
 </animation>
@@ -62,7 +70,7 @@ no: rect "no" at 9,4.5 size 2x0.8 corner 0.2
 ly: arrow from d to yes
 ln: arrow from d to no
 top: arrow from 4,0.5 to d
-c: curve from 1,1 to d via 2,3
+c: curve from 1,1 to d.left via 2,3 end arrow
 ```
 
 ---
@@ -71,6 +79,47 @@ c: curve from 1,1 to d via 2,3
 
 ```anim
 d: width 2.4 angle 20
+```
+
+</animation>
+
+## Feature: polygon
+
+Points in `[ ]`, from where it's placed (in cells). Lines stop at its edges.
+
+<animation grid="14x6">
+
+```anim
+tri: polygon [0,-1 1,1 -1,1] at 3,3 "tri" fill amber
+hx: polygon [1,0 0.5,0.87 -0.5,0.87 -1,0 -0.5,-0.87 0.5,-0.87] at 7,3 "hex" fill teal
+trap: polygon [0,0 3,0 2.5,1 0.5,1] at 10,2 "trap" corner 0.15
+mark: circle at 10,2 size 0.2 fill red front
+l1: arrow from 1,5.5 to tri
+l2: arrow from tri.right to hx.left
+l3: arrow from 13,5 to trap
+```
+
+---
+
+## Moved, turned, stretched, highlighted
+
+`at` and `move` place its 0,0 (the red dot on trap).
+
+```anim
+tri: move +0,-0.5 angle 30
+hx: size 3x1.5 highlight outline
+trap: move 9,4
+mark: move 9,4
+```
+
++++
+
+New points glide to their places.
+
+```anim
+tri: [0,-1 1,0 0,1 -1,0] speed slow
+hx: highlight clear
+trap: highlight inside corner 0
 ```
 
 </animation>
@@ -188,6 +237,31 @@ t1: "x<sup>2"
 
 </animation>
 
+## Feature: b and i
+
+<animation grid="12x5">
+
+```anim
+t1: text "x = <b>5</b> (<i>an int</i>)" at 4,1
+t2: text "<b>Bold</b> beside x<sup>2</sup>" at 9,1
+r: rect "<i>key</i> <b>A</b>" at 3,3 size 3x1
+v: var "<b>Cat</b>" at 9,3 size 2x1
+l: arrow from 2,4.5 to 10,4.5 "<i>sends</i>"
+```
+
+---
+
+## Changed, typed and boxed
+
+```anim
+t1: "x = <b>6</b>"
+t3: text "<b>typed</b> in <i>turn</i>" at 6,2 typed
+r: highlight outline
+v: "<i>Dog</i>"
+```
+
+</animation>
+
 ## Feature: line and arrow
 
 <animation grid="12x8">
@@ -203,12 +277,12 @@ l4: line from 2,7 via 6,7 via 6,8 to 10,8 dotted "bend"
 
 ---
 
-## l1: arrow
+## l1: end arrow
 
 Adds a head.
 
 ```anim
-l1: arrow
+l1: end arrow
 ```
 
 +++
@@ -258,55 +332,57 @@ b: move 9,3
 Rounds the corners, as on a rect. A tight corner gets as much as fits.
 
 ```anim
-l4: corner 0.5 arrow flow
+l4: corner 0.5 end arrow flow
 l5: corner 0.5 speed slow
 ```
 
 </animation>
 
-## Feature: arrows and line
+## Feature: start and end
+
+What's on each end of a line: `none`, `arrow`, `dot`, `crow` or `bar`.
 
 <animation grid="12x6">
 
 ```anim
 a: circle "a" at 2,2
 b: rect "b" at 10,2
-l1: arrows from a to b "arrows"
-l2: line from 2,4 to 10,4 arrows draw
-c1: curve from 2,5 to 10,5 bend 0.6 arrows
+l1: line from a to b start arrow end arrow "both"
+l2: line from 2,4 to 10,4 start arrow end arrow draw
+c1: curve from 2,5 to 10,5 bend 0.6 start arrow end arrow
 ```
 
 ---
 
-## l1: line
+## l1: start none end none
 
 Takes the heads off.
 
 ```anim
-l1: line
+l1: start none end none
 ```
 
 +++
 
 ```anim
-l1: arrow
+l1: end arrow
 ```
 
 +++
 
 ```anim
-l1: arrows
+l1: start arrow
 ```
 
 ---
 
-## l2: arrow, l1: line
+## l2: start none, l1: end none
 
 One head goes, the other stays.
 
 ```anim
-l2: arrow
-l1: line
+l2: start none
+l1: end none
 ```
 
 +++
@@ -329,6 +405,73 @@ c1: delete draw
 
 </animation>
 
+## Feature: dot, crow and bar
+
+<animation grid="14x6">
+
+```anim
+cu: rect "Customer" at 3,2 size 3x1
+or: rect "Order" at 11,2 size 3x1
+it: rect "Item" at 11,5 size 3x1
+r1: line from cu to or start bar end crow "places"
+r2: line from or to it start bar end crow weight 2
+d1: line from 2,4.5 to 7,4.5 start dot end dot "dots"
+d2: arrow from 2,5.5 to 7,5.5 start dot
+```
+
+---
+
+## Changing a mark crossfades
+
+```anim
+r1: end arrow
+d1: start crow end bar
+d2: end none
+```
+
++++
+
+```anim
+r1: end crow
+cu: move 3,4
+```
+
+</animation>
+
+## Feature: show
+
+How much of a line shows, from its start, as if drawn that far: its end's mark rides on the tip.
+
+<animation grid="12x6">
+
+```anim
+a: circle "a" at 2,2
+b: rect "b" at 10,2
+l1: arrow from a to b show 0.5 "half"
+l2: line from 2,4 via 6,4 via 6,5 to 10,5 show 0 start dot end arrow
+c: curve from 2,5.5 to 10,5.5 bend -0.6 show 0.25 dashed flow
+```
+
+---
+
+## Growing and shrinking
+
+```anim
+l1: show 1 speed slow
+l2: show 0.6 speed slow ease linear
+c: show +0.5
+```
+
++++
+
+```anim
+l2: show 1
+b: move 9,1
+l1: show 0.2
+```
+
+</animation>
+
 ## Feature: curve
 
 <animation grid="12x6">
@@ -337,9 +480,9 @@ c1: delete draw
 a: circle "a" at 2,3
 b: circle "b" at 10,3
 c1: curve from a to b via 6,1
-c2: curve from a to b via 4,5 via 8,4 dashed stroke teal arrow
-c3: curve from b to b angle right arrow "A"
-c4: curve from b to b angle down size 1.5 arrow "B"
+c2: curve from a to b via 4,5 via 8,4 dashed stroke teal end arrow
+c3: curve from b to b angle right end arrow "A"
+c4: curve from b to b angle down size 1.5 end arrow "B"
 ```
 
 ---
@@ -375,11 +518,11 @@ b: move 9,4
 ```anim
 s1: circle "S1" at 3,3
 s2: circle "S2" at 9,3
-t1: curve from s1 to s1 arrow "0"
-t2: curve from s1 to s1 angle left arrow "1"
-t3: curve from s2 to s2 angle 45 size 1.2x0.6 arrow "0"
-t4: curve from s1 to s2 bend 0.6 arrow "1"
-t5: curve from s2 to s1 bend 0.6 arrow "0"
+t1: curve from s1 to s1 end arrow "0"
+t2: curve from s1 to s1 angle left end arrow "1"
+t3: curve from s2 to s2 angle 45 size 1.2x0.6 end arrow "0"
+t4: curve from s1 to s2 bend 0.6 end arrow "1"
+t5: curve from s2 to s1 bend 0.6 end arrow "0"
 ```
 
 ---

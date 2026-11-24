@@ -22,6 +22,12 @@
       "include": "#colour-function"
     },
     {
+      "include": "#sum"
+    },
+    {
+      "include": "#line-end"
+    },
+    {
       "include": "#edit-axis"
     },
     {
@@ -67,7 +73,13 @@
       "include": "#colour"
     },
     {
+      "include": "#operator"
+    },
+    {
       "include": "#number"
+    },
+    {
+      "include": "#anchor"
     },
     {
       "include": "#shape-ref"
@@ -92,15 +104,77 @@
           "match": "\\\\."
         },
         {
-          "$comment": "a label's marks: <sup>…</sup>, <sub>…</sub> (TEXT_MARKS)",
+          "$comment": "a label's marks: <sup>…</sup>, <sub>…</sub>, <b>…</b>, <i>…</i> (TEXT_MARKS)",
           "name": "entity.name.tag.anim",
-          "match": "</?(?:sup|sub)>"
+          "match": "</?(?:sup|sub|b|i)>"
+        },
+        {
+          "include": "#sum"
         }
       ]
     },
+    "sum": {
+      "$comment": "a sum in { } (OPERATORS): a number that follows values (x {v1 * 2}), or a value in a label (\"{n * 2}\")",
+      "name": "meta.embedded.expression.anim",
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.embedded.begin.anim"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.embedded.end.anim"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#operator"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#shape-ref"
+        }
+      ]
+    },
+    "operator": {
+      "$comment": "an operator in a sum (OPERATORS), with spaces round it: + - * / mod",
+      "name": "keyword.operator.arithmetic.anim",
+      "match": "(?<=\\s|\\{)(\\*|/|\\+|-|mod)(?=\\s|\\}|$)"
+    },
+    "line-end": {
+      "$comment": "start / end and what's on that end of a line (END_MARKS); elsewhere end is a literal (the last place)",
+      "match": "(?<![\\w-])(start|end)\\s+(none|arrow|dot|crow|bar)(?![\\w-])",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "anchor": {
+      "$comment": "a point on a shape's edge (ANCHORS): the shape's id, then its side or corner as a value (a.top-left)",
+      "match": "(?<![\\w#.-])([A-Za-z][\\w.-]*?)(\\.)(top-left|top-right|bottom-left|bottom-right|top|bottom|left|right)(?![\\w.-])",
+      "captures": {
+        "1": {
+          "name": "variable.parameter.anim"
+        },
+        "2": {
+          "name": "punctuation.separator.anim"
+        },
+        "3": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
     "line-head": {
-      "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is the arrowhead param). line followed by a number is the verb that replaces a script's line (s: line 3 \"...\"): a command",
-      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(?:(rect|circle|diamond|text|line(?!\\s+\\d)|arrows|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])|(line)(?=\\s+\\d)))?",
+      "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is a line end's mark). line followed by a number is the verb that replaces a script's line (s: line 3 \"...\"): a command",
+      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(?:(rect|circle|diamond|polygon|text|line(?!\\s+\\d)|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])|(line)(?=\\s+\\d)))?",
       "captures": {
         "1": {
           "name": "entity.name.tag.anim"
@@ -118,7 +192,7 @@
     },
     "beat-line": {
       "$comment": "lines with no id; defaults clear and camera reset are commands too, like clear everywhere",
-      "match": "^\\s*(defaults|camera|pause|auto)(?![\\w-])(?:\\s+(clear|reset)(?![\\w-]))?",
+      "match": "^\\s*(defaults|camera|pause|auto|then)(?![\\w-])(?:\\s+(clear|reset)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "keyword.control.anim"
@@ -276,7 +350,7 @@
     },
     "shape-type": {
       "$comment": "a shape type starting a continuation line (an indented line of a long command)",
-      "match": "^\\s+(rect|circle|diamond|text|line|arrows|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])",
+      "match": "^\\s+(rect|circle|diamond|polygon|text|line|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])",
       "captures": {
         "1": {
           "name": "storage.type.anim"
@@ -286,12 +360,12 @@
     "property": {
       "$comment": "named params, which a value follows",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|opacity|about|trail|font|style|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|powers|decimal|digits|max|track|zoom|into|above|below|left-of|right-of)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|opacity|about|trail|font|style|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|powers|decimal|digits|max|track|show|start|zoom|into|above|below|left-of|right-of)(?![\\w-])"
     },
     "flag": {
-      "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, an arrowhead)",
+      "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, counter)",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(keep-style|bar|ring|pie|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|arrows|arrow|line)(?![\\w-])"
+      "match": "(?<![\\w-])(keep-style|bar|ring|pie|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|counter)(?![\\w-])"
     },
     "value": {
       "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",
