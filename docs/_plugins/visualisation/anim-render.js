@@ -529,8 +529,12 @@
         // the dashes stay put while the edge point slides round the shape as the other end moves
         const fromShape = s.from?.ref && byId.get(s.from.ref)
         const dashBase = fromShape ? Math.hypot(ends.from.x - boxCentre(fromShape).x, ends.from.y - boxCentre(fromShape).y) : 0
-        // The points it's drawn through (its corners, or a curve's smooth path), with the distance along to each
-        const path = measure(linePoints(ends).map((p) => ({ x: p.x + v.dx, y: p.y + v.dy })))
+        // The points it's drawn through (its corners, or a curve's smooth path), with the distance
+        // along to each: as much of it as shows (LOOKS: show), from its start
+        const whole = measure(linePoints(ends).map((p) => ({ x: p.x + v.dx, y: p.y + v.dy })))
+        const wholeLen = whole[whole.length - 1].at
+        const shownLen = wholeLen * clamp01(s.show ?? 1)
+        const path = shownLen < wholeLen ? [...whole.filter((p) => p.at < shownLen), { ...pointAt(whole, shownLen), at: shownLen }] : whole
         const total = path[path.length - 1].at
         const at = (d) => pointAt(path, d)
         const pathTo = (d) => [...path.filter((p) => p.at < d), at(d)]
@@ -539,8 +543,9 @@
         // Each mark (END_DRAWS, fading in or out as it's added, taken off or changed) sits on its
         // end, and the stroke stops at its back. While drawing in, the end's rides on the tip;
         // erasing, the start's rides on the erased edge. tip: how far along its end's point is;
-        // way: +1 out along the line (the end's), -1 back (the start's).
-        const size = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
+        // way: +1 out along the line (the end's), -1 back (the start's). A line shown in part (LOOKS:
+        // show) has its end's mark on the tip of the part shown, as while it's drawn in.
+        const size = Math.min(HEAD * (0.6 + 0.4 * s.weight), wholeLen * 0.6)
         const marks = v.marks || noMarks
         const tips = { to: { tip: v.erase ? total : total * v.draw, way: 1 }, from: { tip: v.erase ? total * (1 - v.draw) : 0, way: -1 } }
         const frameAt = ({ tip, way }) => {
@@ -588,7 +593,7 @@
         }
         paint(node.body, 'stroke', colours.stroke)
         drawSignal(node, v.signal, path, strokeWidth)
-        const { x: mx, y: my } = at(total / 2) // the label sits halfway along
+        const { x: mx, y: my } = pointAt(whole, wholeLen / 2) // the label sits halfway along all of it
         attr(node.label, 'x', mx); attr(node.label, 'y', my)
         attr(node.label, 'text-anchor', 'middle')
         node.label.classList.add('anim-halo')

@@ -88,8 +88,9 @@
   // What a line can have at each of its ends (LOOKS: start, end: "end arrow", "start dot"), drawn
   // by END_DRAWS in anim-render.js. blank: nothing is drawn there.
   const END_MARKS = { none: { blank: true }, arrow: {}, dot: {}, crow: {}, bar: {} }
-  // A line's ends as plain (none at either), on top of which a line type sets its own (arrow)
-  const PLAIN_ENDS = { start: 'none', end: 'none' }
+  // What every line starts with: nothing on either end (a line type can set its own: arrow), and
+  // all of it shown (LOOKS: show)
+  const LINE_DEFAULTS = { start: 'none', end: 'none', show: 1 }
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
@@ -185,7 +186,7 @@
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   // a line's angle only turns it about a point ("angle +90 about 5,5"), apart from a loop's
-  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'start', 'end', 'angle']
+  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'start', 'end', 'show', 'angle']
   const CORNERED_LINE_PROPS = [...LINE_PROPS, 'corner'] // a straight line's corners (via) can be rounded
   const LOOP_PROPS = ['angle', 'size', 'width', 'height'] // the way a loop faces, and its size
   const SHAPES = {
@@ -215,17 +216,17 @@
       takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height', 'opacity'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
-    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: PLAIN_ENDS },
-    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { ...PLAIN_ENDS, end: 'arrow' } }, // a line with "end arrow"
+    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: LINE_DEFAULTS },
+    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { ...LINE_DEFAULTS, end: 'arrow' } }, // a line with "end arrow"
     curve: {
       takes: [...LINE_PROPS, ...LOOP_PROPS, 'bend'], label: 'along', line: true, bends: true,
-      defaults: { ...PLAIN_ENDS, angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
+      defaults: { ...LINE_DEFAULTS, angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
     },
     // where a shape has been ("a: trail"): a line through the points it's passed, made and grown by
     // the shape's moves (anim-trail.js), dashed and muted unless styled ("a.trail: stroke red")
     trail: {
       takes: ['stroke', 'weight', 'linestyle', 'flow', 'opacity', 'start', 'end'], label: 'along', line: true,
-      defaults: { ...PLAIN_ENDS, stroke: 'muted', linestyle: 'dashed', layer: 'back' },
+      defaults: { ...LINE_DEFAULTS, stroke: 'muted', linestyle: 'dashed', layer: 'back' },
       internal: true, owned: 'it follows its shape, so to start it again, "clear" it and turn it on again',
     },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
@@ -600,6 +601,7 @@
     lang: { field: 'lang', cell: true, check: langWarning }, // a code block's language (Prism's name for it)
     start: { field: 'start' }, // what a line has at its start (END_MARKS)
     end: { field: 'end' }, // and at its end
+    show: { field: 'show', unit: 1, min: 0, max: 1 }, // how much of a line shows, from its start (0-1)
     opacity: { field: 'opacity', unit: 1, min: 0, max: 1, cell: true },
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
@@ -731,6 +733,7 @@
     // off), max its full value, track the colour of the rest
     ...Object.fromEntries(Object.keys(BARS).map((kind) => [kind, { key: 'bar', sigs: [['clear'], []], build: (v) => v[0] ?? kind, help: `nothing (show the value as a ${kind}) or clear` }])),
     max: number('max', 'a number (the value of a full bar)'),
+    show: number('show', 'a share of the line, from its start: 0 (none of it) to 1 (all of it)'),
     track: colour('track'),
     opacity: resettable(number('opacity', 'a number from 0 (hidden) to 1 (solid)')),
     // what a line has at each end (END_MARKS)
