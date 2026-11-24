@@ -529,10 +529,14 @@ a: rect at 2,3 pop         # fade (default) pop slide typed
 l: arrow from a to b draw  # lines
 t: text "$ ls" at 2,1 typed
 a: delete pop              # exits too
+a: angle +30 repeat 3      # the change 3 times in a row (the beat's other lines carry on)
+c: pulse repeat forever    # until you move on
 ```
 
 - Speeds: instant 0 · vfast 0.25 · fast 0.5 · **normal 1** · slow 2 · vslow 4 s.
 - A first beat with an effect or `delay` plays when it comes into view.
+- `repeat N`: everything on the line, each round at its `speed`. Relative changes add up; absolute ones happen in the first round. Not with via, travel, follow, attach, trail or a new value.
+- `repeat forever`: only an emphasis or whole turns (`angle +360`, `about` a fixed point).
 
 ## Beat lines (no id, no colon)
 

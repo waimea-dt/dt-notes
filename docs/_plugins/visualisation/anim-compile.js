@@ -10,7 +10,7 @@
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
-    NUMBERINGS, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES } = window.Anim
+    NUMBERINGS, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES, REPEATS, LERPED } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
@@ -139,7 +139,8 @@
     // Returns the route it moves along (a curve through via points, travel's hops, a followed
     // line), or null for a straight move.
     // creating: as applyLook's (false, true, or the id the line makes)
-    function applyProps(shape, props, creating, warn, meta) {
+    // round: which time round a repeated line this is (repeat: from 0)
+    function applyProps(shape, props, creating, warn, meta, round = 0) {
       for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, props.about?.ref, ...(props.via || []).map((v) => v.ref),
         ...(props.travel || []).map((v) => v.ref)]) {
         if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
@@ -161,7 +162,7 @@
       if (props.emphasis) applyEmphasis(shape, props, creating, warn, meta)
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
       const route = LINE_TYPES.includes(shape.type) ? placeLine(shape, props, creating, warn) : placeShape(shape, props, creating, warn)
-      if (turn) turnAbout(shape, turn, props, meta)
+      if (turn) turnAbout(shape, turn, props, meta, false, round)
       return route
     }
 
@@ -188,8 +189,8 @@
     // Turns a shape rigidly by `by` degrees about the pivot: a boxed shape goes round it and turns
     // with it; a line's free ends and via points go round it (those on shapes stay on them); a
     // group's members all turn as one (carried: the turn is its group's). Each records the turn,
-    // so it plays as an arc, not a straight move.
-    function turnAbout(shape, { by, pivot }, props, meta, carried = false) {
+    // so it plays as an arc, not a straight move; a repeated line's later rounds (round) add to it.
+    function turnAbout(shape, { by, pivot }, props, meta, carried = false, round = 0) {
       const turned = (p) => rotateAbout(p, pivot, by)
       if (LINE_TYPES.includes(shape.type)) {
         const free = [shape.from, shape.to, ...(shape.via || [])].some((p) => !p.ref)
@@ -205,13 +206,14 @@
       }
       shape.angle += by
       const record = tween(meta, shape.uid)
-      Object.assign(record, { path: null, turn: { pivot, by, carried } })
+      const earlier = round && record.turn // this line's turn so far (its pivot is fixed: checkRepeat)
+      Object.assign(record, { path: null, turn: { pivot, by: (earlier ? earlier.by : 0) + by, carried } })
       if (!isGroup(shape)) return
       for (const id of shape.members) {
         const member = shapes.get(id)
         if (!member) continue
         const changed = structuredClone(member)
-        turnAbout(changed, { by, pivot }, props, meta, true)
+        turnAbout(changed, { by, pivot }, props, meta, true, round)
         shapes.set(id, changed)
         schedule(meta, changed.uid, props)
       }
@@ -632,10 +634,16 @@
     // The one place a change's timing is set: it takes `dur` ms (the line's speed unless given),
     // starting `after` ms after the line's delay, with the line's ease. A shape changed more than
     // once in a beat takes the longest time and the latest start, and the last ease.
+    // A repeated line (repeat) takes its speed for each round, and records them (tween: rounds; forever:
+    // one round, looped by the widget)
     function schedule(meta, uid, props, { dur = speedOf(props), after = 0 } = {}) {
       const record = tween(meta, uid)
       const easing = props.ease ?? defaults.ease
       if (easing) record.ease = easing
+      if (props.repeat) {
+        record.rounds = { n: props.repeat }
+        if (Number.isFinite(props.repeat)) dur *= props.repeat
+      }
       record.dur = Math.max(record.dur, dur)
       record.delay = Math.max(record.delay, delayOf(props) + after)
       return record
@@ -806,23 +814,64 @@
         return runLine(`${existing.members[0]}: ${match[2]}`, meta, warn)
       }
       checkParts(existing, props)
+      if (props.repeat) checkRepeat(props, newValue)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
       const order = isGroup(existing) ? staggerOrder(existing) : null
       if (order && takeBareNumber(props)) numberEach(existing.members.map((m) => shapes.get(m)), props, meta, warn)
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
       const shape = structuredClone(existing)
       if (newValue && !existing.layout) setValue(shape, newValue)
+      const beforeRounds = props.repeat && lerpedNow()
       const path = applyProps(shape, props, false, warn, meta)
+      const firstRound = props.repeat && lerpedNow(shape)
+      for (let round = 1; round < (Number.isFinite(props.repeat) ? props.repeat : 1); round++) applyProps(shape, props, false, warn, meta, round)
       // a later move wins: a route, or a straight move (a turn sets its own: turnAbout)
       if (path) Object.assign(tween(meta, shape.uid), { path, turn: null })
       else if (props.at || props.x || props.y) Object.assign(tween(meta, shape.uid), { path: null, turn: null })
       shapes.set(id, shape)
       schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }) // travel: speed per hop
       if (newValue && (props.count ?? defaults.count)) countUp(shape, before, props, meta, warn)
+      if (props.repeat) roundsOf(meta, beforeRounds, firstRound)
       updateParts(shape, props, meta, warn)
       if (props.trail !== undefined) setTrail(existing, shape, props, meta, warn)
       if (order) applyStagger(shape, order, props, meta, warn)
       else if (props.stagger) warn(`"stagger" works on ${GROUPS}, and "${id}" isn't one`)
+    }
+
+    // What a repeated line can do (REPEATS): not a route or a new value; forever, only a change that
+    // ends where it started
+    function checkRepeat(props, newValue) {
+      if (newValue) throw new Error('"repeat" goes round a change to a shape (a look, a move, a turn or an emphasis), not a new value')
+      const clash = REPEATS.refuses.find((key) => props[key] !== undefined)
+      if (clash) throw new Error(REPEATS.refuse(wordFor(clash, props[clash])))
+      // a signed point is from the shape's own centre, which moves each round
+      if (props.about?.x?.rel || props.about?.y?.rel) throw new Error('a repeated turn goes round a fixed point: "about x,y" or "about" a shape, not a signed point')
+      if (Number.isFinite(props.repeat)) return
+      const { takes, turn } = REPEATS.forever
+      const other = Object.keys(props).find((key) => !takes.includes(key))
+      const whole = !props.angle || (props.angle.rel && props.angle.v % turn === 0)
+      if (other || !whole) throw new Error(`"repeat forever" goes round a change that ends where it started: an emphasis, or a whole turn (e.g. "angle +${turn}"), not "${wordFor(other || 'angle', props[other])}"`)
+    }
+    // Every shape's numbers that blend (LERPED), by uid, as they are now (with `changed`, a shape
+    // not yet put back in shapes)
+    function lerpedNow(changed) {
+      const now = new Map([...shapes.values()].map((s) => [s.uid, pick(s, LERPED)]))
+      if (changed) now.set(changed.uid, pick(changed, LERPED))
+      return now
+    }
+    // The rounds of a repeated line (tween: rounds), from every shape's numbers before it (start)
+    // and after its first round (first): once, those its first round finished (absolute ones, the
+    // same after every round), which play in the first round; from, what each was, for a forever
+    // one's loop to go round from
+    function roundsOf(meta, start, first) {
+      const now = lerpedNow()
+      for (const [uid, record] of meta.tweens) {
+        if (!record.rounds || record.rounds.once || !start.has(uid) || !now.has(uid)) continue
+        const [s0, s1, sn] = [start.get(uid), first.get(uid) || now.get(uid), now.get(uid)]
+        const changed = LERPED.filter((key) => s0[key] !== sn[key])
+        record.rounds.once = changed.filter((key) => s1[key] === sn[key])
+        record.rounds.from = pick(s0, changed)
+      }
     }
 
     // Making a shape (or a copy, or a group) has no members to stagger
@@ -1064,7 +1113,8 @@
   // while it moves (the unit a swap passes in front); `turn`, it turns about a point (pivot, by
   // degrees; carried: as a member of a group that turns), going round it in an arc; `grow`, a
   // trail's new points are drawn as its shape moves (anim-trail.js); `count`, its value counts its
-  // way there (counter); `counting`, its label's sums count along with values that do (anim-values.js).
+  // way there (counter); `counting`, its label's sums count along with values that do (anim-values.js);
+  // `rounds`, it's repeated (repeat: n, and once and from: roundsOf).
   function tween(meta, uid) {
     let record = meta.tweens.get(uid)
     if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))

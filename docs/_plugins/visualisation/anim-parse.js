@@ -205,6 +205,7 @@
       case 'valued': return VALUED_HIGHLIGHTS.includes(word) ? word : undefined // a highlight that takes a number
       case 'side': return CALLOUT_SIDES[word]
       case 'clear': return word === 'clear' ? word : undefined
+      case 'forever': return word === 'forever' ? word : undefined // repeat forever
       case 'reset': return word === 'reset' ? word : undefined
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined
       case 'index': return /^\d+$/.test(word) ? Number(word) : undefined // a row's / column's cell number

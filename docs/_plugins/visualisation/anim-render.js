@@ -110,6 +110,17 @@
     return places ? n.toFixed(places) : String(Math.round(n))
   }
 
+  // Where a repeated change (tween: rounds, n of them; forever: one, looped) has got, raw (0-1) of
+  // the way through its time, each round eased on its own: t, its repeated looks' progress over
+  // all of them; once, its first-round looks' (done after the first); raw, the round's own
+  function roundsOf(rounds, raw, easing) {
+    const n = Number.isFinite(rounds.n) ? rounds.n : 1
+    const k = Math.min(n - 1, Math.floor(raw * n))
+    const local = raw * n - k
+    const e = easing(local)
+    return { t: (k + e) / n, once: k ? 1 : e, raw: local }
+  }
+
   // A label following values that count (tween: counting) part-way (t): each sum worked out from
   // the numbers its counting sources show then (countLabel), the others as they are; null if one
   // can't be worked out (it shows its new text)
@@ -1159,14 +1170,16 @@
     const fitPhase = (a, b, t) => (b.w > a.w ? first(t) : b.w < a.w ? second(t) : t)
     const textPhase = (a, b, t) => (b.w > a.w ? second(t) : b.w < a.w ? first(t) : t)
 
-    function interpolate(a, b, t) {
+    // once / tOnce: the looks a repeated change finished in its first round, and their progress
+    // (roundsOf)
+    function interpolate(a, b, t, { once = [], tOnce = t } = {}) {
       const s = { ...b }
       // a layout with a panel (LAYOUTS) blends its box's offset too, so the panel follows its cells,
       // as a polygon given new points (SHAPES: points) does, its box round them
       const keys = LAYOUTS[b.layout]?.panel || kindOf(b).points ? [...LERPED, 'cx', 'cy'] : LERPED
       const across = fitted(b) ? fitPhase(a, b, t) : t
       for (const key of keys) {
-        const k = key === 'w' || key === 'cx' ? across : t
+        const k = once.includes(key) ? tOnce : key === 'w' || key === 'cx' ? across : t
         if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], k)
       }
       // A polygon's points glide to their new places (as many as it had); otherwise they change halfway
@@ -1229,7 +1242,7 @@
     function grownEnds(trail, tw, raw) {
       const { kept, steps } = tw.grow
       const points = [trail.from, ...trail.via, trail.to]
-      const u = clamp01(tw.grow.raw ? clamp01(raw) : easeFn(tw.ease)(clamp01(raw))) * steps
+      const u = clamp01(tw.grow.raw ? clamp01(raw) : tw.rounds ? roundsOf(tw.rounds, clamp01(raw), easeFn(tw.ease)).t : easeFn(tw.ease)(clamp01(raw))) * steps
       const whole = Math.min(steps, Math.floor(u))
       const drawn = points.slice(0, kept + whole)
       if (whole < steps) {
@@ -1266,11 +1279,14 @@
         const b = bByUid.get(uid)
         const raw = clamp01(progress(uid))
         const easing = easeFn(tw?.ease)
-        const t = easing(raw) // spring goes past 1 and back
+        // a repeated change goes round in rounds, each eased (roundsOf); its first-round looks by tOnce
+        const rounds = tw?.rounds && roundsOf(tw.rounds, raw, easing)
+        const t = rounds ? rounds.t : easing(raw) // spring goes past 1 and back
+        const tOnce = rounds ? rounds.once : t
         let shape
         let v
         if (a && b) {
-          shape = interpolate(a, b, t)
+          shape = interpolate(a, b, t, { once: tw?.rounds?.once, tOnce })
           if (!extra.forward) shape.flow = a.flow // flow switches to where we're going (A, going back)
           if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw, easing) : pointOnPath(tw.path, t))
           // a turn about a point goes round it (a group's members ride round on it: carried)
@@ -1278,7 +1294,7 @@
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           // code text changes while its box is at its wider (see fitPhase)
-          const u = kindOf(b).fitted ? textPhase(a, b, t) : t
+          const u = kindOf(b).fitted ? textPhase(a, b, tOnce) : tOnce
           v.label = swap && u < 0.5 ? a.label : b.label
           v.nil = swap && u < 0.5 ? a.nil : b.nil
           v.labelOpacity = swap ? Math.abs(2 * u - 1) : 1
@@ -1288,7 +1304,7 @@
           const counted = tw?.counting && countedText(tw.counting, clamp01(t))
           if (counted !== null && counted !== undefined) Object.assign(v, { label: counted, labelOpacity: 1 })
           // One-off effects, forwards only (going back doesn't replay them)
-          if (extra.forward && tw?.effect) EMPHASIS_FRAMES[tw.effect](v, raw)
+          if (extra.forward && tw?.effect) EMPHASIS_FRAMES[tw.effect](v, rounds ? rounds.raw : raw) // once a round
           // swap: the cell bows out to one side on its way to the other's place
           if (tw?.arc) {
             const k = Math.sin(Math.PI * clamp01(t))
@@ -1317,7 +1333,7 @@
         v.label ??= shape.label
         v.labelOpacity ??= 1
         const node = nodes.get(uid) || makeNode(shape)
-        items.push({ uid, shape, v, node, a, b, t })
+        items.push({ uid, shape, v, node, a, b, t, tOnce })
         if (!LINE_TYPES.includes(shape.type) && (!now.has(shape.id) || b)) now.set(shape.id, { ...shape, x: shape.x + v.dx, y: shape.y + v.dy })
       }
 
@@ -1423,7 +1439,7 @@
         // colours: blended from A's to B's over the shape's progress (entering / leaving: their own)
         const from = item.a || item.b
         const to = item.b || item.a
-        const t = item.a && item.b ? clamp01(item.t) : 1
+        const t = item.a && item.b ? clamp01(item.tOnce ?? item.t) : 1 // a repeated change's colours change in its first round
         // a null value is muted (colour none still hides it); a digit, its value's colour
         const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : lookOf(s, 'colour'))
         const fill = mixRgba(rgba(colourCss(from.fill, 'fill')), rgba(colourCss(to.fill, 'fill')), t)

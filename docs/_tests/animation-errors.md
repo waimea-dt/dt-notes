@@ -249,6 +249,17 @@ tr: trail
 tr: trail
 dw: trail clear
 tln3: line from 1,1 to 2,2
+rp: rect at 1,1
+rp2: rect at 2,1 repeat 2
+rp: fill red repeat 0
+rp: fill red repeat 1.5
+rp: move 3,3 via 2,2 repeat 2
+rp: fill red repeat forever
+rp: angle +90 repeat forever
+rp: angle +30 about +0,+1 repeat 2
+rv: var 1 at 3,1
+rv: +1 repeat 3
+defaults repeat 2
 tln3: trail
 tr.trail: from 1,1
 defaults trail

@@ -321,6 +321,7 @@
     let waitingForClick = false // playing, but stopped at a `pause` until Next
     let navId = 0 // bumped by every navigation, so older auto chains and play steps stop
     let moveId = 0 // bumped by every move, so a beat's parts still to play (playParts) stop
+    let looping = 0 // the frame of a beat's forever repeats going round (loopForever)
 
     // Where the viewer's own stepping is going, as a `preview-position` event ({ position: the
     // beat }) sent as each move sets off: the VS Code preview pane moves the editor's cursor there
@@ -329,10 +330,37 @@
 
     // Shows a compiled state (a beat, or one of its parts) as it is, with its camera
     function showState({ state = empty, camera } = {}) {
+      stopLoop()
       setView(cameraView(camera))
       renderer.render(state, state, emptyMeta, () => 1, state)
     }
-    const showStatic = (index) => showState(beats[index])
+    // A beat as it is, its forever repeats going round
+    const showStatic = (index) => { showState(beats[index]); loopForever(index) }
+
+    // A beat's forever repeats (tween: rounds, n Infinity) go round while it's shown: each looping
+    // shape is drawn from where its round starts (rounds.from) to as it is, over and over; the rest
+    // stay as they are. Any other drawing stops it (stopLoop), and it doesn't run with reduced motion.
+    function loopForever(index) {
+      const beat = beats[index]
+      if (!beat || reducedMotion()) return
+      const tweens = new Map([...beat.chain, beat].flatMap((part) => [...part.meta.tweens]).filter(([, tw]) => tw.rounds && !Number.isFinite(tw.rounds.n)))
+      if (!tweens.size) return
+      const from = new Map([...beat.state].map(([id, shape]) => [id, tweens.has(shape.uid) ? { ...shape, ...tweens.get(shape.uid).rounds.from } : shape]))
+      const meta = { tweens }
+      const start = performance.now()
+      const tick = () => {
+        if (!widget.isConnected) return
+        const elapsed = performance.now() - start
+        const progress = (uid) => { const dur = tweens.get(uid)?.dur; return dur ? (elapsed % dur) / dur : 1 }
+        renderer.render(from, beat.state, meta, progress, beat.state)
+        looping = requestAnimationFrame(tick)
+      }
+      looping = requestAnimationFrame(tick)
+    }
+    function stopLoop() {
+      cancelAnimationFrame(looping)
+      looping = 0
+    }
 
     function updateControls() {
       const step = beats[current]?.step ?? 0
@@ -452,6 +480,7 @@
     // settles (shows where it's got to, as it is). Used between beats and their parts, and for the
     // intro (from nothing to beat 1).
     function transition(A, B, meta, forward, viewA, viewB, settle) {
+      stopLoop()
       const final = forward ? B : A
       // Each shape's change runs from its delay to delay + duration, after the part's lead (then n);
       // backwards is the exact reverse.

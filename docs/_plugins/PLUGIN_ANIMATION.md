@@ -22,7 +22,7 @@ Loaded in this order (`docs/index.html`), sharing `window.Anim`. Each part takes
 
 **Widget input** all goes through the `user*` functions in `animation.js` (`userNext`, `userBack`, `userJump`, `userPlay`): buttons, keys, the progress bar, and gestures from `DocsifyUtils.addSwipeSupport` (touch swipe left / right, double click / tap to play), and scrolling while focused (`DocsifyUtils.addWheelStepping`, which gives the page its scrolling back at either end). `GESTURE_IGNORE` keeps gestures off the controls, notes and help. A new input calls these, so autoplay and `pause` waits stay right.
 
-The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `turn`, `grow`, `count`, `counting`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`, `lands`).
+The flow: each beat's lines run in order against a live `shapes` map, and the map is snapshotted after each beat. Render blends snapshot A into B, using the beat's `meta.tweens` (per shape uid: `dur`, `delay`, `ease`, `path`, `turn`, `grow`, `count`, `counting`, `rounds`, `enter`, `exit`, `effect`, `offset`, `arc`, `from`, `lands`).
 
 ## Extending
 
@@ -77,6 +77,7 @@ In your summary, say that you checked, and name any exception you kept.
 | A colour worked out from values (`rgb(…)`) | `COLOUR_FUNCTIONS` (args, max, css, example); the grammar's colour-function pattern lists them too | `anim-core.js` |
 | A colour picked as it's drawn (`contrast`) | `COLOUR_PICKS` (looks, dark, light, threshold, soft) | `anim-core.js` |
 | A label place (`centre`, `below`, `top` …) | `LABEL_PLACES` (at, over, own, outside), then name it in a `SHAPES` entry's `label` or a `BAR_DRAWS` entry's `label` | `anim-render.js` |
+| What a `repeat` can't go with, and what a forever one takes | `REPEATS` (`refuses`, `refuse`, `forever`: `takes`, `turn`) | `anim-core.js` |
 | Row-edit or moving-value timing | `CHOREOGRAPHY` | `anim-core.js` |
 
 For every new word:
@@ -162,6 +163,7 @@ Notes on each area, for finding your way round before a change.
 ### Motion
 
 - **Turns** (`angle … about p`): `turnOf` works out the turn (`by`: an absolute angle turns by the difference; `pivot`: fixed where it is now), and the angle is kept out of `applyLook`. `turnAbout` turns the shape rigidly: a boxed shape's centre round the pivot (`placeFor`), a line's free ends and via points, and a group's members, each `carried` (its offset turned). Each records `tween.turn`; the renderer turns `a` by `by × t` (boxed: in the main loop; a carried member: its offset, in the attachments callback; lines: their free points, then `resolveEnds`), so it goes round in an arc. A turning shape of its own in a group keeps its own place (the callback returns null).
+- **Repeat** (`repeat N` / `repeat forever`, `REPEATS`): `checkRepeat` refuses what can't go round again; the change path (`runLine`) runs `applyProps` once per round (`round`, so a turn adds up: `turnAbout`), and `schedule` records `tween.rounds` and takes the speed for each. `roundsOf` (compile) keeps each repeated shape's `once` looks (finished by the first round: absolute ones) and `from` (where its rounds start). The renderer's `roundsOf` turns a change's progress into its rounds, each eased: `t` for the looks that add up, `once` for the rest (and colours, label swaps), `raw` for an emphasis, once a round. A forever one is one round, which the widget's `loopForever` goes round, from `from` to the beat's state, while the beat is shown still (any other drawing stops it: `stopLoop`). It redraws the scene each frame, unlike `flow` (a browser animation on a stroke), as its geometry moves what hangs off it.
 - **Trails** (`SHAPES: trail`, `PARTS: trail`, id `trailId`): a line part with free points, made by `setTrail` (at the shape's centre before the line) and grown by `growTrails` (`finish`): each moved shape's trail takes the way it went (`wayOf`: a turn's arc, its mover's path or hops shifted by the shape's offset from it, or straight), sampled at `TRAIL_STEPS`, from its `moverOf` (the shape, or what it rides on, with a route or a change this beat), whose timing it takes. `tween.grow` (`kept`, `steps`, `raw`) tells the renderer (`grownEnds`) how many points to draw as the move goes. A swapped cell's bow (`tween.arc`) is a route too, and a cell's trail goes with the cell through row edits (`PARTS: follows`).
 
 ### Messages
@@ -219,7 +221,6 @@ Ideas agreed but not yet wanted, roughly in order:
 4. **Arc / sector:** a plain shape, not only a var's or cell's `ring` / `pie`.
 5. **More easings:** `back` (overshoot), `elastic`, `bounce`, `steps N`.
 6. **Gradients:** `fill gradient blue teal`.
-7. **Repeat:** `repeat 3` / `forever` on a turn or emphasis.
-8. **Morph:** one shape's outline into another's (polygons with the same number of points already glide), and text by character: letters that stay slide to their new places (ciphers, string operations, working out a sum step by step).
-9. **Graphs and trees:** a layout of nodes and edges placed automatically (a tree down the page, a circle), with edge ids and weights and a `path` highlight. For TSP, routing, BSTs, linked lists, hierarchies.
-10. **Axes and plots:** axes with ticks and labels, points on them, and a curve from a formula or a list of points that can draw itself in. For Big O, sound sampling, square waves, number lines.
+7. **Morph:** one shape's outline into another's (polygons with the same number of points already glide), and text by character: letters that stay slide to their new places (ciphers, string operations, working out a sum step by step).
+8. **Graphs and trees:** a layout of nodes and edges placed automatically (a tree down the page, a circle), with edge ids and weights and a `path` highlight. For TSP, routing, BSTs, linked lists, hierarchies.
+9. **Axes and plots:** axes with ticks and labels, points on them, and a curve from a formula or a list of points that can draw itself in. For Big O, sound sampling, square waves, number lines.

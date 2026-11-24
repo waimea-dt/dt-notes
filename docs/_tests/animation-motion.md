@@ -856,6 +856,66 @@ camera reset ease out
 
 </animation>
 
+## Feature: repeat
+
+<animation grid="12x5">
+
+```anim
+r: rect "r" at 2,2 size 1.4x0.8
+s: rect "s" at 5,2 size 1.4x0.8
+hub: circle at 10,2.5 radius 0.1 fill fg
+hand: arrow from 10,2.5 to 10,1.3 weight 2
+c: circle "c" at 2,4 radius 0.4
+```
+
+---
+
+## repeat 3
+
+Three turns of +30 in a row.
+
+```anim
+r: angle +30 repeat 3
+```
+
++++
+
+Everything on the line repeats: relative changes add up, the fill changes in the first round.
+
+```anim
+s: fill red x +1 width -0.5 angle -10 repeat 2 speed slow
+```
+
++++
+
+The beat's other lines carry on.
+
+```anim
+r: angle -90 repeat 3 speed fast
+c: move 6,4 speed slow
+```
+
+---
+
+## repeat forever
+
+Goes round until you move on.
+
+```anim
+hand: angle +360 about hub repeat forever speed slow ease linear
+c: pulse repeat forever
+```
+
+---
+
+## Stopped
+
+```anim
+hand: stroke teal
+```
+
+</animation>
+
 ## Feature: Entrance and exit effects
 
 <animation grid="12x4">

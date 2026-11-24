@@ -834,10 +834,20 @@
     decimal: { key: 'decimal', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show it) or clear' },
     digits: { ...number('digits', 'a whole number of digits'), modes: ['layout'], where: 'when a number is made, e.g. "b: binary 67 digits 4"' },
     numbered: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear', what: 'indices' },
-    // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
-    // with it, rather than taking on the look of where it goes
     // a new value for a var, cell or number counts its way there, showing each value in between
     counter: fixed('count', true),
+    // a change done again, a number of times in a row or forever (REPEATS)
+    repeat: {
+      key: 'repeat', sigs: [['num'], ['forever']],
+      build: (v, sig) => {
+        if (sig[0] === 'forever') return Infinity
+        if (v[0].rel || !Number.isInteger(v[0].v) || v[0].v < 1) throw new Error('"repeat" takes a whole number of times (1 or more) or forever, e.g. "repeat 3"')
+        return v[0].v
+      },
+      help: 'a whole number of times or forever, e.g. "repeat 3" or "repeat forever"',
+    },
+    // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
+    // with it, rather than taking on the look of where it goes
     'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"' }),
     null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
     // defaults only (elsewhere, clear goes after highlight, callout, name or indices)
@@ -866,6 +876,18 @@
 
   const TIMING = ['speed', 'delay', 'ease']
 
+  // "repeat N": a change done N times in a row, each round taking the line's speed (relative
+  // changes add up; an absolute one is done in the first round), while the beat's other lines carry
+  // on. "repeat forever": a change that ends where it started, going round until the beat is left.
+  //   refuses  props a repeat can't go with: a route, or what a round can't do again, and why
+  //   forever  what a forever repeat takes (takes), and a turn's angle must be a whole number of
+  //            turns (turn, in degrees), so it ends where it started
+  const REPEATS = {
+    refuses: ['via', 'travel', 'follow', 'attach', 'detach', 'trail'],
+    refuse: (word) => `"repeat" goes round the same change, so it can't go with "${word}" (give the whole move instead)`,
+    forever: { takes: ['angle', 'about', 'emphasis', 'speed', 'delay', 'ease', 'repeat'], turn: FULL_TURN },
+  }
+
   // Every kind of scene line and the props it can have, checked as its props are read (parseProps).
   //   verb     typed straight after "id:" (the others are known by the line's shape)
   //   on       on(shape): a verb only on such a shape (elsewhere its word is read as usual)
@@ -873,9 +895,9 @@
   //   takes    the props it takes (left out: any), with `what` naming it in the message
   //   refuses  props it doesn't take, with `refuse(word)` the message
   const LINES = {
-    create: {}, // "a: rect …"
+    create: { refuses: ['repeat'], refuse: () => '"repeat" repeats a change to a shape that\'s already there, e.g. "a: angle +30 repeat 3"' }, // "a: rect …"
     change: {}, // "a: fill red …"
-    copy: { verb: true }, // "b: copy a …", then any change
+    copy: { verb: true, refuses: ['repeat'], refuse: () => '"repeat" repeats a change to a shape that\'s already there: copy it, then repeat a change on the next line' }, // "b: copy a …", then any change
     group: {
       verb: true,
       refuses: ['at', 'x', 'y', 'via', 'travel', 'follow', 'attach', 'about'],
@@ -904,7 +926,7 @@
     },
     camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
-      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'trail', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
+      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'trail', 'repeat', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" can't be a default`,
     },
   }
@@ -1570,7 +1592,7 @@
     })))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, applyOps, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, applyOps, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

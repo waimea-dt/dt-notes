@@ -99,6 +99,7 @@
         const record = tween(meta, grown.uid)
         const { dur = 0, delay = 0, ease } = mover.record || schedule(meta, grown.uid, {})
         Object.assign(record, { dur, delay, grow: { kept: kept.length, steps: way.steps, raw: Boolean(way.raw) } })
+        if (mover.record?.rounds) record.rounds = mover.record.rounds // grows round by round, as its shape goes
         if (ease) record.ease = ease
       }
     }
