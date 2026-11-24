@@ -77,7 +77,7 @@ m:
 r: row [
     5,
     3
-]                          # a line starting "]" too
+] at 2,2                   # a line starting "]" too
 ```
 
 - Ids: letters, digits, `_ - .`, starting with a letter. Not a keyword.
