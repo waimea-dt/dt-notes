@@ -291,30 +291,6 @@ g: remove col end
 - A row or column takes looks, highlights, emphasis, callouts, `stagger`, `range`, `span` and a `name`.
 - Ids stay with the places, as in a row.
 
-## Numbers
-
-```anim
-b: binary 123 at 2,2               # 8 bits, b.0 (rightmost) … b.7
-h: hex 123 at 2,2                  # 2 digits, 0-9 then A-F
-d: denary 123 at 2,2               # 3 digits
-n: binary v1 at 2,4 digits 4       # a var's value, 4 bits
-b: binary 123 at 2,2 indices powers decimal  # bit numbers, place values, "= 123"
-b.0: 1                             # one bit
-h.0: F                             # one hex digit
-b: 67                              # a new value
-b: +1
-b: v1                              # a var's or cell's value (and v1: b)
-b: flip                            # every bit (binary only)
-b: flip 0 3                        # bits 0 to 3
-b.4: flip                          # one bit
-b: powers clear                    # or decimal clear, indices clear
-```
-
-- `at` places the leftmost digit. `digits` (when made): binary 8 (max 32), hex 2 (max 8), denary 3 (max 10).
-- Values are written in denary. One that doesn't fit wraps round.
-- 0s are muted; a digit given a `colour` keeps it until `colour reset`.
-- No swap, insert or remove; no `decimal` on denary. Otherwise like a row.
-
 ## Variables
 
 ```anim
@@ -424,6 +400,30 @@ arr: indices clear
 
 - For vars, rows, columns, grids and tables.
 - Text shapes you can style: `v1.name`, `arr.index.0`, `g.index.1`, `g.index.col.2` (e.g. `arr.name: bold`).
+
+## Numbers
+
+```anim
+b: binary 123 at 2,2               # 8 bits, b.0 (rightmost) … b.7
+h: hex 123 at 2,2                  # 2 digits, 0-9 then A-F
+d: denary 123 at 2,2               # 3 digits
+n: binary v1 at 2,4 digits 4       # a var's value, 4 bits
+b: binary 123 at 2,2 indices powers decimal  # bit numbers, place values, "= 123"
+b.0: 1                             # one bit
+h.0: F                             # one hex digit
+b: 67                              # a new value
+b: +1
+b: v1                              # a var's or cell's value (and v1: b)
+b: flip                            # every bit (binary only)
+b: flip 0 3                        # bits 0 to 3
+b.4: flip                          # one bit
+b: powers clear                    # or decimal clear, indices clear
+```
+
+- `at` places the leftmost digit. `digits` (when made): binary 8 (max 32), hex 2 (max 8), denary 3 (max 10).
+- Values are written in denary. One that doesn't fit wraps round.
+- 0s are muted; a digit given a `colour` keeps it until `colour reset`.
+- No swap, insert or remove; no `decimal` on denary. Otherwise like a row.
 
 ## Code
 

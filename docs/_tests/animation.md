@@ -4,17 +4,7 @@ Step-by-step animated explanations from `<animation>` blocks. Full syntax: `docs
 
 Click an animation to give it focus, then use ← / → to step and `F` for full screen. While focused, scrolling steps too (the page scrolls again at either end). On touch, swipe left / right to step. Double click / tap plays or pauses, and doesn't select text.
 
-## Test pages
-
-- [Examples](animation-examples.md)
-- [Shapes, Looks and Highlights](animation-shapes.md)
-- [Movement, Timing and Camera](animation-motion.md)
-- [Images and Scenes](animation-images.md)
-- [Data Structures](animation-data.md)
-- [Code and Scratch](animation-code.md)
-- [Errors](animation-errors.md)
-
-This page tests the block itself: steps and beats, the grid, comments, and playback.
+This page tests the block itself: steps and beats, the grid and its attributes, comments, and playback. The other test pages are in the sidebar.
 
 ## Feature: Steps, beats and notes
 
@@ -57,19 +47,7 @@ Same heading, so only the text changes. No scene.
 
 </animation>
 
-## Feature: Grid: fit
-
-<animation grid="fit">
-
-```anim
-a: rect "A" at 3,3
-b: rect "B" at 6,3
-l: arrow from a to b "fit"
-```
-
-</animation>
-
-## Feature: Large Grid
+## Feature: Large grid
 
 A square 12x12 grid: much taller than the 16x9 default, so check it in full screen (F) too.
 
@@ -92,6 +70,18 @@ c: circle "centre" at 6.5,6.5 radius 1.5 fill blue
 ```anim
 d1: arrow from tl to br draw
 d2: arrow from tr to bl draw
+```
+
+</animation>
+
+## Feature: Grid: fit
+
+<animation grid="fit">
+
+```anim
+a: rect "A" at 3,3
+b: rect "B" at 6,3
+l: arrow from a to b "fit"
 ```
 
 </animation>
@@ -245,6 +235,20 @@ Each line is indented the same, so each is its own command.
 
 </animation>
 
+## Feature: Still
+
+One beat: a still picture, with no buttons or progress bar.
+
+<animation grid="12x3">
+
+```anim
+a: rect "A" at 3,2
+b: circle "B" at 9,2
+l: arrow from a to b
+```
+
+</animation>
+
 ## Feature: Autoplay and loop
 
 `autoplay loop hold="1"`: plays when on screen, then starts again. Clicking stops it.
@@ -283,148 +287,6 @@ dot: circle at 2,2 radius 0.4 fill pink
 
 ```anim
 dot: move 10,2 speed slow
-```
-
-</animation>
-
-## Feature: Still
-
-One beat: a still picture, with no buttons or progress bar.
-
-<animation grid="12x3">
-
-```anim
-a: rect "A" at 3,2
-b: circle "B" at 9,2
-l: arrow from a to b
-```
-
-</animation>
-
-## Feature: pause
-
-Press `A` to play.
-
-<animation grid="12x3">
-
-```anim
-dot: circle at 2,2 radius 0.4 fill blue
-```
-
----
-
-## pause 2
-
-Holds 2 seconds here.
-
-```anim
-dot: move 6,2
-pause 2
-```
-
----
-
-## pause
-
-Waits here for Next.
-
-```anim
-dot: move 10,2
-pause
-```
-
----
-
-## Done
-
-```anim
-dot: fill green
-```
-
-</animation>
-
-## Feature: auto
-
-One click on Next plays the chain; Back undoes it.
-
-<animation grid="12x3">
-
-## Before the chain
-
-```anim
-a: rect "a" at 2,2
-```
-
----
-
-## The chain
-
-Right...
-
-```anim
-a: move 6,2
-auto
-```
-
-+++
-
-...over...
-
-```anim
-a: move 10,2 via 8,0.8
-auto
-```
-
-+++
-
-...green.
-
-```anim
-a: fill green
-```
-
----
-
-## After the chain
-
-</animation>
-
-## Feature: then
-
-The lines after `then` start once those before it have finished, all in one beat. Back undoes the whole beat. `pause` waits after it all.
-
-<animation grid="12x4">
-
-```anim
-a: rect "a" at 2,2 pop
-then
-b: circle "b" at 6,2 pop
-then 0.5
-l: arrow from a to b draw
-```
-
----
-
-## The same shape, in turn
-
-```anim
-a: move 2,3.5
-then
-a: move 10,3.5 fill amber
-b: pulse
-then
-a: move 10,1 fill green
-camera at a zoom 1.5
-pause 1
-```
-
----
-
-## Back as it was
-
-```anim
-camera reset
-a: move 2,2 fill bg-shape
 ```
 
 </animation>

@@ -85,16 +85,20 @@ For every new word:
 1. Add it to the VS Code grammar, `vscode/dt-notes-syntax/syntaxes/anim.tmLanguage.json`, in the right role (see Highlighting).
 2. Bump the version in `vscode/dt-notes-syntax/package.json`.
 3. Add it to `ANIMATION_LANG.md`.
-4. Add a test to the test page for its topic: one animation per feature, in the cheat-sheet's order, and a line in the error-test block (`animation-errors.md`) for each new error. The pages, listed on `docs/_tests/animation.md`:
-   - `animation.md`: the block itself (steps and beats, the grid, comments, playback)
+4. Add a test to the test page for its topic, and a line in the error-test block (`animation-errors.md`, in its page's group) for each new error. A test shows one feature (or a tight family) and tests it reasonably exhaustively: the basic forms first, then the variations, then how it works with others, then switching it off. Within a page, basic things come before advanced ones, with like things together. Keep each grid the size its test needs, and lay the shapes out balanced on it. The pages, in the sidebar's order:
    - `animation-examples.md`: whole example animations
-   - `animation-shapes.md`: shapes, looks (colours, line styles, layers …), emphasis and highlights
-   - `animation-motion.md`: placing and moving, copy / attach / group, timing and effects, the camera
-   - `animation-images.md`: images and icons, and scenes built from them
-   - `animation-data.md`: rows and columns, range, spans, grids and tables, vars and moving values, bars
+   - `animation.md`: the block itself (steps and beats, the grid and its attributes, comments, playback)
+   - `animation-shapes.md`: shapes and lines (images and icons too, a backdrop, line ends, `show`)
+   - `animation-looks.md`: colours, strokes, opacity, angle and scale, layers, fonts and text marks, relative values, reset
+   - `animation-motion.md`: placing and moving: position, points on an edge, routes, `about`, trails, copy / attach / group, the camera
+   - `animation-timing.md`: speed, delay, ease, effects, `typed`, stagger, repeat, defaults, and the beat lines (`pause`, `auto`, `then`)
+   - `animation-emphasis.md`: emphasis, `signal`, highlights, callouts
+   - `animation-data.md`: rows and columns, their edits, range, spans, grids and tables, names and indices
+   - `animation-values.md`: vars, moving values, sums, values in labels, following values, counter, colours from values, bars
+   - `animation-numbers.md`: binary, hex and denary
    - `animation-code.md`: code blocks, Scratch scripts
 
-   A new page also goes in the menu on `animation.md`, the links at the top of each page, and `docs/_tests/_sidebar.md`.
+   A new page goes in `docs/_tests/_sidebar.md` (the pages don't link to each other), and in the error block's groups.
 
 ## How it works
 

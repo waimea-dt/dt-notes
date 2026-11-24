@@ -1,8 +1,6 @@
 # Animation: Code and Scratch
 
-Click an animation to give it focus, then use ← / → to step and `F` for full screen.
-
-**Animation tests:** [Blocks](animation.md) · [Examples](animation-examples.md) · [Shapes, Looks and Highlights](animation-shapes.md) · [Movement, Timing and Camera](animation-motion.md) · [Images and Scenes](animation-images.md) · [Data Structures](animation-data.md) · **Code and Scratch** · [Errors](animation-errors.md)
+Click an animation to give it focus, then use ← / → (or scroll) to step and `F` for full screen.
 
 ## Feature: code
 

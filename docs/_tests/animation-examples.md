@@ -1,8 +1,6 @@
 # Animation: Examples
 
-Whole animations, as they would appear in notes. Click an animation to give it focus, then use ← / → to step and `F` for full screen.
-
-**Animation tests:** [Blocks](animation.md) · **Examples** · [Shapes, Looks and Highlights](animation-shapes.md) · [Movement, Timing and Camera](animation-motion.md) · [Images and Scenes](animation-images.md) · [Data Structures](animation-data.md) · [Code and Scratch](animation-code.md) · [Errors](animation-errors.md)
+Whole animations, as they would appear in notes. Click an animation to give it focus, then use ← / → (or scroll) to step and `F` for full screen.
 
 ## Bubble Sort
 
@@ -577,5 +575,443 @@ pad: icon(lock) "https://" above browser stroke green pop
 
 Note:
 This is the older RSA-style key exchange, as it's the easiest to follow. Modern TLS 1.3 agrees the session key with Diffie-Hellman instead (each side contributes a part, so the session key is never sent at all), but the overall shape is the same: hello, certificate, agree a key, then encrypt everything with it.
+
+</animation>
+
+## RGB Colours
+
+<animation grid="12x7">
+
+## Three colour values: R, G, B
+
+```anim
+defaults corner 0.1 max 255 size 5x1 track black stroke muted colour contrast
+r: var 0 name "r" bar at 4,2 fill #f00
+g: var 0 name "g" bar at 4,4 fill #0f0
+b: var 0 name "b" bar at 4,6 fill #00f
+```
+
++++
+
+Mixed together...
+
+```anim
+defaults stroke fg
+plus: circle at 8.5,4 size 1 "+"
+ra: arrow from 6.5,2.5 to plus stroke red
+ga: arrow from 6.5,4.0 to plus stroke green
+ba: arrow from 6.5,5.5 to plus stroke blue
+```
+
++++
+
+... to form a colour
+
+```anim
+col: rect at 11,4 size 2x5 fill rgb(r g b)    # follows r, g and b
+ca: arrow from plus to col
+```
+
+---
+
+## Changing the RGB values, changes the colour
+
+```anim
+r: 64
+```
++++
+
+```anim
+r: 128
+```
++++
+
+```anim
+r: 255
+```
++++
+
+```anim
+r: 0
+g: 255
+```
++++
+
+```anim
+g: 0
+b: 255
+```
++++
+
+```anim
+g: 255
+```
++++
+
+```anim
+b: 0
+r: 255
+```
++++
+
+```anim
+g: 0
+b: 255
+```
++++
+
+```anim
+g: 255
+```
++++
+
+A value moved in: the colour changes as it lands.
+
+```anim
+r: b
+g: 0
+b: 0
+```
+
+</animation>
+
+## Binary and Colours
+
+<animation grid="16x7">
+
+## Three binary values: R, G, B
+
+```anim
+r: binary 0 name "r" at 2,2 powers fill rgb(r 0 0) stroke red decimal   # its fill follows its own value
+g: binary 0 name "g" at 2,4 powers fill rgb(0 g 0) stroke green decimal
+b: binary 0 name "b" at 2,6 powers fill rgb(0 0 b) stroke blue decimal
+```
+
++++
+
+Mixed together...
+
+```anim
+plus: circle at 12.5,4 "+"
+ra: arrow from 11,2.5 to plus stroke red
+ga: arrow from 11,4.0 to plus stroke green
+ba: arrow from 11,5.5 to plus stroke blue
+```
+
++++
+
+... to form a colour
+
+```anim
+col: rect at 15,4 size 2x5 fill rgb(r g b) corner 0.1    # follows the three numbers
+ca: arrow from plus to col
+```
+
+---
+
+## Changing the RGB values, changes the colour
+
+```anim
+r: 255
+```
++++
+
+```anim
+r: 0
+g: 255
+```
++++
+
+```anim
+g: 0
+b: 255
+```
++++
+
+```anim
+r: 255
+```
+
+</animation>
+
+## Stagger Rainbow
+
+Columns popping in, recolouring and going, each a beat behind the last, on a loop.
+
+<animation grid="8x8" autoplay>
+
+```anim
+c1: column 6 at 2,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15
+c2: column 6 at 3,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 1
+c3: column 6 at 4,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 2
+c4: column 6 at 5,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 3
+c5: column 6 at 6,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 4
+c6: column 6 at 7,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 5
+auto
+```
+
++++
+
+```anim
+c1: fill red    stagger 0.15
+c2: fill orange stagger 0.15 delay 1
+c3: fill yellow stagger 0.15 delay 2
+c4: fill green  stagger 0.15 delay 3
+c5: fill cyan   stagger 0.15 delay 4
+c6: fill purple stagger 0.15 delay 5
+auto
+```
+
++++
+
+```anim
+c1: fill green  stagger-reverse 0.15
+c2: fill cyan   stagger-reverse 0.15 delay 1
+c3: fill purple stagger-reverse 0.15 delay 2
+c4: fill red    stagger-reverse 0.15 delay 3
+c5: fill orange stagger-reverse 0.15 delay 4
+c6: fill yellow stagger-reverse 0.15 delay 5
+auto
+```
+
++++
+
+```anim
+c1: delete stagger 0.15
+c2: delete stagger 0.15 delay 1
+c3: delete stagger 0.15 delay 2
+c4: delete stagger 0.15 delay 3
+c5: delete stagger 0.15 delay 4
+c6: delete stagger 0.15 delay 5
+auto
+```
+
+</animation>
+
+## Space Mission
+
+Backdrop, an arc with a turn and a shrink, the camera riding along, a spinning asteroid, zooming out past the stage's edge.
+
+<animation grid="16x12" crop>
+
+# Space Mission
+
+On the launch pad.
+
+```anim
+bg: image(../_assets/scratch/stages/space.svg) at 8.5,6.5 size 16x12 back
+earth: image(../_assets/scratch/sprites/earth.svg) at 3,10 size 5
+moon: image(../_assets/scratch/sprites/moon.svg) at 13.5,3 size 2.5
+rocket: image(../_assets/scratch/sprites/rocket1.svg) at 4,7 size 1.5x2.5 angle up pop
+```
+
+---
+
+## Countdown
+
+The camera zooms in on the rocket.
+
+```anim
+camera at rocket zoom 2.5 speed slow
+```
+
++++
+
+```anim
+rocket: shake
+```
+
+---
+
+## Lift off
+
+An arc towards the moon: turning a further 60° (a signed angle on a change is relative) to face it, and shrinking with distance, with the camera following at the same speed.
+
+```anim
+rocket: move 11,4 via 5,2 angle +60 scale 0.6 speed vslow
+camera at rocket zoom 1.5 speed vslow
+```
+
+---
+
+## Asteroid field
+
+The camera pulls back. An asteroid spins (linear, a full turn) as it drifts across, and a second one tumbles past on a wave.
+
+```anim
+camera reset speed slow
+a1: image(../_assets/scratch/sprites/asteroid.svg) at 15,9 size 1.5 pop
+a2: image(../_assets/scratch/sprites/asteroid.svg) at 1,5 size 0.8 angle 30 pop
+```
+
++++
+
+```anim
+a1: move 7,9 angle +360 speed vslow ease linear
+a2: move 15,6 via 5,3 via 10,8 angle +540 scale 1.5 speed vslow ease linear
+```
+
+---
+
+## Landing
+
+The rocket turns upright and settles on the moon, the camera closing in.
+
+```anim
+a1: delete
+a2: delete
+rocket: move 13.5,1.4 angle up scale 0.4 speed slow
+camera at moon zoom 3 speed slow
+```
+
++++
+
+```anim
+astro: image(../_assets/scratch/sprites/astronaut.svg) at 14.4,2.2 size 0.6 pop
+```
+
++++
+
+```anim
+astro: bounce
+flag: image(../_assets/scratch/sprites/flag.svg) at 12.7,2.3 size 0.6 pop
+```
+
+---
+
+## Visitors
+
+Zoom out past the stage (zoom below 1): the stage shows smaller, and with `crop` nothing outside it is drawn, so the UFO appears at its edge as it flies in, wobbling, and zips round the scene.
+
+```anim
+camera at 8.5,6.5 zoom 0.7 speed slow
+ufo: image(../_assets/scratch/sprites/ufo.svg) at -2,1 size 2 front
+```
+
++++
+
+```anim
+ufo: travel 8,2 14,7 6,10 speed fast
+```
+
++++
+
+```anim
+ufo: wobble
+ufo: scale 1.6 angle -15 speed fast
+```
+
+---
+
+## Home again
+
+```anim
+camera reset speed slow
+ufo: move 19,-2 scale 0.5 speed slow
+earth: angle +90 speed vslow
+```
+
+</animation>
+
+## Under the Sea
+
+Sprites over the water backdrop: swimming on waves, a group moving as one, a crab scuttling, a turtle following a hidden curve, and the camera travelling between them.
+
+<animation grid="16x12" crop>
+
+# Under the Sea
+
+```anim
+bg: image(../_assets/scratch/stages/water.svg) at 8.5,6.5 size 16x12 back
+crab: image(../_assets/scratch/sprites/crab.svg) at 3,11 size 1.5
+turtle: image(../_assets/scratch/sprites/turtle.svg) at 13,9 size 2.5
+f1: image(../_assets/scratch/sprites/fish.svg) at 2,3 size 1.5 pop
+f2: image(../_assets/scratch/sprites/fish.svg) at 3,4.5 size 1 pop delay 0.2
+f3: image(../_assets/scratch/sprites/fish.svg) at 1.5,5.5 size 0.8 pop delay 0.4
+```
+
+---
+
+## A school of fish
+
+Grouped, they swim as one along a wave, each fish tilting up then down.
+
+```anim
+school: group [f1 f2 f3]
+school: move 8,3 via 5,1.5 speed slow
+f1: angle -10 speed slow
+f2: angle -10 speed slow
+f3: angle -10 speed slow
+```
+
++++
+
+```anim
+school: move 13,5 via 10.5,6.5 speed slow
+f1: angle 15 speed slow
+f2: angle 15 speed slow
+f3: angle 15 speed slow
+```
+
+---
+
+## Scuttle
+
+The camera follows the crab along the sea bed.
+
+```anim
+camera at crab zoom 2.5 speed slow
+```
+
++++
+
+```anim
+crab: move 9,11 speed slow ease linear
+camera at crab zoom 2.5 speed slow ease linear
+```
+
++++
+
+```anim
+crab: shake
+crab: scale 1.3 speed fast
+```
+
+---
+
+## The turtle's route
+
+The turtle follows a curve whose line is hidden (`weight 0`).
+
+```anim
+camera reset speed slow
+route: curve from turtle to 4,7 via 11,4 via 6,3 weight 0
+```
+
++++
+
+```anim
+turtle: follow route angle -20 speed vslow
+```
+
+---
+
+## Tour
+
+The camera travels between the three, then shows the whole scene.
+
+```anim
+camera travel school crab turtle zoom 2 speed slow
+```
+
++++
+
+```anim
+camera reset
+school: ungroup
+f1: move +4,-1 scale 1.4 speed slow
+f2: move +2,+2 angle +360 speed slow
+f3: delete pop
+```
 
 </animation>

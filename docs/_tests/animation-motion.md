@@ -1,15 +1,15 @@
-# Animation: Movement, Timing and Camera
+# Animation: Placing and Moving
 
-Click an animation to give it focus, then use ← / → to step and `F` for full screen.
-
-**Animation tests:** [Blocks](animation.md) · [Examples](animation-examples.md) · [Shapes, Looks and Highlights](animation-shapes.md) · **Movement, Timing and Camera** · [Images and Scenes](animation-images.md) · [Data Structures](animation-data.md) · [Code and Scratch](animation-code.md) · [Errors](animation-errors.md)
+Click an animation to give it focus, then use ← / → (or scroll) to step and `F` for full screen.
 
 ## Feature: Position and placement
+
+`at` a point or a shape (its centre), `x` and `y` alone, or beside a shape: `above`, `below`, `left-of`, `right-of`, with a `gap`.
 
 <animation grid="12x5">
 
 ```anim
-a: rect "a" at 6,3
+a: rect "a" at 6.5,3
 up: circle "above" above a font 0.5
 down: circle "below" below a font 0.5
 lt: circle "left-of" left-of a font 0.5
@@ -27,51 +27,88 @@ up: y 1
 on: at lt
 ```
 
+---
+
+## move and goto
+
+Both are `at` by another name.
+
+```anim
+lt: move 2,2
+down: goto 11,4
+```
+
+---
+
+## Signed: relative
+
+```anim
+a: move -1,+0
+```
+
++++
+
+```anim
+rt: x -1
+up: y +0.5
+on: move +0,+1
+```
 
 </animation>
 
 ## Feature: Points on an edge
 
-`a.top` … `a.bottom-right`: the middle of a side, or a corner. They turn with the shape, and a line end on one follows it.
+`a.top`, `a.bottom`, `a.left`, `a.right` and the four corners (`a.top-left` …): a point on a shape's edge. They turn and stretch with the shape, and a line end on one follows it.
 
 <animation grid="14x7">
 
 ```anim
-q: diamond "yes?" at 4,3 size 3x2 fill amber
-yes: rect "yes" at 10,2 size 2x1
-no: rect "no" at 4,6 size 2x1
-ly: arrow from q.right to yes.left "yes"
+b: rect "b" at 4.5,3.5 size 4x2 fill blue-muted
+defaults size 0.3 fill red front
+p1: circle attach b.top-left
+p2: circle attach b.top
+p3: circle attach b.top-right
+p4: circle attach b.right
+p5: circle attach b.bottom-right
+p6: circle attach b.bottom
+p7: circle attach b.bottom-left
+p8: circle attach b.left
+defaults clear
+q: diamond "yes?" at 11,2 size 2.4x1.6 fill amber
+no: rect "no" at 11,5.5 size 2x1
+lb: arrow from b.right to q.left
 ln: arrow from q.bottom to no.top "no"
-lb: arrow from no.right via 10,6 to yes.bottom
-c: circle at 12,5.5 size 2x1.2
-dot: circle at c.top-right size 0.3 fill red front
 ```
 
 ---
 
-## Moving and turning
+## They turn and stretch with it
 
 ```anim
-yes: move 10,4
-q: angle 20
-c: angle 90
-dot: attach c.top-right
+b: angle 30 speed slow
 ```
 
 +++
 
-The dot rides on its corner.
-
 ```anim
-c: move 7.5,5
+b: angle 0 size 2.6x2.6
 ```
 
-+++
+---
 
-A point on an edge works for a turn's pivot, travel and the camera too.
+## A line end on one follows it
 
 ```anim
-dot: angle +360 about c.bottom
+q: angle 25
+b: move 4.5,4.5
+```
+
+---
+
+## A turn's pivot, travel and the camera
+
+```anim
+no: angle +360 about no.bottom-left speed slow
 camera at q.top zoom 1.5
 ```
 
@@ -79,53 +116,7 @@ camera at q.top zoom 1.5
 
 ```anim
 camera reset
-c: travel yes.bottom-right no.top-left
-```
-
-</animation>
-
-## Feature: Relative values
-
-<animation grid="12x5">
-
-```anim
-r: rect "r" at 3,2
-```
-
----
-
-## move +2,+1
-
-```anim
-r: move +2,+1
-```
-
----
-
-## x +3
-
-```anim
-r: x +3
-```
-
----
-
-## width +1, size +0.5, angle +45
-
-```anim
-r: width +1
-```
-
-+++
-
-```anim
-r: size +0.5
-```
-
-+++
-
-```anim
-r: angle +45
+no: travel b.bottom-right q.top-right 11,5.5
 ```
 
 </animation>
@@ -624,393 +615,6 @@ g2: group [a, b]
 
 ```anim
 g2: delete pop
-```
-
-</animation>
-
-## Feature: speed
-
-<animation grid="12x7">
-
-```anim
-defaults radius 0.3 fill blue
-s1: circle at 3,1
-s2: circle at 3,2
-s3: circle at 3,3
-s4: circle at 3,4
-s5: circle at 3,5
-s6: circle at 3,6
-s7: circle at 3,7
-defaults clear
-t1: text "instant" at 1.5,1 font 0.6
-t2: text "vfast" at 1.5,2 font 0.6
-t3: text "fast" at 1.5,3 font 0.6
-t4: text "normal" at 1.5,4 font 0.6
-t5: text "slow" at 1.5,5 font 0.6
-t6: text "vslow" at 1.5,6 font 0.6
-t7: text "3 s" at 1.5,7 font 0.6
-```
-
----
-
-```anim
-s1: move 11,1 speed instant
-s2: move 11,2 speed vfast
-s3: move 11,3 speed fast
-s4: move 11,4
-s5: move 11,5 speed slow
-s6: move 11,6 speed vslow
-s7: move 11,7 speed 3
-```
-
-</animation>
-
-## Feature: delay
-
-<animation grid="12x3">
-
-```anim
-a: rect "0" at 3,2
-b: rect "1 s" at 6,2
-c: rect "2 s" at 9,2
-```
-
----
-
-```anim
-a: fill green
-b: fill green delay 1
-c: fill green delay 2
-```
-
-</animation>
-
-## Feature: stagger
-
-<animation grid="12x5">
-
-```anim
-arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.3 fill blue corner 0.3 pop stagger 0.15
-```
-
----
-
-## stagger
-
-```anim
-arr: fill green stagger
-```
-
-+++
-
-```anim
-arr: pulse stagger 0.1
-```
-
----
-
-## stagger-reverse, after a delay
-
-```anim
-arr: fill amber stagger-reverse 0.2 delay 0.5
-```
-
----
-
-## One highlight per cell
-
-```anim
-arr: highlight arrow stagger 0.2
-```
-
-+++
-
-```anim
-arr: highlight clear stagger 0.1
-```
-
-+++
-
-```anim
-arr: highlight number stagger 0.4
-```
-
----
-
-## A group, in listed order
-
-```anim
-a: rect "a" at 3,4
-b: circle "b" at 6,4
-c: rect "c" at 9,4
-g: group [c, a, b]
-```
-
-+++
-
-```anim
-g: fill pink stagger 0.3
-```
-
-+++
-
-```anim
-g: delete pop stagger 0.2
-```
-
-</animation>
-
-<animation grid="8x8" autoplay>
-
-```anim
-c1: column 6 at 2,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15
-c2: column 6 at 3,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 1
-c3: column 6 at 4,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 2
-c4: column 6 at 5,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 3
-c5: column 6 at 6,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 4
-c6: column 6 at 7,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15 delay 5
-auto
-```
-
-+++
-
-```anim
-c1: fill red    stagger 0.15
-c2: fill orange stagger 0.15 delay 1
-c3: fill yellow stagger 0.15 delay 2
-c4: fill green  stagger 0.15 delay 3
-c5: fill cyan   stagger 0.15 delay 4
-c6: fill purple stagger 0.15 delay 5
-auto
-```
-
-+++
-
-```anim
-c1: fill green  stagger-reverse 0.15
-c2: fill cyan   stagger-reverse 0.15 delay 1
-c3: fill purple stagger-reverse 0.15 delay 2
-c4: fill red    stagger-reverse 0.15 delay 3
-c5: fill orange stagger-reverse 0.15 delay 4
-c6: fill yellow stagger-reverse 0.15 delay 5
-auto
-```
-
-+++
-
-```anim
-c1: delete stagger 0.15
-c2: delete stagger 0.15 delay 1
-c3: delete stagger 0.15 delay 2
-c4: delete stagger 0.15 delay 3
-c5: delete stagger 0.15 delay 4
-c6: delete stagger 0.15 delay 5
-auto
-```
-
-</animation>
-
-## Feature: ease
-
-<animation grid="12x6">
-
-```anim
-defaults radius 0.3 fill blue
-e1: circle at 3,1
-e2: circle at 3,2
-e3: circle at 3,3
-e4: circle at 3,4
-e5: circle at 3,5
-defaults clear
-t1: text "in-out" at 1.5,1 font 0.6
-t2: text "linear" at 1.5,2 font 0.6
-t3: text "in" at 1.5,3 font 0.6
-t4: text "out" at 1.5,4 font 0.6
-t5: text "spring" at 1.5,5 font 0.6
-```
-
----
-
-```anim
-e1: move 11,1 speed slow
-e2: move 11,2 speed slow ease linear
-e3: move 11,3 speed slow ease in
-e4: move 11,4 speed slow ease out
-e5: move 11,5 speed slow ease spring
-```
-
----
-
-## spring on pop, and on the camera
-
-```anim
-b: rect "spring" at 7,3 size 2x1 fill pink pop ease spring
-camera at b zoom 1.5 ease spring
-```
-
-+++
-
-```anim
-camera reset ease out
-```
-
-</animation>
-
-## Feature: repeat
-
-<animation grid="12x5">
-
-```anim
-r: rect "r" at 2,2 size 1.4x0.8
-s: rect "s" at 5,2 size 1.4x0.8
-hub: circle at 10,2.5 radius 0.1 fill fg
-hand: arrow from 10,2.5 to 10,1.3 weight 2
-c: circle "c" at 2,4 radius 0.4
-```
-
----
-
-## repeat 3
-
-Three turns of +30 in a row.
-
-```anim
-r: angle +30 repeat 3
-```
-
-+++
-
-Everything on the line repeats: relative changes add up, the fill changes in the first round.
-
-```anim
-s: fill red x +1 width -0.5 angle -10 repeat 2 speed slow
-```
-
-+++
-
-The beat's other lines carry on.
-
-```anim
-r: angle -90 repeat 3 speed fast
-c: move 6,4 speed slow
-```
-
----
-
-## repeat forever
-
-Goes round until you move on.
-
-```anim
-hand: angle +360 about hub repeat forever speed slow ease linear
-c: pulse repeat forever
-```
-
----
-
-## Stopped
-
-```anim
-hand: stroke teal
-```
-
-</animation>
-
-## Feature: Entrance and exit effects
-
-<animation grid="12x4">
-
-## Entrances
-
-+++
-
-```anim
-no: rect "none" at 2,2
-fd: rect "fade" at 5,2 fade delay 1
-pp: rect "pop" at 8,2 pop delay 2
-sl: circle "slide" at 11,2 slide delay 3
-dr: arrow from 1,3.5 to 11,3.5 draw delay 4
-```
-
----
-
-## Exits
-
-```anim
-no: delete
-fd: delete fade delay 1
-pp: delete pop delay 2
-sl: delete slide delay 3
-dr: delete draw delay 4
-```
-
-</animation>
-
-## Feature: typed
-
-<animation grid="12x3">
-
-```anim
-prompt: text "$" at 2,1 mono colour yellow
-```
-
-+++
-
-```anim
-t1: text "ls -la" at 3,1 align left mono typed speed slow
-```
-
-+++
-
-```anim
-t2: text "Hello, world!" at 2,2 align left bold mono typed speed slow delay 2
-```
-
----
-
-## As an exit it un-types
-
-```anim
-t2: delete typed
-```
-
-</animation>
-
-## Feature: defaults
-
-<animation grid="12x4">
-
-```anim
-defaults fill blue size 2x1
-a: rect "a" at 2,1.5
-b: rect "b" at 5,1.5
-defaults clear
-c: rect "c" at 8,1.5
-```
-
----
-
-## defaults speed slow ease spring
-
-```anim
-defaults speed slow ease spring
-a: move 2,3
-b: move 5,3
-c: move 8,3
-```
-
----
-
-## defaults flow-reverse, static
-
-The top line flows right to left; the bottom one is still.
-
-```anim
-defaults clear
-defaults dashed flow-reverse
-l1: line from 1,0.5 to 11,0.5
-defaults static
-l2: line from 1,3.7 to 11,3.7
 ```
 
 </animation>
