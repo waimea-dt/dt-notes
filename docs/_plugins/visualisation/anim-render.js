@@ -112,10 +112,29 @@
     return places ? n.toFixed(places) : String(Math.round(n))
   }
 
-  // A polygon's outline (SHAPES: points) in a box of half-sizes hw, hh, as a closed path, its
-  // corners rounded by r (each as much as fits): from the middle of its first side round to it
-  function polygonPath(points, hw, hh, r) {
-    const corners = polygonPoints(points, hw, hh)
+  // A polygon's corners with each side moved out by `grow` (in, when negative), each corner where
+  // its two moved sides meet (no further out than MITER × grow, for a very sharp one)
+  const MITER = 4
+  function grownCorners(corners, grow) {
+    const n = corners.length
+    const area = corners.reduce((sum, p, i) => sum + p.x * corners[(i + 1) % n].y - corners[(i + 1) % n].x * p.y, 0)
+    const out = area > 0 ? 1 : -1 // which side of each side is outside (the way round it goes)
+    const normal = (a, b) => { const len = Math.hypot(b.x - a.x, b.y - a.y) || 1; return { x: (out * (b.y - a.y)) / len, y: (out * (a.x - b.x)) / len } }
+    return corners.map((p, i) => {
+      const [n1, n2] = [normal(corners[(i - 1 + n) % n], p), normal(p, corners[(i + 1) % n])]
+      const m = { x: n1.x + n2.x, y: n1.y + n2.y }
+      const len = Math.hypot(m.x, m.y)
+      if (len < 1e-9) return { x: p.x + n1.x * grow, y: p.y + n1.y * grow }
+      const reach = Math.min(MITER * Math.abs(grow), Math.abs(grow / ((m.x * n1.x + m.y * n1.y) / len))) * Math.sign(grow)
+      return { x: p.x + (m.x / len) * reach, y: p.y + (m.y / len) * reach }
+    })
+  }
+
+  // A polygon's outline (SHAPES: points) in a box of half-sizes hw, hh, as a closed path, each side
+  // moved out by `grow` (a highlight's gap, the same all round), its corners rounded by r (each as
+  // much as fits): from the middle of its first side round to it
+  function polygonPath(points, hw, hh, r, grow = 0) {
+    const corners = grow ? grownCorners(polygonPoints(points, hw, hh), grow) : polygonPoints(points, hw, hh)
     if (!r) return `M ${corners.map((p) => `${p.x} ${p.y}`).join(' L ')} Z`
     const mid = { x: (corners[0].x + corners[1].x) / 2, y: (corners[0].y + corners[1].y) / 2 }
     const round = roundCorners([mid, ...corners.slice(1), corners[0], mid], r)
@@ -361,11 +380,11 @@
       let shift = 0
       for (const run of runs) {
         const mark = TEXT_MARKS[run.mark] || { size: 1, shift: 0 }
-        const span = parent.appendChild(svgEl('tspan', {
-          ...(mark.size === 1 ? {} : { 'font-size': `${mark.size * 100}%` }),
-          ...(mark.bold ? { 'font-weight': '700' } : {}),
-          ...(mark.italic ? { 'font-style': 'italic' } : {}),
-        }))
+        const span = parent.appendChild(svgEl('tspan', mark.size === 1 ? {} : { 'font-size': `${mark.size * 100}%` }))
+        // as styles, not attributes: the site's own rules give text a weight and style that an
+        // attribute (the weakest) loses to; otherwise the label's own (bold, a null's italic)
+        span.style.fontWeight = mark.bold ? '700' : 'inherit'
+        span.style.fontStyle = mark.italic ? 'italic' : 'inherit'
         if (mark.shift !== shift) attr(span, 'dy', `${(mark.shift - shift) / mark.size}em`)
         shift = mark.shift
         leaf(span, run.text)
@@ -1529,8 +1548,9 @@
       const w = Math.max(0, hw * k + offset)
       const h = Math.max(0, hh * k + offset)
       if (kind.outline === 'round') return { d: `M ${-w} 0 A ${w} ${h} 0 1 1 ${w} 0 A ${w} ${h} 0 1 1 ${-w} 0 Z`, transform }
-      // a polygon: stretched to its box grown (or shrunk) by `offset`
-      if (kind.outline === 'polygon') return { d: polygonPath(s.points, w, h, Math.max(0, (s.corner || 0) * k + offset)), transform }
+      // a polygon: each side moved out (or in) by `offset`, its corners rounded round the shape's
+      // (as a box's are: by its own corner and the gap)
+      if (kind.outline === 'polygon') return { d: polygonPath(s.points, hw * k, hh * k, Math.max(0, (s.corner || 0) * k + offset), offset), transform }
       if (kind.outline === 'diamond') {
         // each side moves out by `offset`: the same diamond, scaled by (d + offset) / d, where d is
         // the distance from the centre to a side

@@ -397,7 +397,7 @@
       if (count === null) ({ values, next: j } = readList(tokens, 1, `a ${layout}`))
       if (count === null && tokens[j]?.value !== ']') throw new Error(`the "[" of a ${layout} has no closing "]"`)
       if (!values.length) throw new Error(`a ${layout} needs at least one value, ${example}`)
-      const props = parseProps(tokens, j + 1, 'layout', shapes)
+      const props = parseProps(tokens, j + 1, 'layout', shapes, id)
       if (props.label !== undefined) throw new Error(count === null ? `a ${layout}'s values all go inside its [ ]` : `a ${layout} of ${count} empty cells has no labels: give its values in [ ] instead`)
       makeLayout(id, layout, values, props, existing, meta, warn)
     }
@@ -418,7 +418,7 @@
         values = lines.values.map((label) => ({ label }))
         j = lines.next
       }
-      const props = parseProps(tokens, j, 'layout', shapes)
+      const props = parseProps(tokens, j, 'layout', shapes, id)
       if (props.label !== undefined) throw new Error(`a ${noun} takes one "quoted" ${item}, or its ${item}s in [ ], ${example}`)
       const sized = ['size', 'width', 'height'].find((key) => props[key])
       if (sized) throw new Error(`a ${noun} is as big as its ${item}s, so it takes no "${sized}" (use font to make it bigger or smaller)`)
@@ -434,7 +434,7 @@
       const source = !valueOf(tokens[1]) && holderRef(tokens[1]) ? holderRef(tokens[1], `make ${article(noun)} ${noun} from`) : undefined
       const value = valueOf(tokens[1]) || (source && valueIn(source))
       if (!value) throw new Error(`a ${noun}'s value goes straight after "${layout}", ${example}`)
-      const props = parseProps(tokens, 2, 'layout', shapes)
+      const props = parseProps(tokens, 2, 'layout', shapes, id)
       if (props.label !== undefined) throw new Error(`a ${noun} holds one value, straight after "${layout}", ${example}`)
       const given = props[digits.prop]
       const count = given ? given.v : digits.default
@@ -501,7 +501,7 @@
       const across = Math.max(...rows.map((values) => values.length))
       if (rows.some((values) => values.length < across)) warn(`the rows of "${id}" aren't all ${across} long, so the short ones are filled out with empty cells`)
       for (const values of rows) while (values.length < across) values.push({ label: '' })
-      const props = parseProps(tokens, j, 'layout', shapes)
+      const props = parseProps(tokens, j, 'layout', shapes, id)
       if (props.label !== undefined) throw new Error(`a ${noun}'s values all go inside its [ ]`)
       makeLayout(id, layout, rows, props, existing, meta, warn)
     }

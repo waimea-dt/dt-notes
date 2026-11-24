@@ -491,18 +491,19 @@
     }
 
     // A line's props, read from tokens[i]. A shape whose label is lines (SHAPES: lines) can have
-    // them in [ ] where its label would go: "s: scratch [ "…" "…" ] at 2,1", "s: [ "…" ]".
-    function propsOf(type, tokens, i, kind) {
+    // them in [ ] where its label would go: "s: scratch [ "…" "…" ] at 2,1", "s: [ "…" ]". making: the id
+    // of the shape the line makes, if it makes one (parseProps)
+    function propsOf(type, tokens, i, kind, making) {
       // a polygon's points: straight after its type, or alone on a change ("p: [ … ]")
       if (SHAPES[type]?.points && (kind === 'create' || tokens[i]?.kind === 'bracket')) {
         const { points, next } = readPoints(tokens, i, type)
-        return { ...parseProps(tokens, next, kind, shapes), points }
+        return { ...parseProps(tokens, next, kind, shapes, making), points }
       }
-      if (!SHAPES[type]?.lines || tokens[i]?.kind !== 'bracket' || tokens[i].value !== '[') return parseProps(tokens, i, kind, shapes)
+      if (!SHAPES[type]?.lines || tokens[i]?.kind !== 'bracket' || tokens[i].value !== '[') return parseProps(tokens, i, kind, shapes, making)
       const noun = nounOf({ type })
       const example = `e.g. "${type} ["…" "…"] at 2,1"`
       const { values, next } = readLines(tokens, i, { noun, item: 'line', example })
-      const props = parseProps(tokens, next, kind, shapes)
+      const props = parseProps(tokens, next, kind, shapes, making)
       if (props.label !== undefined) throw new Error(`a ${noun} takes one "quoted" line, or its lines in [ ], ${example}`)
       props.label = values.join('\n')
       return props
@@ -693,6 +694,7 @@
       if (!match) throw new Error('expected "id: …" (or defaults, camera, pause, auto, then)')
       const id = match[1]
       const tokens = tokenize(match[2])
+      setMaking(null)
 
       if (defaultsLine) {
         const props = parseProps(tokens, 0, 'defaults', shapes)
@@ -719,6 +721,8 @@
 
       // "arr: row [5 3 8 1] at 2,3" (or column): its cells are arr.0, arr.1, …
       const word = first?.kind === 'word' ? first.lower : ''
+      // a line that makes a shape: its looks can follow its own value (setMaking)
+      setMaking(type || LAYOUT_TYPES.includes(word) ? id : null)
       if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
       // a verb: delete, swap, insert, remove, copy, group, ungroup (LINES)
       if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
@@ -730,7 +734,7 @@
         throw new Error(`"${id}" is already a line: to change what's on its ends, e.g. "${id}: end arrow" or "${id}: start dot"`)
       }
       if (type) {
-        const props = propsOf(type, tokens, varValue ? 2 : 1, 'create')
+        const props = propsOf(type, tokens, varValue ? 2 : 1, 'create', id)
         if (isVar && props.label !== undefined) throw new Error(`a var's value goes straight after "var", e.g. "${id}: var 67" or "${id}: var "Dog""`)
         if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
         const shape = { ...baseShape(type), id, uid: newUid() }
@@ -981,7 +985,7 @@
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, symbolValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
-      readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
+      readLines, refuseView, relayLayout, setMaking, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
@@ -989,7 +993,7 @@
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
       ({ addTo, assignValue, symbolValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
-        readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
+        readLines, refuseView, relayLayout, setMaking, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 

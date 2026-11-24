@@ -188,7 +188,8 @@
     return tokens
   }
 
-  function parseAs(type, token, shapes) {
+  // making: the id of the shape the line makes, which a number can follow (its own value) though it isn't there yet
+  function parseAs(type, token, shapes, making) {
     if (type === 'str') return token?.kind === 'str' ? token.value : undefined
     // a colour worked out from values, "rgb(r g b)" (COLOUR_FUNCTIONS): its arguments as tokens,
     // read when it's applied (linkColour)
@@ -196,7 +197,7 @@
     // a number that follows values (KEYWORDS: bound): an expression in { }, or a var, cell or
     // number by name, as tokens, read when it's applied (linkNumber)
     if (type === 'bound' && token?.kind === 'expr') return { bind: tokenize(token.text) }
-    if (type === 'bound' && token?.kind === 'word' && shapes.get(token.value)?.holds) return { bind: [token] }
+    if (type === 'bound' && token?.kind === 'word' && (shapes.get(token.value)?.holds || token.value === making)) return { bind: [token] }
     if (!token || token.kind !== 'word') return undefined
     const word = token.lower
     switch (type) {
@@ -229,23 +230,23 @@
   }
 
   // Tries each value list in turn (longest first) at tokens[i]; returns the first that fits.
-  function matchSigs(sigs, tokens, i, shapes) {
+  function matchSigs(sigs, tokens, i, shapes, making) {
     for (const sig of sigs) {
-      const values = sig.map((type, k) => parseAs(type, tokens[i + k], shapes))
+      const values = sig.map((type, k) => parseAs(type, tokens[i + k], shapes, making))
       if (values.every((v) => v !== undefined)) return { values, sig, next: i + sig.length }
     }
     return null
   }
 
   // The values after a keyword: one match of its sigs, or one or more of its list.
-  function matchKeyword(entry, word, tokens, i, shapes) {
+  function matchKeyword(entry, word, tokens, i, shapes, making) {
     const build = (m) => (entry.build ? entry.build(m.values, m.sig) : m.values[0])
     if (entry.list) {
       const items = []
-      for (let m; (m = matchSigs(entry.list, tokens, i, shapes)); i = m.next) items.push(build(m))
+      for (let m; (m = matchSigs(entry.list, tokens, i, shapes, making)); i = m.next) items.push(build(m))
       if (items.length) return { value: items, next: i }
     } else {
-      const m = matchSigs(entry.sigs, tokens, i, shapes)
+      const m = matchSigs(entry.sigs, tokens, i, shapes, making)
       if (m) return { value: build(m), next: m.next }
     }
     const next = tokens[i]
@@ -255,8 +256,9 @@
   }
 
   // Reads the properties and flags of one line (everything after the id and any type word), for a
-  // kind of line (LINES): a prop that kind doesn't take is an error as soon as it's read.
-  function parseProps(tokens, i, kind, shapes) {
+  // kind of line (LINES): a prop that kind doesn't take is an error as soon as it's read. making:
+  // the id of the shape it makes, if it makes one (its looks can follow its own value: parseAs)
+  function parseProps(tokens, i, kind, shapes, making) {
     const line = LINES[kind] || {}
     const name = line.what || `"${kind}"`
     const allow = (key, word) => {
@@ -286,7 +288,7 @@
       }
       if (entry.error) throw new Error(entry.error)
       allow(entry.key, word)
-      const { value, next } = matchKeyword(entry, word, tokens, i + 1, shapes)
+      const { value, next } = matchKeyword(entry, word, tokens, i + 1, shapes, making)
       if (entry.repeat) props[entry.key] = [...(props[entry.key] || []), value]
       else set(entry.key, value, entry.what || word)
       i = next

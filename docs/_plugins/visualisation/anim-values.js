@@ -18,6 +18,10 @@
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf
+    // The id of the shape the line being run makes (setMaking, from runLine), or null: its looks can
+    // follow its own value ("r: binary 0 fill rgb(r 0 0)"), worked out once it's made (settle)
+    let making = null
+    const setMaking = (id) => { making = id }
 
     // A value a var or a row's / column's cell holds: a number, "quoted" text or null (shown muted)
     function valueOf(token) {
@@ -182,6 +186,7 @@
       const numbers = terms.map((term) => {
         if (term.ref === undefined) return term.v
         if (!shapes.has(term.ref)) throw new Error(`"${term.ref}" has gone`)
+        if (!shapes.get(term.ref).holds) throw new Error(`"${term.ref}" doesn't hold a value (only a var, cell or number does)`)
         const value = valueIn(shapes.get(term.ref))
         if (value.nil || !NUMBER.test(value.label)) throw new Error(`"${term.ref}" holds ${value.nil ? 'null' : `"${value.label}"`}, not a number`)
         return Number(value.label)
@@ -225,7 +230,8 @@
     }
     function setLink(shape, key, link, warn) {
       shape.links = { ...shape.links, [key]: { ...link, seen: null, inputs: null } }
-      fitLink(shape, key, warn)
+      // one on the shape being made is worked out once it's there (fitLinks, after the line)
+      if (!LINKS[link.kind].sources(link).includes(making)) fitLink(shape, key, warn)
     }
     // Works a link out again if what its sources hold has changed: true if its look changed
     function fitLink(shape, key, warn) {
@@ -356,6 +362,10 @@
           link.args[k] = { v: was }
           return was
         }
+        if (arg.ref !== undefined && !shapes.get(arg.ref).holds) {
+          warn(`"${arg.ref}" doesn't hold a value (only a var, cell or number does), so ${share} stays at ${was}`)
+          return was
+        }
         const value = arg.ref === undefined ? { label: String(arg.v) } : valueIn(shapes.get(arg.ref))
         if (value.nil || !NUMBER.test(value.label)) {
           warn(`"${arg.ref}" holds ${value.nil ? 'null' : `"${value.label}"`}, not a number, so ${share} stays at ${was}`)
@@ -379,6 +389,7 @@
       if (token?.kind !== 'word' || !ID.test(token.value) || KEYWORDS[token.lower] || RESERVED.has(token.lower)) return undefined
       const shape = shapes.get(token.value)
       if (!use) return token.value
+      if (!shape && token.value === making) return { id: making } // the shape this line makes: it isn't there yet
       if (!shape) throw new Error(`unknown word "${token.value}" (and no var or cell has that name to ${use})`)
       if (!shape.holds) throw new Error(`"${token.value}" doesn't hold a value, so there's nothing to ${use}: use a var or a cell, e.g. v1 or arr.2`)
       return shape
@@ -422,7 +433,7 @@
 
     return {
       functions: { addTo, assignValue, symbolValue, checkDigit, countUp, digitsFor, exprValue, fitLinks, fly, flyValue, holderRef, keptStyle, linkColour, linkNumber, linkText, pointOf,
-        setNumber, setValue, unlink, valueIn, valueOf },
+        setMaking, setNumber, setValue, unlink, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {
         ({ applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf } = cx)
