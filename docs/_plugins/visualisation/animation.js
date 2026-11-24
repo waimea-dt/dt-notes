@@ -320,17 +320,19 @@
     let playDir = 1 // -1 while a loop-bounce plays backwards
     let waitingForClick = false // playing, but stopped at a `pause` until Next
     let navId = 0 // bumped by every navigation, so older auto chains and play steps stop
+    let moveId = 0 // bumped by every move, so a beat's parts still to play (playParts) stop
 
     // Where the viewer's own stepping is going, as a `preview-position` event ({ position: the
     // beat }) sent as each move sets off: the VS Code preview pane moves the editor's cursor there
     const announceBeat = () => widget.dispatchEvent(new CustomEvent('preview-position', { bubbles: true, detail: { position: current } }))
     const BY_VIEWER = { announce: true }
 
-    function showStatic(index) {
-      const state = beats[index]?.state || empty
-      setView(cameraView(beats[index]?.camera))
+    // Shows a compiled state (a beat, or one of its parts) as it is, with its camera
+    function showState({ state = empty, camera } = {}) {
+      setView(cameraView(camera))
       renderer.render(state, state, emptyMeta, () => 1, state)
     }
+    const showStatic = (index) => showState(beats[index])
 
     function updateControls() {
       const step = beats[current]?.step ?? 0
@@ -414,6 +416,7 @@
     function goTo(to, { animate = true, announce = false } = {}) {
       to = Math.max(0, Math.min(beats.length - 1, to))
       introPending = false // moving on before it played: no intro (until back at the start)
+      moveId++ // a beat's parts still to play (playParts) don't
       if (running) running.finish()
       const from = current
       if (to === from) return Promise.resolve()
@@ -428,19 +431,34 @@
       }
 
       const k = Math.max(from, to)
-      return transition(beats[k - 1].state, beats[k].state, beats[k].meta, to > from,
-        cameraView(beats[k - 1].camera), cameraView(beats[k].camera), to)
+      return playParts(beats[k - 1], k, to > from, to)
     }
 
-    // Animates from state A to state B (B's beat supplies `meta`), forwards or backwards, then
-    // shows beat `to` as it is. Used between beats, and for the intro (from nothing to beat 1).
-    function transition(A, B, meta, forward, viewA, viewB, to) {
+    // Plays beat k from `before` (the beat before it, or nothing for the intro): each of its parts
+    // in turn (then: its chain, then itself), forwards, or the reverse backwards, then shows beat
+    // `to` as it is. A move elsewhere (moveId) stops the parts still to play.
+    function playParts(before, k, forward, to) {
+      const ends = [...beats[k].chain, beats[k]]
+      const parts = ends.map((end, i) => ({ a: i ? ends[i - 1] : before, b: end }))
+      const id = moveId
+      return (forward ? parts : [...parts].reverse()).reduce((played, part, i, order) => played.then(() => {
+        if (id !== moveId) return
+        const settle = i === order.length - 1 ? () => showStatic(to) : () => showState(forward ? part.b : part.a)
+        return transition(part.a.state, part.b.state, part.b.meta, forward, cameraView(part.a.camera), cameraView(part.b.camera), settle)
+      }), Promise.resolve())
+    }
+
+    // Animates from state A to state B (B's part supplies `meta`), forwards or backwards, then
+    // settles (shows where it's got to, as it is). Used between beats and their parts, and for the
+    // intro (from nothing to beat 1).
+    function transition(A, B, meta, forward, viewA, viewB, settle) {
       const final = forward ? B : A
-      // Each shape's change runs from its delay to delay + duration; backwards is the exact reverse.
+      // Each shape's change runs from its delay to delay + duration, after the part's lead (then n);
+      // backwards is the exact reverse.
       const durOf = (uid) => meta.tweens.get(uid)?.dur ?? 0
-      const delayOf = (uid) => meta.tweens.get(uid)?.delay ?? 0
+      const delayOf = (uid) => (meta.tweens.get(uid)?.delay ?? 0) + (meta.lead || 0)
       const uids = meta.tweens.keys()
-      const total = Math.max(0, ...[...uids].map((uid) => delayOf(uid) + durOf(uid)))
+      const total = Math.max(meta.lead || 0, ...[...uids].map((uid) => delayOf(uid) + durOf(uid)))
       const forwardT = (uid, time) => {
         const d = durOf(uid)
         const after = time - delayOf(uid)
@@ -474,7 +492,7 @@
         const finish = () => {
           cancelAnimationFrame(frame)
           running = null
-          showStatic(to)
+          settle()
           tidyCaptions() // the diagram is still now
           resolve()
         }
@@ -523,16 +541,19 @@
     // plays in from nothing, the first time the animation comes into view and again after going
     // back to the start, instead of only ever being shown finished. Plain fades don't (every
     // animation would fade in as it scrolls into view), nor for viewers who prefer reduced motion.
-    const hasIntro = !reducedMotion() && [...(beats[0]?.meta.tweens.values() || [])]
-      .some((tw) => (tw.enter && !ENTRANCES[tw.enter]?.quiet) || tw.delay > 0)
+    // A first beat in parts (then) plays them in.
+    const firstParts = beats[0] ? [...beats[0].chain, beats[0]] : []
+    const hasIntro = !reducedMotion() && (firstParts.length > 1 || firstParts.flatMap((part) => [...part.meta.tweens.values()])
+      .some((tw) => (tw.enter && !ENTRANCES[tw.enter]?.quiet) || tw.delay > 0))
     let introPending = hasIntro && 'IntersectionObserver' in window // drawn empty until it plays
     let intro = null // the intro's promise while it plays
     function playIntro() {
       introPending = false
       if (!hasIntro || current !== 0 || reducedMotion()) return Promise.resolve()
+      moveId++
       if (running) running.finish()
-      const view = cameraView(beats[0].camera)
-      intro = transition(empty, beats[0].state, beats[0].meta, true, view, view, 0)
+      // from nothing, seen as its first part sees it
+      intro = playParts({ state: empty, camera: firstParts[0].camera }, 0, true, 0)
       return intro.finally(() => { intro = null })
     }
     if (introPending) {

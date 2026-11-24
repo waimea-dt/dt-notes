@@ -321,8 +321,10 @@
     const block = scriptBlocksIn(script, lines).find((b) => b.at === n - 1)
     return block ? { block } : { problem: `line ${n} of "${id}" isn't a block (it's blank, a comment, or a C block's else or end), so it can't be ${done}` }
   }
+  // A compiled beat's states: each of its parts' (then: its chain), then its own
+  const beatStates = (beat) => [...(beat.chain || []).map((part) => part.state), beat.state]
   // The libraries the scripts in some compiled beats need that haven't loaded
-  const scriptLibraries = (beats) => [...new Set(beats.flatMap((beat) => [...beat.state.values()])
+  const scriptLibraries = (beats) => [...new Set(beats.flatMap(beatStates).flatMap((state) => [...state.values()])
     .map(scriptOf).filter((script) => script && !script.ready()).map((script) => script.library))]
 
   // The parts a shape can have: shapes made and placed by it that go with it (shape.part, its
@@ -867,7 +869,7 @@
   const EDIT_WORDS = { end: 'end', into: 'into' }
 
   const RESERVED = new Set([
-    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), 'pause', 'auto', 'defaults', 'camera',
+    ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), 'pause', 'auto', 'then', 'defaults', 'camera',
   ])
 
   // ---------------------------------------------------------------------------
@@ -1486,7 +1488,7 @@
       const rows = fixed ? Math.max(1, +fixed[2]) : 9
       return { ...around({ x0: 0, y0: 0, x1: cols * CELL, y1: rows * CELL }, crop ? 0 : GRID_MARGIN), cols, rows }
     }
-    const box = mergeBoxes(beats.map(({ state }) => unionBounds([...state.values()], state)))
+    const box = mergeBoxes(beats.flatMap(beatStates).map((state) => unionBounds([...state.values()], state)))
     if (!Number.isFinite(box.x0)) return { x: 0, y: 0, w: 16 * CELL, h: 9 * CELL, cols: 16, rows: 9 }
     return around(box, crop ? 0 : FIT_MARGIN)
   }
@@ -1494,17 +1496,18 @@
   function warnOutsideGrid(beats, viewBox, warnings) {
     if (!viewBox.cols) return
     const reported = new Set()
-    beats.forEach(({ state, step, beat }) => state.forEach((shape) => {
+    beats.forEach((b) => beatStates(b).forEach((state) => state.forEach((shape) => {
+      const { step, beat } = b
       if (LINE_TYPES.includes(shape.type) || reported.has(shape.uid)) return
       if (shape.x < 0 || shape.y < 0 || shape.x > viewBox.cols * CELL || shape.y > viewBox.rows * CELL) {
         reported.add(shape.uid)
         const multi = beats.some((b) => b.step === step && b.beat > 0)
         warnings.push(`Step ${step + 1}${multi ? `, beat ${beat + 1}` : ''}: "${shape.id}" is outside the ${viewBox.cols}x${viewBox.rows} grid`)
       }
-    }))
+    })))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, beatStates, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

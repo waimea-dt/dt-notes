@@ -682,7 +682,7 @@
       const defaultsLine = text.match(/^defaults(\s*:)?(?:\s+(.*))?$/i)
       if (defaultsLine?.[1]) throw new Error('"defaults" takes no colon, e.g. "defaults fill blue"')
       const match = defaultsLine ? ['', 'defaults', defaultsLine[2] || ''] : text.match(/^([^:\s]+)\s*:\s*(.*)$/)
-      if (!match) throw new Error('expected "id: …" (or defaults, camera, pause, auto)')
+      if (!match) throw new Error('expected "id: …" (or defaults, camera, pause, auto, then)')
       const id = match[1]
       const tokens = tokenize(match[2])
 
@@ -1034,8 +1034,22 @@
     return record
   }
 
+  // `then` (no id): the lines after it start once everything before it in the beat has finished,
+  // `then n` n seconds after that. The beat's parts are compiled one after another (compile: each
+  // part before the last is in the beat's `chain`), and play as one beat. Returns the wait (ms)
+  // before the next part, or null if the line isn't a `then`.
+  function thenLine(text) {
+    const match = text.match(/^then\b\s*(.*)$/i)
+    if (!match) return null
+    const rest = match[1]
+    if (!rest) return 0
+    if (!NUMBER.test(rest) || /^[+-]/.test(rest)) throw new Error('"then" takes nothing (start when the lines before it finish) or a number of seconds to wait first, e.g. "then 0.5"')
+    return parseFloat(rest) * 1000
+  }
+
   // Timing lines (no id): `pause` waits for a click while playing, `pause n` holds n seconds,
-  // `auto` goes straight on to the next beat when this one finishes. Returns true if handled.
+  // `auto` goes straight on to the next beat when this one finishes. Both are the whole beat's
+  // (its last part's, after any `then`). Returns true if handled.
   function runTimingLine(text, meta) {
     const match = text.match(/^(pause|auto)\b\s*(.*)$/i)
     if (!match) return false
@@ -1060,9 +1074,14 @@
     // the same, with where each is (step, beat, and line in the beat's scene), for an editor
     const issues = []
 
+    const snapshot = () => new Map([...compiler.shapes].map(([id, shape]) => [id, structuredClone(shape)]))
     steps.forEach((step, si) => {
       step.beats.forEach((beat, bi) => {
-        const meta = { tweens: new Map(), pause: null, auto: false }
+        // lead: how long it waits before it starts (then n)
+        const newMeta = (lead = 0) => ({ tweens: new Map(), pause: null, auto: false, lead })
+        let meta = newMeta()
+        const timing = { pause: null, auto: false } // the whole beat's: given to its last part
+        const chain = [] // its parts before its last (then)
         const where = (li) => `Step ${si + 1}${step.beats.length > 1 ? `, beat ${bi + 1}` : ''}, line ${li + 1}`
         logicalLines(beat.scene).forEach(({ text, li }) => {
           // each warning once per line (a row's look, say, is checked on every cell)
@@ -1074,7 +1093,14 @@
             issues.push({ error: false, step: si, beat: bi, line: li, message })
           }
           try {
-            if (runTimingLine(text, meta)) return
+            const lead = thenLine(text)
+            if (lead !== null) {
+              compiler.finishBeat(meta)
+              chain.push({ state: snapshot(), meta, camera: compiler.camera() })
+              meta = newMeta(lead)
+              return
+            }
+            if (runTimingLine(text, timing)) return
             compiler.runLine(text, meta, warn)
             compiler.settle(meta, warn)
           } catch (error) {
@@ -1083,8 +1109,8 @@
           }
         })
         compiler.finishBeat(meta)
-        const state = new Map([...compiler.shapes].map(([id, shape]) => [id, structuredClone(shape)]))
-        beats.push({ step: si, beat: bi, state, meta, camera: compiler.camera() })
+        Object.assign(meta, timing)
+        beats.push({ step: si, beat: bi, state: snapshot(), meta, camera: compiler.camera(), chain })
       })
     })
 
