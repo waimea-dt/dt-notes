@@ -6,7 +6,7 @@
 
 ;(function () {
   const { parseProps, ID, RESERVED, KEYWORDS, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
-    nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol } = window.Anim
+    nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, applyOps, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol, tween } = window.Anim
 
   // The numbers whose digits flip (LAYOUTS: flip), for messages: "a binary number"
   const FLIP_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => LAYOUTS[layout].flip).map((layout) => LAYOUTS[layout].noun))
@@ -178,9 +178,8 @@
       return expr
     }
     const exprRefs = (expr) => expr.terms.filter((term) => term.ref).map((term) => term.ref)
-    const RANKS = [...new Set(Object.values(OPERATORS).map((op) => op.rank))].sort((a, b) => b - a)
     // An expression's value now: its operands' numbers (what each var, cell or number holds), then
-    // its operators, highest rank first, left to right. Throws why when it can't be worked out.
+    // its operators (applyOps). Throws why when it can't be worked out.
     function workOut({ terms, ops }) {
       const numbers = terms.map((term) => {
         if (term.ref === undefined) return term.v
@@ -190,18 +189,7 @@
         if (value.nil || !NUMBER.test(value.label)) throw new Error(`"${term.ref}" holds ${value.nil ? 'null' : `"${value.label}"`}, not a number`)
         return Number(value.label)
       })
-      const left = [...ops]
-      for (const rank of RANKS) {
-        for (let k = 0; k < left.length;) {
-          const op = OPERATORS[left[k]]
-          if (op.rank !== rank) { k++; continue }
-          const problem = op.problem?.(numbers[k], numbers[k + 1])
-          if (problem) throw new Error(problem)
-          numbers.splice(k, 2, op.apply(numbers[k], numbers[k + 1]))
-          left.splice(k, 1)
-        }
-      }
-      return Number(numbers[0].toPrecision(12))
+      return applyOps(numbers, ops)
     }
     // "v3: v1 + v2": the expression a value line starts with (tokens[0], with an operator after its
     // first operand), worked out once, as code does, as the value it's given; or null
@@ -216,10 +204,12 @@
     // hold changes (fitLinks), changing in the time they take:
     //   sources  sources(link): the ids of the vars, cells and numbers it reads
     //   fit      fit(shape, key, link, warn): works it out and sets the look; true if it changed
+    //   counts   while its sources count (counter), it's worked out again as it's drawn, from the
+    //            numbers they show on the way (countAlong); otherwise it changes once, to its new value
     // A look given again (or reset) no longer follows them (unlink).
     const LINKS = {
       colour: { sources: (link) => link.args.filter((arg) => arg.ref !== undefined).map((arg) => arg.ref), fit: fitColour }, // "fill rgb(r g b)"
-      text: { sources: (link) => link.parts.flatMap((part) => (part.expr ? exprRefs(part.expr) : [])), fit: fitText }, // "{v1}" in a label
+      text: { sources: (link) => link.parts.flatMap((part) => (part.expr ? exprRefs(part.expr) : [])), fit: fitText, counts: true }, // "{v1}" in a label
       number: { sources: (link) => exprRefs(link.expr), fit: fitNumber }, // "x v1", "angle {v1 * 2}"
     }
     function unlink(shape, key) {
@@ -241,16 +231,34 @@
       link.inputs = inputs
       return kind.fit(shape, key, link, warn)
     }
-    // After every line: each link follows its sources, changing in the time they take this beat (a
-    // number's: its digits')
+    // The shapes that change as a source's value does this beat (a number's: its digits)
+    const changing = (source) => (inDigits(source) ? digitsOf(source) : [source])
+    // After every line: each link follows its sources, changing in the time they take this beat
     function fitLinks(meta, warn) {
-      const changing = (source) => (inDigits(source) ? digitsOf(source) : [source])
       for (const shape of shapes.values()) {
         for (const key of Object.keys(shape.links || {})) {
-          const sources = LINKS[shape.links[key].kind].sources(shape.links[key]).map((id) => shapes.get(id)).filter(Boolean)
-          if (fitLink(shape, key, warn)) retime(meta, shape.uid, busiest(meta, sources.flatMap(changing)))
+          const link = shape.links[key]
+          const sources = LINKS[link.kind].sources(link).map((id) => shapes.get(id)).filter(Boolean)
+          if (!fitLink(shape, key, warn)) continue
+          retime(meta, shape.uid, busiest(meta, sources.flatMap(changing)))
+          if (LINKS[link.kind].counts) countAlong(shape, link, sources, meta)
         }
       }
+    }
+    // A link (LINKS: counts) whose sources count this beat counts along with them: the renderer
+    // works it out again from the numbers they show on the way (tween: counting, with each counting
+    // source's from and to, and what every source holds now), in the first counting source's ease
+    function countAlong(shape, link, sources, meta) {
+      const counted = sources.map((source) => [source, meta.tweens.get(changing(source)[0]?.uid)]).filter(([, record]) => record?.count)
+      if (!counted.length) return
+      const record = tween(meta, shape.uid)
+      record.counting = {
+        parts: link.parts,
+        counts: Object.fromEntries(counted.map(([source, { count }]) => [source.id, { from: count.from, to: count.to }])),
+        values: Object.fromEntries(sources.map((source) => [source.id, Number(valueIn(source).label)])),
+      }
+      const { ease } = counted[0][1]
+      if (ease) record.ease = ease
     }
     // An expression link's value, or (when it can't be worked out) undefined, with a warning: a
     // source that's gone stops it following (its look stays as it is)

@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
+    END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, placeFor, COLOUR_PICKS, applyOps } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -108,6 +108,18 @@
     if (radix) return digitSymbol(Math.floor(Math.abs(Math.round(n)) / radix ** place) % radix)
     const places = Math.max(...[from, to].map((x) => (String(x).split('.')[1] || '').length))
     return places ? n.toFixed(places) : String(Math.round(n))
+  }
+
+  // A label following values that count (tween: counting) part-way (t): each sum worked out from
+  // the numbers its counting sources show then (countLabel), the others as they are; null if one
+  // can't be worked out (it shows its new text)
+  function countedText({ parts, counts, values }, t) {
+    const numberOf = (term) => (term.ref === undefined ? term.v : counts[term.ref] ? Number(countLabel(counts[term.ref], t)) : values[term.ref])
+    try {
+      return parts.map((part) => (part.expr ? String(applyOps(part.expr.terms.map(numberOf), part.expr.ops)) : part.text)).join('')
+    } catch {
+      return null
+    }
   }
 
   // A polygon's corners with each side moved out by `grow` (in, when negative), each corner where
@@ -1272,6 +1284,9 @@
           v.labelOpacity = swap ? Math.abs(2 * u - 1) : 1
           // counter: the value counts its way there instead (tween: count)
           if (tw?.count) Object.assign(v, { label: countLabel(tw.count, clamp01(t)), nil: false, labelOpacity: 1 })
+          // a label following counting values counts along with them (tween: counting)
+          const counted = tw?.counting && countedText(tw.counting, clamp01(t))
+          if (counted !== null && counted !== undefined) Object.assign(v, { label: counted, labelOpacity: 1 })
           // One-off effects, forwards only (going back doesn't replay them)
           if (extra.forward && tw?.effect) EMPHASIS_FRAMES[tw.effect](v, raw)
           // swap: the cell bows out to one side on its way to the other's place

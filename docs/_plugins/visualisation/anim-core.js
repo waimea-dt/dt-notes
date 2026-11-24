@@ -549,6 +549,24 @@
     '+': { rank: 1, apply: (a, b) => a + b },
     '-': { rank: 1, apply: (a, b) => a - b },
   }
+  const RANKS = [...new Set(Object.values(OPERATORS).map((op) => op.rank))].sort((a, b) => b - a)
+  // A sum's value from its operands' numbers and its operators (OPERATORS: highest rank first, then
+  // left to right), to 12 significant figures. Throws why when it can't be worked out.
+  function applyOps(operands, ops) {
+    const numbers = [...operands]
+    const left = [...ops]
+    for (const rank of RANKS) {
+      for (let k = 0; k < left.length;) {
+        const op = OPERATORS[left[k]]
+        if (op.rank !== rank) { k++; continue }
+        const problem = op.problem?.(numbers[k], numbers[k + 1])
+        if (problem) throw new Error(problem)
+        numbers.splice(k, 2, op.apply(numbers[k], numbers[k + 1]))
+        left.splice(k, 1)
+      }
+    }
+    return Number(numbers[0].toPrecision(12))
+  }
   // Colours picked as a shape is drawn, from what's behind its label (pickInk in anim-render.js):
   //   looks      the looks that take it
   //   dark       the colour (a COLOURS name) on a backdrop lighter than `threshold`, light on a darker one
@@ -1548,7 +1566,7 @@
     })))
   }
 
-  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, applyOps, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

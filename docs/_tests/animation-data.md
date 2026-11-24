@@ -1154,6 +1154,7 @@ A new value counts its way there.
 score: var 0 name "score" at 3,2 size 2x1
 hp: var 100 at 7,2 size 4x0.6 bar fill green track muted
 b: binary 0 at 3,4 digits 4 decimal
+i1: icon(laptop) "laptop {score}" at 10,4
 ```
 
 ---

@@ -1044,7 +1044,8 @@
   // blended; `arc`, how far it bows out on the way (a swap); `raise`, it's drawn on top of its layer
   // while it moves (the unit a swap passes in front); `turn`, it turns about a point (pivot, by
   // degrees; carried: as a member of a group that turns), going round it in an arc; `grow`, a
-  // trail's new points are drawn as its shape moves (anim-trail.js).
+  // trail's new points are drawn as its shape moves (anim-trail.js); `count`, its value counts its
+  // way there (counter); `counting`, its label's sums count along with values that do (anim-values.js).
   function tween(meta, uid) {
     let record = meta.tweens.get(uid)
     if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))

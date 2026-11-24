@@ -394,6 +394,8 @@ b: 11 counter                      # a number's digits too
 defaults counter
 ```
 
+- A label's `{ }` that follows a counting value counts along with it.
+
 ## Moving values
 
 ```anim
