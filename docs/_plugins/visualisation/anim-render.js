@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    HEADS, TEXT_MARKS, textRuns, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
+    END_MARKS, TEXT_MARKS, textRuns, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -43,10 +43,38 @@
     script: {},
   }
 
-  // A line's arrowheads' strengths (0-1) at each end (HEADS), blended as they're added or taken off
-  const LINE_ENDS = ['from', 'to']
-  const headsOf = (shape) => Object.fromEntries(LINE_ENDS.map((end) => [end, HEADS[shape.head]?.ends.includes(end) ? 1 : 0]))
-  const noHeads = Object.fromEntries(LINE_ENDS.map((end) => [end, 0]))
+  // A line's ends, each with the look that says what it has there (LOOKS: start, end; END_MARKS)
+  const LINE_ENDS = { from: 'start', to: 'end' }
+  const endsOf = (fn) => Object.fromEntries(Object.keys(LINE_ENDS).map((end) => [end, fn(end)]))
+  // How strongly each mark shows at each end (0-1), e.g. { from: {}, to: { arrow: 1 } }: blended
+  // as one is added or taken off, or one changes to another (the old fades out as the new fades in)
+  const marksOf = (shape) => endsOf((end) => { const kind = shape[LINE_ENDS[end]]; return END_MARKS[kind] && !END_MARKS[kind].blank ? { [kind]: 1 } : {} })
+  const blendMarks = (a, b, t) => endsOf((end) => Object.fromEntries([...new Set([...Object.keys(a[end]), ...Object.keys(b[end])])]
+    .map((kind) => [kind, lerp(a[end][kind] || 0, b[end][kind] || 0, t)])))
+  const noMarks = endsOf(() => ({}))
+  // How each mark (END_MARKS) is drawn at a line's end:
+  //   d       d(p, u, n, k): its path, from the end's tip p, the way out along the line u, across it
+  //           n, and its size k (both unit vectors)
+  //   filled  it's filled in the line's colour (otherwise only stroked)
+  //   back    how far short of the tip the line itself stops (× k), so it doesn't show past the mark
+  const along = (p, u, a, n, b) => `${p.x + u.x * a + n.x * b} ${p.y + u.y * a + n.y * b}`
+  const DOT = 0.4 // a dot's radius (× k)
+  const SPREAD = 0.55 // how far either side of the line an arrowhead, crow's foot or bar goes (× k)
+  const END_DRAWS = {
+    arrow: { filled: true, back: 1, d: (p, u, n, k) => `M ${along(p, u, 0, n, 0)} L ${along(p, u, -k, n, SPREAD * k)} L ${along(p, u, -k, n, -SPREAD * k)} Z` },
+    // a dot sitting on the tip
+    dot: {
+      filled: true, back: DOT,
+      d: (p, u, n, k) => {
+        const r = DOT * k
+        return `M ${along(p, u, -r, n, r)} A ${r} ${r} 0 1 1 ${along(p, u, -r, n, -r)} A ${r} ${r} 0 1 1 ${along(p, u, -r, n, r)} Z`
+      },
+    },
+    // many: two toes fanning out to the tip from a point on the line, which is the middle one
+    crow: { back: 0, d: (p, u, n, k) => `M ${along(p, u, 0, n, SPREAD * k)} L ${along(p, u, -k, n, 0)} L ${along(p, u, 0, n, -SPREAD * k)}` },
+    // one: a bar across the line, just short of the tip
+    bar: { back: 0, d: (p, u, n, k) => `M ${along(p, u, -k / 2, n, SPREAD * k)} L ${along(p, u, -k / 2, n, -SPREAD * k)}` },
+  }
 
   // A var's or cell's bar (LOOKS: bar, BARS): the share of it its value fills (held to 0-1; a value
   // that isn't a number fills none), or 1, all of it, when it shows none (hasBar), so turning one on
@@ -178,9 +206,9 @@
       const g = svgEl('g', { class: `anim-shape anim-${shape.type}` })
       const node = { g, type: shape.type, uid: shape.uid }
       if (LINE_TYPES.includes(shape.type)) {
-        // one path for lines, arrows and curves; every line has a head at each end, hidden unless it has one
+        // one path for lines, arrows and curves; the marks on its ends are added as they're first shown
         node.body = g.appendChild(svgEl('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' }))
-        node.heads = Object.fromEntries(LINE_ENDS.map((end) => [end, g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' }))]))
+        node.marks = endsOf(() => ({})) // end -> mark -> its path
       }
       BODIES[shape.type]?.make(node, shape)
       node.label = g.appendChild(svgEl('text', { class: 'anim-label', 'dominant-baseline': 'central' }))
@@ -239,9 +267,9 @@
       rect: rectBody,
       codeline: rectBody, // a code line's box, which a fill shows as a band
       span: rectBody, // a box round a row's places, which a fill or stroke shows
-      circle: {
-        make: (node) => { node.body = node.g.appendChild(svgEl('circle')) },
-        size: (node, s) => attr(node.body, 'r', s.r),
+      circle: { // an ellipse, round in a square box
+        make: (node) => { node.body = node.g.appendChild(svgEl('ellipse')) },
+        size: (node, s, hw, hh) => { attr(node.body, 'rx', hw); attr(node.body, 'ry', hh) },
       },
       diamond: {
         make: (node) => { node.body = node.g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' })) },
@@ -302,14 +330,18 @@
       return leaves
     }
 
-    // A marked label's runs (textRuns), each in a tspan: a mark's smaller and raised or lowered
-    // (TEXT_MARKS), and the next run back on the line. dy is in each run's own size (em), so it
-    // holds as the font changes.
+    // A marked label's runs (textRuns), each in a tspan: a mark's at its size, raised or lowered,
+    // bold or italic (TEXT_MARKS), and the next run back on the line. dy is in each run's own size
+    // (em), so it holds as the font changes.
     function markedRuns(runs, parent, leaf) {
       let shift = 0
       for (const run of runs) {
         const mark = TEXT_MARKS[run.mark] || { size: 1, shift: 0 }
-        const span = parent.appendChild(svgEl('tspan', mark.size === 1 ? {} : { 'font-size': `${mark.size * 100}%` }))
+        const span = parent.appendChild(svgEl('tspan', {
+          ...(mark.size === 1 ? {} : { 'font-size': `${mark.size * 100}%` }),
+          ...(mark.bold ? { 'font-weight': '700' } : {}),
+          ...(mark.italic ? { 'font-style': 'italic' } : {}),
+        }))
         if (mark.shift !== shift) attr(span, 'dy', `${(mark.shift - shift) / mark.size}em`)
         shift = mark.shift
         leaf(span, run.text)
@@ -504,30 +536,40 @@
         const pathTo = (d) => [...path.filter((p) => p.at < d), at(d)]
         const pathBetween = (d0, d1) => [at(d0), ...path.filter((p) => p.at > d0 && p.at < d1), at(d1)]
 
-        // Each head (fading in or out as it's added or taken off) sits on its end; the stroke stops
-        // at its back. While drawing in, the end's head rides on the tip; erasing, the start's rides
-        // on the erased edge. tip: how far along its point is; way: +1 pointing on along the line
-        // (the end's), -1 back (the start's).
-        const head = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
-        const placeHead = (el, tipAt, way) => {
-          const tip = at(tipAt)
-          const behind = at(Math.min(total, Math.max(0, tipAt - way * head)))
-          const dl = Math.hypot(tip.x - behind.x, tip.y - behind.y)
+        // Each mark (END_DRAWS, fading in or out as it's added, taken off or changed) sits on its
+        // end, and the stroke stops at its back. While drawing in, the end's rides on the tip;
+        // erasing, the start's rides on the erased edge. tip: how far along its end's point is;
+        // way: +1 out along the line (the end's), -1 back (the start's).
+        const size = Math.min(HEAD * (0.6 + 0.4 * s.weight), total * 0.6)
+        const marks = v.marks || noMarks
+        const tips = { to: { tip: v.erase ? total : total * v.draw, way: 1 }, from: { tip: v.erase ? total * (1 - v.draw) : 0, way: -1 } }
+        const frameAt = ({ tip, way }) => {
+          const p = at(tip)
+          const behind = at(Math.min(total, Math.max(0, tip - way * size)))
+          const dl = Math.hypot(p.x - behind.x, p.y - behind.y)
           const near = way > 0 ? path[path.length - 2] || path[0] : path[1] || path[0] // for its way when it's too short to measure
-          const [ux, uy] = dl > 1e-6 ? [(tip.x - behind.x) / dl, (tip.y - behind.y) / dl] : [Math.sign(tip.x - near.x), Math.sign(tip.y - near.y)]
-          const base = { x: tip.x - ux * head, y: tip.y - uy * head }
-          const half = head * 0.55
-          attr(el, 'points', `${tip.x},${tip.y} ${base.x - uy * half},${base.y + ux * half} ${base.x + uy * half},${base.y - ux * half}`)
-          el.style.strokeWidth = strokeWidth
-          paint(el, 'fill', colours.stroke)
-          paint(el, 'stroke', colours.stroke)
+          const u = dl > 1e-6 ? { x: (p.x - behind.x) / dl, y: (p.y - behind.y) / dl } : { x: Math.sign(p.x - near.x), y: Math.sign(p.y - near.y) }
+          return { p, u, n: { x: -u.y, y: u.x } }
         }
-        const heads = v.heads || noHeads
-        if (heads.to) placeHead(node.heads.to, v.erase ? total : total * v.draw, 1)
-        if (heads.from) placeHead(node.heads.from, v.erase ? total * (1 - v.draw) : 0, -1)
-        for (const end of LINE_ENDS) node.heads[end].style.opacity = heads[end] ? clamp01(v.draw * 4 - 0.2) * heads[end] : 0
-        const bodyStart = head * heads.from
-        const bodyLen = total - head * heads.to
+        const shown = clamp01(v.draw * 4 - 0.2)
+        for (const end of Object.keys(LINE_ENDS)) {
+          const els = node.marks[end]
+          for (const kind of Object.keys(marks[end])) els[kind] ||= g.insertBefore(svgEl('path', { 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }), node.label)
+          const kinds = Object.keys(els).filter((kind) => marks[end][kind])
+          const frame = kinds.length ? frameAt(tips[end]) : null
+          for (const [kind, el] of Object.entries(els)) {
+            const k = (marks[end][kind] || 0) * shown
+            el.style.opacity = k
+            if (!k) continue
+            attr(el, 'd', END_DRAWS[kind].d(frame.p, frame.u, frame.n, size))
+            el.style.strokeWidth = strokeWidth
+            paint(el, 'fill', END_DRAWS[kind].filled ? colours.stroke : 'none')
+            paint(el, 'stroke', colours.stroke)
+          }
+        }
+        const backOf = (end) => Object.entries(marks[end]).reduce((sum, [kind, k]) => sum + END_DRAWS[kind].back * size * k, 0)
+        const bodyStart = backOf('from')
+        const bodyLen = total - backOf('to')
         attr(node.body, 'd', `M ${(bodyStart ? pathBetween(bodyStart, bodyLen) : pathTo(bodyLen)).map((p) => `${p.x} ${p.y}`).join(' L ')}`)
         node.body.style.strokeWidth = strokeWidth
         if (v.draw < 1) {
@@ -1201,11 +1243,8 @@
         v.barFades = a && b ? barFades(a, b, t) : null
         if (v.barKind) v.bar = !(a && b) ? barShare(shape) : tw?.lands ? barShare(t < 0.5 ? a : b) : lerp(barShare(a), barShare(b), t)
         v.round = a && b ? lerp(roundness(a), roundness(b), t) : roundness(shape)
-        // an arrowhead fades in or out as it's added to or taken off a line
-        if (LINE_TYPES.includes(shape.type)) {
-          const [ha, hb] = [a, b].map((s) => s && headsOf(s))
-          v.heads = ha && hb ? Object.fromEntries(LINE_ENDS.map((end) => [end, lerp(ha[end], hb[end], t)])) : headsOf(shape)
-        }
+        // a mark on an end fades in or out as it's added to, taken off or changed on a line
+        if (LINE_TYPES.includes(shape.type)) v.marks = a && b ? blendMarks(marksOf(a), marksOf(b), t) : marksOf(shape)
         v.label ??= shape.label
         v.labelOpacity ??= 1
         const node = nodes.get(uid) || makeNode(shape)
@@ -1224,7 +1263,7 @@
         const spec = item && !LINE_TYPES.includes(item.shape.type) && (item.b || item.a).attach
         if (!spec || passed.has(spec.ref)) return null
         const before = item.a?.attach
-        if (item.a && item.b && !(before && before.kind === spec.kind && before.ref === spec.ref && before.side === spec.side)) return null
+        if (item.a && item.b && !(before && before.kind === spec.kind && before.ref === spec.ref && before.side === spec.side && before.anchor === spec.anchor)) return null
         const turn = meta.tweens.get(item.uid)?.turn
         if (turn && !turn.carried) return null // turning on its own, round its own pivot
         if (spec.kind !== 'offset' || before?.kind !== 'offset') return spec
@@ -1452,10 +1491,7 @@
       const { hw, hh } = extents(s)
       const w = Math.max(0, hw * k + offset)
       const h = Math.max(0, hh * k + offset)
-      if (kind.outline === 'round') {
-        const r = Math.max(0, s.r * k + offset)
-        return { d: `M ${-r} 0 A ${r} ${r} 0 1 1 ${r} 0 A ${r} ${r} 0 1 1 ${-r} 0 Z`, transform }
-      }
+      if (kind.outline === 'round') return { d: `M ${-w} 0 A ${w} ${h} 0 1 1 ${w} 0 A ${w} ${h} 0 1 1 ${-w} 0 Z`, transform }
       if (kind.outline === 'diamond') {
         // each side moves out by `offset`: the same diamond, scaled by (d + offset) / d, where d is
         // the distance from the centre to a side

@@ -7,10 +7,10 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
-    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, HEADS, rotateAbout,
+    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
-    NUMBERINGS, roundBar, COLOUR_FUNCTIONS } = window.Anim
+    NUMBERINGS, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
@@ -102,7 +102,7 @@
           unlinkColour(shape, look.field) // a look given again no longer follows any values
           if (value === 'reset') resetLook(shape, key)
           else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, look.field, value, warn) // "rgb(r g b)"
-          else if (look.unit) shape[look.field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[look.field]), { unit: look.unit })))
+          else if (look.unit) for (const field of fieldsOf(look)) shape[field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[field]), { unit: look.unit })))
           else shape[look.field] = look.map && value in look.map ? look.map[value] : value
           // a digit given a look no longer takes that look from its value
           if (value !== 'reset' && shape.auto?.includes(key)) shape.auto = shape.auto.filter((field) => field !== key)
@@ -116,15 +116,10 @@
         check(shape, 'size')
         const relative = !creating && (props.size.w.rel || props.size.h.rel)
         if (relative && !props.size.one) throw new Error('a relative size takes one number (e.g. "size +1"): use "width +1" / "height +1" to change one side')
-        const circle = kindOf(shape).outline === 'round'
-        const round = circle ? shape.type : roundBar(shape)
-        if (round && !props.size.one) throw new Error(`${article(round)} ${round} takes one size${circle ? ' (or use radius)' : ''}`)
-        if (circle) { // one size: the diameter
-          shape.r = Math.max(0, cells(props.size.w, shape.r * 2) / 2)
-        } else {
-          shape.w = Math.max(0, cells(props.size.w, shape.w))
-          shape.h = Math.max(0, cells(props.size.h, shape.h))
-        }
+        const round = roundBar(shape)
+        if (round && !props.size.one) throw new Error(`${article(round)} ${round} takes one size`)
+        shape.w = Math.max(0, cells(props.size.w, shape.w))
+        shape.h = Math.max(0, cells(props.size.h, shape.h))
       }
       if (props.size && (props.width || props.height)) throw new Error('give either "size" or "width" / "height", not both')
       setLooks(false)
@@ -180,7 +175,7 @@
       const by = numberValue(props.angle, shape.angle) - shape.angle
       const { about } = props
       const own = LINE_TYPES.includes(shape.type) ? resolveEnds(shape, shapes).from : boxCentre(shape)
-      const pivot = about.kind === 'ref' ? boxCentre(shapes.get(about.ref)) : { x: coord(about.x, own.x), y: coord(about.y, own.y) }
+      const pivot = about.kind === 'ref' ? refPoint(about, shapes) : { x: coord(about.x, own.x), y: coord(about.y, own.y) }
       return { by, pivot }
     }
 
@@ -260,6 +255,10 @@
       }
     }
 
+    // A point of a line kept on a shape, which it follows: its centre, or the point on its edge an
+    // anchor names (a.top)
+    const onShape = (p) => ({ ref: p.ref, ...(p.anchor ? { anchor: p.anchor } : {}) })
+
     // A line's ends (from / to, or the whole line shifted by a relative move) and its via points
     // (a curve's bends, a line's corners). A line has no route of its own, so this returns null.
     function placeLine(shape, props, creating, warn) {
@@ -279,7 +278,7 @@
       for (const key of ['from', 'to']) {
         const end = props[key]
         if (!end) continue
-        if (end.kind === 'ref') { shape[key] = { ref: end.ref }; continue }
+        if (end.kind === 'ref') { shape[key] = onShape(end); continue }
         const current = creating ? undefined : resolveEnds(shape, shapes)[key]
         shape[key] = { x: coord(end.x, current?.x), y: coord(end.y, current?.y) }
       }
@@ -294,7 +293,7 @@
         let prev = ends.from
         shape.via = props.via.map((via) => {
           let p
-          if (via.kind === 'ref') { p = { ref: via.ref }; prev = boxCentre(shapes.get(via.ref)); return p }
+          if (via.kind === 'ref') { p = onShape(via); prev = refPoint(via, shapes); return p }
           if (via.kind === 'place') p = placeNextTo(point, shapes.get(via.ref), via.place, PLACE_GAP)
           else p = { x: coord(via.x, prev.x), y: coord(via.y, prev.y) }
           prev = p
@@ -347,7 +346,7 @@
       const now = (value) => (creating ? undefined : value)
       const { at } = props
       if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
-      if (at?.kind === 'ref') Object.assign(shape, placeFor(shape, boxCentre(shapes.get(at.ref))))
+      if (at?.kind === 'ref') Object.assign(shape, placeFor(shape, refPoint(at, shapes)))
       if (at?.kind === 'place') {
         const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
         Object.assign(shape, placeNextTo(shape, shapes.get(at.ref), at.place, gap))
@@ -362,7 +361,7 @@
         if (props.attach.ref === shape.id) throw new Error('a shape can\'t attach to itself')
         leaveGroup(shape)
         if (props.gap && props.attach.side === 'centre') warn('"gap" does nothing when attaching on top of a shape (give a side, e.g. attach right-of a)')
-        shape.attach = besideOf(props.attach.ref, props.attach.side, props.gap ? props.gap.v * CELL : PLACE_GAP)
+        shape.attach = besideOf(props.attach.ref, props.attach.side, props.gap ? props.gap.v * CELL : PLACE_GAP, props.attach.anchor)
         Object.assign(shape, attachPos(shape, shapes.get(props.attach.ref), shape.attach))
       }
       if (props.detach) {
@@ -382,7 +381,7 @@
         const points = [start]
         for (const stop of props.travel) {
           const prev = points[points.length - 1]
-          points.push(stop.kind === 'ref' ? onto(boxCentre(shapes.get(stop.ref))) : { x: coord(stop.x, prev.x), y: coord(stop.y, prev.y) })
+          points.push(stop.kind === 'ref' ? onto(refPoint(stop, shapes)) : { x: coord(stop.x, prev.x), y: coord(stop.y, prev.y) })
         }
         Object.assign(shape, points[points.length - 1])
         const path = buildPolyline(points)
@@ -396,15 +395,15 @@
         const along = linePoints(resolveEnds(line, shapes)).map(onto)
         if (props.follow.reverse) along.reverse()
         // The line stops short of a shape at its far end, so finish on that shape's centre (as
-        // the route starts from wherever the shape is)
+        // the route starts from wherever the shape is); one on a point of its edge ends there
         const farEnd = props.follow.reverse ? line.from : line.to
-        if (farEnd?.ref && shapes.has(farEnd.ref)) along.push(onto(boxCentre(shapes.get(farEnd.ref))))
+        if (farEnd?.ref && !farEnd.anchor && shapes.has(farEnd.ref)) along.push(onto(boxCentre(shapes.get(farEnd.ref))))
         Object.assign(shape, along[along.length - 1])
         return buildPolyline([start, ...along])
       }
       if (!props.via) return null
       const vias = props.via.map((via) => {
-        if (via.kind === 'ref') return onto(boxCentre(shapes.get(via.ref)))
+        if (via.kind === 'ref') return onto(refPoint(via, shapes))
         if (via.kind === 'place') return placeNextTo(shape, shapes.get(via.ref), via.place, PLACE_GAP)
         return { x: coord(via.x, start.x), y: coord(via.y, start.y) }
       })
@@ -436,8 +435,7 @@
     function applyDefaults(shape) {
       const fits = (key) => !APPLIES[key] || APPLIES[key].includes(shape.type)
       const look = pick(defaults, ['size', ...Object.keys(LOOKS)].filter(fits))
-      const round = kindOf(shape).outline === 'round' || roundBar(shape, look.bar ?? shape.bar)
-      if (round) { // a round shape takes one size
+      if (roundBar(shape, look.bar ?? shape.bar)) { // a round bar takes one size
         if (look.size && !look.size.one) delete look.size
         for (const key of Object.keys(look)) if (LOOKS[key]?.side) delete look[key]
       }
@@ -605,12 +603,14 @@
         if (n.rel && current == null) throw new Error('a relative camera move needs a fixed grid, or an absolute "camera at" first')
         return numberValue(n, current, { unit: CELL, coord: true })
       }
-      const refCentre = (ref) => {
-        const b = bounds(shapes.get(ref), shapes)
+      // a shape: the middle of all of it (a group's members), or a point on its edge
+      const refCentre = (p) => {
+        if (p.anchor) return refPoint(p, shapes)
+        const b = bounds(shapes.get(p.ref), shapes)
         return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }
       }
       if (props.at?.kind === 'ref') {
-        Object.assign(next, refCentre(props.at.ref))
+        Object.assign(next, refCentre(props.at))
       } else if (props.at) {
         next.x = axis(props.at.x, 'x')
         next.y = axis(props.at.y, 'y')
@@ -628,7 +628,7 @@
         route = [{ ...camera }]
         for (const stop of props.travel) {
           const prev = route[route.length - 1]
-          const pt = stop.kind === 'ref' ? refCentre(stop.ref) : { x: axis(stop.x, 'x', prev), y: axis(stop.y, 'y', prev) }
+          const pt = stop.kind === 'ref' ? refCentre(stop) : { x: axis(stop.x, 'x', prev), y: axis(stop.y, 'y', prev) }
           route.push({ ...pt, zoom: next.zoom })
         }
         Object.assign(next, route[route.length - 1])
@@ -678,12 +678,13 @@
       // a verb: delete, swap, insert, remove, copy, group, ungroup (LINES)
       if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
 
-      // "l: arrows …" (or arrow, line) on a line or curve that already exists, with no new ends,
-      // changes its heads (rather than replacing it with that shape): read as a change, where the
-      // word is the flag (HEADS)
-      const setsHeads = HEADS[type] && existing && LINE_TYPES.includes(existing.type)
-        && !tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
-      if (type && !setsHeads) {
+      // "l: arrow" on a line that already exists, with no new ends, isn't a new line: its ends'
+      // marks are changed with start / end
+      const newEnds = tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
+      if (type && SHAPES[type].line && existing && LINE_TYPES.includes(existing.type) && !newEnds) {
+        throw new Error(`"${id}" is already a line: to change what's on its ends, e.g. "${id}: end arrow" or "${id}: start dot"`)
+      }
+      if (type) {
         const props = propsOf(type, tokens, varValue ? 2 : 1, 'create')
         if (isVar && props.label !== undefined) throw new Error(`a var's value goes straight after "var", e.g. "${id}: var 67" or "${id}: var "Dog""`)
         if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)

@@ -5,7 +5,7 @@
 
 ;(function () {
   const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, DIRECTIONS, COLOURS, COLOUR_FUNCTIONS, COLOUR_PICKS, SPEEDS, EASES, RESERVED,
-    KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, BRACKET_NOUNS, LINE_STARTS, LINES, listProps } = window.Anim
+    ANCHORS, END_MARKS, KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, BRACKET_NOUNS, LINE_STARTS, LINES, listProps } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Markdown -> source markup (beforeEach)
@@ -201,6 +201,11 @@
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined
       case 'index': return /^\d+$/.test(word) ? Number(word) : undefined // a row's / column's cell number
       case 'id': return shapes.has(token.value) ? token.value : undefined
+      // a point on a shape's edge, "a.top-left" (ANCHORS): a shape's id first, if one has this one
+      case 'anchor': {
+        const m = !shapes.has(token.value) && token.value.match(/^(.+)\.([a-z-]+)$/i)
+        return m && shapes.has(m[1]) && ANCHORS[m[2].toLowerCase()] ? { ref: m[1], anchor: m[2].toLowerCase() } : undefined
+      }
       case 'placement': return PLACEMENTS.includes(word) ? word : undefined
       case 'align': return ALIGNS[word]
       // a direction word as an absolute angle, turned to the short way (numberValue: turn)
@@ -209,6 +214,7 @@
       case 'pick': return COLOUR_PICKS[word] ? word : undefined // a colour picked as it's drawn (contrast)
       case 'speed': return word in SPEEDS ? SPEEDS[word] : NUMBER.test(word) && !/^[+-]/.test(word) ? parseFloat(word) * 1000 : undefined
       case 'ease': return word in EASES ? word : undefined
+      case 'mark': return END_MARKS[word] ? word : undefined // what a line has at an end
       // a language (Prism's name, e.g. python, js, cpp, csharp): any word that isn't a keyword
       case 'lang': return /^[a-z][\w+#-]*$/.test(word) && !RESERVED.has(word) ? word : undefined
     }

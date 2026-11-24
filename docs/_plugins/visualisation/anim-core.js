@@ -85,10 +85,11 @@
   // dashed 3w:3w, dotted 1w:1w (a dot is a round cap as wide as the line)
   const PATTERNS = { dashed: { d: 4, g: 4 }, dotted: { d: 1, g: 1.5 } }
   const FLOWS = { flow: 'forward', 'flow-reverse': 'reverse', static: 'none' } // static: not flowing
-  // A line's arrowheads (LOOKS: head), each its own word: straight after "id:" a line type (on an
-  // existing line, with no new ends, it changes its heads), and elsewhere a flag ("l: from a to b
-  // arrows"). ends: the ends that have one.
-  const HEADS = { line: { ends: [] }, arrow: { ends: ['to'] }, arrows: { ends: ['from', 'to'] } }
+  // What a line can have at each of its ends (LOOKS: start, end: "end arrow", "start dot"), drawn
+  // by END_DRAWS in anim-render.js. blank: nothing is drawn there.
+  const END_MARKS = { none: { blank: true }, arrow: {}, dot: {}, crow: {}, bar: {} }
+  // A line's ends as plain (none at either), on top of which a line type sets its own (arrow)
+  const PLAIN_ENDS = { start: 'none', end: 'none' }
   // Callout sides use the placement words (the bubble's side of the shape)
   const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
@@ -147,13 +148,14 @@
   //   takes     the props it takes (APPLIES, prop -> types, is worked out from these)
   //   defaults  its own starting values, on top of every shape's (baseShape)
   //   outline   its edge, for line ends, highlights and bounds: 'box' (a rect, rounded by its
-  //             corner if it takes one), 'round' (radius r) or 'diamond'
+  //             corner if it takes one), 'round' (the ellipse in its box: a circle when square)
+  //             or 'diamond'
   //   label     where its label goes: 'centre', 'content' (text: the label is the shape, measured),
   //             'below' (image, icon: it adds to the shape's height), 'along' (lines) or 'script'
   //             (the label is the shape's script, drawn to fit its box: see script). A bar
   //             (BAR_DRAWS: label) can put it elsewhere: 'top' or 'right', inside that edge of the box
   //   inside    it has an inside to highlight (highlight inside)
-  //   line      it runs from / to, through any via points (its arrowheads: its head, HEADS); bends: its
+  //   line      it runs from / to, through any via points (its ends' marks: start, end, END_MARKS); bends: its
   //             via points are smooth bends (otherwise they're corners, joined by straight lines)
   //   loop      with no via points, from a shape to itself, it loops out from the shape and back
   //             (loopEnds): the way out is its angle, its size how wide (w) and how far out (h)
@@ -183,7 +185,7 @@
   const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   // a line's angle only turns it about a point ("angle +90 about 5,5"), apart from a loop's
-  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'head', 'angle']
+  const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'start', 'end', 'angle']
   const CORNERED_LINE_PROPS = [...LINE_PROPS, 'corner'] // a straight line's corners (via) can be rounded
   const LOOP_PROPS = ['angle', 'size', 'width', 'height'] // the way a loop faces, and its size
   const SHAPES = {
@@ -192,8 +194,8 @@
       defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg-shape' }, outline: 'box', label: 'centre', inside: true,
     },
     circle: {
-      takes: [...BOXED_PROPS, 'size', 'radius', 'fill', 'stroke', 'linestyle', 'flow'],
-      defaults: { r: CELL / 2, fill: 'bg-shape' }, outline: 'round', label: 'centre', inside: true,
+      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'radius', 'fill', 'stroke', 'linestyle', 'flow'],
+      defaults: { w: CELL, h: CELL, fill: 'bg-shape' }, outline: 'round', label: 'centre', inside: true,
     },
     diamond: {
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'fill', 'stroke', 'linestyle', 'flow'],
@@ -213,18 +215,17 @@
       takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height', 'opacity'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
-    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'line' } },
-    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'arrow' } },
-    arrows: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { head: 'arrows' } },
+    line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: PLAIN_ENDS },
+    arrow: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: { ...PLAIN_ENDS, end: 'arrow' } }, // a line with "end arrow"
     curve: {
       takes: [...LINE_PROPS, ...LOOP_PROPS, 'bend'], label: 'along', line: true, bends: true,
-      defaults: { angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0, head: 'line' }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
+      defaults: { ...PLAIN_ENDS, angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
     },
     // where a shape has been ("a: trail"): a line through the points it's passed, made and grown by
     // the shape's moves (anim-trail.js), dashed and muted unless styled ("a.trail: stroke red")
     trail: {
-      takes: ['stroke', 'weight', 'linestyle', 'flow', 'opacity', 'head'], label: 'along', line: true,
-      defaults: { stroke: 'muted', linestyle: 'dashed', layer: 'back', head: 'line' },
+      takes: ['stroke', 'weight', 'linestyle', 'flow', 'opacity', 'start', 'end'], label: 'along', line: true,
+      defaults: { ...PLAIN_ENDS, stroke: 'muted', linestyle: 'dashed', layer: 'back' },
       internal: true, owned: 'it follows its shape, so to start it again, "clear" it and turn it on again',
     },
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
@@ -536,7 +537,8 @@
   for (const [type, kind] of Object.entries(SHAPES)) for (const key of kind.takes) (APPLIES[key] ||= []).push(type)
 
   // How each look prop is applied to a shape (applyLook, in this order, after size, apart from early):
-  //   field  the shape field it sets
+  //   field  the shape field it sets; fields, several it sets alike (a radius: a circle's width
+  //          and height, unit 2 × CELL as each is its diameter)
   //   unit   for a number: CELL (given in cells) or 1 (a multiplier); min and max, its least and
   //          greatest values
   //   map    for a word: the value it stores (flow-reverse -> reverse)
@@ -583,7 +585,7 @@
     font: { field: 'font', unit: 1, min: 0.1, cell: true },
     width: { field: 'w', unit: CELL, min: 0, side: true },
     height: { field: 'h', unit: CELL, min: 0, side: true },
-    radius: { field: 'r', unit: CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
+    radius: { fields: ['w', 'h'], unit: 2 * CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
     corner: { field: 'corner', unit: CELL, min: 0, cell: true, check: cornerCheck },
     bend: { field: 'bend', unit: CELL }, // how far a curve bows out halfway along (+ to its left, - right)
     fill: { field: 'fill', cell: true, kept: true },
@@ -596,7 +598,8 @@
     bold: { field: 'bold', cell: true },
     mono: { field: 'mono', cell: true },
     lang: { field: 'lang', cell: true, check: langWarning }, // a code block's language (Prism's name for it)
-    head: { field: 'head' }, // its arrowheads (HEADS)
+    start: { field: 'start' }, // what a line has at its start (END_MARKS)
+    end: { field: 'end' }, // and at its end
     opacity: { field: 'opacity', unit: 1, min: 0, max: 1, cell: true },
     linestyle: { field: 'linestyle', cell: true },
     flow: { field: 'flow', map: FLOWS, cell: true },
@@ -617,13 +620,15 @@
   // What a value on the move takes with it (keep-style): not its size, or highlights
   const KEPT_STYLE = looksWith('kept')
   // The shape fields that blend between beats: its place, and every number in its look
-  const LERPED = ['x', 'y', ...new Set(Object.values(LOOKS).filter((look) => look.unit).map((look) => look.field))]
+  const fieldsOf = (look) => look.fields || [look.field]
+  const LERPED = ['x', 'y', ...new Set(Object.values(LOOKS).filter((look) => look.unit).flatMap(fieldsOf))]
 
   // "a" or "an" before a word (a rect, an image)
   const article = (word) => (/^[aeiou]/i.test(word) ? 'an' : 'a')
 
-  // Words as a list for messages, with "a" or "an" before the first: "a row, column or group"
-  const nounList = (nouns) => `${article(nouns[0])} ${nouns.length > 1 ? `${nouns.slice(0, -1).join(', ')} or ` : ''}${nouns[nouns.length - 1]}`
+  // Words as a list for messages: "row, column or group"; with "a" or "an" before the first (nounList)
+  const orList = (words) => `${words.length > 1 ? `${words.slice(0, -1).join(', ')} or ` : ''}${words[words.length - 1]}`
+  const nounList = (nouns) => `${article(nouns[0])} ${orList(nouns)}`
   // The layouts' names: "a row, column, code block, grid or table"
   const LAYOUT_NAMES = LAYOUT_TYPES.map((layout) => LAYOUTS[layout].noun)
   const LAYOUT_NOUNS = nounList(LAYOUT_NAMES)
@@ -645,10 +650,15 @@
   //   repeat the word can be given more than once, collecting an array (via)
   //   modes  only allowed in these line kinds (clear: in defaults)
   //   error  the word isn't allowed here, with a hint
-  const POINT = [['num', 'num'], ['placement', 'id'], ['id']]
+  // A point: x,y, a shape (its centre), or a point on its edge (an anchor, "a.top": ANCHORS);
+  // POINT also takes one beside a shape (a placement and a shape id)
+  const SPOT = [['num', 'num'], ['anchor'], ['id']]
+  const POINT = [...SPOT, ['placement', 'id']]
   const buildPoint = (v, sig) => (sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
-    : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] } : { kind: 'ref', ref: v[0] })
-  const at = { key: 'at', sigs: POINT, build: buildPoint, help: '"x,y", a shape id, or a placement and a shape id, e.g. "below a"' }
+    : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] }
+      : sig[0] === 'anchor' ? { kind: 'ref', ...v[0] } : { kind: 'ref', ref: v[0] })
+  const SPOT_HELP = '"x,y", a shape id or a point on its edge (e.g. a.top, a.bottom-left)'
+  const at = { key: 'at', sigs: POINT, build: buildPoint, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "below a"` }
   const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
   // a colour look: a colour (a name, #hex or a call: COLOUR_FUNCTIONS), or one picked as it's drawn
   // (COLOUR_PICKS) if any is for this look
@@ -681,16 +691,20 @@
     ...Object.fromEntries(PLACEMENTS.map((place) => [place, { key: 'at', sigs: [['id']], build: (v) => ({ kind: 'place', place, ref: v[0] }), help: 'a shape id' }])),
     x: number('x'),
     y: number('y'),
-    from: { key: 'from', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id' },
-    to: { key: 'to', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id' },
-    via: { ...at, key: 'via', repeat: true, help: '"x,y", a shape id, or a placement and a shape id, e.g. "via above b"' },
+    from: { key: 'from', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
+    to: { key: 'to', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
+    via: { ...at, key: 'via', repeat: true, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "via above b"` },
     gap: number('gap'),
-    travel: { key: 'travel', list: [['num', 'num'], ['id']], build: buildPoint, help: 'shape ids and/or x,y points, e.g. "travel r1 r2 b"' },
+    travel: { key: 'travel', list: SPOT, build: buildPoint, help: 'shape ids, points on their edges and/or x,y points, e.g. "travel r1 r2.top b"' },
     // the point a turn goes round ("angle +90 about 5,5"): fixed where it is now
-    about: { key: 'about', sigs: [['num', 'num'], ['id']], build: buildPoint, help: '"x,y" or a shape id, after an angle, e.g. "angle +90 about 5,5"' },
+    about: { key: 'about', sigs: SPOT, build: buildPoint, help: `${SPOT_HELP}, after an angle, e.g. "angle +90 about 5,5"` },
     follow: { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: false }), help: 'a line or arrow id' },
     'follow-reverse': { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: true }), help: 'a line or arrow id', what: 'follow' },
-    attach: { key: 'attach', sigs: [['placement', 'id'], ['id']], build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : { side: 'centre', ref: v[0] }), help: 'a shape id, optionally after a side, e.g. "attach right-of a"' },
+    attach: {
+      key: 'attach', sigs: [['placement', 'id'], ['anchor'], ['id']],
+      build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : sig[0] === 'anchor' ? { side: 'centre', ...v[0] } : { side: 'centre', ref: v[0] }),
+      help: 'a shape id, optionally after a side, or a point on its edge, e.g. "attach right-of a" or "attach a.top-right"',
+    },
     detach: fixed('detach', true),
     // size and look
     size: { key: 'size', sigs: [['num', 'num'], ['num']], build: (v) => ({ w: v[0], h: v[1] || v[0], one: v.length === 1 }), help: '"w,h", "wxh" or one number' },
@@ -719,8 +733,8 @@
     max: number('max', 'a number (the value of a full bar)'),
     track: colour('track'),
     opacity: resettable(number('opacity', 'a number from 0 (hidden) to 1 (solid)')),
-    // its arrowheads (HEADS): here, not straight after the id, where each is a line type
-    ...words(Object.keys(HEADS), 'head', 'arrowheads'),
+    // what a line has at each end (END_MARKS)
+    ...Object.fromEntries(['start', 'end'].map((key) => [key, { key, sigs: [['mark']], help: `${orList(Object.keys(END_MARKS))}, e.g. "${key} arrow"` }])),
     ...words(LINE_STYLES, 'linestyle', 'line style'),
     ...words(Object.keys(FLOWS), 'flow', 'flow'),
     ...words(Object.keys(LAYERS), 'layer', 'layer'),
@@ -920,12 +934,15 @@
   }
   window.addEventListener?.('docsify-theme-change', () => fonts.clear())
 
-  // Marks a label's text can have, written as tags round it ("x<sup>2</sup>", "log<sub>2</sub> N"):
-  // each run is drawn smaller (size, × the label's font) and raised or lowered (shift, × the label's
-  // font: - up). A tag with no closing tag shows as written. Not in code or scripts.
+  // Marks a label's text can have, written as tags round it ("x<sup>2</sup>", "a <b>big</b> one"),
+  // one at a time (not inside each other): each run is drawn at its size (× the label's font),
+  // raised or lowered by its shift (× the label's font: - up), and bold or italic (measured so
+  // too). A tag with no closing tag shows as written. Not in code or scripts.
   const TEXT_MARKS = {
     sup: { size: 0.7, shift: -0.4 },
     sub: { size: 0.7, shift: 0.25 },
+    b: { size: 1, shift: 0, bold: true },
+    i: { size: 1, shift: 0, italic: true },
   }
   const MARKED = new RegExp(`<(${Object.keys(TEXT_MARKS).join('|')})>(.*?)</\\1>`, 'g')
   // A label's text as runs ({ text, mark }: mark a TEXT_MARKS key, or null): one plain run unless
@@ -951,7 +968,7 @@
   function labelWidth(label, size, bold = false, mono = false) {
     const runs = textRuns(label)
     if (runs.length === 1 && !runs[0].mark) return textWidth(label, size, bold, mono)
-    return runs.reduce((w, run) => w + textWidth(run.text, size * (TEXT_MARKS[run.mark]?.size ?? 1), bold, mono, true), 0)
+    return runs.reduce((w, run) => w + textWidth(run.text, size * (TEXT_MARKS[run.mark]?.size ?? 1), bold || Boolean(TEXT_MARKS[run.mark]?.bold), mono, true), 0)
   }
   // text measured before its web font loaded (in a fallback font) is measured again once it has
   document.fonts?.addEventListener?.('loadingdone', () => textWidths.clear())
@@ -993,12 +1010,11 @@
   // maths. A shape whose label is its content (text) is as big as the text, measured.
   function extents(shape) {
     const kind = kindOf(shape)
-    if (kind.outline === 'round') return { hw: shape.r, hh: shape.r, round: true }
     if (kind.label === 'content') {
       const size = FONT * shape.font
       return { hw: Math.max(0.3 * size, labelWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
     }
-    return { hw: shape.w / 2, hh: shape.h / 2, diamond: kind.outline === 'diamond' || undefined }
+    return { hw: shape.w / 2, hh: shape.h / 2, round: kind.outline === 'round' || undefined, diamond: kind.outline === 'diamond' || undefined }
   }
 
   // Half-sizes after `scale` (still in the shape's own, unrotated frame).
@@ -1008,20 +1024,27 @@
     return { hw: e.hw * k, hh: e.hh * k, round: e.round, diamond: e.diamond }
   }
 
-  // Half-sizes of the axis-aligned box around the rotated, scaled shape.
+  // Half-sizes of the axis-aligned box around the rotated, scaled shape (an ellipse's is tighter
+  // than its box's: a circle's doesn't change).
   function outline(shape) {
     const e = sized(shape)
-    if (e.round || !shape.angle) return e
+    if (!shape.angle) return e
     const a = (shape.angle * Math.PI) / 180
     const cos = Math.abs(Math.cos(a))
     const sin = Math.abs(Math.sin(a))
+    if (e.round) return { hw: Math.hypot(e.hw * cos, e.hh * sin), hh: Math.hypot(e.hw * sin, e.hh * cos) }
     return { hw: e.hw * cos + e.hh * sin, hh: e.hw * sin + e.hh * cos }
   }
 
-  // The edges a shape can be placed by: a corner (SHAPES: anchor), or for a shape that takes align,
-  // a side (ALIGN_EDGES). Each says which side of its cell the box's edge is on (-1: left / top,
-  // 1: right / bottom, 0: its middle on the cell's).
-  const ANCHORS = { 'top-left': { x: -1, y: -1 } }
+  // The sides and corners of a shape's box, each saying which side it's on (-1: left / top, 1:
+  // right / bottom, 0: its middle). They're the edges a shape can be placed by (SHAPES: anchor, a
+  // corner, or for a shape that takes align, a side: ALIGN_EDGES), where each is on that side of its
+  // cell; and the points on a shape's edge a point can name ("from a.right", "at b.top-left":
+  // anchorPoint), turning with it.
+  const ANCHORS = {
+    top: { x: 0, y: -1 }, bottom: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
+    'top-left': { x: -1, y: -1 }, 'top-right': { x: 1, y: -1 }, 'bottom-left': { x: -1, y: 1 }, 'bottom-right': { x: 1, y: 1 },
+  }
   const ALIGN_EDGES = { left: -1, centre: 0, right: 1 }
   const edgeOf = (shape) => ANCHORS[kindOf(shape).anchor] || (APPLIES.align.includes(shape.type) ? { x: ALIGN_EDGES[shape.align] ?? 0, y: 0 } : null)
 
@@ -1067,17 +1090,17 @@
   }
 
   // A shape's attachment (shape.attach), one of two kinds:
-  //   beside  next to its ref (side: a placement word, or 'centre' on top of it, and a gap): attach,
-  //           and a var's / row's name
+  //   beside  next to its ref (side: a placement word, or 'centre' on top of it, and a gap; on top,
+  //           an anchor puts it on that point of its ref's edge instead): attach, and a var's / row's name
   //   offset  at a fixed offset from its ref (dx, dy): a group's members (a row's cells too), and a
   //           row's index labels
-  const besideOf = (ref, side, gap) => ({ kind: 'beside', ref, side, gap })
+  const besideOf = (ref, side, gap, anchor) => ({ kind: 'beside', ref, side, gap, ...(anchor ? { anchor } : {}) })
   const offsetFrom = (ref, dx, dy) => ({ kind: 'offset', ref, dx, dy })
 
   // Where an attached shape sits, from its ref and its attachment.
   function attachPos(shape, ref, spec) {
     if (spec.kind === 'offset') return { x: ref.x + spec.dx, y: ref.y + spec.dy }
-    if (spec.side === 'centre') return placeFor(shape, boxCentre(ref))
+    if (spec.side === 'centre') return placeFor(shape, spec.anchor ? anchorPoint(ref, spec.anchor) : boxCentre(ref))
     return placeNextTo(shape, ref, spec.side, spec.gap ?? PLACE_GAP)
   }
 
@@ -1099,8 +1122,8 @@
     for (const shape of [...byId.values()]) visit(shape, 0)
   }
 
-  // The point where a line from `shape`'s centre towards `toward` leaves the shape.
-  function edgePoint(shape, toward) {
+  // The point where a line from `shape`'s centre towards `toward` leaves the shape, `gap` beyond it.
+  function edgePoint(shape, toward, gap = EDGE_GAP) {
     const c = boxCentre(shape)
     const dx = toward.x - c.x
     const dy = toward.y - c.y
@@ -1113,13 +1136,29 @@
     const a = (-(shape.angle || 0) * Math.PI) / 180
     const lx = ux * Math.cos(a) - uy * Math.sin(a)
     const ly = ux * Math.sin(a) + uy * Math.cos(a)
-    // a diamond's edges are where |x| / hw + |y| / hh = 1
-    const dist = round ? hw
+    // an ellipse's edge is where (x / hw)² + (y / hh)² = 1; a diamond's where |x| / hw + |y| / hh = 1
+    const dist = round ? 1 / Math.max(1e-9, Math.hypot(lx / Math.max(hw, 1e-9), ly / Math.max(hh, 1e-9)))
       : diamond ? 1 / Math.max(1e-9, Math.abs(lx) / Math.max(hw, 1e-9) + Math.abs(ly) / Math.max(hh, 1e-9))
         : Math.min(Math.abs(lx) > 1e-9 ? hw / Math.abs(lx) : Infinity, Math.abs(ly) > 1e-9 ? hh / Math.abs(ly) : Infinity)
-    const d = Math.min(dist + EDGE_GAP, len / 2)
+    const d = Math.min(dist + gap, len / 2)
     return { x: c.x + ux * d, y: c.y + uy * d }
   }
+
+  // The point on a shape's edge an anchor names (ANCHORS), `gap` beyond it: a side's middle, or a
+  // corner (a round shape's: halfway round between its sides; a diamond's: halfway along its edge),
+  // turned as the shape is.
+  function anchorPoint(shape, anchor, gap = 0) {
+    const FAR = 1e6 // a point far off that way (edgePoint stops at most halfway to it)
+    const side = ANCHORS[anchor]
+    const { hw, hh } = sized(shape)
+    const way = rotateAbout({ x: side.x * Math.max(hw, 1e-6), y: side.y * Math.max(hh, 1e-6) }, null, shape.angle || 0)
+    const k = FAR / Math.hypot(way.x, way.y)
+    const c = boxCentre(shape)
+    return edgePoint(shape, { x: c.x + way.x * k, y: c.y + way.y * k }, gap)
+  }
+  // Where a point that names a shape ({ ref, anchor }) is: the shape's centre, or the point on its
+  // edge its anchor names, `gap` beyond it
+  const refPoint = (p, byId, gap = 0) => (p.anchor ? anchorPoint(byId.get(p.ref), p.anchor, gap) : boxCentre(byId.get(p.ref)))
 
   // Whether a point is inside a shape's outline, grown by EDGE_GAP all round.
   function inside(shape, p) {
@@ -1130,7 +1169,7 @@
     const lx = Math.abs(dx * Math.cos(a) - dy * Math.sin(a))
     const ly = Math.abs(dx * Math.sin(a) + dy * Math.cos(a))
     const { hw, hh, round, diamond } = sized(shape)
-    if (round) return Math.hypot(lx, ly) <= hw + EDGE_GAP
+    if (round) return Math.hypot(lx / (hw + EDGE_GAP), ly / (hh + EDGE_GAP)) <= 1
     if (diamond) {
       if (hw < 1e-6 || hh < 1e-6) return false
       const apothem = (hw * hh) / Math.hypot(hw, hh) // centre to edge, square on
@@ -1163,13 +1202,14 @@
   // edge towards its nearest via point). A cornered line meets the edge towards its nearest corner,
   // and carries its corner radius.
   function resolveEnds(line, byId) {
-    const target = (end) => (end.ref && byId.get(end.ref)) || null
-    const centre = (end) => { const s = target(end); return s ? boxCentre(s) : { x: end.x, y: end.y } }
-    const a = centre(line.from)
-    const b = centre(line.to)
+    // an end on a shape's anchor (from a.right) is that point, just off the edge, not trimmed
+    const target = (end) => (end.ref && !end.anchor && byId.get(end.ref)) || null
+    const pointOf = (end, gap) => (end.ref && byId.get(end.ref) ? refPoint(end, byId, gap) : { x: end.x, y: end.y })
+    const a = pointOf(line.from, EDGE_GAP)
+    const b = pointOf(line.to, EDGE_GAP)
     const fromShape = target(line.from)
     const toShape = target(line.to)
-    const own = (line.via || []).map(centre)
+    const own = (line.via || []).map((p) => pointOf(p, 0))
     const smooth = !!kindOf(line).bends
     const corner = line.corner || 0
     const worked = own.length ? null : workedVias(line, a, b, fromShape, toShape)
@@ -1207,7 +1247,7 @@
 
   // Whether a line is a loop (SHAPES: loop): a type that loops, from a shape to itself, with no
   // via points of its own
-  const isLoop = (line) => Boolean(kindOf(line).loop && line.from?.ref && line.from.ref === line.to?.ref && !line.via?.length)
+  const isLoop = (line) => Boolean(kindOf(line).loop && line.from?.ref && line.from.ref === line.to?.ref && !line.from.anchor && !line.to.anchor && !line.via?.length)
 
   // A loop out from a shape and back, the way its angle faces: it leaves the edge spread degrees
   // anticlockwise of that and comes back spread degrees clockwise, out through its shoulders
@@ -1428,10 +1468,10 @@
   }
 
   Object.assign(window.Anim, { SHAPES, kindOf, SCRIPTS, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
-    LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
-    escapeHtml, extents, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, HEADS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
+    escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
+    resolveAttachments, resolveEnds, isLoop, ANCHORS, anchorPoint, refPoint, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
 })()
