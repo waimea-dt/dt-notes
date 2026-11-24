@@ -401,9 +401,11 @@
       let shift = 0
       for (const run of runs) {
         const mark = TEXT_MARKS[run.mark] || { size: 1, shift: 0 }
-        const span = parent.appendChild(svgEl('tspan', mark.size === 1 ? {} : { 'font-size': `${mark.size * 100}%` }))
-        // as styles, not attributes: the site's own rules give text a weight and style that an
-        // attribute (the weakest) loses to; otherwise the label's own (bold, a null's italic)
+        const span = parent.appendChild(svgEl('tspan'))
+        // as styles, not attributes: the site's own rules (its reset's "font: inherit") give text a
+        // size, weight and style that an attribute (the weakest) loses to; otherwise the label's own
+        // (bold, a null's italic). The size is a share of the label's, as dy's em is of the run's own.
+        span.style.fontSize = mark.size === 1 ? 'inherit' : `${mark.size * 100}%`
         span.style.fontWeight = mark.bold ? '700' : 'inherit'
         span.style.fontStyle = mark.italic ? 'italic' : 'inherit'
         if (mark.shift !== shift) attr(span, 'dy', `${(mark.shift - shift) / mark.size}em`)

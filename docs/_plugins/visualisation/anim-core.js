@@ -1019,8 +1019,8 @@
   // raised or lowered by its shift (× the label's font: - up), and bold or italic (measured so
   // too). A tag with no closing tag shows as written. Not in code or scripts.
   const TEXT_MARKS = {
-    sup: { size: 0.7, shift: -0.4 },
-    sub: { size: 0.7, shift: 0.25 },
+    sup: { size: 0.67, shift: -0.4 },
+    sub: { size: 0.67, shift: 0.32 },
     b: { size: 1, shift: 0, bold: true },
     i: { size: 1, shift: 0, italic: true },
   }
