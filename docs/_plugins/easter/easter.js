@@ -465,16 +465,20 @@
         getAllSoundFiles().forEach((filename) => loadSoundBuffer(filename).catch(() => {}))
     }
 
-    // Mobile browsers keep audio suspended until the first user gesture
+    // Mobile browsers keep audio suspended until a user gesture: playSoundFile resumes it in the
+    // gesture that plays a sound. After the first gesture, the audio context is made and the sounds
+    // loaded once the browser is idle, so that gesture (often an animation's step) isn't held up
+    // making it (50 ms or more)
     function setupAudioUnlock() {
+        const eventNames = ['click', 'touchend', 'keydown']
         const unlock = () => {
-            getAudioContext().resume()
-            preloadSounds()
+            eventNames.forEach((eventName) => window.removeEventListener(eventName, unlock))
+            const whenIdle = window.requestIdleCallback || ((task) => setTimeout(task, 200))
+            whenIdle(() => preloadSounds())
         }
 
-        // iOS Safari only counts click and touchend as audio-unlocking gestures
-        for (const eventName of ['click', 'touchend', 'keydown']) {
-            window.addEventListener(eventName, unlock, { once: true })
+        for (const eventName of eventNames) {
+            window.addEventListener(eventName, unlock)
         }
     }
 
