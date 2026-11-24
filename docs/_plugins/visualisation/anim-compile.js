@@ -599,6 +599,7 @@
         // a layout with a panel (LAYOUTS) takes its indices in too: the panel goes behind them
         const panel = LAYOUTS[group.layout]?.panel
         const indices = panel ? partsOf(group, 'index') : []
+        if (!boxStale(group, [...members, ...indices], meta)) continue
         const b = unionBounds([...members, ...indices], shapes)
         if (group.layout) {
           // a row / column is placed by its first cell: its box is its cells' (cx, cy: to its middle)
@@ -606,11 +607,26 @@
           Object.assign(group, { w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - group.x, cy: (b.y0 + b.y1) / 2 - group.y })
           // its panel grows and shrinks with it, in the time its cells take
           if (panel && meta && [group.w, group.h, group.cx, group.cy].join() !== before) retime(meta, group.uid, busiest(meta, members))
-          continue
+        } else {
+          group.w = 2 * Math.max(group.x - b.x0, b.x1 - group.x)
+          group.h = 2 * Math.max(group.y - b.y0, b.y1 - group.y)
         }
-        group.w = 2 * Math.max(group.x - b.x0, b.x1 - group.x)
-        group.h = 2 * Math.max(group.y - b.y0, b.y1 - group.y)
+        boxedFrom.set(group, { ids: group.members.join(' '), at: stampNow() })
       }
+    }
+
+    // A group's box is worked out from its shapes after every line (settle), but only needs working
+    // out again when they could have changed: its members aren't the ones it was worked out from
+    // (boxedFrom: their ids), or it, a shape in it (in a group in it too), or a shape a line in it
+    // has an end on has changed since (every change goes through a tween record: stampOf)
+    const boxedFrom = new WeakMap() // group -> { ids: its member ids, at: when }, as its box was worked out
+    function boxStale(group, inside, meta) {
+      const done = boxedFrom.get(group)
+      if (done?.ids !== group.members.join(' ')) return true
+      const changed = (shape) => stampOf(meta, shape.uid) > done.at
+      const endsOf = (line) => [line.from, line.to, ...(line.via || [])].map((p) => p?.ref && shapes.get(p.ref)).filter(Boolean)
+      return [group, ...inside.flatMap((m) => [m, ...groupMembers(m)])]
+        .some((shape) => changed(shape) || (LINE_TYPES.includes(shape.type) && endsOf(shape).some(changed)))
     }
 
     // Line ends attached to a shape that is being removed stay where they were.
@@ -1056,7 +1072,7 @@
       readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
-      warnEffect }
+      warnEffect, stampOf, stampNow }
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
@@ -1118,8 +1134,15 @@
   function tween(meta, uid) {
     let record = meta.tweens.get(uid)
     if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))
+    stamps.set(record, ++changes)
     return record
   }
+  // When each record was last handed out to change (a count of changes): a group's box is only
+  // worked out again when a shape in it has changed since it was (boxStale)
+  let changes = 0
+  const stamps = new WeakMap() // record -> changes, when it was last handed out
+  const stampOf = (meta, uid) => stamps.get(meta.tweens.get(uid)) || 0
+  const stampNow = () => changes
 
   // `then` (no id): the lines after it start once everything before it in the beat has finished,
   // `then n` n seconds after that. The beat's parts are compiled one after another (compile: each

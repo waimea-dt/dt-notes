@@ -17,7 +17,7 @@
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf
+    let applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow
     // making (in the link functions and holderRef): the id the line being run makes, if it makes one
     // (applyLook's creating), so a look can follow its own value ("r: binary 0 fill rgb(r 0 0)"),
     // though it isn't there yet: such a link is worked out once it is (fitLinks, after the line)
@@ -234,11 +234,19 @@
     // The shapes that change as a source's value does this beat (a number's: its digits)
     const changing = (source) => (inDigits(source) ? digitsOf(source) : [source])
     // After every line: each link follows its sources, changing in the time they take this beat
+    // A link is only looked at again when one of its sources (or a digit of one) has changed since it
+    // last was (stampOf: every change goes through a tween record), or one has gone
+    const checkedAt = new WeakMap() // link -> when its sources were last looked at
     function fitLinks(meta, warn) {
       for (const shape of shapes.values()) {
         for (const key of Object.keys(shape.links || {})) {
           const link = shape.links[key]
-          const sources = LINKS[link.kind].sources(link).map((id) => shapes.get(id)).filter(Boolean)
+          const ids = LINKS[link.kind].sources(link)
+          const sources = ids.map((id) => shapes.get(id)).filter(Boolean)
+          const at = checkedAt.get(link)
+          const unchanged = at !== undefined && sources.length === ids.length && !sources.flatMap(changing).some((source) => stampOf(meta, source.uid) > at)
+          if (unchanged) continue
+          checkedAt.set(link, stampNow())
           if (!fitLink(shape, key, warn)) continue
           retime(meta, shape.uid, busiest(meta, sources.flatMap(changing)))
           if (LINKS[link.kind].counts) countAlong(shape, link, sources, meta)
@@ -447,7 +455,7 @@
         setNumber, setValue, unlink, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {
-        ({ applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf } = cx)
+        ({ applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow } = cx)
       },
     }
   })
