@@ -973,34 +973,41 @@
 
   // The width of some text in the site's font, measured on a canvas and cached (falls back to an
   // estimate when it can't be measured, e.g. outside a browser). A canvas measures without laying
-  // out the page, as reading an SVG text's length would. Each font (bold, mono) is resolved once
-  // through a hidden SVG <text>, as a label would show it, and again after a theme change (some
-  // themes change the font). Widths are cached at one size and scaled, so text whose size is
-  // changing is measured once.
+  // out the page, as reading an SVG text's length would. Each font (bold, mono) is resolved through
+  // a hidden SVG <text>, as a label would show it: all of them at once, the first time one is
+  // needed (one style recalc, not one each), in a holder that isn't displayed (so no layout), and
+  // again after a theme change (some themes change the font). Widths are cached at one size and
+  // scaled, so text whose size is changing is measured once.
   const MONO_FONT = 'var(--font-family-mono)'
   const MEASURE_SIZE = 100 // px: the size widths are measured and cached at
   const textWidths = new Map() // font|text -> width at MEASURE_SIZE
+  const FONT_VARIANTS = [[false, false], [true, false], [false, true], [true, true]] // [bold, mono]
+  const fontKey = (bold, mono) => `${bold ? 'b' : ''}|${mono ? 'm' : ''}`
   const fonts = new Map() // bold|mono -> canvas font
-  let measurer = null // { text, ctx }
+  let measurer = null // { texts: bold|mono -> <text>, ctx }
   function fontFor(bold, mono) {
-    const key = `${bold ? 'b' : ''}|${mono ? 'm' : ''}`
-    if (fonts.has(key)) return fonts.get(key)
-    const { text } = measurer
-    text.style.fontWeight = bold ? '700' : ''
-    text.style.fontFamily = mono ? MONO_FONT : 'var(--font-family)'
-    const style = getComputedStyle(text)
-    const font = `${style.fontStyle} ${style.fontWeight} ${MEASURE_SIZE}px ${style.fontFamily}`
-    fonts.set(key, font)
-    return font
+    if (!fonts.size) {
+      const styles = FONT_VARIANTS.map(([b, m]) => [fontKey(b, m), getComputedStyle(measurer.texts.get(fontKey(b, m)))])
+      for (const [key, style] of styles) fonts.set(key, `${style.fontStyle} ${style.fontWeight} ${MEASURE_SIZE}px ${style.fontFamily}`)
+    }
+    return fonts.get(fontKey(bold, mono))
   }
   // `pre` keeps runs of spaces (a code line's indent), which other text collapses, as SVG does.
   function textWidth(text, size, bold = false, mono = false, pre = false) {
     if (!measurer && document.body) {
       const holder = svgEl('svg', { width: 0, height: 0, 'aria-hidden': 'true' })
-      holder.style.cssText = 'position: absolute; left: -9999px; top: 0; visibility: hidden'
+      holder.style.display = 'none'
       const ctx = document.createElement('canvas').getContext?.('2d')
-      if (ctx) measurer = { text: holder.appendChild(svgEl('text')), ctx }
-      if (ctx) document.body.appendChild(holder)
+      if (ctx) {
+        const texts = new Map(FONT_VARIANTS.map(([b, m]) => {
+          const el = holder.appendChild(svgEl('text'))
+          el.style.fontWeight = b ? '700' : ''
+          el.style.fontFamily = m ? MONO_FONT : 'var(--font-family)'
+          return [fontKey(b, m), el]
+        }))
+        measurer = { texts, ctx }
+        document.body.appendChild(holder)
+      }
     }
     const shown = pre ? text : text.replace(/\s+/g, ' ').trim()
     if (!measurer) return 0.55 * size * shown.length
