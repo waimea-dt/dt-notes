@@ -167,7 +167,7 @@
       checkParts(shape, props)
       if (!respan) applyDefaults(shape)
       fitSpan(shape)
-      applyProps(shape, props, !respan, warn, meta)
+      applyProps(shape, props, !respan && id, warn, meta)
       shapes.set(id, shape)
       const record = schedule(meta, shape.uid, props)
       if (!respan) record.enter = effectOf(props)
@@ -630,7 +630,7 @@
         applyDefaults(cell)
         // a digit's own looks come after the defaults, so only its line's override them
         if (kind.radix) Object.assign(cell, kind.digits.look, { start: { ...cell.start, ...kind.digits.look }, auto: digitLooks(layout) })
-        applyProps(cell, look, true, warn, meta)
+        applyProps(cell, look, id, warn, meta) // made with its layout: its looks can follow the layout's value
         setValue(cell, value)
         cell.layer = layerOf(props)
         return cell
@@ -652,7 +652,7 @@
         w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2,
       }
       Object.assign(row, pick(frame, ['views', 'heading'])) // a grid's
-      applyProps(row, pick(props, ['at', 'x', 'y', 'highlight', 'callout']), true, warn, meta)
+      applyProps(row, pick(props, ['at', 'x', 'y', 'highlight', 'callout']), id, warn, meta)
       shapes.set(id, row)
       schedule(meta, row.uid, props).enter = 'fade'
       for (const cell of cells) {

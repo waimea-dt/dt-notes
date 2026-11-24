@@ -18,10 +18,9 @@
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf
-    // The id of the shape the line being run makes (setMaking, from runLine), or null: its looks can
-    // follow its own value ("r: binary 0 fill rgb(r 0 0)"), worked out once it's made (settle)
-    let making = null
-    const setMaking = (id) => { making = id }
+    // making (in the link functions and holderRef): the id the line being run makes, if it makes one
+    // (applyLook's creating), so a look can follow its own value ("r: binary 0 fill rgb(r 0 0)"),
+    // though it isn't there yet: such a link is worked out once it is (fitLinks, after the line)
 
     // A value a var or a row's / column's cell holds: a number, "quoted" text or null (shown muted)
     function valueOf(token) {
@@ -149,10 +148,10 @@
     // operator between each, read until a token that's neither. { terms (each { v } or { ref }),
     // ops, next }, or null if there's no operator after the first operand, unless it can be
     // `alone` ("x v1", "{n}"). `use` says what a name is for, in messages.
-    function readExpr(tokens, i, { alone = false, use = 'work out' } = {}) {
+    function readExpr(tokens, i, { alone = false, use = 'work out', making } = {}) {
       const operand = (token) => {
         if (token?.kind === 'word' && NUMBER.test(token.value)) return { v: Number(token.value) }
-        return holderRef(token) ? { ref: holderRef(token, use).id } : null
+        return holderRef(token) ? { ref: holderRef(token, use, making).id } : null
       }
       const operator = (token) => (token?.kind === 'word' && OPERATORS[token.lower] ? token.lower : null)
       if (!alone && !operator(tokens[i + 1])) return null
@@ -170,8 +169,8 @@
       return expr
     }
     // All of some tokens as one expression (a lone operand too), or why they aren't one
-    function wholeExpr(tokens, use) {
-      const expr = tokens.length ? readExpr(tokens, 0, { alone: true, use }) : null
+    function wholeExpr(tokens, use, making) {
+      const expr = tokens.length ? readExpr(tokens, 0, { alone: true, use, making }) : null
       if (!expr || expr.next !== tokens.length) {
         const bad = tokens[expr ? expr.next : 0]
         throw new Error(`a sum is numbers, vars and cells with ${Object.keys(OPERATORS).join(' ')} between them (spaces round each)${bad ? `, not "${bad.value ?? bad.name ?? bad.text}"` : ''}, e.g. {v1 * 2}`)
@@ -228,7 +227,7 @@
       const rest = pick(shape.links, Object.keys(shape.links).filter((k) => k !== key))
       shape.links = Object.keys(rest).length ? rest : undefined
     }
-    function setLink(shape, key, link, warn) {
+    function setLink(shape, key, link, warn, making) {
       shape.links = { ...shape.links, [key]: { ...link, seen: null, inputs: null } }
       // one on the shape being made is worked out once it's there (fitLinks, after the line)
       if (!LINKS[link.kind].sources(link).includes(making)) fitLink(shape, key, warn)
@@ -265,8 +264,8 @@
 
     // "x v1", "angle {v1 * 2}" (KEYWORDS: bound): a look's number, or a shape's x or y (in cells),
     // follows an expression
-    function linkNumber(shape, key, tokens, warn) {
-      setLink(shape, key, { kind: 'number', expr: wholeExpr(tokens, `follow with "${wordFor(key)}"`) }, warn)
+    function linkNumber(shape, key, tokens, warn, making) {
+      setLink(shape, key, { kind: 'number', expr: wholeExpr(tokens, `follow with "${wordFor(key)}"`, making) }, warn, making)
     }
     function fitNumber(shape, key, link, warn) {
       const n = linkedValue(shape, key, link.expr, warn, `"${shape.id}"'s ${wordFor(key)}`)
@@ -283,8 +282,12 @@
     // they change. Any other { } shows as written (with a warning when it looks like a sum with a
     // name in it that isn't a var or cell). Not a value (a var's, a cell's), code or a script.
     const TEMPLATE = /\{([^{}]*)\}/g
+    // What's in { } looks like a sum (names, numbers and OPERATORS), so a name in it that isn't a
+    // var or cell is worth a warning
+    const escaped = (text) => text.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&')
+    const SUM_LIKE = new RegExp(`^(?:[\\w.+-]+|${Object.keys(OPERATORS).map(escaped).join('|')}|\\s+)+$`)
     const templated = (shape) => !shape.holds && !kindOf(shape).pre && !kindOf(shape).script
-    function linkText(shape, warn) {
+    function linkText(shape, warn, making) {
       unlink(shape, 'label')
       const label = shape.label ?? ''
       if (!templated(shape) || !label.includes('{')) return
@@ -292,8 +295,8 @@
       let at = 0
       for (const m of label.matchAll(TEMPLATE)) {
         let expr = null
-        try { expr = wholeExpr(tokenize(m[1]), 'show') } catch (error) {
-          if (/^[\w.\s*/+-]+$/.test(m[1])) warn(`"{${m[1]}}" shows as written: ${error.message}`)
+        try { expr = wholeExpr(tokenize(m[1]), 'show', making) } catch (error) {
+          if (SUM_LIKE.test(m[1])) warn(`"{${m[1]}}" shows as written: ${error.message}`)
         }
         if (!expr) continue
         if (m.index > at) parts.push({ text: label.slice(at, m.index) })
@@ -302,7 +305,7 @@
       }
       if (!parts.some((part) => part.expr)) return
       if (at < label.length) parts.push({ text: label.slice(at) })
-      setLink(shape, 'label', { kind: 'text', parts }, warn)
+      setLink(shape, 'label', { kind: 'text', parts }, warn, making)
     }
     function fitText(shape, key, link, warn) {
       const shown = []
@@ -333,17 +336,17 @@
     // A colour worked out from values ("fill rgb(r g b)", COLOUR_FUNCTIONS): the look follows them
     // (LINKS: colour). Its link: fn; args, each { v } (a number) or { ref } (the id of a var, cell or
     // number); values, the numbers it was last worked out from; and seen, what each argument held then.
-    function linkColour(shape, key, { fn, args }, warn) {
+    function linkColour(shape, key, { fn, args }, warn, making) {
       const { args: names, max, example: written } = COLOUR_FUNCTIONS[fn]
       const example = `e.g. "${written}" or "${fn}(${names.map((name) => name[0]).join(' ')})"`
       if (args.length !== names.length) throw new Error(`"${fn}(…)" takes ${names.length} values (${names.join(', ')}): numbers from 0 to ${max}, or vars or cells, ${example}`)
       const read = args.map((token) => {
         if (token.kind === 'word' && NUMBER.test(token.value)) return { v: Number(token.value) }
-        const source = holderRef(token, `use in "${fn}(…)"`)
+        const source = holderRef(token, `use in "${fn}(…)"`, making)
         if (!source) throw new Error(`"${fn}(…)" takes numbers from 0 to ${max}, or vars or cells, not "${token.value ?? token.name}", ${example}`)
         return { ref: source.id }
       })
-      setLink(shape, key, { kind: 'colour', fn, args: read, values: null }, warn)
+      setLink(shape, key, { kind: 'colour', fn, args: read, values: null }, warn, making)
     }
 
     // Works a linked colour out again (LINKS: colour): true if the colour changes. A source that's
@@ -385,7 +388,7 @@
 
     // A word naming another shape (not a keyword or a value): the var or cell it names, or, with
     // `use` (what it's for), an error if it isn't one. Without `use`, undefined if it isn't a name.
-    function holderRef(token, use) {
+    function holderRef(token, use, making) {
       if (token?.kind !== 'word' || !ID.test(token.value) || KEYWORDS[token.lower] || RESERVED.has(token.lower)) return undefined
       const shape = shapes.get(token.value)
       if (!use) return token.value
@@ -433,7 +436,7 @@
 
     return {
       functions: { addTo, assignValue, symbolValue, checkDigit, countUp, digitsFor, exprValue, fitLinks, fly, flyValue, holderRef, keptStyle, linkColour, linkNumber, linkText, pointOf,
-        setMaking, setNumber, setValue, unlink, valueIn, valueOf },
+        setNumber, setValue, unlink, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {
         ({ applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf } = cx)

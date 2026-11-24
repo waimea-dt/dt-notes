@@ -10,7 +10,7 @@
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
-    NUMBERINGS, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint } = window.Anim
+    NUMBERINGS, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
@@ -86,7 +86,8 @@
     }
 
     // Applies a shape's look (size, then LOOKS): absolute when creating; on a change, a signed
-    // number is relative to the current value.
+    // number is relative to the current value. creating: false on a change; making a shape, the id
+    // the line makes (a look can follow its value, though it isn't there yet: linkNumber), or true.
     function applyLook(shape, props, creating, warn) {
       const now = (value) => (creating ? undefined : value)
       const cells = (n, current) => numberValue(n, now(current), { unit: CELL })
@@ -101,8 +102,8 @@
           if (problem) warn(problem)
           unlink(shape, key) // a look given again no longer follows any values
           if (value === 'reset') resetLook(shape, key)
-          else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, key, value, warn) // "rgb(r g b)"
-          else if (value?.bind) linkNumber(shape, key, value.bind, warn) // "weight v1", "angle {v1 * 2}"
+          else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, key, value, warn, creating) // "rgb(r g b)"
+          else if (value?.bind) linkNumber(shape, key, value.bind, warn, creating) // "weight v1", "angle {v1 * 2}"
           else if (look.unit) for (const field of fieldsOf(look)) shape[field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[field]), { unit: look.unit })))
           else shape[look.field] = look.map && value in look.map ? look.map[value] : value
           // a digit given a look no longer takes that look from its value
@@ -137,6 +138,7 @@
     // Applies parsed props to a shape (a fresh one when creating, a copy when changing).
     // Returns the route it moves along (a curve through via points, travel's hops, a followed
     // line), or null for a straight move.
+    // creating: as applyLook's (false, true, or the id the line makes)
     function applyProps(shape, props, creating, warn, meta) {
       for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, props.about?.ref, ...(props.via || []).map((v) => v.ref),
         ...(props.travel || []).map((v) => v.ref)]) {
@@ -146,7 +148,7 @@
         if (shape.digit) checkDigit(shape.digit, { label: props.label })
         shape.label = props.label
         if (shape.nil) shape.nil = false
-        linkText(shape, warn) // "Total: {v1}"
+        linkText(shape, warn, creating) // "Total: {v1}"
       }
       if (props.points) setPoints(shape, props.points) // before its look, so a size given with them stretches them
       // a turn about a point sets the angle itself (turnAbout), so it isn't a look here
@@ -192,7 +194,7 @@
       if (LINE_TYPES.includes(shape.type)) {
         const free = [shape.from, shape.to, ...(shape.via || [])].some((p) => !p.ref)
         if (!free && !carried) throw new Error(`"${shape.id}" has its ends on shapes, so it turns with them: turn the shapes`)
-        for (const key of ['from', 'to']) if (!shape[key].ref) shape[key] = turned(shape[key])
+        for (const key of Object.keys(LINE_ENDS)) if (!shape[key].ref) shape[key] = turned(shape[key])
         if (shape.via) shape.via = shape.via.map((p) => (p.ref ? p : turned(p)))
       } else if (shape.attach?.kind === 'offset' && carried) {
         // a member rides on its group at its offset, which turns with it
@@ -279,7 +281,7 @@
         // its free via points move with it (vias on shapes stay on them)
         if (shape.via) shape.via = shape.via.map((p) => (p.ref ? p : { x: coord(props.at.x, p.x), y: coord(props.at.y, p.y) }))
       }
-      for (const key of ['from', 'to']) {
+      for (const key of Object.keys(LINE_ENDS)) {
         const end = props[key]
         if (!end) continue
         if (end.kind === 'ref') { shape[key] = onShape(end); continue }
@@ -351,8 +353,8 @@
       const { at } = props
       // a new place no longer follows values; "x v1": x (or y) follows one (KEYWORDS: bound)
       const placed = at || props.travel || props.follow || props.attach || props.about
-      for (const axis of ['x', 'y']) if (placed || props[axis]) unlink(shape, axis)
-      for (const axis of ['x', 'y']) if (props[axis]?.bind) linkNumber(shape, axis, props[axis].bind, warn)
+      for (const axis of AXES) if (placed || props[axis]) unlink(shape, axis)
+      for (const axis of AXES) if (props[axis]?.bind) linkNumber(shape, axis, props[axis].bind, warn, creating)
       if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
       if (at?.kind === 'ref') Object.assign(shape, placeFor(shape, refPoint(at, shapes)))
       if (at?.kind === 'place') {
@@ -495,7 +497,7 @@
     // of the shape the line makes, if it makes one (parseProps)
     function propsOf(type, tokens, i, kind, making) {
       // a polygon's points: straight after its type, or alone on a change ("p: [ … ]")
-      if (SHAPES[type]?.points && (kind === 'create' || tokens[i]?.kind === 'bracket')) {
+      if (SHAPES[type]?.points && (making || tokens[i]?.kind === 'bracket')) {
         const { points, next } = readPoints(tokens, i, type)
         return { ...parseProps(tokens, next, kind, shapes, making), points }
       }
@@ -509,6 +511,7 @@
       return props
     }
 
+    const MIN_POINTS = 3 // the fewest a polygon has
     // A polygon's points (SHAPES: points) in [ ] from tokens[i]: pairs of numbers, offsets in cells
     // from where it's placed ("[0,-1 1,1 -1,1]", commas optional), at least three. Returns them as
     // { x, y } and the token after the "]".
@@ -523,7 +526,7 @@
       }
       if (tokens[j]?.value !== ']') throw new Error(`the "[" of ${article(type)} ${type}'s points has no closing "]"`)
       if (numbers.length % 2) throw new Error(`${article(type)} ${type}'s points are x,y pairs, and ${numbers.length} numbers isn't pairs, ${example}`)
-      if (numbers.length < 6) throw new Error(`${article(type)} ${type} needs at least three points, ${example}`)
+      if (numbers.length < 2 * MIN_POINTS) throw new Error(`${article(type)} ${type} needs at least ${MIN_POINTS} points, ${example}`)
       const points = []
       for (let k = 0; k < numbers.length; k += 2) points.push({ x: numbers[k], y: numbers[k + 1] })
       return { points, next: j + 1 }
@@ -694,7 +697,6 @@
       if (!match) throw new Error('expected "id: …" (or defaults, camera, pause, auto, then)')
       const id = match[1]
       const tokens = tokenize(match[2])
-      setMaking(null)
 
       if (defaultsLine) {
         const props = parseProps(tokens, 0, 'defaults', shapes)
@@ -721,15 +723,13 @@
 
       // "arr: row [5 3 8 1] at 2,3" (or column): its cells are arr.0, arr.1, …
       const word = first?.kind === 'word' ? first.lower : ''
-      // a line that makes a shape: its looks can follow its own value (setMaking)
-      setMaking(type || LAYOUT_TYPES.includes(word) ? id : null)
       if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
       // a verb: delete, swap, insert, remove, copy, group, ungroup (LINES)
       if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
 
       // "l: arrow" on a line that already exists, with no new ends, isn't a new line: its ends'
       // marks are changed with start / end
-      const newEnds = tokens.some((t) => t.kind === 'word' && ['from', 'to'].includes(t.lower))
+      const newEnds = tokens.some((t) => t.kind === 'word' && LINE_ENDS[t.lower])
       if (type && SHAPES[type].line && existing && LINE_TYPES.includes(existing.type) && !newEnds) {
         throw new Error(`"${id}" is already a line: to change what's on its ends, e.g. "${id}: end arrow" or "${id}: start dot"`)
       }
@@ -742,7 +742,7 @@
         checkParts(shape, props)
         applyDefaults(shape)
         if (RESOURCES[type]) RESOURCES[type](shape, first.arg, context)
-        applyProps(shape, props, true, warn, meta)
+        applyProps(shape, props, id, warn, meta)
         if (isVar) setValue(shape, varValue || { label: '' })
         shape.layer = layerOf(props)
         if (existing) {
@@ -985,7 +985,7 @@
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, symbolValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
-      readLines, refuseView, relayLayout, setMaking, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
+      readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect }
@@ -993,7 +993,7 @@
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
       ({ addTo, assignValue, symbolValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
-        readLines, refuseView, relayLayout, setMaking, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
+        readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 

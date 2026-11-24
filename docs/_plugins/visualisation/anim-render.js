@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    END_MARKS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
+    END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -43,8 +43,6 @@
     script: {},
   }
 
-  // A line's ends, each with the look that says what it has there (LOOKS: start, end; END_MARKS)
-  const LINE_ENDS = { from: 'start', to: 'end' }
   const endsOf = (fn) => Object.fromEntries(Object.keys(LINE_ENDS).map((end) => [end, fn(end)]))
   // How strongly each mark shows at each end (0-1), e.g. { from: {}, to: { arrow: 1 } }: blended
   // as one is added or taken off, or one changes to another (the old fades out as the new fades in)
@@ -1527,12 +1525,35 @@
     // rect for rects and text, a circle, a diamond. Groups, images and icons (outline), and shapes
     // with a name or indices (`boxed`), get a rounded box round their bounds `b`, which includes an
     // image's or icon's label.
+    const rectPath = (hw, hh, r) => {
+      r = Math.max(0, Math.min(r, hw, hh))
+      return `M ${-hw + r} ${-hh} H ${hw - r} A ${r} ${r} 0 0 1 ${hw} ${-hh + r} V ${hh - r} A ${r} ${r} 0 0 1 ${hw - r} ${hh}`
+        + ` H ${-hw + r} A ${r} ${r} 0 0 1 ${-hw} ${hh - r} V ${-hh + r} A ${r} ${r} 0 0 1 ${-hw + r} ${-hh} Z`
+    }
+    // Each kind of outline's highlight path (OUTLINES in anim-core.js), about the shape's middle in
+    // its own frame, grown by `offset` (shrunk if negative): o is { s, v, hw, hh (its half-sizes),
+    // k (its scale), w, h (its scaled half-sizes grown by offset), offset }
+    const OUTLINE_PATHS = {
+      // its corners (if it has them) grown or shrunk with it, or rounded on the way out
+      box: ({ s, v, hw, hh, k, w, h, offset }) => {
+        const cornered = APPLIES.corner.includes(s.type)
+        const corner = cornered ? cornerOf(s, v, hw, hh) * k : 0
+        return rectPath(w, h, cornered ? corner + offset : offset > 0 ? offset : 0)
+      },
+      round: ({ w, h }) => `M ${-w} 0 A ${w} ${h} 0 1 1 ${w} 0 A ${w} ${h} 0 1 1 ${-w} 0 Z`,
+      // each side moves out by `offset`: the same diamond, scaled by (d + offset) / d, where d is the
+      // distance from the centre to a side
+      diamond: ({ hw, hh, k, offset }) => {
+        const d = (hw * k * hh * k) / (Math.hypot(hw * k, hh * k) || 1)
+        const f = Math.max(0, (d + offset) / (d || 1))
+        return `M 0 ${-hh * k * f} L ${hw * k * f} 0 L 0 ${hh * k * f} L ${-hw * k * f} 0 Z`
+      },
+      // each side moved out (or in) by `offset`, its corners rounded round the shape's (as a box's
+      // are: by its own corner and the gap)
+      polygon: ({ s, hw, hh, k, offset }) => polygonPath(s.points, hw * k, hh * k, Math.max(0, (s.corner || 0) * k + offset), offset),
+    }
+
     function highlightPath(s, v, offset, b, boxedToo = false) {
-      const rectPath = (hw, hh, r) => {
-        r = Math.max(0, Math.min(r, hw, hh))
-        return `M ${-hw + r} ${-hh} H ${hw - r} A ${r} ${r} 0 0 1 ${hw} ${-hh + r} V ${hh - r} A ${r} ${r} 0 0 1 ${hw - r} ${hh}`
-          + ` H ${-hw + r} A ${r} ${r} 0 0 1 ${-hw} ${hh - r} V ${-hh + r} A ${r} ${r} 0 0 1 ${-hw + r} ${-hh} Z`
-      }
       // its outline (SHAPES); a group, or an outline round a label below its shape, is a box
       const kind = kindOf(s)
       const boxed = boxedToo || !kind.outline || (offset > 0 && LABEL_PLACES[kind.label]?.outside)
@@ -1547,22 +1568,7 @@
       const { hw, hh } = extents(s)
       const w = Math.max(0, hw * k + offset)
       const h = Math.max(0, hh * k + offset)
-      if (kind.outline === 'round') return { d: `M ${-w} 0 A ${w} ${h} 0 1 1 ${w} 0 A ${w} ${h} 0 1 1 ${-w} 0 Z`, transform }
-      // a polygon: each side moved out (or in) by `offset`, its corners rounded round the shape's
-      // (as a box's are: by its own corner and the gap)
-      if (kind.outline === 'polygon') return { d: polygonPath(s.points, hw * k, hh * k, Math.max(0, (s.corner || 0) * k + offset), offset), transform }
-      if (kind.outline === 'diamond') {
-        // each side moves out by `offset`: the same diamond, scaled by (d + offset) / d, where d is
-        // the distance from the centre to a side
-        const d = (hw * k * hh * k) / (Math.hypot(hw * k, hh * k) || 1)
-        const f = Math.max(0, (d + offset) / (d || 1))
-        return { d: `M 0 ${-hh * k * f} L ${hw * k * f} 0 L 0 ${hh * k * f} L ${-hw * k * f} 0 Z`, transform }
-      }
-      // a box: its corners (if it has them) grown or shrunk with it, or rounded on the way out
-      const cornered = APPLIES.corner.includes(s.type)
-      const corner = cornered ? cornerOf(s, v, hw, hh) * k : 0
-      const r = cornered ? corner + offset : offset > 0 ? offset : 0
-      return { d: rectPath(w, h, r), transform }
+      return { d: OUTLINE_PATHS[kind.outline]({ s, v, hw, hh, k, w, h, offset }), transform }
     }
 
     // What a shape shows of a two-state feature mid-blend: B's, or A's while A's fades out

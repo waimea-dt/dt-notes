@@ -88,6 +88,10 @@
   // What a line can have at each of its ends (LOOKS: start, end: "end arrow", "start dot"), drawn
   // by END_DRAWS in anim-render.js. blank: nothing is drawn there.
   const END_MARKS = { none: { blank: true }, arrow: {}, dot: {}, crow: {}, bar: {} }
+  // A line's ends (its from / to), each with the look that says what it has there (LOOKS: start, end)
+  const LINE_ENDS = { from: 'start', to: 'end' }
+  // The props for each way a shape's place goes
+  const AXES = ['x', 'y']
   // What every line starts with: nothing on either end (a line type can set its own: arrow), and
   // all of it shown (LOOKS: show)
   const LINE_DEFAULTS = { start: 'none', end: 'none', show: 1 }
@@ -1038,25 +1042,23 @@
   }
   document.fonts?.addEventListener?.('loadingdone', () => scriptSizes.clear()) // estimates, as textWidths
 
-  // Half-width and half-height of a shape's box, with its outline (round, diamond) for the edge
-  // maths. A shape whose label is its content (text) is as big as the text, measured.
+  // Half-width and half-height of a shape's box, with its outline (SHAPES: outline; a box when it
+  // has none: a group, a point) and a polygon's points, for the edge maths (OUTLINES). A shape whose
+  // label is its content (text) is as big as the text, measured.
   function extents(shape) {
     const kind = kindOf(shape)
     if (kind.label === 'content') {
       const size = FONT * shape.font
-      return { hw: Math.max(0.3 * size, labelWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
+      return { hw: Math.max(0.3 * size, labelWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size, outline: kind.outline }
     }
-    return {
-      hw: shape.w / 2, hh: shape.h / 2, round: kind.outline === 'round' || undefined, diamond: kind.outline === 'diamond' || undefined,
-      polygon: (kind.outline === 'polygon' && shape.points) || undefined,
-    }
+    return { hw: shape.w / 2, hh: shape.h / 2, outline: kind.outline, points: shape.points }
   }
 
   // Half-sizes after `scale` (still in the shape's own, unrotated frame).
   function sized(shape) {
     const e = extents(shape)
     const k = shape.scale ?? 1
-    return { hw: e.hw * k, hh: e.hh * k, round: e.round, diamond: e.diamond, polygon: e.polygon }
+    return { ...e, hw: e.hw * k, hh: e.hh * k }
   }
 
   // A polygon's points (SHAPES: points, each u, v across its box from -0.5 to 0.5) in a box of
@@ -1079,16 +1081,53 @@
     return reach
   }
 
-  // Half-sizes of the axis-aligned box around the rotated, scaled shape (an ellipse's is tighter
-  // than its box's: a circle's doesn't change).
+  // How each kind of outline (SHAPES: outline) is measured, in the shape's own frame from its middle
+  // (e: its sized half-sizes hw, hh, and a polygon's points). Drawn as a highlight by OUTLINE_PATHS
+  // in anim-render.js.
+  //   reach   reach(e, lx, ly): how far its edge is, the way (lx, ly) goes (a unit vector)
+  //   inside  inside(e, x, y, gap): whether a point is inside it, grown by gap all round
+  //   turned  turned(e, cos, sin): the half-sizes of the upright box round it turned (|cos| and |sin|
+  //           of its angle)
+  const TINY = 1e-9 // a length too small to divide by
+  const FAR = 1e6 // how far off a point is that only gives a way (edgePoint stops at most halfway to it)
+  const boxTurned = (e, cos, sin) => ({ hw: e.hw * cos + e.hh * sin, hh: e.hw * sin + e.hh * cos })
+  const OUTLINES = {
+    box: {
+      reach: (e, lx, ly) => Math.min(Math.abs(lx) > TINY ? e.hw / Math.abs(lx) : Infinity, Math.abs(ly) > TINY ? e.hh / Math.abs(ly) : Infinity),
+      inside: (e, x, y, gap) => Math.abs(x) <= e.hw + gap && Math.abs(y) <= e.hh + gap,
+      turned: boxTurned,
+    },
+    // an ellipse, (x / hw)² + (y / hh)² = 1: a circle when square, its turned box no bigger
+    round: {
+      reach: (e, lx, ly) => 1 / Math.max(TINY, Math.hypot(lx / Math.max(e.hw, TINY), ly / Math.max(e.hh, TINY))),
+      inside: (e, x, y, gap) => Math.hypot(x / (e.hw + gap), y / (e.hh + gap)) <= 1,
+      turned: (e, cos, sin) => ({ hw: Math.hypot(e.hw * cos, e.hh * sin), hh: Math.hypot(e.hw * sin, e.hh * cos) }),
+    },
+    // |x| / hw + |y| / hh = 1; grown by gap square on to each side (its apothem: middle to side)
+    diamond: {
+      reach: (e, lx, ly) => 1 / Math.max(TINY, Math.abs(lx) / Math.max(e.hw, TINY) + Math.abs(ly) / Math.max(e.hh, TINY)),
+      inside: (e, x, y, gap) => {
+        if (e.hw < 1e-6 || e.hh < 1e-6) return false
+        const apothem = (e.hw * e.hh) / Math.hypot(e.hw, e.hh)
+        return Math.abs(x) / e.hw + Math.abs(y) / e.hh <= 1 + gap / apothem
+      },
+      turned: boxTurned,
+    },
+    // its points stretched to its box: inside if no further out than its edge that way
+    polygon: {
+      reach: (e, lx, ly) => polygonReach(e.points, e.hw, e.hh, lx, ly),
+      inside: (e, x, y, gap) => { const d = Math.hypot(x, y); return d < TINY || d <= polygonReach(e.points, e.hw, e.hh, x / d, y / d) + gap },
+      turned: boxTurned,
+    },
+  }
+  const outlineOf = (e) => OUTLINES[e.outline] || OUTLINES.box
+
+  // Half-sizes of the axis-aligned box around the rotated, scaled shape (OUTLINES: turned).
   function outline(shape) {
     const e = sized(shape)
     if (!shape.angle) return e
     const a = (shape.angle * Math.PI) / 180
-    const cos = Math.abs(Math.cos(a))
-    const sin = Math.abs(Math.sin(a))
-    if (e.round) return { hw: Math.hypot(e.hw * cos, e.hh * sin), hh: Math.hypot(e.hw * sin, e.hh * cos) }
-    return { hw: e.hw * cos + e.hh * sin, hh: e.hw * sin + e.hh * cos }
+    return outlineOf(e).turned(e, Math.abs(Math.cos(a)), Math.abs(Math.sin(a)))
   }
 
   // The sides and corners of a shape's box, each saying which side it's on (-1: left / top, 1:
@@ -1186,17 +1225,12 @@
     if (len < 1e-6) return c
     const ux = dx / len
     const uy = dy / len
-    const { hw, hh, round, diamond, polygon } = sized(shape)
+    const e = sized(shape)
     // Measure in the shape's own frame, so rotated boxes are trimmed at their real edge.
     const a = (-(shape.angle || 0) * Math.PI) / 180
     const lx = ux * Math.cos(a) - uy * Math.sin(a)
     const ly = ux * Math.sin(a) + uy * Math.cos(a)
-    // an ellipse's edge is where (x / hw)² + (y / hh)² = 1; a diamond's where |x| / hw + |y| / hh = 1
-    const dist = polygon ? polygonReach(polygon, hw, hh, lx, ly)
-      : round ? 1 / Math.max(1e-9, Math.hypot(lx / Math.max(hw, 1e-9), ly / Math.max(hh, 1e-9)))
-      : diamond ? 1 / Math.max(1e-9, Math.abs(lx) / Math.max(hw, 1e-9) + Math.abs(ly) / Math.max(hh, 1e-9))
-        : Math.min(Math.abs(lx) > 1e-9 ? hw / Math.abs(lx) : Infinity, Math.abs(ly) > 1e-9 ? hh / Math.abs(ly) : Infinity)
-    const d = Math.min(dist + gap, len / 2)
+    const d = Math.min(outlineOf(e).reach(e, lx, ly) + gap, len / 2)
     return { x: c.x + ux * d, y: c.y + uy * d }
   }
 
@@ -1204,7 +1238,6 @@
   // corner (a round shape's: halfway round between its sides; a diamond's: halfway along its edge),
   // turned as the shape is.
   function anchorPoint(shape, anchor, gap = 0) {
-    const FAR = 1e6 // a point far off that way (edgePoint stops at most halfway to it)
     const side = ANCHORS[anchor]
     const { hw, hh } = sized(shape)
     const way = rotateAbout({ x: side.x * Math.max(hw, 1e-6), y: side.y * Math.max(hh, 1e-6) }, null, shape.angle || 0)
@@ -1216,25 +1249,14 @@
   // edge its anchor names, `gap` beyond it
   const refPoint = (p, byId, gap = 0) => (p.anchor ? anchorPoint(byId.get(p.ref), p.anchor, gap) : boxCentre(byId.get(p.ref)))
 
-  // Whether a point is inside a shape's outline, grown by EDGE_GAP all round.
+  // Whether a point is inside a shape's outline, grown by EDGE_GAP all round (OUTLINES: inside).
   function inside(shape, p) {
     const c = boxCentre(shape)
     const a = (-(shape.angle || 0) * Math.PI) / 180
     const dx = p.x - c.x
     const dy = p.y - c.y
-    const sx = dx * Math.cos(a) - dy * Math.sin(a)
-    const sy = dx * Math.sin(a) + dy * Math.cos(a)
-    const [lx, ly] = [Math.abs(sx), Math.abs(sy)]
-    const { hw, hh, round, diamond, polygon } = sized(shape)
-    // a polygon: no further out than its edge that way (from its middle)
-    if (polygon) { const d = Math.hypot(sx, sy); return d < 1e-9 || d <= polygonReach(polygon, hw, hh, sx / d, sy / d) + EDGE_GAP }
-    if (round) return Math.hypot(lx / (hw + EDGE_GAP), ly / (hh + EDGE_GAP)) <= 1
-    if (diamond) {
-      if (hw < 1e-6 || hh < 1e-6) return false
-      const apothem = (hw * hh) / Math.hypot(hw, hh) // centre to edge, square on
-      return lx / hw + ly / hh <= 1 + EDGE_GAP / apothem
-    }
-    return lx <= hw + EDGE_GAP && ly <= hh + EDGE_GAP
+    const e = sized(shape)
+    return outlineOf(e).inside(e, dx * Math.cos(a) - dy * Math.sin(a), dx * Math.sin(a) + dy * Math.cos(a), EDGE_GAP)
   }
 
   // Where a path (samples, from a shape's centre outwards) first leaves the shape, or null if it
@@ -1312,7 +1334,6 @@
   // anticlockwise of that and comes back spread degrees clockwise, out through its shoulders
   // (each side) and its tip.
   function loopEnds(line, shape, { spread, shoulder }) {
-    const FAR = 1e6 // a point far off that way (edgePoint stops at most halfway to it)
     const c = boxCentre(shape)
     const facing = (degrees) => { const r = (degrees * Math.PI) / 180; return { x: Math.cos(r), y: Math.sin(r) } }
     const out = facing(line.angle)
@@ -1533,5 +1554,5 @@
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, ANCHORS, anchorPoint, refPoint, polygonPoints, roundCorners, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, OUTLINES, ANCHORS, anchorPoint, refPoint, polygonPoints, roundCorners, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
 })()
