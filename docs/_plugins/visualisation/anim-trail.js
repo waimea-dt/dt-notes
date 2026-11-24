@@ -30,7 +30,7 @@
       }
       if (old) return warn(`"${shape.id}" already leaves a trail`)
       const start = boxCentre(before)
-      const trail = { ...baseShape('trail'), id, uid: newUid(), part: shape.id, role: 'trail', from: start, to: { ...start }, via: [] }
+      const trail = { ...baseShape('trail'), id, uid: newUid(), part: shape.id, owner: shape.uid, role: 'trail', from: start, to: { ...start }, via: [] }
       trail.start = pick(trail, STYLE)
       shapes.set(id, trail)
       schedule(meta, trail.uid, props).enter = 'appear' // there from the start, so it grows from nothing
@@ -41,13 +41,13 @@
       ? [trail.from, ...trail.via, trail.to] : [trail.from])
 
     // The shape that moved a shape this beat, and how: the shape itself or what it rides on (its
-    // group, or the shape it's attached to), with the first of them to have a route (turn, or a
-    // path) or else to have changed at all (record: its timing)
+    // group, or the shape it's attached to), with the first of them to have a route (a turn, a
+    // path, or a swap's bow) or else to have changed at all (record: its timing)
     function moverOf(shape, meta) {
       let first = null
       for (let s = shape, depth = 0; s && depth < 16; s = s.attach && shapes.get(s.attach.ref), depth++) {
         const record = meta.tweens.get(s.uid)
-        if (record?.turn || record?.path) return { shape: s, record }
+        if (record?.turn || record?.path || record?.arc) return { shape: s, record }
         first ||= record?.dur ? { shape: s, record } : null
       }
       return first || { shape, record: null }
@@ -70,7 +70,13 @@
         if (path.hops) return { at: (u) => shifted(pointOnHops(path.hops, u, easeFn(record.ease))), steps: (path.hops.length - 1) * TRAIL_STEPS.hop, raw: true }
         return { at: (u) => shifted(pointOnPath(path, u)), steps: TRAIL_STEPS.route }
       }
-      return { at: (u) => ({ x: lerp(last.x, end.x, u), y: lerp(last.y, end.y, u) }), steps: 1 }
+      const straight = (u) => ({ x: lerp(last.x, end.x, u), y: lerp(last.y, end.y, u) })
+      if (record?.arc) {
+        // a swapped cell bows out to one side on its way, as the renderer draws it (tween: arc)
+        const { arc } = record
+        return { at: (u) => { const p = straight(u); const k = Math.sin(Math.PI * u); return { x: p.x + arc.x * k, y: p.y + arc.y * k } }, steps: TRAIL_STEPS.route }
+      }
+      return { at: straight, steps: 1 }
     }
 
     // Once a beat's lines have run: each trail whose shape has moved takes the way it went, drawn

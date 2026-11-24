@@ -114,6 +114,7 @@ Notes on each area, for finding your way round before a change.
 ### Parts
 
 - **A var's or row's parts:** build ids with `cellId` / `indexId` / `nameId`. A part has `part: owner.id` and a `role` (`PARTS`: name, index, view, span, power, decimal, trail), goes when its owner does, and is found with `partsOf(owner, role)`, never by its id. What a role does (an outline takes it in, it's `bound` to its owner) is a field in `PARTS`. A span is a part of its row too, with its own id. `fitSpans` refits it to its places in `settle`, and `covers` lists the cells it's round (a spotlight lights them).
+- **Parts that follow their owner** (`PARTS: follows`, a trail): they keep the owner's uid (`owner`), and `followOwners`, first in `settle`, gives them the owner's new id when a row edit has given it one (ids stay with places, uids with shapes). An owner replaced (a new uid) is found by its id and followed from then on.
 
 ### Layouts
 
@@ -161,7 +162,7 @@ Notes on each area, for finding your way round before a change.
 ### Motion
 
 - **Turns** (`angle … about p`): `turnOf` works out the turn (`by`: an absolute angle turns by the difference; `pivot`: fixed where it is now), and the angle is kept out of `applyLook`. `turnAbout` turns the shape rigidly: a boxed shape's centre round the pivot (`placeFor`), a line's free ends and via points, and a group's members, each `carried` (its offset turned). Each records `tween.turn`; the renderer turns `a` by `by × t` (boxed: in the main loop; a carried member: its offset, in the attachments callback; lines: their free points, then `resolveEnds`), so it goes round in an arc. A turning shape of its own in a group keeps its own place (the callback returns null).
-- **Trails** (`SHAPES: trail`, `PARTS: trail`, id `trailId`): a line part with free points, made by `setTrail` (at the shape's centre before the line) and grown by `growTrails` (`finish`): each moved shape's trail takes the way it went (`wayOf`: a turn's arc, its mover's path or hops shifted by the shape's offset from it, or straight), sampled at `TRAIL_STEPS`, from its `moverOf` (the shape, or what it rides on, with a route or a change this beat), whose timing it takes. `tween.grow` (`kept`, `steps`, `raw`) tells the renderer (`grownEnds`) how many points to draw as the move goes. Not followed yet: a swap's bow (`arc`) and a row edit's slide, which grow straight.
+- **Trails** (`SHAPES: trail`, `PARTS: trail`, id `trailId`): a line part with free points, made by `setTrail` (at the shape's centre before the line) and grown by `growTrails` (`finish`): each moved shape's trail takes the way it went (`wayOf`: a turn's arc, its mover's path or hops shifted by the shape's offset from it, or straight), sampled at `TRAIL_STEPS`, from its `moverOf` (the shape, or what it rides on, with a route or a change this beat), whose timing it takes. `tween.grow` (`kept`, `steps`, `raw`) tells the renderer (`grownEnds`) how many points to draw as the move goes. A swapped cell's bow (`tween.arc`) is a route too, and a cell's trail goes with the cell through row edits (`PARTS: follows`).
 
 ### Messages
 
@@ -222,4 +223,3 @@ Ideas agreed but not yet wanted, roughly in order:
 8. **Morph:** one shape's outline into another's (polygons with the same number of points already glide), and text by character: letters that stay slide to their new places (ciphers, string operations, working out a sum step by step).
 9. **Graphs and trees:** a layout of nodes and edges placed automatically (a tree down the page, a circle), with edge ids and weights and a `path` highlight. For TSP, routing, BSTs, linked lists, hierarchies.
 10. **Axes and plots:** axes with ticks and labels, points on them, and a curve from a formula or a list of points that can draw itself in. For Big O, sound sampling, square waves, number lines.
-11. **Trails through row edits:** a trail on a cell follows a swap's bow (`arc`) and an insert's or remove's slide, rather than going straight.

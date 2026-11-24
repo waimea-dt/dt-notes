@@ -193,7 +193,8 @@ a.trail: stroke red solid     # dashed and muted unless styled
 a: trail clear
 ```
 
-- Follows the real path: via, travel, follow and about. Stays until `trail clear`.
+- Follows the real path: via, travel, follow, about and a swap's bow. Stays until `trail clear`.
+- A cell's trail goes with the cell through swaps, inserts and removes.
 
 ## Copy, attach, group
 

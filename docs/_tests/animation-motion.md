@@ -465,6 +465,29 @@ a: trail clear
 b: delete
 ```
 
+---
+
+## Through a swap
+
+A cell's trail stays with the cell, bow and all.
+
+```anim
+arr: row [5 3 8 1] at 3,5
+arr.0: trail
+```
+
++++
+
+```anim
+arr: swap 0 3 speed slow
+```
+
++++
+
+```anim
+arr: swap 3 1 speed slow
+```
+
 </animation>
 
 ## Feature: copy

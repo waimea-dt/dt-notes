@@ -547,6 +547,24 @@
     // "a row, column, code block, grid, table or group": what stagger works on
     const GROUPS = nounList([...LAYOUT_NAMES, GROUP])
 
+    // Parts that go with their owner itself (PARTS: follows): when an edit has given the owner
+    // another id, each such part takes its owner's new id in place of the old at the front of its
+    // own (all at once, as two swapped cells trade ids). An owner replaced (a new uid) is found by
+    // the id instead, and followed from then on.
+    function followOwners() {
+      const byUid = new Map([...shapes.values()].map((shape) => [shape.uid, shape]))
+      const followers = [...shapes.values()].filter((shape) => PARTS[shape.role]?.follows)
+      for (const part of followers) if (!byUid.has(part.owner) && shapes.has(part.part)) part.owner = shapes.get(part.part).uid
+      const moving = followers.filter((part) => byUid.has(part.owner) && byUid.get(part.owner).id !== part.part)
+      for (const part of moving) shapes.delete(part.id)
+      for (const part of moving) {
+        const owner = byUid.get(part.owner)
+        part.id = owner.id + part.id.slice(part.part.length)
+        part.part = owner.id
+        shapes.set(part.id, part)
+      }
+    }
+
     // A shape's parts (PARTS), or those of one role
     const partsOf = (owner, role) => [...shapes.values()].filter((s) => s.part === owner.id && (!role || s.role === role))
     // Whether a shape is a part its owner lays out and holds the members of (PARTS: bound)
@@ -564,6 +582,7 @@
     // members where their refs now are (several passes, for chains), and fit each group's box
     // round its members.
     function settle(meta, warn) {
+      followOwners()
       fitCode(meta)
       fitSpans(meta)
       fitNumbers(meta)

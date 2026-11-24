@@ -336,6 +336,9 @@
   //   outline  an outline round its owner goes round it too (highlight outline)
   //   bound    its owner lays it out and holds its members, so it can't be moved, deleted, grouped
   //            or edited on its own
+  //   follows  it goes with its owner itself (shape.owner, its uid), not its owner's place: when a
+  //            row edit gives the owner another id (ids stay with places), the part's id goes too
+  //            (followOwners in anim-compile.js). Others stay with the place, as indices do
   const PARTS = {
     name: { outline: true }, // a var's, layout's or span's name tag
     index: { outline: true }, // a layout's cell, row or column number
@@ -343,7 +346,7 @@
     span: {}, // a box round some of a layout's places (SHAPES: span)
     power: { outline: true }, // a number's place value (NUMBERINGS: powers)
     decimal: { outline: true }, // a number's value, written out (LAYOUTS: decimal)
-    trail: {}, // where a shape has been (SHAPES: trail)
+    trail: { follows: true }, // where a shape has been (SHAPES: trail)
   }
 
   // The ways a layout's places can be numbered, each a text beside every one, shown with its word
