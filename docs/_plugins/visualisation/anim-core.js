@@ -149,8 +149,11 @@
   //   takes     the props it takes (APPLIES, prop -> types, is worked out from these)
   //   defaults  its own starting values, on top of every shape's (baseShape)
   //   outline   its edge, for line ends, highlights and bounds: 'box' (a rect, rounded by its
-  //             corner if it takes one), 'round' (the ellipse in its box: a circle when square)
-  //             or 'diamond'
+  //             corner if it takes one), 'round' (the ellipse in its box: a circle when square),
+  //             'diamond' or 'polygon' (its points, stretched to its box)
+  //   points    its points go in [ ] straight after its type (offsets from where it's placed, in
+  //             cells: "p: polygon [0,-1 1,1 -1,1] at 5,4"), or alone on a change ("p: [ … ]"). It's
+  //             placed by their 0,0 (cx, cy: from there to its box's middle), its box round them
   //   label     where its label goes: 'centre', 'content' (text: the label is the shape, measured),
   //             'below' (image, icon: it adds to the shape's height), 'along' (lines) or 'script'
   //             (the label is the shape's script, drawn to fit its box: see script). A bar
@@ -201,6 +204,10 @@
     diamond: {
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, fill: 'bg-shape' }, outline: 'diamond', label: 'centre', inside: true,
+    },
+    polygon: {
+      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow'],
+      defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg-shape' }, outline: 'polygon', label: 'centre', inside: true, points: true,
     },
     text: { takes: [...BOXED_PROPS, 'align'], defaults: { w: 0, h: 0 }, outline: 'box', label: 'content', band: { pad: 0.2, corner: 0.15 } },
     image: {
@@ -1017,14 +1024,37 @@
       const size = FONT * shape.font
       return { hw: Math.max(0.3 * size, labelWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size }
     }
-    return { hw: shape.w / 2, hh: shape.h / 2, round: kind.outline === 'round' || undefined, diamond: kind.outline === 'diamond' || undefined }
+    return {
+      hw: shape.w / 2, hh: shape.h / 2, round: kind.outline === 'round' || undefined, diamond: kind.outline === 'diamond' || undefined,
+      polygon: (kind.outline === 'polygon' && shape.points) || undefined,
+    }
   }
 
   // Half-sizes after `scale` (still in the shape's own, unrotated frame).
   function sized(shape) {
     const e = extents(shape)
     const k = shape.scale ?? 1
-    return { hw: e.hw * k, hh: e.hh * k, round: e.round, diamond: e.diamond }
+    return { hw: e.hw * k, hh: e.hh * k, round: e.round, diamond: e.diamond, polygon: e.polygon }
+  }
+
+  // A polygon's points (SHAPES: points, each u, v across its box from -0.5 to 0.5) in a box of
+  // half-sizes hw, hh, about its middle
+  const polygonPoints = (points, hw, hh) => points.map((p) => ({ x: 2 * p.u * hw, y: 2 * p.v * hh }))
+  // How far from its middle a polygon's edge is, the way (dx, dy) goes (a unit vector): the
+  // furthest crossing, so a line meeting it from outside stops at its outer edge
+  function polygonReach(points, hw, hh, dx, dy) {
+    const corners = polygonPoints(points, hw, hh)
+    let reach = 0
+    corners.forEach((a, i) => {
+      const b = corners[(i + 1) % corners.length]
+      const [ex, ey] = [b.x - a.x, b.y - a.y]
+      const across = dx * ey - dy * ex
+      if (Math.abs(across) < 1e-12) return
+      const t = (a.x * ey - a.y * ex) / across // along the way out
+      const s = (a.x * dy - a.y * dx) / across // along the edge
+      if (t > 0 && s >= 0 && s <= 1) reach = Math.max(reach, t)
+    })
+    return reach
   }
 
   // Half-sizes of the axis-aligned box around the rotated, scaled shape (an ellipse's is tighter
@@ -1134,13 +1164,14 @@
     if (len < 1e-6) return c
     const ux = dx / len
     const uy = dy / len
-    const { hw, hh, round, diamond } = sized(shape)
+    const { hw, hh, round, diamond, polygon } = sized(shape)
     // Measure in the shape's own frame, so rotated boxes are trimmed at their real edge.
     const a = (-(shape.angle || 0) * Math.PI) / 180
     const lx = ux * Math.cos(a) - uy * Math.sin(a)
     const ly = ux * Math.sin(a) + uy * Math.cos(a)
     // an ellipse's edge is where (x / hw)² + (y / hh)² = 1; a diamond's where |x| / hw + |y| / hh = 1
-    const dist = round ? 1 / Math.max(1e-9, Math.hypot(lx / Math.max(hw, 1e-9), ly / Math.max(hh, 1e-9)))
+    const dist = polygon ? polygonReach(polygon, hw, hh, lx, ly)
+      : round ? 1 / Math.max(1e-9, Math.hypot(lx / Math.max(hw, 1e-9), ly / Math.max(hh, 1e-9)))
       : diamond ? 1 / Math.max(1e-9, Math.abs(lx) / Math.max(hw, 1e-9) + Math.abs(ly) / Math.max(hh, 1e-9))
         : Math.min(Math.abs(lx) > 1e-9 ? hw / Math.abs(lx) : Infinity, Math.abs(ly) > 1e-9 ? hh / Math.abs(ly) : Infinity)
     const d = Math.min(dist + gap, len / 2)
@@ -1169,9 +1200,12 @@
     const a = (-(shape.angle || 0) * Math.PI) / 180
     const dx = p.x - c.x
     const dy = p.y - c.y
-    const lx = Math.abs(dx * Math.cos(a) - dy * Math.sin(a))
-    const ly = Math.abs(dx * Math.sin(a) + dy * Math.cos(a))
-    const { hw, hh, round, diamond } = sized(shape)
+    const sx = dx * Math.cos(a) - dy * Math.sin(a)
+    const sy = dx * Math.sin(a) + dy * Math.cos(a)
+    const [lx, ly] = [Math.abs(sx), Math.abs(sy)]
+    const { hw, hh, round, diamond, polygon } = sized(shape)
+    // a polygon: no further out than its edge that way (from its middle)
+    if (polygon) { const d = Math.hypot(sx, sy); return d < 1e-9 || d <= polygonReach(polygon, hw, hh, sx / d, sy / d) + EDGE_GAP }
     if (round) return Math.hypot(lx / (hw + EDGE_GAP), ly / (hh + EDGE_GAP)) <= 1
     if (diamond) {
       if (hw < 1e-6 || hh < 1e-6) return false
@@ -1476,5 +1510,5 @@
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, ANCHORS, anchorPoint, refPoint, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, ANCHORS, anchorPoint, refPoint, polygonPoints, roundCorners, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

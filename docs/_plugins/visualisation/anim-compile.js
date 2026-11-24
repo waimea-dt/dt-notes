@@ -146,6 +146,7 @@
         shape.label = props.label
         if (shape.nil) shape.nil = false
       }
+      if (props.points) setPoints(shape, props.points) // before its look, so a size given with them stretches them
       // a turn about a point sets the angle itself (turnAbout), so it isn't a look here
       const turn = props.about ? turnOf(shape, props, creating) : null
       applyLook(shape, turn ? pick(props, Object.keys(props).filter((key) => key !== 'angle')) : props, creating, warn)
@@ -485,6 +486,11 @@
     // A line's props, read from tokens[i]. A shape whose label is lines (SHAPES: lines) can have
     // them in [ ] where its label would go: "s: scratch [ "…" "…" ] at 2,1", "s: [ "…" ]".
     function propsOf(type, tokens, i, kind) {
+      // a polygon's points: straight after its type, or alone on a change ("p: [ … ]")
+      if (SHAPES[type]?.points && (kind === 'create' || tokens[i]?.kind === 'bracket')) {
+        const { points, next } = readPoints(tokens, i, type)
+        return { ...parseProps(tokens, next, kind, shapes), points }
+      }
       if (!SHAPES[type]?.lines || tokens[i]?.kind !== 'bracket' || tokens[i].value !== '[') return parseProps(tokens, i, kind, shapes)
       const noun = nounOf({ type })
       const example = `e.g. "${type} ["…" "…"] at 2,1"`
@@ -493,6 +499,37 @@
       if (props.label !== undefined) throw new Error(`a ${noun} takes one "quoted" line, or its lines in [ ], ${example}`)
       props.label = values.join('\n')
       return props
+    }
+
+    // A polygon's points (SHAPES: points) in [ ] from tokens[i]: pairs of numbers, offsets in cells
+    // from where it's placed ("[0,-1 1,1 -1,1]", commas optional), at least three. Returns them as
+    // { x, y } and the token after the "]".
+    function readPoints(tokens, i, type) {
+      const example = `e.g. "p: ${type} [0,-1 1,1 -1,1] at 5,4"`
+      if (tokens[i]?.kind !== 'bracket' || tokens[i].value !== '[') throw new Error(`${article(type)} ${type}'s points go in [ ] straight after "${type}", ${example}`)
+      const numbers = []
+      let j = i + 1
+      for (; j < tokens.length && tokens[j].kind !== 'bracket'; j++) {
+        if (tokens[j].kind !== 'word' || !NUMBER.test(tokens[j].value)) throw new Error(`${article(type)} ${type}'s points are x,y numbers, not "${tokens[j].value ?? tokens[j].name}" (is a "]" missing?)`)
+        numbers.push(parseFloat(tokens[j].value))
+      }
+      if (tokens[j]?.value !== ']') throw new Error(`the "[" of ${article(type)} ${type}'s points has no closing "]"`)
+      if (numbers.length % 2) throw new Error(`${article(type)} ${type}'s points are x,y pairs, and ${numbers.length} numbers isn't pairs, ${example}`)
+      if (numbers.length < 6) throw new Error(`${article(type)} ${type} needs at least three points, ${example}`)
+      const points = []
+      for (let k = 0; k < numbers.length; k += 2) points.push({ x: numbers[k], y: numbers[k + 1] })
+      return { points, next: j + 1 }
+    }
+    // Gives a polygon its points (in cells, from where it's placed): its box goes round them, each
+    // kept as its share across the box (u, v: -0.5 to 0.5), so a size stretches them; it's placed
+    // by their 0,0 (cx, cy: from there to the box's middle).
+    function setPoints(shape, points) {
+      const xs = points.map((p) => p.x * CELL)
+      const ys = points.map((p) => p.y * CELL)
+      const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)]
+      const [w, h] = [x1 - x0, y1 - y0]
+      Object.assign(shape, { w, h, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 })
+      shape.points = points.map((p, k) => ({ u: w ? (xs[k] - shape.cx) / w : 0, v: h ? (ys[k] - shape.cy) / h : 0 }))
     }
 
     const replaced = (id, warn) => warn(`"${id}" already exists, so it is replaced`)

@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    END_MARKS, TEXT_MARKS, textRuns, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
+    END_MARKS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, rotateAbout, placeFor, COLOUR_PICKS } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -101,6 +101,16 @@
   const roundness = (shape) => (roundBar(shape) ? 1 : 0)
   // A box's corner as drawn: its own, or all the way round as it's round (v.round)
   const cornerOf = (s, v, hw, hh) => Math.max(0, lerp(Math.min(s.corner || 0, hw, hh), Math.min(hw, hh), v.round || 0))
+
+  // A polygon's outline (SHAPES: points) in a box of half-sizes hw, hh, as a closed path, its
+  // corners rounded by r (each as much as fits): from the middle of its first side round to it
+  function polygonPath(points, hw, hh, r) {
+    const corners = polygonPoints(points, hw, hh)
+    if (!r) return `M ${corners.map((p) => `${p.x} ${p.y}`).join(' L ')} Z`
+    const mid = { x: (corners[0].x + corners[1].x) / 2, y: (corners[0].y + corners[1].y) / 2 }
+    const round = roundCorners([mid, ...corners.slice(1), corners[0], mid], r)
+    return `M ${round.map((p) => `${p.x} ${p.y}`).join(' L ')} Z`
+  }
 
   // ---------------------------------------------------------------------------
   // SVG rendering
@@ -274,6 +284,10 @@
       diamond: {
         make: (node) => { node.body = node.g.appendChild(svgEl('polygon', { 'stroke-linejoin': 'round' })) },
         size: (node, s, hw, hh) => attr(node.body, 'points', `0,${-hh} ${hw},0 0,${hh} ${-hw},0`),
+      },
+      polygon: {
+        make: (node) => { node.body = node.g.appendChild(svgEl('path', { 'stroke-linejoin': 'round' })) },
+        size: (node, s, hw, hh) => attr(node.body, 'd', polygonPath(s.points, hw, hh, s.corner || 0)),
       },
       text: { make: () => {}, size: () => {} },
       image: {
@@ -1108,12 +1122,18 @@
 
     function interpolate(a, b, t) {
       const s = { ...b }
-      // a layout with a panel (LAYOUTS) blends its box's offset too, so the panel follows its cells
-      const keys = LAYOUTS[b.layout]?.panel ? [...LERPED, 'cx', 'cy'] : LERPED
+      // a layout with a panel (LAYOUTS) blends its box's offset too, so the panel follows its cells,
+      // as a polygon given new points (SHAPES: points) does, its box round them
+      const keys = LAYOUTS[b.layout]?.panel || kindOf(b).points ? [...LERPED, 'cx', 'cy'] : LERPED
       const across = fitted(b) ? fitPhase(a, b, t) : t
       for (const key of keys) {
         const k = key === 'w' || key === 'cx' ? across : t
         if (typeof a[key] === 'number' && typeof b[key] === 'number') s[key] = lerp(a[key], b[key], k)
+      }
+      // A polygon's points glide to their new places (as many as it had); otherwise they change halfway
+      if (a.points && b.points && a.points !== b.points) {
+        s.points = a.points.length === b.points.length ? b.points.map((p, i) => ({ u: lerp(a.points[i].u, p.u, t), v: lerp(a.points[i].v, p.v, t) }))
+          : t < 0.5 ? a.points : b.points
       }
       // A line style change cross-fades from the old style to the new (see syncGhost)
       if (a.linestyle !== b.linestyle && t < 1) {
@@ -1497,6 +1517,8 @@
       const w = Math.max(0, hw * k + offset)
       const h = Math.max(0, hh * k + offset)
       if (kind.outline === 'round') return { d: `M ${-w} 0 A ${w} ${h} 0 1 1 ${w} 0 A ${w} ${h} 0 1 1 ${-w} 0 Z`, transform }
+      // a polygon: stretched to its box grown (or shrunk) by `offset`
+      if (kind.outline === 'polygon') return { d: polygonPath(s.points, w, h, Math.max(0, (s.corner || 0) * k + offset)), transform }
       if (kind.outline === 'diamond') {
         // each side moves out by `offset`: the same diamond, scaled by (d + offset) / d, where d is
         // the distance from the centre to a side
