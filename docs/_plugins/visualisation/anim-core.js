@@ -398,8 +398,9 @@
   //               that value, a look at a time until the digit is given that look ("colour reset":
   //               again; digitLooks)
   //   power       where its place values go (NUMBERINGS: powers), as index does
-  //   decimal     where its value, written out, goes (side and gap, in cells, and its text's
-  //               alignment, so it doesn't shift as it changes) when shown
+  //   decimal     its value written out, when shown: where it goes (side and gap, in cells, and its
+  //               text's alignment, so it doesn't shift as it changes), and label(id), its text: a
+  //               label like any other, so a "{ }" in it follows the number (and counts with it)
   //   fixed       its cells stay as made: no swap, insert or remove (a value changes them)
   //   flip        "flip" turns each digit d to radix - 1 - d (a bit: 0 <-> 1)
   //   props       props only it (and other layouts listing them) takes (LAYOUT_PROPS)
@@ -409,7 +410,7 @@
   // What every number (LAYOUTS: radix) shares: a reversed row of fixed digits
   const NUMBER = {
     cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false, arrange: 'line', bow: 'own',
-    index: INDEX_BELOW, power: INDEX_ABOVE, decimal: { side: 'right-of', gap: 0.3, align: 'left' }, fixed: true,
+    index: INDEX_BELOW, power: INDEX_ABOVE, decimal: { side: 'right-of', gap: 0.3, align: 'left', label: (id) => `= {${id}}` }, fixed: true,
   }
   const NUMBER_DIGITS = { prop: 'digits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { colour: 'muted' } } }
   const GRID_VIEWS = {

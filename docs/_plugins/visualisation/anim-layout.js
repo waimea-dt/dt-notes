@@ -14,7 +14,7 @@
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, holderRef, inTurn,
-      layerOf, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
+      layerOf, linkText, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
       takeBareNumber, valueIn, valueOf, warnEffect
 
     // A cell's number as written after a verb ("swap 0 3", "range 3 end"): a whole number, or end,
@@ -247,7 +247,7 @@
         return true
       }
       if (Object.keys(NUMBERINGS).map(shown).some(Boolean)) syncIndices(shape, props, meta)
-      if (shown('decimal')) setTag(shape, decimalId(shape.id), 'decimal', decimalTag(shape), props, meta)
+      if (shown('decimal')) setTag(shape, decimalId(shape.id), 'decimal', decimalTag(shape), props, meta, warn)
     }
 
     // The side a name goes, unless given: its layout's (LAYOUTS: name), a span's by its row's layout
@@ -262,13 +262,14 @@
       const old = shapes.get(id)
       if (name.none && !old) return warn(`"${owner.id}" has no name to clear`)
       const side = name.side || old?.attach?.side || nameSide(owner)
-      setTag(owner, id, 'name', name.none ? null : { text: name.text, side, gap: NAME_GAP }, props, meta)
+      setTag(owner, id, 'name', name.none ? null : { text: name.text, side, gap: NAME_GAP }, props, meta, warn)
     }
     const NAME_GAP = 0.2 // in cells, between a name and its owner
 
     // A text beside its owner (a part with this role): its name, a number's decimal. tag: its text,
-    // side and gap (in cells); none, it goes.
-    function setTag(owner, id, role, tag, props, meta) {
+    // side and gap (in cells); none, it goes. Its text is a label like any other, so a "{ }" in it
+    // follows values (linkText).
+    function setTag(owner, id, role, tag, props, meta, warn) {
       const old = shapes.get(id)
       if (!tag) {
         if (!old) return
@@ -279,6 +280,7 @@
       }
       const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: newUid(), font: TAG_FONT, layer: owner.layer, part: owner.id, role }
       text.label = tag.text
+      linkText(text, warn)
       if (tag.align) text.align = tag.align
       text.attach = besideOf(owner.id, tag.side, tag.gap * CELL)
       Object.assign(text, attachPos(text, owner, text.attach))
@@ -288,21 +290,17 @@
     }
     const TAG_FONT = 1.2 // a name's and a decimal's font
 
-    // A number's value written out (LAYOUTS: decimal), beside it while shown ("b: decimal")
-    const decimalTag = (row) => (row.decimal ? { text: `= ${valueIn(row).label}`, ...LAYOUTS[row.layout].decimal } : null)
+    // A number's value written out (LAYOUTS: decimal), beside it while shown ("b: decimal"): a
+    // label following the number, kept up to date (and counting) as links are (fitLinks)
+    const decimalTag = (row) => (row.decimal ? { text: LAYOUTS[row.layout].decimal.label(row.id), ...LAYOUTS[row.layout].decimal } : null)
 
-    // After every line, a number's parts follow its digits, in the time the digits take this beat:
-    // its decimal takes its new value, and each mark of a numbering with a lit look (NUMBERINGS:
-    // powers) takes it while its digit isn't 0
+    // After every line, a number's place values follow its digits, in the time the digits take this
+    // beat: each mark of a numbering with a lit look (NUMBERINGS: powers) takes it while its digit
+    // isn't 0 (its decimal is a label following it: decimalTag)
     function fitNumbers(meta) {
       for (const row of shapes.values()) {
         if (!LAYOUTS[row.layout]?.radix) continue
         const digits = row.members.map((cell) => shapes.get(cell))
-        const text = row.decimal && shapes.get(decimalId(row.id))
-        if (text && text.label !== decimalTag(row).text) {
-          text.label = decimalTag(row).text
-          retime(meta, text.uid, busiest(meta, digits.filter(Boolean)))
-        }
         for (const numbering of Object.values(NUMBERINGS).filter((n) => n.lit)) {
           digits.forEach((digit, k) => {
             const mark = digit && shapes.get(markId(row.id, numbering, k + baseOf(row.layout)))
@@ -766,7 +764,7 @@
       verbs: { range: changeRange, span: makeSpan },
       link: () => {
         ({ applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, holderRef,
-          inTurn, layerOf, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue,
+          inTurn, layerOf, linkText, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue,
           speedOf, takeBareNumber, valueIn, valueOf, warnEffect } = cx)
       },
     }
