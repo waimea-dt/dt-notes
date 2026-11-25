@@ -74,7 +74,9 @@
   // How an image fills its box (its SVG preserveAspectRatio): contain, all of it inside the box;
   // cover, filling the box, cropped to it (e.g. a backdrop of another shape than the grid)
   const IMAGE_FITS = { contain: 'xMidYMid meet', cover: 'xMidYMid slice' }
-  const PLACEMENTS = ['above', 'below', 'left-of', 'right-of']
+  // The placement words, each the way it goes from its ref (DIRECTIONS)
+  const PLACE_DIRECTIONS = { above: 'up', below: 'down', 'left-of': 'left', 'right-of': 'right' }
+  const PLACEMENTS = Object.keys(PLACE_DIRECTIONS)
   const ALIGNS = { left: 'left', centre: 'centre', right: 'right' }
   // Angles: clockwise degrees from as drawn, which faces right (as sprites do). The direction words
   // for "angle", as degrees; a shape turns to one the short way (numberValue: turn)
@@ -1219,20 +1221,26 @@
   // Extra height taken up by a label below its shape (an image or icon).
   const labelBelow = (shape) => (kindOf(shape).label === 'below' && shape.label ? FONT * shape.font * 1.3 * (shape.scale ?? 1) : 0)
 
-  function placeNextTo(self, other, place, gap) {
+  // Where self goes to be gap from other, the way angle goes from other's centre (clockwise
+  // degrees, 0 = right). Their upright boxes (outline) are kept gap apart across or down, whichever
+  // they meet by first, so they don't overlap at any angle. A label below an image or icon counts
+  // as part of its box.
+  function placeAlong(self, other, angle, gap) {
     const a = outline(self)
     const b = outline(other)
     const c = boxCentre(other)
-    let p
-    switch (place) {
-      case 'above': p = { x: c.x, y: c.y - b.hh - gap - a.hh - labelBelow(self) }; break
-      case 'below': p = { x: c.x, y: c.y + b.hh + labelBelow(other) + gap + a.hh }; break
-      case 'left-of': p = { x: c.x - b.hw - gap - a.hw, y: c.y }; break
-      default: p = { x: c.x + b.hw + gap + a.hw, y: c.y }
-    }
+    const turn = (angle * Math.PI) / 180
+    const [ux, uy] = [Math.cos(turn), Math.sin(turn)].map((v) => (Math.abs(v) < TINY ? 0 : v))
+    const label = uy > 0 ? labelBelow(other) : uy < 0 ? labelBelow(self) : 0 // the one between them
+    const along = Math.min(
+      ux ? (a.hw + b.hw + gap) / Math.abs(ux) : Infinity,
+      uy ? (a.hh + b.hh + gap + label) / Math.abs(uy) : Infinity,
+    )
     // its box goes there: a row / column's first cell, or an aligned shape's side, is off-centre
-    return placeFor(self, p)
+    return placeFor(self, { x: c.x + along * ux, y: c.y + along * uy })
   }
+  // A placement word's place (PLACE_DIRECTIONS)
+  const placeNextTo = (self, other, place, gap) => placeAlong(self, other, DIRECTIONS[PLACE_DIRECTIONS[place]], gap)
 
   // A shape's attachment (shape.attach), one of two kinds:
   //   beside  next to its ref (side: a placement word, or 'centre' on top of it, and a gap; on top,
@@ -1612,6 +1620,6 @@
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
-    escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, pointAt, pointOnHops, pointOnPath, reducedMotion,
+    escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, placeAlong, pointAt, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, OUTLINES, ANCHORS, anchorPoint, refPoint, polygonPoints, roundCorners, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
 })()
