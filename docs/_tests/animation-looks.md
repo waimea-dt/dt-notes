@@ -308,6 +308,27 @@ A spotlight dims the rest on top of their own opacity.
 r2: highlight spotlight
 ```
 
+---
+
+## Names and indices fade with their owner
+
+```anim
+r2: highlight clear
+arr: name "arr" indices opacity reset
+```
+
++++
+
+```anim
+arr: opacity 0.1
+```
+
++++
+
+```anim
+arr: opacity reset
+```
+
 </animation>
 
 ## Feature: angle and scale

@@ -119,7 +119,7 @@ r: row [
 | radius / corner | `radius 0.5` (circle: both ways) · `corner 0.2` (rect; line, arrow: rounds its corners) |
 | colour | `fill blue` · `stroke #f80` · `colour amber` (text and labels) · `fill rgb(255 128 0)` |
 | weight | `weight 2` (× normal, `0` hides) |
-| opacity | `opacity 0.5` (`0` hidden … `1` solid) |
+| opacity | `opacity 0.5` (`0` hidden … `1` solid; its name and indices too) |
 | line style | `solid` · `dashed` · `dotted` |
 | show | `show 0.5` (lines: how much, from the start, as if drawn that far) |
 | flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |

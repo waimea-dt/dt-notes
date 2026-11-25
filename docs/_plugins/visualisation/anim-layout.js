@@ -8,7 +8,7 @@
   const { CELL, placeNextTo, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
     markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, digitLooks, EDIT_WORDS,
-    LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor } = window.Anim
+    LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor, PARTS } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
@@ -236,7 +236,8 @@
       if (bound(shape)) throw new Error(`"${shape.id}" is part of "${shape.part}", so "${word}" doesn't work on it on its own`)
     }
 
-    function updateParts(shape, props, meta, warn) {
+    // opacity: the line's (a group's is taken out of props for its members: restyleMembers)
+    function updateParts(shape, props, meta, warn, opacity = props.opacity) {
       if (props.name) setName(shape, props.name, props, meta, warn)
       // a part shown or hidden by its word ("indices", "decimal clear"): whether it was given
       const shown = (key) => {
@@ -248,6 +249,18 @@
       }
       if (Object.keys(NUMBERINGS).map(shown).some(Boolean)) syncIndices(shape, props, meta)
       if (shown('decimal')) setTag(shape, decimalId(shape.id), 'decimal', decimalTag(shape), props, meta, warn)
+      if (opacity !== undefined) fadeParts(shape, opacity, props, meta, warn)
+    }
+
+    // "arr: opacity 0" (or reset): its name, indices and other tags (PARTS: fades) fade with it,
+    // each given the same opacity, in the line's time
+    function fadeParts(owner, opacity, props, meta, warn) {
+      for (const part of partsOf(owner).filter((p) => PARTS[p.role]?.fades)) {
+        const changed = structuredClone(part)
+        applyProps(changed, { opacity }, false, warn, meta)
+        shapes.set(changed.id, changed)
+        schedule(meta, changed.uid, props)
+      }
     }
 
     // The side a name goes, unless given: its layout's (LAYOUTS: name), a span's by its row's layout

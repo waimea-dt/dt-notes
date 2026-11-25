@@ -341,13 +341,14 @@
   //   follows  it goes with its owner itself (shape.owner, its uid), not its owner's place: when a
   //            row edit gives the owner another id (ids stay with places), the part's id goes too
   //            (followOwners in anim-compile.js). Others stay with the place, as indices do
+  //   fades    an opacity given to its owner goes to it too (fadeParts in anim-layout.js)
   const PARTS = {
-    name: { outline: true }, // a var's, layout's or span's name tag
-    index: { outline: true }, // a layout's cell, row or column number
+    name: { outline: true, fades: true }, // a var's, layout's or span's name tag
+    index: { outline: true, fades: true }, // a layout's cell, row or column number
     view: { bound: true }, // a grid's row or column, or a table's heading (LAYOUTS: views)
     span: {}, // a box round some of a layout's places (SHAPES: span)
-    power: { outline: true }, // a number's place value (NUMBERINGS: powers)
-    decimal: { outline: true }, // a number's value, written out (LAYOUTS: decimal)
+    power: { outline: true, fades: true }, // a number's place value (NUMBERINGS: powers)
+    decimal: { outline: true, fades: true }, // a number's value, written out (LAYOUTS: decimal)
     trail: { follows: true }, // where a shape has been (SHAPES: trail)
   }
 

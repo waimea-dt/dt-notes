@@ -838,6 +838,7 @@
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
       const order = isGroup(existing) ? staggerOrder(existing) : null
       if (order && takeBareNumber(props)) numberEach(existing.members.map((m) => shapes.get(m)), props, meta, warn)
+      const { opacity } = props // its tags fade with it, a group's too (updateParts)
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
       const shape = structuredClone(existing)
       if (newValue && !existing.layout) setValue(shape, newValue)
@@ -852,7 +853,7 @@
       schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }) // travel: speed per hop
       if (newValue && (props.count ?? defaults.count)) countUp(shape, before, props, meta, warn)
       if (props.repeat) roundsOf(meta, beforeRounds, firstRound)
-      updateParts(shape, props, meta, warn)
+      updateParts(shape, props, meta, warn, opacity)
       if (props.trail !== undefined) setTrail(existing, shape, props, meta, warn)
       if (order) applyStagger(shape, order, props, meta, warn)
       else if (props.stagger) warn(`"stagger" works on ${GROUPS}, and "${id}" isn't one`)
