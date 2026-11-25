@@ -5,7 +5,8 @@
 ;(function () {
   const vscode = acquireVsCodeApi()
   const page = document.querySelector('.markdown-section')
-  const where = document.querySelector('.dtn-preview-where')
+  const picker = document.querySelector('.dtn-preview-blocks')
+  const cursorLine = document.querySelector('.dtn-preview-line')
   const empty = page.innerHTML
   const base = document.head.appendChild(document.createElement('base')) // images resolve from the file's folder
 
@@ -52,6 +53,23 @@
   let position = null
   const samePlace = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 
+  // The bar's list of the file's blocks, rebuilt only when their names change. Outside every block
+  // (index -1) it shows a placeholder.
+  const placeholder = new Option('Choose a block', -1)
+  placeholder.disabled = placeholder.hidden = true
+  let titles = []
+  function listBlocks(next, index) {
+    if (!samePlace(next, titles)) {
+      titles = next
+      picker.replaceChildren(placeholder, ...titles.map((title, i) => new Option(title, i)))
+    }
+    picker.value = index
+    picker.disabled = titles.length < 2 && index >= 0
+    picker.parentElement.classList.toggle('dtn-preview-fixed', picker.disabled)
+    picker.parentElement.hidden = !titles.length
+  }
+  picker.addEventListener('change', () => vscode.postMessage({ type: 'block', index: Number(picker.value) }))
+
   function build(markdown) {
     page.style.minHeight = `${page.offsetHeight}px` // holds the scroll place while it's rebuilt
     try {
@@ -69,12 +87,14 @@
   })
 
   window.addEventListener('message', ({ data }) => {
-    if (data.type === 'empty') {
-      shown = null
+    listBlocks(data.titles, data.index)
+    cursorLine.textContent = data.line
+    // outside every block: the hint, until the cursor is in one again
+    if (data.type === 'outside') {
+      shown = position = null
       page.innerHTML = empty
       return
     }
-    where.textContent = data.where
     base.href = data.base
     widget = data.widget
     replays.hidden = !data.replays

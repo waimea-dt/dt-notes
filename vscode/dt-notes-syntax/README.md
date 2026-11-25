@@ -10,6 +10,7 @@ Click the play button in a Markdown or `.anim` editor's title bar (or run **DT N
 
 - **Updates as you type**, with no page reload.
 - **Follows the cursor** to the beat, slide or card (front or back) it's in. In an animation inside a slide, it shows the animation.
+- **Block list** in the pane's bar: every block in the file, named by its kind and its `name="..."` attribute, else its first `#` heading, with its line (else just its line). Picking one moves the cursor to it. Beside it, the cursor's line. With the cursor outside every block, the pane shows a hint instead of a block.
 - **Sync cursor** (on by default): stepping in the pane moves the cursor there, scrolling the editor smoothly.
 - **Replay edits** (animations, on by default): after each edit, plays into the beat you changed.
 - Follows VS Code's light or dark theme.

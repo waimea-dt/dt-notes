@@ -22,6 +22,9 @@
  *   Click the deck for focus, then press `s` to open the speaker view.
  *   </slides>
  *
+ * Attributes:
+ *   name="..." - the deck's name in the VS Code preview pane's block list (not used on the page)
+ *
  * Touch swipes are reveal.js's own (`touch`, on by default); they don't also go back / forward in
  * the browser (DocsifyUtils.preventSwipeNavigation). A double click doesn't select text
  * (DocsifyUtils.preventDoubleClickSelect), except in editors and inputs. While the deck is focused,
@@ -327,7 +330,7 @@
       cleanupDeckWatchers()
 
       let index = 0
-      return content.replace(/<slides>([\s\S]*?)<\/slides>/g, (_match, markdown) => buildDeck(markdown, index++))
+      return content.replace(/<slides\b[^>]*>([\s\S]*?)<\/slides>/g, (_match, markdown) => buildDeck(markdown, index++))
     })
 
     hook.afterEach(stripDeckHeadingAnchors)

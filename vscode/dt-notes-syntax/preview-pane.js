@@ -4,14 +4,16 @@
 // cursor line maps to a beat, slide or card, are in preview-kinds.js.
 // It rebuilds as you type and follows the cursor to the place it's in; with "Replay edits" ticked,
 // an animation plays into that beat after each edit. With "Sync cursor" ticked, stepping in the
-// pane moves the cursor the other way, to the place it lands on.
+// pane moves the cursor the other way, to the place it lands on. With the cursor outside every
+// block it shows a hint. The bar lists the file's blocks (picking one moves the cursor to it) and
+// shows the cursor's line.
 // Saving one of the pane's site files (a plugin or its CSS) reloads the pane with it.
 const vscode = require('vscode')
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 const { engineDirFor, pageOf } = require('./engine')
-const { KINDS, TAGS, findBlocks, markdownOf } = require('./preview-kinds')
+const { KINDS, TAGS, findBlocks, markdownOf, titleOf } = require('./preview-kinds')
 
 const VIEW_TYPE = 'dtNotes.blockPreview'
 const EDIT_WAIT_MS = 300 // after the last keystroke
@@ -90,35 +92,42 @@ function pageHtml(webview, engineDir, files) {
 </head>
 <body>
   <header class="dtn-preview-bar">
-    <span class="dtn-preview-where"></span>
+    <span class="dtn-preview-where">
+      <span class="dtn-preview-picker"><select class="dtn-preview-blocks" title="The file's blocks: pick one to move the cursor to it"></select></span>
+      <span class="dtn-preview-line"></span>
+    </span>
     <span class="dtn-preview-options">
       <label title="Stepping here moves the editor's cursor there"><input type="checkbox" class="dtn-preview-sync"> Sync cursor</label>
       <label class="dtn-preview-replays" title="Play into the beat after each edit"><input type="checkbox" class="dtn-preview-replay"> Replay edits</label>
     </span>
   </header>
-  <div class="markdown-section"><p class="dtn-preview-empty">Put the cursor in a block: ${tags}.</p></div>
+  <div class="markdown-section"><p class="dtn-preview-empty">Click inside a block to preview it: ${tags}.</p></div>
   <script nonce="${nonce}">window.$docsify = {}</script>
   ${[...scripts, ...files.scripts.map(site), own('preview-pane-view.js')].map(script).join('\n  ')}
 </body>
 </html>`
 }
 
-// The block to show in a Markdown file: the innermost one the cursor is in, else the one shown last
-// (when it's the same file), else the nearest above the cursor. position: where the cursor is in
-// it, or null when it's outside.
-function blockAt(lines, cursor, previous, engineDir) {
+// In a Markdown file: every block's name (for the pane's list) and, when the cursor is in one, the
+// innermost one: its index, tag, Markdown and where the cursor is in it. index is -1 when it's
+// outside every block.
+function blockAt(lines, cursor, engineDir) {
   const blocks = findBlocks(lines)
-  if (!blocks.length) return null
-  let index = blocks.findLastIndex((b) => b.start <= cursor && cursor <= b.end)
-  const inside = index >= 0
-  if (!inside) index = Math.min(previous ?? Math.max(0, blocks.findLastIndex((b) => b.start < cursor)), blocks.length - 1)
+  const titles = blocks.map(titleOf)
+  const index = blocks.findLastIndex((b) => b.start <= cursor && cursor <= b.end)
+  if (index < 0) return { titles, index }
   const block = blocks[index]
-  const kind = KINDS[block.tag]
-  return { index, tag: block.tag, line: block.start, markdown: markdownOf(block), position: inside ? kind.positionAt(block, cursor, engineDir) : null }
+  return { titles, index, tag: block.tag, markdown: markdownOf(block), position: KINDS[block.tag].positionAt(block, cursor, engineDir) }
 }
 
 // A whole .anim file is one beat's scene
-const animFile = (lines) => ({ index: 0, tag: 'animation', line: 0, markdown: ['<animation>', '```anim', ...lines, '```', '</animation>'].join('\n'), position: 0 })
+const animFile = (lines, name) => ({
+  titles: [`${KINDS.animation.label}: ${name}`],
+  index: 0,
+  tag: 'animation',
+  markdown: ['<animation>', '```anim', ...lines, '```', '</animation>'].join('\n'),
+  position: 0,
+})
 
 function activate(context, log) {
   const state = { panel: null, engineDir: null, files: new Set(), shown: null, message: null, timer: 0, scrollTimer: 0, edited: false }
@@ -148,6 +157,7 @@ function activate(context, log) {
       // a (re)loaded page asks for the block it should show
       if (message.type === 'ready' && state.message) panel.webview.postMessage(state.message)
       if (message.type === 'position') moveCursorTo(message.position)
+      if (message.type === 'block') moveToBlock(message.index)
     })
     load(engineDir)
   }
@@ -162,21 +172,23 @@ function activate(context, log) {
     try {
       const lines = document.getText().split(/\r?\n/)
       const cursor = editor.selection.active.line
-      const sameFile = state.shown?.uri === document.uri.toString()
-      const found = document.languageId === 'anim' ? animFile(lines) : blockAt(lines, cursor, sameFile ? state.shown.index : null, engineDir)
-      if (!found) return post({ type: 'empty' })
+      const found = document.languageId === 'anim'
+        ? animFile(lines, path.basename(document.fileName))
+        : blockAt(lines, cursor, engineDir)
       state.shown = { uri: document.uri.toString(), index: found.index, tag: found.tag }
       state.panel.title = `Preview: ${path.basename(document.fileName)}`
+      const bar = { titles: found.titles, index: found.index, line: `line ${cursor + 1}` }
+      if (found.index < 0) return post({ type: 'outside', ...bar })
       const kind = KINDS[found.tag]
       post({
         type: 'block',
+        ...bar,
         markdown: found.markdown,
         widget: kind.widget,
         replays: Boolean(kind.replays),
         position: found.position,
         play: edited,
         base: `${state.panel.webview.asWebviewUri(vscode.Uri.file(path.dirname(document.fileName)))}/`,
-        where: `${path.basename(document.fileName)}, line ${found.line + 1}`,
       })
     } catch (error) {
       log.appendLine(`block preview: ${error.stack || error}`)
@@ -186,14 +198,30 @@ function activate(context, log) {
   // Stepping in the pane: the shown block's editor gets its cursor on that place (unless it's
   // already there). The cursor move comes back through update, which finds the pane already there.
   function moveCursorTo(position) {
-    const editor = state.shown && vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === state.shown.uri)
-    if (!editor || editor.document.languageId !== 'markdown' || position == null) return
-    const block = findBlocks(editor.document.getText().split(/\r?\n/))[state.shown.index]
-    if (block?.tag !== state.shown.tag) return
+    const { editor, blocks } = shownEditor()
+    const block = blocks?.[state.shown.index]
+    if (position == null || block?.tag !== state.shown.tag) return
     const kind = KINDS[block.tag]
     const cursor = editor.selection.active.line
     if (block.start <= cursor && cursor <= block.end && samePlace(kind.positionAt(block, cursor, state.engineDir), position)) return
-    const line = editor.document.lineAt(kind.lineOf(block, position, state.engineDir))
+    placeCursor(editor, kind.lineOf(block, position, state.engineDir))
+  }
+
+  // Picking a block in the pane's list: the cursor goes to its opening tag, and the pane follows
+  function moveToBlock(index) {
+    const { editor, blocks } = shownEditor()
+    if (blocks?.[index]) placeCursor(editor, blocks[index].start)
+  }
+
+  // The shown block's Markdown editor (if it's visible) and that file's blocks
+  function shownEditor() {
+    const editor = state.shown && vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === state.shown.uri)
+    if (editor?.document.languageId !== 'markdown') return {}
+    return { editor, blocks: findBlocks(editor.document.getText().split(/\r?\n/)) }
+  }
+
+  function placeCursor(editor, lineNumber) {
+    const line = editor.document.lineAt(lineNumber)
     const at = new vscode.Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex)
     editor.selection = new vscode.Selection(at, at)
     scrollTo(editor, line.lineNumber)

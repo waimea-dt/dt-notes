@@ -55,6 +55,7 @@ Markers go alone on their line. Everything in a beat plays at once.
 | `loop` / `loop-bounce` | off | Restart / play back to the start |
 | `hold="s"` | `1.5` | Wait between beats while playing |
 | `controls="none"` | shown | Hide buttons and progress bar |
+| `name="..."` | `# Title` | Name in the VS Code preview's block list |
 
 **Keys:** → `N` `Space` next · ← `P` `Shift+Space` back · `Home` `End` · `A` play · `F` full screen · `S` notes · `?` help · `Esc`
 

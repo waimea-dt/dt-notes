@@ -25,7 +25,49 @@ body {
     font-family: var(--vscode-font-family);
     font-size: var(--vscode-font-size);
 
+    .dtn-preview-where { display: flex; align-items: center; gap: 0.6em; min-width: 0; }
+    .dtn-preview-line { white-space: nowrap; }
     .dtn-preview-options { display: flex; gap: 1em; }
+
+    /* The block list: a quiet dropdown (a faint border until hovered or focused) with its own
+       triangle, as the browser's own arrow is turned off */
+    .dtn-preview-picker {
+      position: relative;
+      display: flex;
+      min-width: 0;
+
+      &::after {
+        content: '';
+        position: absolute;
+        right: 0.55em;
+        top: 50%;
+        border: 0.3em solid transparent;
+        border-top-color: currentColor;
+        border-bottom: 0;
+        translate: 0 -50%;
+        pointer-events: none;
+        color: var(--vscode-dropdown-foreground);
+      }
+      &.dtn-preview-fixed::after { display: none; } /* only one block to pick */
+    }
+
+    .dtn-preview-blocks {
+      appearance: none;
+      min-width: 0;
+      max-width: 100%;
+      padding: 0.15em 1.8em 0.15em 0.4em;
+      border: 1px solid color-mix(in srgb, var(--vscode-dropdown-border, currentColor) 35%, transparent);
+      border-radius: 3px;
+      background: var(--vscode-dropdown-background);
+      color: var(--vscode-dropdown-foreground);
+      font: inherit;
+      text-overflow: ellipsis;
+      cursor: pointer;
+
+      &:hover { border-color: var(--vscode-dropdown-border, currentColor); }
+      &:focus { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }
+      &:disabled { padding-right: 0.4em; cursor: default; }
+    }
     label { cursor: pointer; white-space: nowrap; }
     [hidden] { display: none; } /* the site's label styles would show it */
   }

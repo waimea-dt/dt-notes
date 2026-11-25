@@ -6,7 +6,7 @@ Click a deck to focus it, then scroll to step through slides and fragments (the 
 
 ## Full Feature Test
 
-<slides>
+<slides name="Complex Slide Test">
 
 # Arrays... Your First Chest of Loot
 
@@ -193,7 +193,7 @@ Back to normal docs...
 
 ## Simple Test
 
-<slides>
+<slides name="Simple Slides Test">
 
 # Arrays... Your First Chest of Loot
 

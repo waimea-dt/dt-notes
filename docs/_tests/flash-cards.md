@@ -4,7 +4,7 @@ Click to flip; that also gives the deck focus. While focused: ↑ / ↓ flip, �
 
 ## Simple
 
-<flashcards>
+<flashcards name="Flash Card Test">
 
 - # How many beans make five?
 
@@ -66,7 +66,7 @@ Click to flip; that also gives the deck focus. While focused: ↑ / ↓ flip, �
 
 ## Shuffled
 
-<flashcards shuffle>
+<flashcards name="Shuffle Flash Cards Test" shuffle>
 
 - # Card A
 

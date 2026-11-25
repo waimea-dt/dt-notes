@@ -1,4 +1,5 @@
 // The kinds of block the preview pane (preview-pane.js) can show. Each entry gives:
+//   label      - the kind's short name in the pane's list of blocks
 //   widget     - a selector for the built widget, which takes `preview-show` events and sends
 //                `preview-position` ones (see the plugin's header)
 //   scripts    - its plugin's files in docs/ (loaded in the site page's order, after utils.js)
@@ -65,6 +66,7 @@ function cardsOf(block) {
 
 const KINDS = {
   animation: {
+    label: 'anim',
     widget: '.animation',
     // scratch-blocks.js sets up the library its Scratch scripts are drawn with (DocsifyScratchBlocks)
     scripts: (engineDir) => [...partsOf(engineDir).map((part) => `_plugins/visualisation/${part}.js`), '_plugins/visualisation/animation.js', '_plugins/coding/scratch-blocks.js'],
@@ -84,6 +86,7 @@ const KINDS = {
     },
   },
   slides: {
+    label: 'slides',
     widget: '.reveal.docsify-slide-deck',
     scripts: () => ['_plugins/interactive/slides.js'],
     styles: ['_css/interactive/slides.css'],
@@ -91,6 +94,7 @@ const KINDS = {
     lineOf: (block, slide) => (slide ? contentFrom(block, markersIn(block, SLIDE)[slide - 1] + 1) : contentFrom(block, 0)),
   },
   flashcards: {
+    label: 'flash',
     widget: 'ul.flash-cards',
     scripts: () => ['_plugins/interactive/flash-cards.js'],
     styles: ['_css/interactive/flash-cards.css'],
@@ -148,4 +152,21 @@ function markdownOf(block) {
   return [`<${block.tag}${attrs}>`, ...block.lines, `</${block.tag}>`].join('\n')
 }
 
-module.exports = { KINDS, TAGS, findBlocks, markdownOf }
+// A block's name in the pane's list: its kind, then its name="..." attribute, else its first #
+// heading (outside code and inner blocks, without Docsify's {...} flags), with its line; else just
+// its line
+const NAME = /\bname\s*=\s*(?:"([^"]*)"|'([^']*)')/i
+const H1 = /^[ \t]*#[ \t]+(.*?)[ \t#]*$/
+function nameOf(block) {
+  const named = block.attrs.match(NAME)
+  if (named) return (named[1] ?? named[2]).trim()
+  const [i] = markersIn(block, H1)
+  return i == null ? '' : block.lines[i].match(H1)[1].replace(/\s*\{[^}]*\}/g, '').trim()
+}
+function titleOf(block) {
+  const name = nameOf(block)
+  const line = block.start + 1
+  return `${KINDS[block.tag].label}: ${name ? `${name} (line ${line})` : `Line ${line}`}`
+}
+
+module.exports = { KINDS, TAGS, findBlocks, markdownOf, titleOf }

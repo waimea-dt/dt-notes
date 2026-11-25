@@ -16,6 +16,7 @@
  *
  * Attributes:
  *   shuffle - if present, cards are shown in a randomised order.
+ *   name="..." - the cards' name in the VS Code preview pane's block list (not used on the page)
  *
  * Controls: click to flip a card. While the deck has focus (after a click in it): Up / Down flip,
  * Left / Right move, Escape goes back to the first card, and scrolling moves (addWheelStepping).

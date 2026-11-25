@@ -677,7 +677,7 @@ b: 0
 
 ## Binary and Colours
 
-<animation grid="16x7">
+<animation grid="16x7" name="Binary and Colours">
 
 ## Three binary values: R, G, B
 
@@ -738,7 +738,9 @@ r: 255
 
 Columns popping in, recolouring and going, each a beat behind the last, on a loop.
 
-<animation grid="8x8" autoplay>
+<animation grid="8x8" autoplay name="Colours">
+
+# Colour Test
 
 ```anim
 c1: column 6 at 2,2 size 0.8 gap 0.2 corner 0.5 pop stagger 0.15
