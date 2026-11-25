@@ -98,7 +98,8 @@ const KINDS = {
     widget: 'ul.flash-cards',
     scripts: () => ['_plugins/interactive/flash-cards.js'],
     styles: ['_css/interactive/flash-cards.css'],
-    attrs: (attrs) => attrs.replace(/\s*\bshuffle\b/i, ''), // in written order, to match the file
+    // in written order, to match the file (a quoted value, such as a name, is kept as it is)
+    attrs: (attrs) => attrs.replace(/("[^"]*"|'[^']*')|\s*\bshuffle\b/gi, (match, quoted) => quoted ?? ''),
     // { card, back }: the card the line is in (from 0), and whether it's past the card's ---
     positionAt(block, line) {
       const at = blockLine(block, line)

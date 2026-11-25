@@ -35,7 +35,7 @@ AES doesn't encrypt letter-by-letter like the historical ciphers - it works on 1
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="AES Terms">
 
 - # AES
 

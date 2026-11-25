@@ -66,7 +66,7 @@ CRYPTOGRAPHY IS THE PRACTICE AND STUDY OF TECHNIQUES FOR SECURE COMMUNICATION. O
 
 ## Key Terms
 
-<flashcards shuffle>
+<flashcards name="Breaking Caesar Terms" shuffle>
 
 - # Brute-Force attack
 

@@ -59,7 +59,7 @@ The **crossover point** (here, around N=1,000) is where the lower-complexity alg
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Cases Terms">
 
 - # Best case
 

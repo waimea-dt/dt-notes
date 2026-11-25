@@ -107,7 +107,7 @@ Now let's see how 2-Opt (NN + refinement) compares to the optimal solution:
 
 ## Key Terms
 
-<flashcards shuffle>
+<flashcards name="TSP Approx Terms" shuffle>
 
 - # Heuristic
 

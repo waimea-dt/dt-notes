@@ -34,7 +34,7 @@ Strong encryption can be undone by **weak human choices**:
 
 Use these flashcards to test if you know what each of these terms or concepts means...
 
-<flashcards>
+<flashcards name="Why Encryption Terms">
 
 - # Confidentiality
 

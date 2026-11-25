@@ -3,7 +3,7 @@
 
 ## Lesson 1: Gravity & Jumping
 
-<slides>
+<slides name="W6 L1 Gravity & Jumping">
 
 # Lesson 1: Gravity & Jumping
 
@@ -84,7 +84,7 @@ There's no right answer. Get them to try both extremes in the Tinker step
 
 ## Lesson 2: Level Maps
 
-<slides>
+<slides name="W6 L2 Level Maps">
 
 # Lesson 2: Level Maps
 
@@ -169,7 +169,7 @@ Warn them about low ceilings: a block right above the player stops the jump
 
 ## Lesson 3: Pickups & Levels
 
-<slides>
+<slides name="W6 L3 Pickups & Levels">
 
 # Lesson 3: Pickups & Levels
 
@@ -258,7 +258,7 @@ Why >= and not >? The last index is length minus 1
 
 ## Lesson 4: Build a Platformer
 
-<slides>
+<slides name="W6 L4 Platformer">
 
 # Lesson 4: Build a Platformer
 

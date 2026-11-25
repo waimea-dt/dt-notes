@@ -6,7 +6,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 One-off effects on a shape that's already there. They don't replay going back.
 
-<animation grid="12x3">
+<animation name="Emphasis" grid="12x3">
 
 ```anim
 defaults size 1.6x0.8 font 0.6
@@ -76,7 +76,7 @@ g: bounce
 
 ## Feature: signal
 
-<animation grid="12x5">
+<animation name="Signal" grid="12x5">
 
 ```anim
 a: circle "a" at 2,2
@@ -122,7 +122,7 @@ g: signal speed fast
 
 Highlights stay on until `highlight clear`, and go where their shape goes.
 
-<animation grid="12x4">
+<animation name="Arrow, Glow & Line" grid="12x4">
 
 ```anim
 defaults size 1.6x0.8 font 0.6
@@ -167,7 +167,7 @@ t: highlight clear
 
 The outline follows each shape's own outline (turned and scaled with it); inside sits just within its stroke.
 
-<animation grid="14x5">
+<animation name="Outline & Inside" grid="14x5">
 
 ```anim
 r: rect "rect" at 2,2 size 2x1
@@ -241,7 +241,7 @@ i: highlight outline
 
 A bare `number` takes the next one; `number N` sets where the sequence is. On a row, column or group, a bare one numbers each shape in turn.
 
-<animation grid="14x5">
+<animation name="Highlight Number" grid="14x5">
 
 ```anim
 defaults size 1.2x0.8 font 0.6
@@ -295,7 +295,7 @@ pq: highlight number stagger 0.3
 
 Everything else dims, including their highlights and callouts.
 
-<animation grid="12x3">
+<animation name="Spotlight" grid="12x3">
 
 ```anim
 a: rect "a" at 2,2
@@ -331,7 +331,7 @@ d: highlight clear
 
 ## Feature: Callouts
 
-<animation grid="12x4">
+<animation name="Callouts" grid="12x4">
 
 ```anim
 a: rect "a" at 6,2.5

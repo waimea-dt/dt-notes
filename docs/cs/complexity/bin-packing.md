@@ -58,7 +58,7 @@ Instead of checking every possible arrangement, **Next Fit** packs items sequent
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Bin Packing Terms">
 
 - # 1D Bin Packing Problem
 

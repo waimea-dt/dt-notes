@@ -4,7 +4,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: Colours
 
-<animation grid="13x10">
+<animation name="Colours" grid="13x10">
 
 ```anim
 pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2.15,1.15 font 0.4 size 0.7 gap 0.3 corner 0.5
@@ -142,7 +142,7 @@ oth.3: colour white
 
 `colour contrast`: black or white text, whichever reads on what's behind it. On a bar, the part of the label over the bar is picked against the bar.
 
-<animation grid="14x7">
+<animation name="Contrast" grid="14x7">
 
 ```anim
 defaults colour contrast size 2.4x1
@@ -194,7 +194,7 @@ h: colour fg
 
 `weight` is a multiple of the normal thickness (`0` hides it). Style changes cross-fade; `flow` marches a dashed or dotted stroke along.
 
-<animation grid="13x5">
+<animation name="Strokes" grid="13x5">
 
 ```anim
 w1: line from 1,1 to 5,1 weight 0.5
@@ -270,7 +270,7 @@ hoop: solid speed slow
 
 ## Feature: opacity
 
-<animation grid="12x4">
+<animation name="Opacity" grid="12x4">
 
 ```anim
 r1: rect "1" at 2,2 fill blue
@@ -314,7 +314,7 @@ r2: highlight spotlight
 
 The arrow stays on the turning rect's edge.
 
-<animation grid="12x5">
+<animation name="Angle & Scale" grid="12x5">
 
 ```anim
 mac: image(../_assets/macs/macintosh.svg) at 2,3 size 2 angle -15
@@ -386,7 +386,7 @@ rk: angle up
 
 ## Feature: Layers
 
-<animation grid="10x3">
+<animation name="Layers" grid="10x3">
 
 ## back, normal, front
 
@@ -411,7 +411,7 @@ c: back
 
 On text and on any shape's label.
 
-<animation grid="12x4">
+<animation name="Fonts" grid="12x4">
 
 ```anim
 f1: text "font 1" at 3.5,1
@@ -456,7 +456,7 @@ box: bold
 
 Tags in any label: text, shapes, values and lines.
 
-<animation grid="12x6">
+<animation name="Text Marks" grid="12x6">
 
 ```anim
 t1: text "x<sup>2</sup> + y<sup>2</sup>" at 3.5,1
@@ -502,7 +502,7 @@ r: highlight clear
 
 A signed number on a change is relative to what the look is now. (Signed moves: Placing and Moving.)
 
-<animation grid="12x4">
+<animation name="Relative Values" grid="12x4">
 
 ```anim
 r: rect "r" at 2.5,2
@@ -570,7 +570,7 @@ l: opacity -0.5
 
 `reset` puts a look back as the shape started: its type's look, with any defaults it was made with. A look given on its making line is a change like any other, so it goes too.
 
-<animation grid="12x4">
+<animation name="Resetting Looks" grid="12x4">
 
 ```anim
 defaults fill blue font 1.2

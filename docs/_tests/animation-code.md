@@ -4,7 +4,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: code
 
-<animation grid="16x7">
+<animation name="Code" grid="16x7">
 
 A code block: its lines in [ ] (one per line, the closing "]" lined up with the id), highlighted by Prism. Lines are numbered from 1, like line numbers.
 
@@ -112,7 +112,7 @@ c: delete
 
 ## Feature: Scratch scripts
 
-<animation grid="16x8">
+<animation name="Scratch Scripts" grid="16x8">
 
 # Scratch Scripts
 
@@ -186,7 +186,7 @@ s: move 3,5 angle -10
 
 ## Feature: Scratch line highlights
 
-<animation grid="14x8">
+<animation name="Scratch Highlights" grid="14x8">
 
 # Stepping Through a Script
 
@@ -273,7 +273,7 @@ s: highlight clear
 
 ## Feature: Scratch line edits
 
-<animation grid="14x8">
+<animation name="Scratch Edits" grid="14x8">
 
 # Editing a Script
 

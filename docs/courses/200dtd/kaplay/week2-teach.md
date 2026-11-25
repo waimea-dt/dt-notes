@@ -3,7 +3,7 @@
 
 ## Lesson 1: Mouse Events
 
-<slides>
+<slides name="W2 L1 Mouse Events">
 
 # Lesson 1: Mouse Events
 
@@ -84,7 +84,7 @@ Early finishers: hover effects, growing balloons, click anywhere to add a balloo
 
 ## Lesson 2: Game State
 
-<slides>
+<slides name="W2 L2 Game State">
 
 # Lesson 2: Game State
 
@@ -176,7 +176,7 @@ Update the label **before** checking for game over
 
 ## Lesson 3: Timers & Randomness
 
-<slides>
+<slides name="W2 L3 Timers & Randomness">
 
 # Lesson 3: Timers & Randomness
 
@@ -279,7 +279,7 @@ Note:
 
 ## Lesson 4: Whack-a-Bug
 
-<slides>
+<slides name="W2 L4 Whack-a-Bug">
 
 # Lesson 4: Whack-a-Bug
 

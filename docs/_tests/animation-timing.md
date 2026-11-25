@@ -4,7 +4,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: speed
 
-<animation grid="12x7">
+<animation name="Speed" grid="12x7">
 
 ```anim
 defaults radius 0.3 fill blue
@@ -41,7 +41,7 @@ s7: move 11,7 speed 3
 
 ## Feature: delay
 
-<animation grid="12x3">
+<animation name="Delay" grid="12x3">
 
 ```anim
 a: rect "0" at 3,2
@@ -61,7 +61,7 @@ c: fill green delay 2
 
 ## Feature: ease
 
-<animation grid="12x6">
+<animation name="Ease" grid="12x6">
 
 ```anim
 defaults radius 0.3 fill blue
@@ -107,7 +107,7 @@ camera reset ease out
 
 ## Feature: Entrance and exit effects
 
-<animation grid="12x4">
+<animation name="Entrances & Exits" grid="12x4">
 
 ## Entrances
 
@@ -137,7 +137,7 @@ dr: delete draw delay 4
 
 ## Feature: typed
 
-<animation grid="12x3">
+<animation name="Typed" grid="12x3">
 
 ```anim
 prompt: text "$" at 2,1 mono colour yellow
@@ -167,7 +167,7 @@ t2: delete typed
 
 ## Feature: stagger
 
-<animation grid="12x5">
+<animation name="Stagger" grid="12x5">
 
 ```anim
 arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.3 fill blue corner 0.3 pop stagger 0.15
@@ -242,7 +242,7 @@ g: delete pop stagger 0.2
 
 ## Feature: repeat
 
-<animation grid="12x5">
+<animation name="Repeat" grid="12x5">
 
 ```anim
 r: rect "r" at 2,2 size 1.4x0.8
@@ -302,7 +302,7 @@ hand: stroke teal
 
 ## Feature: defaults
 
-<animation grid="12x4">
+<animation name="Defaults" grid="12x4">
 
 ```anim
 defaults fill blue size 2x1
@@ -343,7 +343,7 @@ l2: line from 1,3.7 to 11,3.7
 
 Press `A` to play.
 
-<animation grid="12x3">
+<animation name="Pause" grid="12x3">
 
 ```anim
 dot: circle at 2,2 radius 0.4 fill blue
@@ -385,7 +385,7 @@ dot: fill green
 
 One click on Next plays the chain; Back undoes it.
 
-<animation grid="12x3">
+<animation name="Auto" grid="12x3">
 
 ## Before the chain
 
@@ -431,7 +431,7 @@ a: fill green
 
 The lines after `then` start once those before it have finished, all in one beat. Back undoes the whole beat. `pause` waits after it all.
 
-<animation grid="12x4">
+<animation name="Then" grid="12x4">
 
 ```anim
 a: rect "a" at 2,2 pop

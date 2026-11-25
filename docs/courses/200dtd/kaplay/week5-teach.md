@@ -3,7 +3,7 @@
 
 ## Lesson 1: Shooting
 
-<slides>
+<slides name="W5 L1 Shooting">
 
 # Lesson 1: Shooting
 
@@ -77,7 +77,7 @@ y gets smaller going up, so the speed is negative. offscreen with destroy stops 
 
 ## Lesson 2: Enemies & Collisions
 
-<slides>
+<slides name="W5 L2 Enemies & Collisions">
 
 # Lesson 2: Enemies & Collisions
 
@@ -157,7 +157,7 @@ This is the first thing to check when a collision does nothing. Demo it live by 
 
 ## Lesson 3: Lives & Difficulty
 
-<slides>
+<slides name="W5 L3 Lives & Difficulty">
 
 # Lesson 3: Lives & Difficulty
 
@@ -234,7 +234,7 @@ Use the trace in the Investigate step. Ask what a good difficulty curve feels li
 
 ## Lesson 4: Build a Shooter
 
-<slides>
+<slides name="W5 L4 Shooter">
 
 # Lesson 4: Build a Shooter
 

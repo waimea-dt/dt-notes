@@ -89,7 +89,7 @@ A quick way to spot a complexity experimentally: double N, and see what happens 
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Big-O Terms">
 
 - # Big-O notation
 

@@ -61,7 +61,7 @@ end
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="TSP Terms">
 
 - # Travelling Salesperson Problem (TSP)
 

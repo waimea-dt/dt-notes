@@ -65,7 +65,7 @@ See [Breaking the Caesar Cipher](/cs/encryption/breaking-caesar.md).
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Caesar Terms">
 
 - # The "**key**" in a Caesar Cipher
 

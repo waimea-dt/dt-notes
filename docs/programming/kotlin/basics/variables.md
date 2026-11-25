@@ -149,7 +149,7 @@ showScore(72)
 
 ## Revision Flash Cards
 
-<flashcards>
+<flashcards name="Kotlin Variables">
 
 - # What is the difference between `val` and `var`?
 

@@ -61,7 +61,7 @@ If you reuse the same password across multiple sites, a single data breach at *a
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Password Manager Terms">
 
 - # Master password
 

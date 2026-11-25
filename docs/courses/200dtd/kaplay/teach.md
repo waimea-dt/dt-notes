@@ -3,7 +3,7 @@
 
 ## Developing with JavaScript
 
-<slides>
+<slides name="JS vs Python">
 
 # JavaScript
 
@@ -48,7 +48,7 @@ JavaScript is no different to Python - just some syntax differences
 
 ## Overview of PRIMM
 
-<slides>
+<slides name="PRIMM">
 
 # PRIMM
 

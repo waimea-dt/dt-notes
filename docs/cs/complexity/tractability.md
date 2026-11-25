@@ -50,7 +50,7 @@ Algorithms that have **non-polynomial time complexity** are *generally* consider
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Tractability Terms">
 
 - # Tractable
 

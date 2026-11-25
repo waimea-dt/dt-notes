@@ -8,7 +8,7 @@ This page tests the block itself: steps and beats, the grid and its attributes, 
 
 ## Feature: Steps, beats and notes
 
-<animation grid="12x3">
+<animation name="Steps, Beats & Notes" grid="12x3">
 
 # The title stays fixed
 
@@ -51,7 +51,7 @@ Same heading, so only the text changes. No scene.
 
 A square 12x12 grid: much taller than the 16x9 default, so check it in full screen (F) too.
 
-<animation grid="12x12">
+<animation name="Large Grid" grid="12x12">
 
 ## Corners and centre
 
@@ -76,7 +76,7 @@ d2: arrow from tr to bl draw
 
 ## Feature: Grid: fit
 
-<animation grid="fit">
+<animation name="Grid Fit" grid="fit">
 
 ```anim
 a: rect "A" at 3,3
@@ -90,7 +90,7 @@ l: arrow from a to b "fit"
 
 The same animation twice. Without `crop`, a small margin round the grid leaves room for strokes and outlines on its edge, and shapes off the grid show in it (and, with the camera zoomed out, beyond it). With `crop`, there's no margin and nothing outside the grid is drawn: shapes on the edge are cut, the ball disappears at the edge, and zooming out shows the grid alone.
 
-<animation grid="10x4">
+<animation name="Without Crop" grid="10x4">
 
 # Without crop
 
@@ -132,7 +132,7 @@ ball: move 5,4
 
 </animation>
 
-<animation grid="10x4" crop>
+<animation name="With Crop" grid="10x4" crop>
 
 # With crop
 
@@ -178,7 +178,7 @@ ball: move 5,4
 
 Grid numbers, ids and warnings.
 
-<animation grid="10x3" debug>
+<animation name="Debug" grid="10x3" debug>
 
 ```anim
 a: rect "a" at 2,2
@@ -193,7 +193,7 @@ a: fill blue pop
 
 `one` and `two` should look the same.
 
-<animation grid="12x3">
+<animation name="Comments & Multi-line" grid="12x3">
 
 ```anim
 # a whole-line comment
@@ -239,7 +239,7 @@ Each line is indented the same, so each is its own command.
 
 One beat: a still picture, with no buttons or progress bar.
 
-<animation grid="12x3">
+<animation name="Still" grid="12x3">
 
 ```anim
 a: rect "A" at 3,2
@@ -253,7 +253,7 @@ l: arrow from a to b
 
 `autoplay loop hold="1"`: plays when on screen, then starts again. Clicking stops it.
 
-<animation autoplay loop hold="1" grid="12x3">
+<animation name="Autoplay & Loop" autoplay loop hold="1" grid="12x3">
 
 ```anim
 dot: circle at 2,2 radius 0.4 fill blue
@@ -277,7 +277,7 @@ dot: move 10,2 fill green
 
 `autoplay loop-bounce hold="0.5" controls="none"`: there and back for ever, with no buttons.
 
-<animation autoplay loop-bounce hold="0.5" controls="none" grid="12x3">
+<animation name="Loop-bounce, No Controls" autoplay loop-bounce hold="0.5" controls="none" grid="12x3">
 
 ```anim
 dot: circle at 2,2 radius 0.4 fill pink
@@ -295,7 +295,7 @@ dot: move 10,2 speed slow
 
 The first beat uses `typed`, `pop` and `delay`, so it plays in when it comes into view, and after rewinding.
 
-<animation grid="12x3">
+<animation name="Intro" grid="12x3">
 
 ```anim
 prompt: text "$ ping example.com" at 2,1 align left mono typed speed slow

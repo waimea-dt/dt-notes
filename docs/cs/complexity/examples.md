@@ -104,7 +104,7 @@ Here is a visual comparison of the complexities of the two approaches:
 
 ## Key Takeaways
 
-<flashcards>
+<flashcards name="Worked Examples Takeaways">
 
 - # Linear search complexity
 

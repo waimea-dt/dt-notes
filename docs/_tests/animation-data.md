@@ -4,7 +4,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: Rows and columns
 
-<animation grid="12x6">
+<animation name="Rows & Columns" grid="12x6">
 
 ```anim
 arr: row [5 3 8 1] at 2,1.5 fill blue
@@ -56,7 +56,7 @@ arr: delete pop
 
 ## Feature: swap
 
-<animation grid="12x5">
+<animation name="Swap" grid="12x5">
 
 ```anim
 arr: row [5, 3, 8, 1] at 2,2 fill blue
@@ -108,7 +108,7 @@ col: swap 0 2 speed slow
 
 ## Feature: insert and remove
 
-<animation grid="12x6">
+<animation name="Insert & Remove" grid="12x6">
 
 ```anim
 arr: row [1, 2, 3, 4, 5] at 2,2 fill blue size 0.9 gap 0.2
@@ -190,7 +190,7 @@ st: insert 1 at end
 
 ## Feature: range
 
-<animation grid="12x4">
+<animation name="Range" grid="12x4">
 
 ```anim
 arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.2 indices
@@ -240,7 +240,7 @@ arr: range 0 5 highlight clear
 
 ## Feature: span
 
-<animation grid="14x8">
+<animation name="Span" grid="14x8">
 
 ```anim
 arr: row [5, 3, 8, 1, 9, 2] at 3,3 size 1 gap 0.2 indices corner 0.05
@@ -339,7 +339,7 @@ loop: highlight spotlight
 
 ## Feature: grid and table
 
-<animation grid="16x9">
+<animation name="Grid & Table" grid="16x9">
 
 ```anim
 g: grid [
@@ -448,7 +448,7 @@ t: delete
 
 ## Feature: grid and table edits
 
-<animation grid="16x9">
+<animation name="Grid & Table Edits" grid="16x9">
 
 ```anim
 g: grid [[1 2 3] [4 5 6] [7 8 9]] at 2,2 gap 0.4 indices corner 0.1
@@ -520,7 +520,7 @@ t: insert [7 8 9] at end
 
 ## Feature: name and indices
 
-<animation grid="14x7">
+<animation name="Names & Indices" grid="14x7">
 
 A name sits left of a var or row, above a column. Indices are small and muted: below a row's cells, left of a column's.
 

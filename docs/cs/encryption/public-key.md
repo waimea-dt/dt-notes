@@ -67,7 +67,7 @@ Try it with Eve watching - notice she can see the public key and the encrypted m
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Public-Key Terms">
 
 - # Public-key encryption
 

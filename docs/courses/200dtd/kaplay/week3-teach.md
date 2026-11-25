@@ -3,7 +3,7 @@
 
 ## Lesson 1: Arrays
 
-<slides>
+<slides name="W3 L1 Arrays">
 
 # Lesson 1: Arrays
 
@@ -73,7 +73,7 @@ Start with for...of. Switch only when the position matters, like numbering a lis
 
 ## Lesson 2: Objects
 
-<slides>
+<slides name="W3 L2 Objects">
 
 # Lesson 2: Objects
 
@@ -157,7 +157,7 @@ for (const card of deck) {
 
 ## Lesson 3: Displaying One Item
 
-<slides>
+<slides name="W3 L3 One Item">
 
 # Lesson 3: Displaying One Item
 
@@ -230,7 +230,7 @@ Students discover the overlap problem themselves in the Investigate step
 
 ## Lesson 4: Displaying the Deck
 
-<slides>
+<slides name="W3 L4 The Deck">
 
 # Lesson 4: Displaying the Deck
 

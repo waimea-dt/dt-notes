@@ -84,7 +84,7 @@ Even without a formal proof, we act as if **P ≠ NP** is true:
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="P vs NP Terms">
 
 - # P vs NP
 

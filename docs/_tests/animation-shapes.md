@@ -4,7 +4,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: rect
 
-<animation grid="12x4">
+<animation name="Rect" grid="12x4">
 
 ```anim
 r1: rect "1x1" at 2,2
@@ -30,7 +30,7 @@ r4: corner 0
 
 Two sizes make an ellipse. Lines stop at its edge, turned or not.
 
-<animation grid="14x4">
+<animation name="Circle" grid="14x4">
 
 ```anim
 c1: circle "0.5" at 2,2
@@ -59,7 +59,7 @@ e1: angle 30 height 2 highlight outline
 
 Lines stop at its slanted edges.
 
-<animation grid="12x5">
+<animation name="Diamond" grid="12x5">
 
 ```anim
 d: diamond "x > 3?" at 4,3 size 3x1.6 fill amber
@@ -85,7 +85,7 @@ d: width 2.4 angle 20
 
 Points in `[ ]`, from where it's placed (in cells). Lines stop at its edges.
 
-<animation grid="14x6">
+<animation name="Polygon" grid="14x6">
 
 ```anim
 tri: polygon [0,-1 0,-1 1,1 -1,1] at 3,3 "tri" fill amber
@@ -128,7 +128,7 @@ trap: highlight inside corner 0
 
 `align` says which edge of its cell a text is placed by. The dotted box is column 6: `left` puts the text's left edge on the cell's left edge, `right` its right edge on the cell's right edge, and `centre` (the default) its middle on the cell's middle.
 
-<animation grid="11x5">
+<animation name="Text" grid="11x5">
 
 ```anim
 cell: rect at 6,3 size 1x3 dotted stroke muted fill none back
@@ -192,7 +192,7 @@ t3: "right, and longer"
 
 ## Feature: icon
 
-<animation grid="12x3">
+<animation name="Icon" grid="12x3">
 
 ```anim
 i1: icon(laptop) "laptop" at 2,1.5
@@ -212,7 +212,7 @@ i1: stroke green scale 1.3
 
 An image fits inside its box (`size`, `width`, `height`), keeping its proportions. Its label goes below it, and a stroke shows the box.
 
-<animation grid="14x7">
+<animation name="Image" grid="14x7">
 
 ```anim
 mac: image(../_assets/macs/macintosh.svg) "A Mac" at 3.5,2.5 size 2
@@ -254,7 +254,7 @@ w2: contain "contain"
 
 A backdrop: a 4:3 Scratch stage behind a 16x9 grid. `cover` fills the grid (cropped top and bottom), `back` puts it behind everything, and `crop` draws nothing outside the grid.
 
-<animation grid="16x9" crop>
+<animation name="Image Backdrop" grid="16x9" crop>
 
 ```anim
 bg: image(../_assets/scratch/stages/sky.svg) at 8.5,5 size 16x9 cover back
@@ -290,7 +290,7 @@ camera reset
 
 A type on an existing id replaces the shape (with a warning): the new one fades in as the old fades out, and lines on it stay on it.
 
-<animation grid="12x4">
+<animation name="Replacing a Shape" grid="12x4">
 
 ```anim
 a: rect "a" at 3,2
@@ -324,7 +324,7 @@ l: curve from a to b bend 1 end arrow "line"
 
 ## Feature: line and arrow
 
-<animation grid="12x8">
+<animation name="Line & Arrow" grid="12x8">
 
 ```anim
 a: circle "a" at 2,2
@@ -400,7 +400,7 @@ l5: corner 0.5 speed slow
 
 ## Feature: curve
 
-<animation grid="12x6">
+<animation name="Curve" grid="12x6">
 
 ```anim
 a: circle "a" at 2,3
@@ -439,7 +439,7 @@ b: move 9,4
 
 ## Feature: loop
 
-<animation grid="12x6">
+<animation name="Loop" grid="12x6">
 
 ```anim
 s1: circle "S1" at 3,3
@@ -492,7 +492,7 @@ t5: bend -1.5 speed slow
 
 What's on each end of a line, `start` and `end`: `none`, `arrow`, `dot`, `crow` or `bar`.
 
-<animation grid="14x7">
+<animation name="Line Ends" grid="14x7">
 
 ```anim
 cu: rect "Customer" at 3,1.5 size 3x1
@@ -566,7 +566,7 @@ m1: line from 2,3.5 to 6,3.5 start dot end arrow draw speed slow
 
 How much of a line shows, from its start, as if drawn that far: its end's mark rides on the tip.
 
-<animation grid="12x6">
+<animation name="Show" grid="12x6">
 
 ```anim
 a: circle "a" at 2,2

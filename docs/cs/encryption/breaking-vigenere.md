@@ -62,7 +62,7 @@ This is why the Vigenère Cipher is no longer used in the modern world - **compu
 
 ## Key Terms
 
-<flashcards shuffle>
+<flashcards name="Breaking Vigenère Terms" shuffle>
 
 - # A polyalphabetic cipher **flattens letter frequencies** because...
 

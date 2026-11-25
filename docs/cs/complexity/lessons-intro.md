@@ -4,7 +4,7 @@
 
 Covers what we mean by 'complexity' and what it is a measure of.
 
-<slides>
+<slides name="Intro to Complexity">
 
 # Algorithmic Complexity
 
@@ -105,7 +105,7 @@ Or, we could also say, it's a measure of the **time taken** to run the algorithm
 
 Covers how effort relates to problem size, and different algorithms have different relationships.
 
-<slides>
+<slides name="Measuring Complexity">
 
 # Measuring Complexity
 
@@ -316,7 +316,7 @@ Looking at actual effort values as N increases...
 
 Covers how effort can vary depending on the state of the initial data, and which case we focus on.
 
-<slides>
+<slides name="Best, Average, Worst">
 
 # Best, Average and Worst Cases
 
@@ -384,7 +384,7 @@ If this case:
 
 Covers how we categorise algorithmic complexity using BigO notation.
 
-<slides>
+<slides name="Big-O Notation">
 
 # Big-O Notation
 

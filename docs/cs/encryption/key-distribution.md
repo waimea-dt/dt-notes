@@ -27,7 +27,7 @@ In 1976, **Diffie-Hellman key exchange** solved this problem mathematically, let
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Key Distribution Terms">
 
 - # The key distribution problem
 

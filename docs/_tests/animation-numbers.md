@@ -4,7 +4,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: binary
 
-<animation grid="14x8">
+<animation name="Binary" grid="14x8">
 
 A row of bits, numbered from the right: b.0 is the lowest.
 
@@ -125,7 +125,7 @@ n: delete
 
 ## Feature: hex and denary
 
-<animation grid="14x7">
+<animation name="Hex & Denary" grid="14x7">
 
 Numbers in base 16 and base 10: like binary, with digits 0-9, then A-F.
 
@@ -164,7 +164,7 @@ d: h                              # h's value glides over: 65535 wraps round to 
 
 ## Feature: hex over binary
 
-<animation grid="20x7">
+<animation name="Hex over Binary" grid="20x7">
 
 Hex digits 4 squares wide, one over each nibble: `at` places a layout by the top-left of its first cell.
 

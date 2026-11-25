@@ -30,7 +30,7 @@ This colour analogy represents **Diffie-Hellman key exchange**. It uses numbers 
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Key Exchange Terms">
 
 - # Key exchange
 

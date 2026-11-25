@@ -3,7 +3,7 @@
 
 ## Lesson 1: Rooms
 
-<slides>
+<slides name="W4 L1 Rooms">
 
 # Lesson 1: Rooms
 
@@ -84,7 +84,7 @@ The big idea. The game's state will live outside the scenes
 
 ## Lesson 2: Hit Points
 
-<slides>
+<slides name="W4 L2 Hit Points">
 
 # Lesson 2: Hit Points
 
@@ -170,7 +170,7 @@ Ask which one suits HP: it changes from many places, so let the label watch. Ask
 
 ## Lesson 3: Inventory
 
-<slides>
+<slides name="W4 L3 Inventory">
 
 # Lesson 3: Inventory
 
@@ -236,7 +236,7 @@ A door with no `needs` is `undefined`, which counts as **false**
 
 ## Lesson 4: Build a Haunted House
 
-<slides>
+<slides name="W4 L4 Haunted House">
 
 # Lesson 4: Build a Haunted House
 

@@ -88,7 +88,7 @@ Intractable problems are not just abstract examples - schools run into them ever
 
 ## Key Terms
 
-<flashcards shuffle>
+<flashcards name="Intractability Terms" shuffle>
 
 - # Intractability
 

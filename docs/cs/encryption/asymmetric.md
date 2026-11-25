@@ -39,7 +39,7 @@ Asymmetric cryptography uses **mathematically linked public and private informat
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Asymmetric Terms">
 
 - # Asymmetric cryptography
 

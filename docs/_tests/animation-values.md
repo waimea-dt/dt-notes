@@ -4,7 +4,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: var
 
-<animation grid="12x4">
+<animation name="Var" grid="12x4">
 
 A box that holds a value: a number, "text" or null (muted).
 
@@ -52,7 +52,7 @@ r.1: null
 
 ## Feature: Moving values
 
-<animation grid="14x7">
+<animation name="Moving Values" grid="14x7">
 
 ```anim
 v1: var 7 at 2,6 name "v1" fill teal
@@ -178,7 +178,7 @@ a.1: v2
 
 `+ - * / mod`, with spaces round each: worked out once, when the line runs (as in code).
 
-<animation grid="12x5">
+<animation name="Sums" grid="12x5">
 
 ```anim
 a: var 7 name "a" at 2,2
@@ -223,7 +223,7 @@ b: a - b
 
 `{ }` in a label shows a sum's value, kept up to date. Anything else in `{ }` shows as written.
 
-<animation grid="12x5">
+<animation name="Values in Labels" grid="12x5">
 
 ```anim
 n: var 3 name "n" at 2,2
@@ -250,7 +250,7 @@ s: 6
 
 A number given a var or cell (or `{ }`) follows it as it changes.
 
-<animation grid="12x6">
+<animation name="Following Values" grid="12x6">
 
 ```anim
 px: var 2 name "px" at 2,1
@@ -286,7 +286,7 @@ px: 4
 
 A new value counts its way there.
 
-<animation grid="12x5">
+<animation name="Counter" grid="12x5">
 
 ```anim
 score: var 0 name "score" at 3,2 size 2x1
@@ -319,7 +319,7 @@ b: 3
 
 `rgb(r g b)` works a colour out from three values from 0 to 255: numbers, or vars, cells and numbers that it follows as they change. It goes wherever a colour does: `fill`, `stroke`, `colour` and `track`.
 
-<animation grid="16x7">
+<animation name="Colours from Values" grid="16x7">
 
 ```anim
 defaults max 255 size 4x0.8 track black stroke muted colour contrast
@@ -393,7 +393,7 @@ sw: fill rgb(b 0 r)
 
 ## Feature: Bars
 
-<animation grid="13x6">
+<animation name="Bars" grid="13x6">
 
 ```anim
 arr: row [5, 3, 8, 1, 9, 2] at 2,3 bar stroke none fill pink-bright size 0.6x3 gap 0.15 indices
@@ -459,7 +459,7 @@ hp: track none
 
 A column of wide bars is a bar chart: the bars grow from the left, with their values at the right.
 
-<animation grid="10x6">
+<animation name="Horizontal Bars" grid="10x6">
 
 ```anim
 votes: column [12 7 15 4 9] at 4,2 bar stroke none fill teal size 4x0.7 gap 0.15 name "Votes" indices
@@ -497,7 +497,7 @@ votes: remove 4
 
 A ring or pie shows a var's or cell's value round a circle, clockwise from the top. It's always round: it takes one size, and a box that isn't square is made square as it's turned on.
 
-<animation grid="14x7">
+<animation name="Rings & Pies" grid="14x7">
 
 ```anim
 done: var 25 name "done" at 3,2 size 2 stroke none ring fill teal-bright track muted

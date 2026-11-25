@@ -64,7 +64,7 @@ These flaws were exploited at Bletchley Park and the Enigma Cipher was eventuall
 
 ## Key Terms
 
-<flashcards shuffle>
+<flashcards name="Enigma Terms" shuffle>
 
 - # The Enigma Machine
 

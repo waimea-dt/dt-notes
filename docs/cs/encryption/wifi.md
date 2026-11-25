@@ -90,7 +90,7 @@ Drag these steps into the correct order:
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="WiFi Security Terms">
 
 - # WPA2 vs WPA3
 

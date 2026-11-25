@@ -73,7 +73,7 @@ See [The AES Algorithm](/cs/encryption/aes.md) for the real-world symmetric algo
 
 ## Key Terms
 
-<flashcards shuffle>
+<flashcards name="Symmetric Terms" shuffle>
 
 - # **Symmetric** Encryption
 

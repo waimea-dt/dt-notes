@@ -47,7 +47,7 @@ Instead, use a **greedy heuristic**: pack items with the best value-to-weight ra
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Approximation Terms">
 
 - # Approximation algorithm
 

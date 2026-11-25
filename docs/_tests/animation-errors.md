@@ -4,7 +4,7 @@ Bad lines are listed under the animation and skipped; the rest still draws. The 
 
 ## Errors
 
-<animation grid="8x3" debug hold="fast" controls="hidden">
+<animation name="Errors" grid="8x3" debug hold="fast" controls="hidden">
 
 ```anim
 # shapes the lines below use

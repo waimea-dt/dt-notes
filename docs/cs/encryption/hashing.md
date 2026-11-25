@@ -23,7 +23,7 @@ Watch the avalanche effect - notice how tiny text changes scramble the entire ou
 
 ## Hashing vs Encryption
 
-<flashcards>
+<flashcards name="Hashing vs Encryption">
 
 - # Encryption vs hashing
 
@@ -60,7 +60,7 @@ Watch the avalanche effect - notice how tiny text changes scramble the entire ou
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Hashing Terms">
 
 - # Hash function
 

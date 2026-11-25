@@ -77,7 +77,7 @@ However, sometimes we *really need* a solution to these 'impossible' problems, a
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Complexity Terms">
 
 - # Algorithmic complexity
 

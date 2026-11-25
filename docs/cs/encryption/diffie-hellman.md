@@ -49,7 +49,7 @@ Drag these steps into the correct order:
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Diffie-Hellman Terms">
 
 - # Diffie-Hellman key exchange
 

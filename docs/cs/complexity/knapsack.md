@@ -60,7 +60,7 @@ Capacity = 10. Greedy takes A first (value 6) and can't fit anything else. The *
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Knapsack Terms">
 
 - # 0/1 Knapsack Problem
 

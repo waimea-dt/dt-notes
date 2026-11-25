@@ -92,7 +92,7 @@ Drag these steps into the correct order:
 
 ## Key Terms
 
-<flashcards shuffle>
+<flashcards name="Vigenère Terms" shuffle>
 
 - # **Polyalphabetic** Cipher
 

@@ -112,7 +112,7 @@ See why each problem fits into a particular class by looking at finding a soluti
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Complexity Classes Terms">
 
 - # Tractable
 

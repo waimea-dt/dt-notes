@@ -4,7 +4,7 @@ Whole animations, as they would appear in notes. Click an animation to give it f
 
 ## Bubble Sort
 
-<animation grid="12x5">
+<animation name="Bubble Sort" grid="12x5">
 
 # Bubble Sort: One Pass
 
@@ -129,7 +129,7 @@ arr.3: fill green wiggle speed fast
 
 ## Travelling Salesperson
 
-<animation>
+<animation name="TSP">
 
 # Travelling Salesperson
 
@@ -256,7 +256,7 @@ Ask: how many different routes are there from A? (4 × 3 × 2 × 1 = 24.)
 
 ## Public-Key Encryption
 
-<animation grid="16x8">
+<animation name="Public-Key" grid="16x8">
 
 # Public-Key Encryption
 
@@ -375,7 +375,7 @@ Ask: what would Bob need to do so Alice could also receive secret replies? (Alic
 
 ## HTTPS: The TLS Handshake
 
-<animation grid="16x8">
+<animation name="TLS Handshake" grid="16x8">
 
 # HTTPS: The TLS Handshake
 
@@ -580,7 +580,7 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 
 ## RGB Colours
 
-<animation grid="12x7">
+<animation name="RGB Colours" grid="12x7">
 
 ## Three colour values: R, G, B
 
@@ -794,7 +794,7 @@ auto
 
 Backdrop, an arc with a turn and a shrink, the camera riding along, a spinning asteroid, zooming out past the stage's edge.
 
-<animation grid="16x12" crop>
+<animation name="Space Mission" grid="16x12" crop>
 
 # Space Mission
 
@@ -919,7 +919,7 @@ earth: angle +90 speed vslow
 
 Sprites over the water backdrop: swimming on waves, a group moving as one, a crab scuttling, a turtle following a hidden curve, and the camera travelling between them.
 
-<animation grid="16x12" crop>
+<animation name="Under the Sea" grid="16x12" crop>
 
 # Under the Sea
 

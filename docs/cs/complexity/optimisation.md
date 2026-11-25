@@ -55,7 +55,7 @@ Break a problem into **overlapping** subproblems, and **remember** each answer s
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Optimisation Terms">
 
 - # Divide and conquer
 

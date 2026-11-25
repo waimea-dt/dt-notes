@@ -61,7 +61,7 @@ Cryptographers usually imagine three characters: **Alice** (sender), **Bob** (re
 
 Use these flashcards to test if you know the meaning of the terms above...
 
-<flashcards shuffle>
+<flashcards name="Crypto Terminology" shuffle>
 
 - # Alice, Bob and Eve
 

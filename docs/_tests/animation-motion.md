@@ -6,7 +6,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 `at` a point or a shape (its centre), `x` and `y` alone, or beside a shape: `above`, `below`, `left-of`, `right-of`, with a `gap`.
 
-<animation grid="12x5">
+<animation name="Placement" grid="12x5">
 
 ```anim
 a: rect "a" at 6.5,3
@@ -58,7 +58,7 @@ on: move +0,+1
 
 ## Feature: arrange
 
-<animation grid="fit">
+<animation name="Arrange" grid="fit">
 
 ```anim
 a: rect "a" at 2,2
@@ -153,7 +153,7 @@ outer: arrange down gap 1
 
 `a.top`, `a.bottom`, `a.left`, `a.right` and the four corners (`a.top-left` …): a point on a shape's edge. They turn and stretch with the shape, and a line end on one follows it.
 
-<animation grid="14x7">
+<animation name="Edge Points" grid="14x7">
 
 ```anim
 b: rect "b" at 4.5,3.5 size 4x2 fill blue-muted
@@ -216,7 +216,7 @@ no: travel b.bottom-right q.top-right 11,5.5
 
 ## Feature: Moving lines
 
-<animation grid="12x5">
+<animation name="Moving Lines" grid="12x5">
 
 ```anim
 a: rect "a" at 2,1
@@ -257,7 +257,7 @@ p: from 2,3 to b
 
 ## Feature: Curved moves
 
-<animation grid="12x5">
+<animation name="Curved Moves" grid="12x5">
 
 ```anim
 a: circle "a" at 2,4 radius 0.4 fill blue
@@ -300,7 +300,7 @@ c: move 2,2.5 via -2,+2 speed slow
 
 Hop by hop; each hop takes the speed.
 
-<animation grid="14x4">
+<animation name="Travel" grid="14x4">
 
 ```anim
 pc: icon(laptop) "PC" at 1.5,2
@@ -327,7 +327,7 @@ pkt: travel r1 r2 r3 srv
 
 ## Feature: follow
 
-<animation grid="12x5">
+<animation name="Follow" grid="12x5">
 
 ```anim
 a: circle "a" at 2,3
@@ -377,7 +377,7 @@ dot: follow f speed slow
 
 ## Feature: about
 
-<animation grid="14x7">
+<animation name="About" grid="14x7">
 
 ```anim
 face: circle at 3,4 radius 2.2 fill none
@@ -461,7 +461,7 @@ car: angle +90 about p
 
 ## Feature: trail
 
-<animation grid="12x6">
+<animation name="Trail" grid="12x6">
 
 ```anim
 a: circle "a" at 2,2 radius 0.4 fill teal
@@ -580,7 +580,7 @@ arr: swap 5 2 speed slow
 
 The copy starts on the original and moves off.
 
-<animation grid="12x3">
+<animation name="Copy" grid="12x3">
 
 ```anim
 key: icon(key-round) "key" at 2,2 stroke green
@@ -602,7 +602,7 @@ k3: copy k2 move 10,2 stroke amber
 
 ## Feature: attach and detach
 
-<animation grid="12x5">
+<animation name="Attach & Detach" grid="12x5">
 
 ```anim
 msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
@@ -652,7 +652,7 @@ lock: attach msg
 
 ## Feature: group and ungroup
 
-<animation grid="12x4">
+<animation name="Group & Ungroup" grid="12x4">
 
 ```anim
 a: rect "a" at 2,2
@@ -716,7 +716,7 @@ g2: delete pop
 
 ## Feature: Camera
 
-<animation grid="12x6">
+<animation name="Camera" grid="12x6">
 
 ```anim
 a: rect "a" at 2,2 fill red
@@ -768,7 +768,7 @@ camera reset speed fast
 
 ## Feature: Camera travel
 
-<animation grid="12x6">
+<animation name="Camera Travel" grid="12x6">
 
 ```anim
 a: circle "a" at 2,2

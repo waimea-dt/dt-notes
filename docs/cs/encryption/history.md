@@ -76,7 +76,7 @@ Every cipher in this timeline was eventually broken or replaced - not because th
 
 ## Key Terms
 
-<flashcards shuffle>
+<flashcards name="History Terms" shuffle>
 
 - # Golden rule of cryptography
 

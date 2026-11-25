@@ -257,7 +257,7 @@ A[Smoke] --> B[Test]
 
 ### animation.js ([tests](/_tests/animation.md))
 
-<animation grid="6x2">
+<animation name="Anim Smoke" grid="6x2">
 
 # Smoke!
 
@@ -282,7 +282,7 @@ a: move 3 2
 
 ### slides.js ([tests](/_tests/slides.md))
 
-<slides>
+<slides name="Slides Smoke">
 
 # Smoke?
 
@@ -295,7 +295,7 @@ a: move 3 2
 
 ### flash-cards.js ([tests](/_tests/flash-cards.md))
 
-<flashcards>
+<flashcards name="Flash Smoke">
 
 - # Smoke?
 

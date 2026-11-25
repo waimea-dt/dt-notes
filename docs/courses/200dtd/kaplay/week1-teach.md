@@ -3,7 +3,7 @@
 
 ## Lesson 1: JS vs Python, variables, etc.
 
-<slides>
+<slides name="W1 L1 Variables">
 
 # Lesson 1: Variables
 
@@ -117,7 +117,7 @@ Note: **Backticks** <kbd>`</kbd>, not apostrophes <kbd>'</kbd>!
 
 ## Lesson 2: Choices & Repeats
 
-<slides>
+<slides name="W1 L2 Choices & Repeats">
 
 # Lesson 2: Choices & Repeats
 
@@ -251,7 +251,7 @@ Hint at % (remainder). Early finishers count the bosses
 
 ## Lesson 3: Hello, Kaplay
 
-<slides>
+<slides name="W1 L3 Hello Kaplay">
 
 # Lesson 3: Hello, Kaplay
 
@@ -384,7 +384,7 @@ Row, column, diagonal, rainbow, grid...
 
 ## Lesson 4: Moving Things
 
-<slides>
+<slides name="W1 L4 Moving Things">
 
 # Lesson 4: Moving Things
 

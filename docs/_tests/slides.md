@@ -222,7 +222,7 @@ Back to normal docs...
 
 Page plugins (their markdown and HTML hooks) should work the same inside a deck. Two decks on the page also checks that speaker notes stay with the deck they were opened from.
 
-<slides>
+<slides name="Plugins Inside Slides">
 
 # Plugins Inside Slides
 

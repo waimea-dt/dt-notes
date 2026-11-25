@@ -177,7 +177,7 @@ Here's a practical guide to the time complexities you'll encounter most often, w
 
 ## Key Terms
 
-<flashcards>
+<flashcards name="Common Complexities Terms">
 
 - # O(1) - constant time
 
