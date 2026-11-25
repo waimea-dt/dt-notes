@@ -6,12 +6,12 @@ Whole animations, as they would appear in notes. Click an animation to give it f
 
 <animation name="Bubble Sort" grid="12x5">
 
-# Bubble Sort: One Pass
+# Bubble Sort
 
 We start with an unsorted array.
 
 ```anim
-arr: row [5 3 8 1] at 3,3 font 3 size 1.8 gap 0.2 corner 0.05 fill blue
+arr: row [5 3 8 1] at 3,2 font 2 size 1.5x3 gap 0.5 corner 0.05 fill blue bar stroke none
 ```
 
 ---
@@ -21,35 +21,21 @@ arr: row [5 3 8 1] at 3,3 font 3 size 1.8 gap 0.2 corner 0.05 fill blue
 Is `5` bigger than `3`?
 
 ```anim
-comp: span arr 0 1 fill pink-bright name "Compare"
+comp: span arr 0 1 stroke pink-bright name "Compare"
+auto
 ```
 
 +++
 
-Yes it is!
+Yes it is! So they swap places...
 
 ```anim
-arr.0: fill amber pulse
-```
-
----
-
-## Swap
-
-So they swap places...
-
-```anim
+arr.0: fill amber glow
+then
 arr: swap 0 1
-```
-
-+++
-
-```anim
+then
 arr.1: fill blue
 ```
-
-Note:
-Ask the class to predict the next comparison before advancing.
 
 ---
 
@@ -59,26 +45,18 @@ Is `5` bigger than `8`?
 
 ```anim
 comp: span arr 1 2
+auto
 ```
 
 +++
 
-No it's not
+No it's not, so they stay in place...
 
 ```anim
-arr.2: fill amber pulse
-```
-
-+++
-
-So they remain in place...
-
-```anim
+arr.2: fill amber glow
+then
 arr.2: fill blue
 ```
-
-Note:
-Ask the class to predict the next comparison before advancing.
 
 ---
 
@@ -88,41 +66,129 @@ Is `8` bigger than `1`?
 
 ```anim
 comp: span arr 2 3
+auto
 ```
 
 +++
 
-Yes it is!
+Yes it is! So they swap places...
 
 ```anim
-arr.2: fill amber pulse
+arr.2: fill amber glow
+then
+arr: swap 2 3
+then
+arr.3: fill blue
+comp: opacity 0
 ```
 
 ---
 
-## Swap
+## First value done!
 
-So they swap places...
+The first pass is complete
+
+The largest value, 8, has 'bubbled' to the end
 
 ```anim
-arr: swap 2 3
+arr.3: fill green bounce speed fast
+```
+
+---
+
+## Second pass
+
+Back to the start. Is `3` bigger than `5`?
+
+```anim
+comp: span arr 0 1 speed instant
+then
+comp: opacity reset
+auto
 ```
 
 +++
 
-...and that pass is done.
+No it's not, so they stay in place...
 
 ```anim
-arr.3: fill blue
+arr.1: fill amber glow
+then
+arr.1: fill blue
+```
+
+---
+
+## Compare the next pair
+
+Is `5` bigger than `1`?
+
+```anim
+comp: span arr 1 2
+auto
+```
+
++++
+
+Yes it is! So they swap places...
+
+```anim
+arr.1: fill amber glow
+then
+arr: swap 1 2
+then
+arr.2: fill blue
+comp: opacity 0
+```
+
+---
+
+## Second value done!
+
+`8` is already in place, so there's no need to compare with it
+
+`5` has bubbled up next to it
+
+```anim
+arr.2: fill green bounce speed fast
+```
+
+---
+
+## Third pass
+
+Is `3` bigger than `1`?
+
+```anim
+comp: span arr 0 1 speed instant
+then
+comp: opacity reset
+auto
+```
+
++++
+
+Yes it is! So they swap places...
+
+```anim
+arr.0: fill amber glow
+then
+arr: swap 0 1
+then
+arr.1: fill blue
 comp: delete
 ```
 
-+++
+---
 
-The largest value, 8, has 'bubbled' to the end!
+## Sorted!
+
+`3` is in place, which leaves `1` on its own - so it must be in place too
 
 ```anim
-arr.3: fill green wiggle speed fast
+arr.1: fill green bounce speed fast
+then
+arr.0: fill green bounce speed fast
 ```
 
 </animation>
