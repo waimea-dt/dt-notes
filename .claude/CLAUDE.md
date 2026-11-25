@@ -10,7 +10,9 @@ Shared with Copilot - follow them:
 
 ## Testing
 
-Serve `docs/` with `python3 -m http.server` and drive the relevant `docs/_tests/` page with headless puppeteer: check for page errors, plus screenshots for visual changes.
+Drive the relevant `docs/_tests/` page with headless puppeteer: check for page errors, plus screenshots for visual changes.
+
+Serve `docs/` from inside the puppeteer script (Node's `http` module, closed in a `finally`), so the server dies with the script. Don't start a separate `python -m http.server`: `python` here is the WindowsApps alias, which starts the real interpreter as another process, so `kill $!` / `Stop-Process` miss it and the server is left running.
 
 ## Animation plugin
 
