@@ -14,27 +14,36 @@
  *     Back of card 2
  *   </flashcards>
  *
- * Attributes:
+ * Attributes (playback as on <animation>):
  *   shuffle - if present, cards are shown in a randomised order.
  *   name="..." - the cards' name in the VS Code preview pane's block list (not used on the page)
+ *   hold="s" - seconds each side shows while playing (default 3)
+ *   autoplay - plays while on screen (pausing, or any move, stops it)
+ *   loop     - after the last card's back, plays on from the first card
  *
  * Controls: click to flip a card. While the deck has focus (after a click in it): Up / Down flip,
- * Left / Right move, Escape goes back to the first card, and scrolling moves (addWheelStepping).
- * On touch, swipe left / right to move and up / down to flip (DocsifyUtils.addSwipeSupport).
+ * Left / Right move, A plays / pauses, Escape goes back to the first card, and scrolling moves
+ * (addWheelStepping). On touch, swipe left / right to move and up / down to flip
+ * (DocsifyUtils.addSwipeSupport). Playing shows each card's front, flips it, then moves on; the
+ * viewer's own moves stop it, and playing from the last card's back starts at the first card.
  *
  * The VS Code extension (vscode/dt-notes-syntax, preview-pane.js) previews cards with this file,
  * moving them with `preview-show` events and following their `preview-position` ones.
  */
 (function () {
 
-    const { clamp, shuffleArray, addSwipeSupport, addWheelStepping, preventDoubleClickSelect } = window.DocsifyUtils
+    const { clamp, shuffleArray, addSwipeSupport, addWheelStepping, preventDoubleClickSelect, playbackOptions, playWhileOnScreen } = window.DocsifyUtils
 
     const ICONS = {
-        FIRST:      'chevrons-left',
+        FIRST:      'chevron-first', // |< as on <animation>'s restart
         PREVIOUS:   'chevron-left',
         NEXT:       'chevron-right',
+        PLAY:       'play',
+        PAUSE:      'pause',
         FULLSCREEN: 'expand',
     }
+
+    const HOLD_SECONDS = 3 // each side's time while playing, unless hold="s"
 
     let cleanupWindowListeners = () => {}
 
@@ -83,9 +92,11 @@
             const cardInfo = document.createElement('p')
             cardInfo.textContent = `Card 1 of ${numCards}`
             const cardInstruct = document.createElement('p')
-            cardInstruct.textContent = `Move LEFT / RIGHT. Click or UP to flip`
+            cardInstruct.textContent = `Move LEFT / RIGHT. Click or UP to flip. A to autoplay`
 
             const cardNumbered = (num) => cardList.querySelector(`li[data-card-num="${num}"]`)
+            const currentNum = () => parseInt(cardList.dataset.currentCard)
+            const isRevealed = (num) => Boolean(cardNumbered(num)?.classList.contains('revealed'))
 
             // The card shown, and its side, as a `preview-position` event for the VS Code preview
             // pane: { card (from 0), back }
@@ -117,11 +128,53 @@
                 tellPreview()
             }
 
-            // The preview pane's `preview-show` event ({ position: { card, back } }): that card,
-            // on that side
+            // Playing (A or the play button): each side shows for hold="s", then the card flips,
+            // then the next card; after the last card's back it stops, or with loop plays on from
+            // the first. autoplay plays while on screen. data-playing is set while it plays.
+            const playback = playbackOptions(trigger, HOLD_SECONDS)
+            let playTimer = 0
+            const isPlaying = () => cardList.hasAttribute('data-playing')
+            const atEnd = () => currentNum() === numCards && isRevealed(numCards)
+            const playStep = () => {
+                if (!cardList.isConnected) return pause()
+                if (!isRevealed(currentNum())) revealCurrentCard()
+                else if (currentNum() < numCards) changeCard(1)
+                else if (playback.loop) changeCard(-999)
+                else return pause()
+                playTimer = setTimeout(playStep, playback.holdMs)
+            }
+            const play = () => {
+                if (atEnd() && !playback.loop) changeCard(-999) // playing from the end starts again
+                cardList.toggleAttribute('data-playing', true)
+                clearTimeout(playTimer)
+                playTimer = setTimeout(playStep, playback.holdMs)
+            }
+            function pause() {
+                clearTimeout(playTimer)
+                cardList.toggleAttribute('data-playing', false)
+            }
+            const autoplay = playback.autoplay ? playWhileOnScreen(cardList, { play, pause }) : null
+            cleanups.push(() => { autoplay?.cancel(); pause() })
+
+            // The viewer's own moves stop playing, and autoplay
+            const takeOver = () => { autoplay?.cancel(); pause() }
+            const byViewer = (fn) => (...args) => { takeOver(); fn(...args) }
+            const userChangeCard = byViewer(changeCard)
+            const userReveal = byViewer(revealCurrentCard)
+            const togglePlay = () => {
+                const wasPlaying = isPlaying()
+                takeOver()
+                if (!wasPlaying) play()
+            }
+
+            // The preview pane's `preview-show` event ({ position: { card, back } }): stops playing,
+            // and goes to that card, on that side (staying put when it was playing there)
             cardList.addEventListener('preview-show', ({ detail: { position } }) => {
-                changeCard(position.card + 1 - parseInt(cardList.dataset.currentCard), false)
-                cardNumbered(parseInt(cardList.dataset.currentCard))?.classList.toggle('revealed', position.back)
+                const wasPlaying = isPlaying()
+                takeOver()
+                if (wasPlaying && position.card + 1 === currentNum() && position.back === isRevealed(currentNum())) return
+                changeCard(position.card + 1 - currentNum(), false)
+                cardNumbered(currentNum())?.classList.toggle('revealed', position.back)
             })
 
             cards.forEach(function (card, i) {
@@ -155,54 +208,53 @@
 
 
 
-                card.addEventListener('click', () => {
-                    card.classList.toggle('revealed')
-                    tellPreview()
-                })
+                card.addEventListener('click', userReveal) // only the current card shows
                 preventDoubleClickSelect(card)
                 addSwipeSupport(card, {
-                    left:  () => changeCard(1),
-                    right: () => changeCard(-1),
-                    up:    revealCurrentCard,
-                    down:  revealCurrentCard,
+                    left:  () => userChangeCard(1),
+                    right: () => userChangeCard(-1),
+                    up:    userReveal,
+                    down:  userReveal,
                 })
 
                 removeLinks(card)
                 convertImagesToParaBacks(card)
             })
 
-            addControls(cardList, cardInfo, cardInstruct, changeCard)
+            addControls(cardList, cardInfo, cardInstruct, userChangeCard, togglePlay)
 
             // Keys and the wheel act on the deck with focus (clicking a card or a control gives it focus)
             cardList.tabIndex = 0
             cardList.addEventListener('keydown', (e) => {
+                if (e.altKey || e.ctrlKey || e.metaKey) return
                 switch (e.code) {
                     case 'ArrowUp':
                     case 'ArrowDown':
-                        revealCurrentCard()
+                        userReveal()
                         break
                     case 'Escape':
                         // Escape should always return to a clean baseline state.
                         exitFullScreen(cardList)
-                        changeCard(-999)
+                        userChangeCard(-999)
                         break
-                    case 'ArrowRight': changeCard(1);  break
-                    case 'ArrowLeft':  changeCard(-1); break
+                    case 'ArrowRight': userChangeCard(1);  break
+                    case 'ArrowLeft':  userChangeCard(-1); break
+                    case 'KeyA':       togglePlay();       break
                     default: return
                 }
                 e.preventDefault()
             })
             addWheelStepping(cardList, {
-                next:    () => changeCard(1),
-                prev:    () => changeCard(-1),
-                canNext: () => parseInt(cardList.dataset.currentCard) < numCards,
-                canPrev: () => parseInt(cardList.dataset.currentCard) > 1,
+                next:    () => userChangeCard(1),
+                prev:    () => userChangeCard(-1),
+                canNext: () => currentNum() < numCards,
+                canPrev: () => currentNum() > 1,
             })
 
             const fullscreenHandler = () => {
                 if (!document.fullscreenElement) {
                     exitFullScreen(cardList)
-                    changeCard(-999)
+                    userChangeCard(-999)
                 }
             }
 
@@ -248,12 +300,13 @@
         if (document.fullscreenElement) document.exitFullscreen()
     }
 
-    function addControls(cardList, cardInfo, cardInstruct, changeCard) {
+    function addControls(cardList, cardInfo, cardInstruct, changeCard, togglePlay) {
         const controlPanel = document.createElement('div')
         const controls     = document.createElement('p')
         const firstButton  = document.createElement('span')
         const prevButton   = document.createElement('span')
         const nextButton   = document.createElement('span')
+        const playButton   = document.createElement('span')
         const zoomButton   = document.createElement('span')
 
         controlPanel.classList.add('card-control-panel')
@@ -263,20 +316,23 @@
         firstButton.classList.add('control', 'card-first')
         prevButton.classList.add('control', 'card-previous')
         nextButton.classList.add('control', 'card-next')
+        playButton.classList.add('control', 'card-play')
         zoomButton.classList.add('control', 'card-zoom')
 
         cardList.append(controlPanel)
         controlPanel.append(cardInfo, cardInstruct, controls)
-        controls.append(firstButton, prevButton, nextButton, zoomButton)
+        controls.append(firstButton, prevButton, nextButton, playButton, zoomButton)
 
         firstButton.innerHTML = lucideIcon(ICONS.FIRST)
         prevButton.innerHTML  = lucideIcon(ICONS.PREVIOUS)
         nextButton.innerHTML  = lucideIcon(ICONS.NEXT)
+        playButton.innerHTML  = lucideIcon(ICONS.PLAY) + lucideIcon(ICONS.PAUSE) // one shows (CSS: data-playing)
         zoomButton.innerHTML  = lucideIcon(ICONS.FULLSCREEN)
 
         firstButton.addEventListener('click', () => changeCard(-999))
         prevButton.addEventListener('click',  () => changeCard(-1))
         nextButton.addEventListener('click',  () => changeCard(1))
+        playButton.addEventListener('click',  togglePlay)
         zoomButton.addEventListener('click',  () => {
             cardList.classList.contains('zoomed') ? exitFullScreen(cardList) : goFullScreen(cardList)
         })

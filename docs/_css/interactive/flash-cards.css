@@ -184,6 +184,13 @@
         }
     }
 
+    /* Play shows its play icon, or pause while playing */
+    .card-play svg:last-of-type { display: none; }
+    &[data-playing] .card-play {
+        svg:first-of-type { display: none; }
+        svg:last-of-type  { display: inline; }
+    }
+
     /* Dim controls at the limits of the deck */
     &[data-current-card="1"] .control.card-first,
     &[data-current-card="1"] .control.card-previous,

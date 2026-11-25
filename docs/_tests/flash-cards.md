@@ -93,3 +93,31 @@ Click to flip; that also gives the deck focus. While focused: ↑ / ↓ flip, �
     Back D
 
 </flashcards>
+
+## Playing
+
+Every deck can play: click it, then press `A` (or the play button) to play or pause. Each side shows for 3s (`hold="s"` changes that): the front, then it flips, then the next card. Any move of your own stops it, and playing from the last card's back starts again from the first card.
+
+This one has `autoplay loop hold="1.5"`: it plays while it's on screen, round and round, until you pause or move.
+
+<flashcards name="Autoplay Loop" autoplay loop hold="1.5">
+
+- # One
+
+    ---
+
+    Back of one
+
+- # Two
+
+    ---
+
+    Back of two
+
+- # Three
+
+    ---
+
+    Back of three
+
+</flashcards>
