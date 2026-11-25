@@ -85,6 +85,17 @@ html.slides-receiver {
         visibility: hidden;
     }
 
+    /* Play / pause */
+
+    .playback {
+        opacity: 0.3;
+        transition: opacity 250ms;
+
+        &:hover {
+            opacity: 1.0;
+        }
+    }
+
     /* Headings */
 
     .slides > section {

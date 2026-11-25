@@ -22,8 +22,12 @@
  *   Click the deck for focus, then press `s` to open the speaker view.
  *   </slides>
  *
- * Attributes:
+ * Attributes (playback as on <animation>):
  *   name="..." - the deck's name in the VS Code preview pane's block list (not used on the page)
+ *   hold="s"   - seconds each slide or step shows while playing (default 5)
+ *   autoplay   - plays while on screen (A, the play button, or stepping stops it)
+ *   loop       - after the last slide, plays on from the first
+ * Every deck can play: A (or reveal.js's play button) plays / pauses (reveal.js's auto-slide).
  *
  * Touch swipes are reveal.js's own (`touch`, on by default); they don't also go back / forward in
  * the browser (DocsifyUtils.preventSwipeNavigation). A double click doesn't select text
@@ -52,6 +56,7 @@
     column: /^\|\|\|[ \t]*(.*?)[ \t]*$/,
   }
   const DECK_END = '<!-- /slides-deck -->'
+  const HOLD_SECONDS = 5 // each step's time while playing, unless hold="s"
   const DECK_BLOCK = /<div class="reveal docsify-slide-deck"[\s\S]*?<!-- \/slides-deck -->/g
   const HEADING_ANCHOR = /<(h[1-6]) id="[^"]*" tabindex="-1"><a href="[^"]*" data-id="[^"]*" class="anchor">([\s\S]*?)<\/a><\/\1>/g
 
@@ -142,9 +147,10 @@
     ])
   }
 
-  function buildDeck(markdown, index) {
+  // attrs: the <slides> tag's attributes, kept on the deck (playback reads them)
+  function buildDeck(markdown, index, attrs) {
     const slides = splitAtMarkers(markdown, MARKERS.slide).chunks.map(buildSlide)
-    return `\n\n<div class="reveal docsify-slide-deck" id="slide-deck-${index}">\n<div class="slides">\n\n${joinBlocks(slides)}\n\n</div>\n</div>\n${DECK_END}\n\n`
+    return `\n\n<div class="reveal docsify-slide-deck" id="slide-deck-${index}"${attrs}>\n<div class="slides">\n\n${joinBlocks(slides)}\n\n</div>\n</div>\n${DECK_END}\n\n`
   }
 
   // Slide headings are not page anchors: drop the ids/anchor links Docsify adds, otherwise
@@ -267,11 +273,38 @@
     })
   }
 
+  // Playing, as an <animation> plays: reveal.js's auto-slide (every step held hold="s"), paused
+  // until played with A or its play button, or on screen with autoplay. Pausing or stepping turns
+  // autoplay off (reveal.js pauses on the viewer's input itself), and playing at the end (not
+  // looping) starts again from the first slide. data-playing is set while it plays.
+  function addPlayback(deck, reveal, { autoplay, loop }) {
+    let ours = false // a pause or resume made here, not by the viewer
+    const ourselves = (fn) => { ours = true; fn(); ours = false }
+    const watcher = autoplay && window.DocsifyUtils.playWhileOnScreen(deck, {
+      play: () => ourselves(() => reveal.toggleAutoSlide(true)),
+      pause: () => ourselves(() => reveal.toggleAutoSlide(false)),
+    })
+    const changed = (playing) => {
+      deck.toggleAttribute('data-playing', playing)
+      if (!ours && watcher) watcher.cancel()
+    }
+    reveal.on('autoslideresumed', () => {
+      changed(true)
+      if (!loop && reveal.isLastSlide() && !reveal.availableFragments().next) reveal.slide(0)
+    })
+    reveal.on('autoslidepaused', () => changed(false))
+    ourselves(() => reveal.toggleAutoSlide(false))
+    registerDeckCleanup(deck, () => watcher?.cancel())
+  }
+
   function startDeck(deck) {
     if (!sharedNotes && typeof RevealNotes !== 'undefined') sharedNotes = RevealNotes()
     window.DocsifyUtils.preventDoubleClickSelect(deck)
     window.DocsifyUtils.preventSwipeNavigation(deck)
+    const playback = window.DocsifyUtils.playbackOptions(deck, HOLD_SECONDS)
     const reveal = new Reveal(deck, {
+      autoSlide: playback.holdMs, // paused until played (addPlayback)
+      loop: playback.loop,
       embedded: true,
       url: getReceiverUrl(deck),
       postMessage: isReceiver,
@@ -292,6 +325,7 @@
     reveal.initialize().then(function () {
       applyIncrementalLists(deck)
       reveal.sync()
+      addPlayback(deck, reveal, playback) // after sync, which would set auto-slide playing again
       watchDeckLayout(deck, reveal)
       deck.setAttribute('data-slides-ready', 'true')
       refreshEditors(reveal.getCurrentSlide())
@@ -302,9 +336,10 @@
   }
 
   // The VS Code preview pane (vscode/dt-notes-syntax, preview-pane.js): a `preview-show` event
-  // ({ position: a slide's index }) goes to that slide with all its steps shown, and moving to
-  // another slide sends a `preview-position` event. A show that comes before reveal.js has
-  // started waits for it.
+  // ({ position: a slide's index }) stops playing and goes to that slide with all its steps shown
+  // (staying put when it's already there and was playing), and moving to another slide (stepping
+  // or playing) sends a `preview-position` event. A show that comes before reveal.js has started
+  // waits for it.
   const previewStarts = new WeakMap() // deck -> connect(reveal), once it's started
   function followPreview(deck) {
     let reveal = null
@@ -315,8 +350,13 @@
       if (steps) reveal.slide(slide, 0, steps - 1)
     }
     deck.addEventListener('preview-show', ({ detail }) => {
-      if (reveal) show(detail.position)
-      else pending = detail.position
+      if (!reveal) {
+        pending = detail.position
+        return
+      }
+      const wasPlaying = deck.hasAttribute('data-playing')
+      reveal.toggleAutoSlide(false)
+      if (!(wasPlaying && reveal.getIndices().h === detail.position)) show(detail.position)
     })
     previewStarts.set(deck, (started) => {
       reveal = started
@@ -330,7 +370,7 @@
       cleanupDeckWatchers()
 
       let index = 0
-      return content.replace(/<slides\b[^>]*>([\s\S]*?)<\/slides>/g, (_match, markdown) => buildDeck(markdown, index++))
+      return content.replace(/<slides\b([^>]*)>([\s\S]*?)<\/slides>/g, (_match, attrs, markdown) => buildDeck(markdown, index++, attrs))
     })
 
     hook.afterEach(stripDeckHeadingAnchors)

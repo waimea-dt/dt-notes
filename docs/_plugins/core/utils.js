@@ -51,6 +51,8 @@
  *   preventSwipeNavigation(el)          - Stop sideways swipes over el going back / forward in history
  *   addWheelStepping(el, options)       - Wheel / trackpad scroll steps next / prev while el is focused
  *   preventDoubleClickSelect(el, ign)   - Stop double clicks selecting text (drag-select still works)
+ *   playbackOptions(el, holdSeconds)    - A widget's autoplay / loop / hold="s" attributes
+ *   playWhileOnScreen(el, { play, pause }) - Autoplay: play while on screen, until cancel()
  */
 ;(function () {
     'use strict'
@@ -916,6 +918,55 @@
     }
 
     // -------------------------------------------------------------------------
+    // Playback (widgets that play through their steps, as <animation> does)
+    // -------------------------------------------------------------------------
+
+    /**
+     * A widget's playback attributes, as <animation> takes them: autoplay, loop, and hold="s" (the
+     * seconds each step is held while playing; not a positive number gives holdSeconds).
+     *
+     * @returns {{ autoplay: boolean, loop: boolean, holdMs: number }}
+     */
+    function playbackOptions(el, holdSeconds) {
+        const hold = parseFloat(el.getAttribute('hold'))
+        return {
+            autoplay: el.hasAttribute('autoplay'),
+            loop: el.hasAttribute('loop'),
+            holdMs: (hold > 0 ? hold : holdSeconds) * 1000,
+        }
+    }
+
+    /**
+     * Autoplay: calls play() when at least half of el is on screen (and the tab is showing), and
+     * pause() when it isn't, never for viewers who prefer reduced motion. cancel() stops it doing
+     * either (the viewer took over, e.g. pressed pause or stepped).
+     *
+     * @returns {{ cancel: Function }}
+     */
+    function playWhileOnScreen(el, { play, pause }) {
+        let onScreen = false
+        let playing = false
+        const observer = 'IntersectionObserver' in window
+            ? new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; update() }, { threshold: 0.5 })
+            : null
+        function update() {
+            if (!el.isConnected) return cancel()
+            const visible = onScreen && !document.hidden
+            if (visible !== playing) (visible ? play : pause)()
+            playing = visible
+        }
+        function cancel() {
+            observer?.disconnect()
+            document.removeEventListener('visibilitychange', update)
+        }
+        if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return { cancel }
+        document.addEventListener('visibilitychange', update)
+        if (observer) observer.observe(el)
+        else { onScreen = true; update() }
+        return { cancel }
+    }
+
+    // -------------------------------------------------------------------------
     // Export
     // -------------------------------------------------------------------------
 
@@ -957,6 +1008,8 @@
         loadLibrary,
         loadLibraries,
         withLibraries,
+        playbackOptions,
+        playWhileOnScreen,
         createEditor,
         resolveScope,
         parseHeaderConfig,

@@ -218,6 +218,34 @@ Use a `for...of` loop to grab everything.
 
 Back to normal docs...
 
+## Playing
+
+Every deck can play: click it, then press `A` (or its play button) to play or pause. It holds each slide and step for 5s (`hold="s"` changes that). Stepping pauses it, and playing from the last slide starts again from the first.
+
+This one has `autoplay loop hold="2"`: it plays while it's on screen, every 2s, round and round, until you pause or step.
+
+<slides name="Autoplay Loop" autoplay loop hold="2">
+
+# One
+
+Plays on by itself.
+
+---
+
+# Two
+
++++
+
+A step, held 2s too.
+
+---
+
+# Three
+
+Then back to One.
+
+</slides>
+
 ## Plugins Inside Slides
 
 Page plugins (their markdown and HTML hooks) should work the same inside a deck. Two decks on the page also checks that speaker notes stay with the deck they were opened from.
