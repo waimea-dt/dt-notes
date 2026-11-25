@@ -56,6 +56,99 @@ on: move +0,+1
 
 </animation>
 
+## Feature: arrange
+
+<animation grid="fit">
+
+```anim
+a: rect "a" at 2,2
+b: circle "b" at 6,6
+c: icon(laptop) at 9,6
+g: group [a b c] highlight outline
+```
+
+---
+
+## arrange right
+
+From the first, in the order they're listed, centres level.
+
+```anim
+g: arrange right gap 1.5
+```
+
+---
+
+## arrange down
+
+0.25 apart by default, as with below.
+
+```anim
+g: arrange down
+```
+
+---
+
+## arrange 30 gap 1
+
+Any angle
+
+```anim
+g: arrange 30 gap 1
+```
+
+---
+
+## arrange 45 stagger 0.2
+
+```anim
+g: arrange 45 stagger 0.2
+```
+
+---
+
+## Still a group
+
+```anim
+g: move 5,3
+```
+
+---
+
+## A group in a group
+
+```anim
+g: ungroup
+d: rect "d" at 8,1
+inner: group [c d] highlight outline
+outer: group [a b inner] highlight outline
+```
+
++++
+
+The inner group is placed by its box.
+
+```anim
+inner: arrange down gap 0.5
+outer: arrange right gap 0.5
+```
+
++++
+
+Its first shape stays put.
+
+```anim
+inner: arrange right gap 1
+```
+
++++
+
+```anim
+outer: arrange down gap 1
+```
+
+</animation>
+
 ## Feature: Points on an edge
 
 `a.top`, `a.bottom`, `a.left`, `a.right` and the four corners (`a.top-left` …): a point on a shape's edge. They turn and stretch with the shape, and a line end on one follows it.

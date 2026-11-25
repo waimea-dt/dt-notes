@@ -4,13 +4,13 @@
  */
 
 ;(function () {
-  const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo,
+  const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo, placeAlong,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
-    NUMBERINGS, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES, REPEATS, LERPED } = window.Anim
+    NUMBERINGS, DIRECTIONS, orList, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES, REPEATS, LERPED } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
   // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
@@ -428,6 +428,10 @@
       const moved = props.at || props.x || props.y || props.via || props.travel || props.follow || props.about
       if (!moved || !shape.attach || props.attach) return
       if (shape.attach.kind !== 'offset') { shape.attach = null; return }
+      offsetInGroup(shape)
+    }
+    // A group member's offset from its group, as it is now
+    function offsetInGroup(shape) {
       const parent = shapes.get(shape.attach.ref)
       shape.attach.dx = shape.x - parent.x
       shape.attach.dy = shape.y - parent.y
@@ -767,7 +771,7 @@
       // "arr: row [5 3 8 1] at 2,3" (or column): its cells are arr.0, arr.1, …
       const word = first?.kind === 'word' ? first.lower : ''
       if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
-      // a verb: delete, swap, insert, remove, copy, group, ungroup (LINES)
+      // a verb: delete, swap, insert, remove, copy, group, ungroup, arrange (LINES)
       if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
 
       // "l: arrow" on a line that already exists, with no new ends, isn't a new line: its ends'
@@ -979,6 +983,38 @@
       tween(meta, existing.uid).exit = 'fade'
     }
 
+    // "g: arrange right gap 0.5" (a direction, or degrees): its shapes in a line that way, in the
+    // order they're listed, each placed from the one before as "right-of" would (placeAlong). The
+    // first stays put, and lines follow the shapes they join. They stay in the group, at their new
+    // places in it (as keepOffset does).
+    function arrangeGroup(id, group, tokens, meta, warn) {
+      if (!group) throw noShape(id)
+      if (!isGroup(group) || bound(group)) throw new Error(`"${id}" isn't a group: "arrange" lays out a group's shapes, e.g. "g: group [a b c]", then "g: arrange right"`)
+      if (group.layout) throw new Error(`a ${LAYOUTS[group.layout].noun} lays out its own ${LAYOUTS[group.layout].item}s`)
+      const way = parseAs('num', tokens[1], shapes) ?? parseAs('direction', tokens[1], shapes)
+      if (!way) throw new Error(`"arrange" needs a way to go, a number of degrees (clockwise, 0 = right) or ${orList(Object.keys(DIRECTIONS))}, e.g. "${id}: arrange right gap 0.5"`)
+      const props = parseProps(tokens, 2, 'arrange', shapes)
+      const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
+      const placed = group.members.map((m) => shapes.get(m)).filter((m) => m && !LINE_TYPES.includes(m.type)).map((m) => structuredClone(m))
+      placed.forEach((m, k) => {
+        if (k) Object.assign(m, placeAlong(m, placed[k - 1], way.v, gap))
+        offsetInGroup(m)
+        shapes.set(m.id, m)
+        Object.assign(tween(meta, m.uid), { path: null, turn: null })
+        schedule(meta, m.uid, props)
+      })
+      // its centre moves to the middle of its shapes as they now are (a group in a group's members
+      // follow it first), so its box fits them: a group in a group is placed by its box
+      resolveAttachments(shapes)
+      const b = unionBounds(placed, shapes)
+      const moved = { ...structuredClone(group), x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }
+      shapes.set(id, moved)
+      for (const m of placed) offsetInGroup(m)
+      if (moved.attach?.kind === 'offset') offsetInGroup(moved) // in a group itself
+      schedule(meta, moved.uid, props)
+      applyStagger(group, staggerOrder(group), props, meta, warn)
+    }
+
 
     // Removes a shape (and a group's members), with the line's exit effect and timing.
     function removeShape(target, props, meta, warn) {
@@ -1082,7 +1118,7 @@
     for (const part of [...parts, { link }]) part.link()
 
     // The verbs (LINES with verb: true), each run as (id, existing shape, tokens, meta, warn, word)
-    const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, ...Object.assign({}, ...parts.map((part) => part.verbs)) }
+    const VERBS = { delete: deleteShape, copy: copyShape, group: makeGroup, ungroup, arrange: arrangeGroup, ...Object.assign({}, ...parts.map((part) => part.verbs)) }
 
     // What the parts do once a beat's lines have all run (finish: a trail grows along its shape's move)
     const finishBeat = (meta) => parts.forEach((part) => part.finish?.(meta))

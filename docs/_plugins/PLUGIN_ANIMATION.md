@@ -108,6 +108,7 @@ Notes on each area, for finding your way round before a change.
 
 - **Where a shape is:** its `x, y` is the point it's placed by: its centre, the middle of the grid square a layout's first cell starts in (`fromEdge`: its top-left is the square's), or the edge of its cell an aligned shape (`align`) or one with a corner (`SHAPES: anchor`) is placed by. `centreShift` gives its box's centre from there (worked out from its size as it is, so that edge holds still as it grows), `boxCentre` that centre, and `placeFor(shape, p)` the point that puts its centre at `p`. Anything that places a shape by a centre (beside a shape, on it, a route's stops) goes through `placeFor`, never assigning a centre to `x, y`.
 - **Attachments:** `besideOf` (attach, names) or `offsetFrom` (group members, cells, index labels). Test `attach.kind`, never field presence.
+- **Placing beside:** `placeAlong` places a shape a gap from another at any angle, keeping their upright boxes apart; `placeNextTo` is it for the placement words (`PLACE_DIRECTIONS`). `arrange` places each group member from the one before with it, then moves the group's centre to the middle of its shapes, keeping every offset right (`offsetInGroup`, as a member's own move does: `keepOffset`).
 - **Points on an edge** (`ANCHORS`): `parseAs: anchor` reads `a.top-left` (an id first, if a shape has that one) as `{ ref, anchor }`, a sig in `SPOT` / `POINT`, `attach` and `travel`. `refPoint` gives where any `{ ref, anchor }` is (`anchorPoint`: `edgePoint` the way of the side or corner, turned with the shape); a line end on one (`onShape`) is that point just off the edge and isn't trimmed (`resolveEnds`: `target`).
 - **Offsets in a layout:** measure a cell's place in its row (or a grid's row or column) with `offsetIn(cell, frame)`, never `cell.attach.dx` (a grid's cells are attached to the grid, not to its views).
 
@@ -203,7 +204,7 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 
 | Role | Scope | Words |
 |---|---|---|
-| Command | `keyword.control` (verbs, actions, beat lines), `storage.type` (a shape type straight after `id:`) | `delete`, `swap`, `insert`, `remove`, `copy`, `group`, `ungroup`, `detach`, `clear` (everywhere: `highlight clear`, `callout clear`, `defaults clear` …), `defaults`, `camera`, `pause`, `auto`, `reset` (`camera reset`); `rect`, `text`, `row`, `var` … |
+| Command | `keyword.control` (verbs, actions, beat lines), `storage.type` (a shape type straight after `id:`) | `delete`, `swap`, `insert`, `remove`, `copy`, `group`, `ungroup`, `arrange`, `detach`, `clear` (everywhere: `highlight clear`, `callout clear`, `defaults clear` …), `defaults`, `camera`, `pause`, `auto`, `reset` (`camera reset`); `rect`, `text`, `row`, `var` … |
 | Param | `support.type.property-name` | Named params (`at`, `speed`, `fill`, `into`, placements) and standalone ones (`bold`, `mono`, `pop`, `dashed`, `static`, `front`, `pulse`, `keep-style`) |
 | Value | `support.constant.property-value`, numbers, colours, strings, ids | `slow`, `left`, `spring`, `outline`, a line end's mark (`start arrow`, `end crow`) … |
 | Literal | `constant.language` with `variable.other.constant` inside it | `end` and `null`: words that stand in for a value, as a number does. The inner scope makes themes that colour `constant.language` like an error (Catppuccin: red) show them as constants instead (peach, like numbers) |
@@ -225,7 +226,7 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 
 Ideas agreed but not yet wanted, roughly in order:
 
-1. **Distribute / arrange:** spread a group's shapes evenly or line them up by an edge (`g: arrange right gap 0.5`, `g: align top`).
+1. **Line up:** a group's shapes level by an edge or centre, nothing else moving (`g: line-up top`, `g: line-up across`). Not `align`: that's text's.
 2. **`draw` on any outline:** trace a rect's, circle's or polygon's stroke in (and `delete draw` out), not only a line's.
 3. **Clip to a box:** a viewport onto part of the drawing (a scrolling window, a reveal), beside the whole-animation `crop`.
 4. **Arc / sector:** a plain shape, not only a var's or cell's `ring` / `pie`.
@@ -234,3 +235,5 @@ Ideas agreed but not yet wanted, roughly in order:
 7. **Morph:** one shape's outline into another's (polygons with the same number of points already glide), and text by character: letters that stay slide to their new places (ciphers, string operations, working out a sum step by step).
 8. **Graphs and trees:** a layout of nodes and edges placed automatically (a tree down the page, a circle), with edge ids and weights and a `path` highlight. For TSP, routing, BSTs, linked lists, hierarchies.
 9. **Axes and plots:** axes with ticks and labels, points on them, and a curve from a formula or a list of points that can draw itself in. For Big O, sound sampling, square waves, number lines.
+10. **Seeded random:** the same every load, so captions can talk about what's there. The seed comes from the animation's text by default (`seed="7"` to pick one). One form, `random <low> to <high>`, for numbers or points: `v: var random 1 to 100`, `a: rect at random 1,1 to 3,4`, `arr: row 5 random 1 to 99`, `arr: row [1 2 random 1 to 9]`. Whole numbers when both ends are, decimals otherwise. For TSP, sorting and searching data.
+11. **Shuffle:** `arr: shuffle`, a row mixed up as it plays, seeded like random. Only if it turns out to be useful.

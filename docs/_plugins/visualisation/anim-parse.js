@@ -295,8 +295,8 @@
       i = next
     }
 
-    // in a row / column, gap is the space between its cells
-    if (props.gap && kind !== 'layout' && props.at?.kind !== 'place' && !props.attach) throw new Error(`"gap" only works with above / below / left-of / right-of, or attach (or between the cells of ${LAYOUT_NOUNS})`)
+    // a line that spaces things out (LINES: spaces) takes a gap of its own: a row's between its cells
+    if (props.gap && !LINES[kind]?.spaces && props.at?.kind !== 'place' && !props.attach) throw new Error(`"gap" only works with above / below / left-of / right-of, or attach (or between the cells of ${LAYOUT_NOUNS}, or a group's shapes with arrange)`)
     if (props.at && (props.x || props.y)) throw new Error('the position is given twice (at/move and x/y)')
     return props
   }
