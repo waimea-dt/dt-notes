@@ -74,6 +74,13 @@ gb2: group [a, zz]
 gb3: group [a
 gb4: group []
 gb5: group [a] at 2,2
+ga: arrange right
+a: arrange right
+er: arrange right
+ga: group [a b]
+ga: arrange
+ga: arrange sideways
+ga: arrange right fill red
 tr2: rect at 3,1 about 2,2
 tr: about 2,2
 tr: angle +90 about 2,2 move 3,3

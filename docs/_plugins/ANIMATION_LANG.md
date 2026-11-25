@@ -206,10 +206,13 @@ lock: attach msg.top-right     # on its corner
 lock: detach
 pkt: group [msg lock]          # acts as one
 pkt: ungroup
+g: arrange right gap 0.5       # in a line, from the first, centres level
+g: arrange 30 gap 0            # at an angle (degrees, as angle)
 ```
 
 - Moving an attached shape detaches it.
 - A look or delete on a group goes to its members.
+- `arrange`: in the group's order, each from the one before as `right-of` would (`gap` 0.25). Takes `speed`, `delay`, `ease`, `stagger`.
 
 ## Rows and columns
 

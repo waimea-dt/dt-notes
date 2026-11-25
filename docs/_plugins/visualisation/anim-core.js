@@ -896,6 +896,7 @@
   //   takesOut a row edit that takes cells out (remove), rather than putting them in (insert)
   //   takes    the props it takes (left out: any), with `what` naming it in the message
   //   refuses  props it doesn't take, with `refuse(word)` the message
+  //   spaces   it takes a gap of its own: the space between the things it lays out
   const LINES = {
     create: { refuses: ['repeat'], refuse: () => '"repeat" repeats a change to a shape that\'s already there, e.g. "a: angle +30 repeat 3"' }, // "a: rect …"
     change: {}, // "a: fill red …"
@@ -906,6 +907,7 @@
       refuse: () => 'create the group first, then move it on the next line',
     },
     ungroup: { verb: true, takes: [] },
+    arrange: { verb: true, spaces: true, takes: ['gap', ...TIMING, 'stagger'] }, // a group's shapes in a line, "g: arrange right"
     delete: { verb: true, takes: [...TIMING, 'effect', 'stagger'] }, // a shape
     swap: { verb: true, takes: TIMING }, // two of a row's / column's cells
     insert: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell into a row / column
@@ -923,6 +925,7 @@
       refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,
     },
     layout: { // "arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
+      spaces: true,
       takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices', ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" doesn't apply to ${LAYOUT_NOUNS}`,
     },
