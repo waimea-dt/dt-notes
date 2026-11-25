@@ -130,7 +130,8 @@ const animFile = (lines, name) => ({
 })
 
 function activate(context, log) {
-  const state = { panel: null, engineDir: null, files: new Set(), shown: null, message: null, timer: 0, scrollTimer: 0, edited: false }
+  // placed: where the pane last put the cursor, to tell its own moves from the user's
+  const state = { panel: null, engineDir: null, files: new Set(), shown: null, message: null, timer: 0, scrollTimer: 0, edited: false, byUser: false, placed: null }
 
   const post = (message) => {
     state.message = message
@@ -162,8 +163,9 @@ function activate(context, log) {
     load(engineDir)
   }
 
-  // Shows the block (and place) at the editor's cursor; edited: the change came from typing
-  function update(editor, edited) {
+  // Shows the block (and place) at the editor's cursor; edited: the change came from typing;
+  // byUser: the user moved the cursor or typed, which stops an animation that's playing
+  function update(editor, edited, byUser) {
     if (!state.panel || !followable(editor?.document)) return
     const { document } = editor
     const engineDir = engineDirFor(document.uri.fsPath)
@@ -188,6 +190,7 @@ function activate(context, log) {
         replays: Boolean(kind.replays),
         position: found.position,
         play: edited,
+        stop: Boolean(byUser),
         base: `${state.panel.webview.asWebviewUri(vscode.Uri.file(path.dirname(document.fileName)))}/`,
       })
     } catch (error) {
@@ -195,8 +198,8 @@ function activate(context, log) {
     }
   }
 
-  // Stepping in the pane: the shown block's editor gets its cursor on that place (unless it's
-  // already there). The cursor move comes back through update, which finds the pane already there.
+  // Stepping or playing in the pane: the shown block's editor gets its cursor on that place (unless
+  // it's already there). Only the bar's line follows: the pane is already there.
   function moveCursorTo(position) {
     const { editor, blocks } = shownEditor()
     const block = blocks?.[state.shown.index]
@@ -204,7 +207,14 @@ function activate(context, log) {
     const kind = KINDS[block.tag]
     const cursor = editor.selection.active.line
     if (block.start <= cursor && cursor <= block.end && samePlace(kind.positionAt(block, cursor, state.engineDir), position)) return
-    placeCursor(editor, kind.lineOf(block, position, state.engineDir))
+    state.placed = placeCursor(editor, kind.lineOf(block, position, state.engineDir))
+  }
+
+  // The pane's own cursor move: the bar's line, and the last message (for a reloaded page)
+  function showLine(editor) {
+    const line = `line ${editor.selection.active.line + 1}`
+    if (state.message) state.message.line = line
+    state.panel.webview.postMessage({ type: 'line', line })
   }
 
   // Picking a block in the pane's list: the cursor goes to its opening tag, and the pane follows
@@ -225,6 +235,7 @@ function activate(context, log) {
     const at = new vscode.Position(line.lineNumber, line.firstNonWhitespaceCharacterIndex)
     editor.selection = new vscode.Selection(at, at)
     scrollTo(editor, line.lineNumber)
+    return at
   }
 
   // Scrolls the editor to centre a line that's out of view, smoothly, so the jump is easy to follow.
@@ -253,14 +264,23 @@ function activate(context, log) {
   }
 
   // One timer for both: an edit waits for typing to stop, a cursor move only briefly
-  function later(editor, edited) {
+  function later(editor, edited, byUser) {
     if (edited) state.edited = true
+    if (byUser) state.byUser = true
     clearTimeout(state.timer)
     state.timer = setTimeout(() => {
-      const wasEdited = state.edited
-      state.edited = false
-      update(editor, wasEdited)
+      const { edited: wasEdited, byUser: wasUser } = state
+      Object.assign(state, { edited: false, byUser: false })
+      update(editor, wasEdited, wasUser)
     }, state.edited ? EDIT_WAIT_MS : FOLLOW_WAIT_MS)
+  }
+
+  // A cursor move: the pane's own (it put the cursor there) only changes the bar's line
+  function cursorMoved(editor) {
+    const ours = state.placed && editor.selection.isEmpty && editor.selection.active.isEqual(state.placed)
+    state.placed = null
+    if (ours) showLine(editor)
+    else later(editor, false, true)
   }
 
   function open(editor) {
@@ -275,11 +295,11 @@ function activate(context, log) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('dtNotes.previewBlock', () => open(vscode.window.activeTextEditor)),
-    vscode.window.onDidChangeTextEditorSelection(({ textEditor }) => { if (state.panel && followable(textEditor.document)) later(textEditor, false) }),
+    vscode.window.onDidChangeTextEditorSelection(({ textEditor }) => { if (state.panel && followable(textEditor.document)) cursorMoved(textEditor) }),
     vscode.window.onDidChangeActiveTextEditor((editor) => { if (state.panel && followable(editor?.document)) later(editor, false) }),
     vscode.workspace.onDidChangeTextDocument(({ document, contentChanges }) => {
       const editor = state.panel && contentChanges.length && editorFor(document)
-      if (editor) later(editor, true)
+      if (editor) later(editor, true, true)
     }),
     // an edited plugin or its CSS (anything the pane loads from the site): reload the pane with it
     vscode.workspace.onDidSaveTextDocument((document) => {

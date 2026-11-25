@@ -87,8 +87,9 @@
   })
 
   window.addEventListener('message', ({ data }) => {
-    listBlocks(data.titles, data.index)
     cursorLine.textContent = data.line
+    if (data.type === 'line') return // the pane's own cursor move: only the line changes
+    listBlocks(data.titles, data.index)
     // outside every block: the hint, until the cursor is in one again
     if (data.type === 'outside') {
       shown = position = null
@@ -102,12 +103,15 @@
     if (changed) build(data.markdown)
     shown = data.markdown
     const to = data.position ?? position
-    if (to != null && (changed || !samePlace(to, position))) show(to, changed && data.play && options.replay.checked)
+    // the user moving the cursor or typing stops a widget that's playing (data-playing), even
+    // where the pane already is
+    const stop = data.stop && page.querySelector(`${widget}[data-playing]`)
+    if (to != null && (changed || stop || !samePlace(to, position))) show(to, changed && data.play && options.replay.checked)
     position = to
   })
 
-  // Stepping in the pane (buttons, keys, the progress bar) moves the editor's cursor there, with
-  // "Sync cursor" ticked
+  // Stepping or playing in the pane (buttons, keys, the progress bar) moves the editor's cursor
+  // there, with "Sync cursor" ticked
   page.addEventListener('preview-position', ({ detail }) => {
     if (samePlace(detail.position, position)) return
     position = detail.position

@@ -323,8 +323,9 @@
     let moveId = 0 // bumped by every move, so a beat's parts still to play (playParts) stop
     let looping = 0 // the frame of a beat's forever repeats going round (loopForever)
 
-    // Where the viewer's own stepping is going, as a `preview-position` event ({ position: the
-    // beat }) sent as each move sets off: the VS Code preview pane moves the editor's cursor there
+    // Where the viewer's own stepping (or playing) is going, as a `preview-position` event
+    // ({ position: the beat }) sent as each move sets off: the VS Code preview pane moves the
+    // editor's cursor there
     const announceBeat = () => widget.dispatchEvent(new CustomEvent('preview-position', { bubbles: true, detail: { position: current } }))
     const BY_VIEWER = { announce: true }
 
@@ -632,7 +633,7 @@
         else return finished()
       }
       const token = ++navId
-      goTo(current + playDir).then(() => {
+      goTo(current + playDir, BY_VIEWER).then(() => {
         if (!playing || token !== navId) return
         if (beats[current].meta.auto && !atEnd(playDir)) return playNext() // straight on
         if (atEnd(playDir) && !opts.loop) return finished()
@@ -655,7 +656,7 @@
     // While playing: back to the start (playing the intro, if any), then hold there before going on.
     function startOver() {
       clearTimeout(playTimer)
-      jump(0).then(() => { if (playing && current === 0) schedule(holdAfter(0)) })
+      jump(0, BY_VIEWER).then(() => { if (playing && current === 0) schedule(holdAfter(0)) })
     }
 
     // Autoplay: only while the animation is on screen and the tab is visible (resuming where it
@@ -760,11 +761,13 @@
     })
 
     // A `preview-show` event ({ position: a beat, play }) goes to a beat: the VS Code preview pane
-    // sends it to follow the editor's cursor. With play, it plays into the beat from the one
-    // before (or the intro, for the first), so an edited beat is seen moving.
+    // sends it to follow the editor's cursor, and stops playing (so working in the editor stops
+    // it). With play, it plays into the beat from the one before (or the intro, for the first), so
+    // an edited beat is seen moving.
     widget.addEventListener('preview-show', ({ detail: { position, play } }) => {
       userStop()
       const to = Math.max(0, Math.min(last, position))
+      if (!play && to === current && !introPending) return // only stopping: stay put
       if (!play || to === 0) return jump(to)
       const token = ++navId
       goTo(to - 1, { animate: false }).then(() => { if (token === navId) goTo(to) })
