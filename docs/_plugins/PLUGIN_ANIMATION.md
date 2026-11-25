@@ -226,7 +226,7 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 
 Ideas agreed but not yet wanted, roughly in order:
 
-1. **Distribute / arrange:** spread a group's shapes evenly or line them up by an edge (`g: arrange right gap 0.5`, `g: align top`).
+1. **Line up:** a group's shapes level by an edge or centre, nothing else moving (`g: line-up top`, `g: line-up across`). Not `align`: that's text's.
 2. **`draw` on any outline:** trace a rect's, circle's or polygon's stroke in (and `delete draw` out), not only a line's.
 3. **Clip to a box:** a viewport onto part of the drawing (a scrolling window, a reveal), beside the whole-animation `crop`.
 4. **Arc / sector:** a plain shape, not only a var's or cell's `ring` / `pie`.
@@ -235,3 +235,5 @@ Ideas agreed but not yet wanted, roughly in order:
 7. **Morph:** one shape's outline into another's (polygons with the same number of points already glide), and text by character: letters that stay slide to their new places (ciphers, string operations, working out a sum step by step).
 8. **Graphs and trees:** a layout of nodes and edges placed automatically (a tree down the page, a circle), with edge ids and weights and a `path` highlight. For TSP, routing, BSTs, linked lists, hierarchies.
 9. **Axes and plots:** axes with ticks and labels, points on them, and a curve from a formula or a list of points that can draw itself in. For Big O, sound sampling, square waves, number lines.
+10. **Seeded random:** the same every load, so captions can talk about what's there. The seed comes from the animation's text by default (`seed="7"` to pick one). One form, `random <low> to <high>`, for numbers or points: `v: var random 1 to 100`, `a: rect at random 1,1 to 3,4`, `arr: row 5 random 1 to 99`, `arr: row [1 2 random 1 to 9]`. Whole numbers when both ends are, decimals otherwise. For TSP, sorting and searching data.
+11. **Shuffle:** `arr: shuffle`, a row mixed up as it plays, seeded like random. Only if it turns out to be useful.
