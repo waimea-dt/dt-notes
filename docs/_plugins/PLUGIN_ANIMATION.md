@@ -200,7 +200,7 @@ Notes on each area, for finding your way round before a change.
 - **Angles** are clockwise degrees from as drawn, which faces right (as Scratch sprites do). Direction words (`angle up`, `DIRECTIONS`) are absolute but turn the short way (`numberValue`'s `turn`); numbers turn exactly as written, so `angle +360` spins.
 - **Turning things off** uses the word's own off form: `clear`, `delete`, `ungroup`, `detach`, `static`, `solid`, `reset`.
 - **Rows and columns:** ids stay with the places. After a swap, insert or remove, `Arr[2]` is whichever cell is now third.
-- **Errors:** a bad line is skipped and listed under the animation. A message names the word as typed (`wordFor`) and gives the fix or an example. "Only takes …" messages come from `LINES`. Only warn (not error) when the line still makes sense.
+- **Errors:** a bad line is skipped and listed under the animation. A message names the word as typed (`wordFor`) and gives the fix or an example. "Only takes …" messages come from `LINES`. Only warn (not error) when the line still makes sense. Messages explain the language as it is: there's no older syntax to recognise, so don't add checks or hints for forms it doesn't have.
 
 ## Highlighting
 

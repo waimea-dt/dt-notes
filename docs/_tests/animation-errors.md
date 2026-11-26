@@ -116,7 +116,6 @@ Q: rect at 1,1 ease bouncy
 Dw: fill red stagger -1
 defaults name "x"
 defaults "x"
-defaults range 0 1
 Rp: rect at 1,1
 Rp2: rect at 2,1 repeat 2
 Rp: fill red repeat 0
@@ -170,7 +169,6 @@ Er: insert 3 at 0 keep-style
 Er[0..5]: fill red
 Dw[0..1]: fill red
 Er[0..1]: move 2,2
-Er: range 0 fill red
 Sp1: span Er[0..9]
 Sp2: span Dw[0..1]
 Sp3: span Er 0
@@ -181,7 +179,6 @@ Sp6: move 2,2
 Sp6: size 2
 Eg: grid [[1 2] [3 4 5]] at 1,1
 Eg[5][0]: 7
-Eg[1, 1]: 7
 Eg2: grid [1 2] at 1,1
 Eg3: grid 4 at 1,1
 Eg4: grid [[1 2] [3 at 1,1

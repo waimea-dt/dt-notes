@@ -17,7 +17,7 @@
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyStagger, busiest, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow
+    let applyStagger, busiest, noShape, retime, schedule, speedOf, stampOf, stampNow
     // making (in the link functions and holderRef): the id the line being run makes, if it makes one
     // (applyLook's creating), so a look can follow its own value ("R: binary 0 fill rgb(R 0 0)"),
     // though it isn't there yet: such a link is worked out once it is (fitLinks, after the line)
@@ -107,7 +107,6 @@
       if (!shape) throw noShape(id)
       const row = shape.digit ? null : shape
       if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or some, e.g. "B[0..3]: flip"), and "${id}" isn't one`)
-      if (row && placeOf(row, tokens[1]) !== undefined) throw new Error(`some of a number's digits go in its id, e.g. "${id}[0..3]: flip"`)
       const cells = range ? range.cells : row ? digitsOf(row) : [shape]
       const props = parseProps(tokens, 1, 'flip', shapes)
       for (const cell of cells) {
@@ -487,7 +486,7 @@
         setNumber, setValue, unlink, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {
-        ({ applyStagger, busiest, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow } = cx)
+        ({ applyStagger, busiest, noShape, retime, schedule, speedOf, stampOf, stampNow } = cx)
       },
     }
   })

@@ -810,7 +810,6 @@
     'stagger-reverse': { key: 'stagger', sigs: [['num'], []], build: (v) => buildStagger(v, true), help: 'a number of seconds between members (or nothing, for 0.1)', what: 'stagger' },
     ...words(EFFECTS, 'effect', 'effect'),
     ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
-    range: { error: 'a range of places goes in the id, e.g. "Arr[0..2]: fill red" or "G[0..1][1..2]: fill red"' },
     // emphasis, highlights and callouts
     ...words(Object.keys(EMPHASES), 'emphasis', 'emphasis'),
     highlight: {

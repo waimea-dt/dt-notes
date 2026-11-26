@@ -550,6 +550,7 @@
       shape.points = points.map((p, k) => ({ u: w ? (xs[k] - shape.cx) / w : 0, v: h ? (ys[k] - shape.cy) / h : 0 }))
     }
 
+    const notAnId = (id) => new Error(`"${id}" isn't an id: an id starts with a capital letter, then letters, digits, _ or -`)
     const replaced = (id, warn) => warn(`"${id}" already exists, so it is replaced`)
     // "a row, column, code block, grid, table or group": what stagger works on
     const GROUPS = nounList([...LAYOUT_NAMES, GROUP])
@@ -760,7 +761,7 @@
 
       // "Arr[0..2]: fill red", "B[0..3]: flip": some of a layout's places (rangeOf)
       if (id.includes('..')) return runRange(id, tokens, meta, warn)
-      if (!REF.test(id)) throw new Error(`"${id}" isn't an id: an id starts with a capital letter, then letters, digits, _ or -${/^[a-z]/.test(id) ? `, e.g. "${id[0].toUpperCase()}${id.slice(1)}"` : ''}`)
+      if (!REF.test(id)) throw notAnId(id)
 
       const first = tokens[0]
       // "V: var 67 at 5,3": a rect that holds a value (a number, "text" or null), straight after "var"
@@ -773,11 +774,10 @@
 
       // "Arr: row [5 3 8 1] at 2,3" (or column): its cells are Arr[0], Arr[1], …
       const word = first?.kind === 'word' ? first.value : ''
-      if (!existing && (type || LAYOUT_TYPES.includes(word)) && !ID.test(id)) throw new Error(`"${id}" can't be a new shape's id: a "." is for a part, e.g. "Arr[2]" or "V1.name"`)
+      if (!existing && (type || LAYOUT_TYPES.includes(word)) && !ID.test(id)) throw notAnId(id) // a new shape's: no parts
       const owner = !existing && !ID.test(id) && shapes.get(id.match(/^[A-Z][\w-]*/)[0]) // "Arr[9]": a part that isn't there
       const scriptLine = owner && kindOf(owner).script && id.slice(owner.id.length).match(/^\[([^\][]+)\]$/)
       if (scriptLine) return runScriptLine(owner, scriptLine[1], tokens, meta, warn)
-      if (owner && id.includes(',')) throw new Error(`"${id}": a grid's cell is [row][column], e.g. "${id.replace(/\[([^\]]*),\s*([^\]]*)\]/, '[$1][$2]')}"`)
       if (owner) throw new Error(`"${owner.id}" has no "${id.slice(owner.id.length)}"${owner.members?.length && owner.layout && !LAYOUTS[owner.layout].views ? ` (its places are ${cellRange(owner, owner.members.length)})` : ''}`)
       if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
       // a verb: delete, swap, insert, remove, copy, group, ungroup, arrange (LINES)
