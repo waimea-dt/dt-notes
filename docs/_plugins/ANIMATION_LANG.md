@@ -62,10 +62,9 @@ Markers go alone on their line. Everything in a beat plays at once.
 ## Grid
 
 - Cells from 1, top-left. `at 3,2` = centre of column 3, row 2. Fractions OK.
-- `at` puts a shape's centre on the middle of the square, and anything with parts (rows, grids, numbers, code, Scratch) by its top-left. `anchor top-left` (or any side, corner or `centre`) puts that part of a single shape on that part of the square, and it holds as the shape changes size.
 - Points `5,4`, sizes `2x1`, all in cells. A point is x,y (column, row); a place is `[row][column]`, as in code (`G[1][2]`).
 - A point can be a shape (`A`: its centre) or a point on its edge: `A.top` `A.bottom` `A.left` `A.right` `A.top-left` `A.top-right` `A.bottom-left` `A.bottom-right`.
-- A shape placed at a point on an edge (`at`, `move`, `attach`) goes on it; with a `gap`, beside that side or corner, that far away.
+- A single shape goes on a point by its centre (or its `anchor`); anything with parts (rows, grids, numbers, code, Scratch) by its top-left square. At an edge point with a `gap`, it goes beside that side or corner instead.
 
 ## Lines
 
@@ -174,7 +173,7 @@ C: via 6,1           # a curve's bends, a line's corners
 ```anim
 A: move 9,3 via 5,1                # an arc through a point
 A: move 9,3 via 3,1 via 6,5        # a wave through several
-A: move 9,3 via B.bottom gap 0.25  # beside B on the way (a gap puts every edge point beside)
+A: move 9,3 via B.bottom gap 0.25  # beside B on the way
 A: travel R1 R2 4,3                # hop by hop (speed per hop)
 A: follow L                        # along line / curve L
 A: follow-reverse L                # from its end
@@ -240,7 +239,6 @@ Arr: delete                        # the whole row
 
 - Values in `[ ]`: numbers, `"quoted"` or `null`, commas optional.
 - `size`, `gap` and looks apply to every cell. Cell size is set when it's made.
-- `at` places it by its top-left. `at B.bottom gap 0.5` places the whole row beside `B`.
 - Ids stay with the places: after an edit, `Arr[2]` is whichever cell is now third.
 - Cells hold values like a var: `Arr[2]: 7`.
 - A range `[from..to]` includes both ends, either way round.
@@ -283,7 +281,7 @@ G[0..1][1..2]: fill teal           # a block, corner to corner
 S: span G[0..1][0..end]            # rows 0 and 1 (end: the last)
 S2: span T[head..end][0]           # a table's column 0, heading too
 G[1][0..2]: fill green             # within a row
-S3: span G.col[2][0..1]
+S3: span G.col[2][0..1]            # within a column
 G: indices                         # rows down the left, columns along the bottom
 G: swap 0 1                        # rows
 G: swap col 1 end                  # columns
@@ -314,6 +312,77 @@ V1: null
 
 - A var is a rect: size, fill and the other looks work.
 
+## Sums
+
+```anim
+C: A + B * 2                       # worked out once, as in code
+Arr[3]: Arr[0] mod 4               # + - * / mod, spaces round each
+B: V1 * 2                          # a number's value too
+C: (A + B) * 2                     # ( ) first
+A: (-5)                            # a negative value (A: -5 takes 5 off)
+```
+
+## Moving values
+
+```anim
+V1: A[1]                           # a copy of A[1]'s value moves onto V1
+A[2]: V2                           # vars and cells both ways
+A: insert V1 at 3
+A: insert V2 at end
+A: remove end into V2
+A: remove 1 into V1
+```
+
+- Values are copied. Takes `speed`, `delay` and `ease`.
+- `keep-style` (or `defaults keep-style`): the value takes its fill, stroke and ink with it.
+
+## Values in labels
+
+```anim
+T: text "{N} × {S} = {N * S}" at 8,2   # kept up to date
+T: text "{1, 2, 3}" at 8,3             # not a sum: shows as written
+```
+
+- Not in quoted values, code or Scratch.
+
+## Following values
+
+```anim
+Dot: circle y 4 x {Px}             # x follows Px (in cells)
+Hand: rect at 9,4 angle {Turn * 3} # a sum
+Snap: circle y 3 x Px              # no { }: Px's value now
+Hand: angle 0                      # a number again: stops following
+W: var 2 at 2,2 width {W} height 1 # its own value
+Sum: var {A + B} at 5,2            # a value: vars, cells and numbers
+Sum: 0                             # a new value: stops following
+```
+
+- `{ }` follows as values change; a bare var or cell is its value now.
+- For values, and `x` `y` `width` `height` `radius` `corner` `weight` `font` `angle` `scale` `opacity` `show`.
+
+## Colours from values
+
+```anim
+Sw: rect at 8,3 fill rgb({R} {G} {B})  # red, green, blue (0-255): follows vars R, G, B
+Sw: stroke rgb({Arr[0]}, 255, {N * 2}) # cells, numbers (binary, hex, denary) and sums
+R: 200                                 # Sw changes with R
+R: binary 0 at 2,2 fill rgb({R} 0 0)   # a number following its own value
+Sw: fill rgb(R 0 0)                    # no { }: R's value now
+Sw: fill red                           # stops following
+```
+
+- For `fill`, `stroke`, `ink` and `track`. Values outside 0-255 are held in range.
+
+## Counting
+
+```anim
+Score: 25 counter                  # counts its way there
+B: 11 counter                      # a number's digits too
+defaults counter
+```
+
+- A label's `{ }` that follows a counting value counts along with it, as does a number's `decimal`.
+
 ## Bars
 
 ```anim
@@ -331,77 +400,6 @@ Done: ring clear
 - `max`: 100, or a row's / column's biggest value.
 - `bar` fills up a tall box, across a wide one. Its value goes in the middle with a track, otherwise at the end.
 - `ring` and `pie` are round: one `size`, no `width` / `height`. A box that isn't square is made square.
-
-## Colours from values
-
-```anim
-Sw: rect at 8,3 fill rgb({R} {G} {B})  # red, green, blue (0-255): follows vars R, G, B
-Sw: stroke rgb({Arr[0]}, 255, {N * 2}) # cells, numbers (binary, hex, denary) and sums
-R: 200                                 # Sw changes with R
-R: binary 0 at 2,2 fill rgb({R} 0 0)   # a number following its own value
-Sw: fill rgb(R 0 0)                    # no { }: R's value now
-Sw: fill red                           # stops following
-```
-
-- For `fill`, `stroke`, `ink` and `track`. Values outside 0-255 are held in range.
-
-## Sums
-
-```anim
-C: A + B * 2                       # worked out once, as in code
-Arr[3]: Arr[0] mod 4               # + - * / mod, spaces round each
-B: V1 * 2                          # a number's value too
-C: (A + B) * 2                     # ( ) first
-A: (-5)                            # a negative value (A: -5 takes 5 off)
-```
-
-## Values in labels
-
-```anim
-T: text "{N} × {S} = {N * S}" at 8,2   # kept up to date
-T: text "{1, 2, 3}" at 8,3             # not a sum: shows as written
-```
-
-- Not in values, code or Scratch.
-
-## Following values
-
-```anim
-Dot: circle y 4 x {Px}             # x follows Px (in cells)
-Hand: rect at 9,4 angle {Turn * 3} # a sum
-Snap: circle y 3 x Px              # no { }: Px's value now
-Hand: angle 0                      # a number again: stops following
-W: var 2 at 2,2 width {W} height 1 # its own value
-Sum: var {A + B} at 5,2            # a value: vars, cells and numbers
-Sum: 0                             # a new value: stops following
-```
-
-- `{ }` follows as values change; a bare var or cell is its value now.
-- For values, and `x` `y` `width` `height` `radius` `corner` `weight` `font` `angle` `scale` `opacity` `show`.
-
-## Counting
-
-```anim
-Score: 25 counter                  # counts its way there
-B: 11 counter                      # a number's digits too
-defaults counter
-```
-
-- A label's `{ }` that follows a counting value counts along with it, as does a number's `decimal`.
-
-## Moving values
-
-```anim
-V1: A[1]                           # a copy of A[1]'s value moves onto V1
-A[2]: V2                           # vars and cells both ways
-A: insert V1 at 3
-A: insert V2 at end
-A: remove end into V2
-A: remove 1 into V1
-```
-
-- Values are copied. Takes `speed`, `delay` and `ease`.
-- `keep-style` (or `defaults keep-style`): the value takes its fill, stroke and ink with it.
 
 ## Names and indices
 
@@ -450,7 +448,7 @@ C: code [
     "for n in nums:",
     "    total += n"
 ] at 2,3 lang python name "sum.py" indices   # lines C[1] … C[3]
-C[2]: highlight line               # highlight clear
+C[2]: highlight line               # (highlight clear: off)
 C[1]: "total = 100"
 S: "print(42)"                     # a one-line block
 C: insert "print(total)" at end
@@ -520,8 +518,7 @@ Don't replay going back. `signal` is for lines.
 ```anim
 A: highlight outline       # not lines
 A: highlight inside        # not text, lines or groups
-T: highlight line          # text or a code line
-S[3]: highlight line       # a scratch script's line
+T: highlight line          # text, a code line (C[2]) or a Scratch line (S[3])
 A: highlight arrow
 A: highlight glow
 A: highlight number        # the next number: 1, then 2, …
@@ -587,6 +584,7 @@ Takes `move` `x` `y` `travel` `zoom` `reset` `speed` `delay` `ease`.
 A: delete
 G: ungroup
 A: detach
+A: gap clear
 A: trail clear
 L: end none
 L: static
