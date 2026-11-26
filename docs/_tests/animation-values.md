@@ -265,7 +265,7 @@ S: 6
 
 ## Feature: Following values
 
-A number given a var or cell (or `{ }`) follows it as it changes.
+A number given `{ }` follows what's in it as it changes. A bare var or cell gives its value once.
 
 <animation name="Following Values" grid="12x6">
 
@@ -273,8 +273,9 @@ A number given a var or cell (or `{ }`) follows it as it changes.
 Px: var 2 name "px" at 2,1
 Turn: var 0 name "turn" at 5,1
 W: var 1 name "w" at 8,1
-Dot: circle y 4 x Px size 0.6 fill amber
-Hand: rect at 9,4 height 0.2 angle {Turn * 3} width W fill teal
+Dot: circle y 4 x {Px} size 0.6 fill amber
+Once: circle y 3 x Px size 0.4 fill pink      # Px now: it stays put
+Hand: rect at 9,4 height 0.2 angle {Turn * 3} width {W} fill teal
 Arr: arrow from 2,5.5 to 11,5.5 show {W / 4}
 ```
 
@@ -295,6 +296,51 @@ A number given again stops following.
 ```anim
 Dot: x 2
 Px: 4
+```
+
+</animation>
+
+## Feature: Values that follow
+
+`V: {sum}` keeps a var, cell or number following a sum. A new value stops it.
+
+<animation name="Values that Follow" grid="12x5">
+
+```anim
+A: var 3 name "a" at 2,2
+B: var 4 name "b" at 4,2
+Sum: var {A + B} name "a + b" at 7,2
+Twice: binary {A * 2} at 3,4 digits 4 name "a × 2" decimal
+Arr: row [0 0] at 10,4 name "arr"
+```
+
+---
+
+## A change, and they follow
+
+```anim
+A: 5
+```
+
++++
+
+```anim
+Arr.0: {B * 10}
+B: 1 speed slow
+```
+
+---
+
+## A new value stops it following
+
+```anim
+Sum: 0
+```
+
++++
+
+```anim
+A: 1
 ```
 
 </animation>
@@ -334,7 +380,7 @@ B: 3
 
 ## Feature: Colours from values
 
-`rgb(r g b)` works a colour out from three values from 0 to 255: numbers, or vars, cells and numbers that it follows as they change. It goes wherever a colour does: `fill`, `stroke`, `ink` and `track`.
+`rgb(R G B)` works a colour out from three values from 0 to 255: numbers, vars and cells (their value now), or sums in `{ }`, which it follows as they change. It goes wherever a colour does: `fill`, `stroke`, `ink` and `track`.
 
 <animation name="Colours from Values" grid="16x7">
 
@@ -344,10 +390,10 @@ R: var 255 name "r" bar at 3,1.5 fill #f00
 G: var 128 name "g" bar at 3,2.5 fill #0f0
 B: var 0 name "b" bar at 3,3.5 fill #00f
 defaults clear
-Sw: rect "fill and stroke" at 11,2.5 size 4x2.4 fill rgb(R G B) stroke rgb(255, G, B) weight 4 ink contrast
+Sw: rect "fill and stroke" at 11,2.5 size 4x2.4 fill rgb({R} {G} {B}) stroke rgb(255, {G}, {B}) weight 4 ink contrast
 Arr: row [0 128 255] at 2,6 indices
 Hx: hex 255 at 7,6 name "hx"
-Cell: rect "cells" at 12,6 size 3x1 fill rgb(Arr.2 Hx Arr.0) ink contrast
+Cell: rect "cells" at 12,6 size 3x1 fill rgb({Arr.2} {Hx} {Arr.0}) ink contrast
 ```
 
 ---
@@ -403,7 +449,7 @@ B: 255
 +++
 
 ```anim
-Sw: fill rgb(B 0 R)
+Sw: fill rgb({B} 0 {R})
 ```
 
 </animation>

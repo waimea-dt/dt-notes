@@ -207,6 +207,18 @@
       if (!expr) return null
       try { return { label: String(workOut(expr)), next: expr.next } } catch (error) { throw new Error(`${error.message}, so "${shape.id}" can't be given this`) }
     }
+    // "V: {A * 2}", "V: var {A}", "B: binary {A}": a value that follows a sum in { } (LINKS: value),
+    // worked out now as a sum line's is (its value now, and its sum, to link once it's set); or null
+    function followedValue(id, token, making) {
+      if (token?.kind !== 'expr') return null
+      const expr = wholeExpr(tokenize(token.text), 'follow', making)
+      try { return { label: String(workOut(expr)), expr } } catch (error) { throw new Error(`${error.message}, so "${id}" can't follow it`) }
+    }
+    // Keeps a value following its sum from now on (followedValue), or (with none) stops one that did
+    function followValue(shape, followed, warn) {
+      unlink(shape, 'value')
+      if (followed) setLink(shape, 'value', { kind: 'value', expr: followed.expr }, warn)
+    }
 
     // ---- Links: looks that follow values, kept in shape.links (by look) ----
     // What a link can be (link.kind), each worked out again after every line when what its sources
@@ -215,11 +227,13 @@
     //   fit      fit(shape, key, link, warn): works it out and sets the look; true if it changed
     //   counts   while its sources count (counter), it's worked out again as it's drawn, from the
     //            numbers they show on the way (countAlong); otherwise it changes once, to its new value
-    // A look given again (or reset) no longer follows them (unlink).
+    // A look given again (or reset) no longer follows them (unlink). A link with `once` (a bare id,
+    // "x V1": its value now, not one to follow) is worked out once, then dropped.
     const LINKS = {
-      colour: { sources: (link) => link.args.filter((arg) => arg.ref !== undefined).map((arg) => arg.ref), fit: fitColour }, // "fill rgb(R G B)"
+      colour: { sources: (link) => link.args.flatMap((arg) => exprRefs(arg.expr)), fit: fitColour }, // "fill rgb({R} {G} {B})"
       text: { sources: (link) => link.parts.flatMap((part) => (part.expr ? exprRefs(part.expr) : [])), fit: fitText, counts: true }, // "{V1}" in a label
-      number: { sources: (link) => exprRefs(link.expr), fit: fitNumber }, // "x V1", "angle {V1 * 2}"
+      number: { sources: (link) => exprRefs(link.expr), fit: fitNumber }, // "x {V1}", "angle {V1 * 2}"
+      value: { sources: (link) => exprRefs(link.expr), fit: fitValue }, // "V2: {V1 * 2}"
     }
     function unlink(shape, key) {
       if (!shape.links?.[key]) return
@@ -238,7 +252,9 @@
       const inputs = JSON.stringify(kind.sources(link).map((id) => (shapes.has(id) ? valueIn(shapes.get(id)) : null)))
       if (inputs === link.inputs) return false
       link.inputs = inputs
-      return kind.fit(shape, key, link, warn)
+      const changed = kind.fit(shape, key, link, warn)
+      if (link.once) unlink(shape, key)
+      return changed
     }
     // The shapes that change as a source's value does this beat (a number's: its digits)
     const changing = (source) => (inDigits(source) ? digitsOf(source) : [source])
@@ -256,8 +272,10 @@
           const unchanged = at !== undefined && sources.length === ids.length && !sources.flatMap(changing).some((source) => stampOf(meta, source.uid) > at)
           if (unchanged) continue
           checkedAt.set(link, stampNow())
-          if (!fitLink(shape, key, warn)) continue
-          retime(meta, shape.uid, busiest(meta, sources.flatMap(changing)))
+          const changed = fitLink(shape, key, warn) // true, or the shapes that changed (a number's digits)
+          if (!changed) continue
+          const busy = busiest(meta, sources.flatMap(changing))
+          for (const uid of Array.isArray(changed) ? changed.map((cell) => cell.uid) : [shape.uid]) retime(meta, uid, busy)
           if (LINKS[link.kind].counts) countAlong(shape, link, sources, meta)
         }
       }
@@ -287,10 +305,10 @@
       }
     }
 
-    // "x V1", "angle {V1 * 2}" (KEYWORDS: bound): a look's number, or a shape's x or y (in cells),
-    // follows an expression
-    function linkNumber(shape, key, tokens, warn, making) {
-      setLink(shape, key, { kind: 'number', expr: wholeExpr(tokens, `follow with "${wordFor(key)}"`, making) }, warn, making)
+    // "x {V1}", "angle {V1 * 2}" (KEYWORDS: bound): a look's number, or a shape's x or y (in cells),
+    // follows an expression; "x V1" takes its value once
+    function linkNumber(shape, key, { bind, once }, warn, making) {
+      setLink(shape, key, { kind: 'number', expr: wholeExpr(bind, `follow with "${wordFor(key)}"`, making), once }, warn, making)
     }
     function fitNumber(shape, key, link, warn) {
       const n = linkedValue(shape, key, link.expr, warn, `"${shape.id}"'s ${wordFor(key)}`)
@@ -300,6 +318,18 @@
         : { [key]: numberValue({ v: n }, undefined, { unit: CELL, coord: true }) } // x or y: a grid coordinate
       if (Object.keys(set).every((field) => shape[field] === set[field])) return false
       Object.assign(shape, set)
+      return true
+    }
+
+    // A value following its sum (LINKS: value): true if a var's or cell's changed, or a number's
+    // digits that did
+    function fitValue(shape, key, link, warn) {
+      const n = linkedValue(shape, key, link.expr, warn, `"${shape.id}"'s value`)
+      if (n === undefined) return false
+      const value = { label: String(n) }
+      if (inDigits(shape)) return setNumber(shape, value, warn)
+      if (!shape.nil && shape.label === value.label) return false
+      setValue(shape, value)
       return true
     }
 
@@ -358,50 +388,46 @@
       digitsOf(shape).forEach((cell, place) => { schedule(meta, cell.uid, props).count = { from, to, radix, place } })
     }
 
-    // A colour worked out from values ("fill rgb(R G B)", COLOUR_FUNCTIONS): the look follows them
-    // (LINKS: colour). Its link: fn; args, each { v } (a number) or { ref } (the id of a var, cell or
-    // number); values, the numbers it was last worked out from; and seen, what each argument held then.
+    // A colour worked out from values ("fill rgb(255 G 0)", COLOUR_FUNCTIONS). Each argument is a
+    // sum (args: { expr }): a number, a var's, cell's or number's value now (once: fixed as it's
+    // first worked out), or a sum in { } that the colour follows (LINKS: colour). values: the numbers
+    // it was last worked out from; seen, what each argument held then.
+    const constant = (v) => ({ expr: { terms: [{ v }], ops: [] } })
     function linkColour(shape, key, { fn, args }, warn, making) {
       const { args: names, max, example: written } = COLOUR_FUNCTIONS[fn]
-      const example = `e.g. "${written}" or "${fn}(${names.map((name) => name[0].toUpperCase()).join(' ')})"`
-      if (args.length !== names.length) throw new Error(`"${fn}(…)" takes ${names.length} values (${names.join(', ')}): numbers from 0 to ${max}, or vars or cells, ${example}`)
+      const example = `e.g. "${written}" or "${fn}(${names.map((name) => `{${name[0].toUpperCase()}}`).join(' ')})"`
+      if (args.length !== names.length) throw new Error(`"${fn}(…)" takes ${names.length} values (${names.join(', ')}): numbers from 0 to ${max}, or vars, cells or sums, ${example}`)
+      const use = `use in "${fn}(…)"`
       const read = args.map((token) => {
-        if (token.kind === 'word' && NUMBER.test(token.value)) return { v: Number(token.value) }
-        const source = holderRef(token, `use in "${fn}(…)"`, making)
-        if (!source) throw new Error(`"${fn}(…)" takes numbers from 0 to ${max}, or vars or cells, not "${token.value ?? token.name}", ${example}`)
-        return { ref: source.id }
+        if (token.kind === 'word' && NUMBER.test(token.value)) return constant(Number(token.value))
+        if (token.kind === 'expr') return { expr: wholeExpr(tokenize(token.text), use, making) }
+        const source = holderRef(token, use, making)
+        if (!source) throw new Error(`"${fn}(…)" takes numbers from 0 to ${max}, or vars, cells or sums, not "${token.value ?? token.name}", ${example}`)
+        return { expr: { terms: [{ ref: source.id }], ops: [] }, once: true }
       })
-      setLink(shape, key, { kind: 'colour', fn, args: read, values: null }, warn, making)
+      setLink(shape, key, { kind: 'colour', fn, args: read, values: null, once: read.every((arg) => arg.once || !exprRefs(arg.expr).length) }, warn, making)
     }
 
     // Works a linked colour out again (LINKS: colour): true if the colour changes. A source that's
     // gone, or holds no number, leaves its share as it was (a gone one for good); a number out of
     // range is held in it. Each is warned about as its source changes.
     function fitColour(shape, field, link, warn) {
-      const seen = link.args.map((arg) => JSON.stringify(arg.ref === undefined ? arg.v : shapes.has(arg.ref) ? valueIn(shapes.get(arg.ref)) : null))
+      const seen = link.args.map((arg) => JSON.stringify(exprRefs(arg.expr).map((id) => (shapes.has(id) ? valueIn(shapes.get(id)) : null))))
       if (seen.every((input, k) => input === link.seen?.[k])) return false
       const { args: names, max, css } = COLOUR_FUNCTIONS[link.fn]
       const values = link.args.map((arg, k) => {
         const was = link.values?.[k] ?? 0
-        if (seen[k] === link.seen?.[k]) return was
+        if (link.values && seen[k] === link.seen?.[k]) return was
         const share = `the ${names[k]} in "${shape.id}"'s ${field}`
-        if (arg.ref !== undefined && !shapes.has(arg.ref)) {
-          warn(`"${arg.ref}" has gone, so ${share} stays at ${was}`)
-          link.args[k] = { v: was }
+        let n
+        try { n = Math.round(workOut(arg.expr)) } catch (error) {
+          warn(`${error.message}, so ${share} stays at ${was}`)
+          if (exprRefs(arg.expr).some((id) => !shapes.has(id))) link.args[k] = constant(was) // gone: for good
           return was
         }
-        if (arg.ref !== undefined && !shapes.get(arg.ref).holds) {
-          warn(`"${arg.ref}" doesn't hold a value (only a var, cell or number does), so ${share} stays at ${was}`)
-          return was
-        }
-        const value = arg.ref === undefined ? { label: String(arg.v) } : valueIn(shapes.get(arg.ref))
-        if (value.nil || !NUMBER.test(value.label)) {
-          warn(`"${arg.ref}" holds ${value.nil ? 'null' : `"${value.label}"`}, not a number, so ${share} stays at ${was}`)
-          return was
-        }
-        const n = Math.round(Number(value.label))
         const held = Math.min(max, Math.max(0, n))
-        if (held !== n) warn(`${value.label} is outside 0 to ${max}, so ${share} is ${held}`)
+        if (held !== n) warn(`${n} is outside 0 to ${max}, so ${share} is ${held}`)
+        if (arg.once) link.args[k] = constant(held) // a value now, not one to follow
         return held
       })
       Object.assign(link, { values, seen })
@@ -440,6 +466,7 @@
     // crossfading in, centred on the landing, and with keep-style taking the look it came with.
     function flyValue(meta, source, target, hops, props, arrive, warn) {
       const look = keptStyle(props, standIn(source))
+      unlink(target, 'value') // a value given stops it following one
       const landing = inDigits(target) ? setNumber(target, valueIn(source), warn, look) : [restyled(target, look)]
       if (!inDigits(target)) {
         setValue(landing[0], valueIn(source))
@@ -460,7 +487,7 @@
     }
 
     return {
-      functions: { addTo, assignValue, checkDigit, countUp, digitsFor, exprValue, fitLinks, fly, flyValue, holderRef, keptStyle, linkColour, linkNumber, linkText, pointOf,
+      functions: { addTo, assignValue, checkDigit, countUp, digitsFor, exprValue, followedValue, followValue, fitLinks, fly, flyValue, holderRef, keptStyle, linkColour, linkNumber, linkText, pointOf,
         setNumber, setValue, unlink, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {

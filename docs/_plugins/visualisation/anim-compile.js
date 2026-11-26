@@ -103,7 +103,7 @@
           unlink(shape, key) // a look given again no longer follows any values
           if (value === 'reset') resetLook(shape, key)
           else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, key, value, warn, creating) // "rgb(R G B)"
-          else if (value?.bind) linkNumber(shape, key, value.bind, warn, creating) // "weight V1", "angle {V1 * 2}"
+          else if (value?.bind) linkNumber(shape, key, value, warn, creating) // "weight {V1}", "angle {V1 * 2}", "x V1" (once)
           else if (look.unit) for (const field of fieldsOf(look)) shape[field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[field]), { unit: look.unit })))
           else shape[look.field] = look.map && value in look.map ? look.map[value] : value
           // a digit given a look no longer takes that look from its value
@@ -356,7 +356,7 @@
       // a new place no longer follows values; "x V1": x (or y) follows one (KEYWORDS: bound)
       const placed = at || props.travel || props.follow || props.attach || props.about
       for (const axis of AXES) if (placed || props[axis]) unlink(shape, axis)
-      for (const axis of AXES) if (props[axis]?.bind) linkNumber(shape, axis, props[axis].bind, warn, creating)
+      for (const axis of AXES) if (props[axis]?.bind) linkNumber(shape, axis, props[axis], warn, creating)
       if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
       if (at?.kind === 'ref') Object.assign(shape, placeFor(shape, refPoint(at, shapes)))
       if (at?.kind === 'place') {
@@ -762,7 +762,8 @@
       const first = tokens[0]
       // "V: var 67 at 5,3": a rect that holds a value (a number, "text" or null), straight after "var"
       const isVar = first?.kind === 'word' && first.value === 'var'
-      const varValue = isVar ? valueOf(tokens[1]) : undefined
+      const varFollows = isVar ? followedValue(id, tokens[1], id) : null // "V: var {A * 2}"
+      const varValue = isVar ? valueOf(tokens[1]) || varFollows : undefined
       const type = isVar ? 'rect' : first && (first.kind === 'res' ? (RESOURCE_TYPES.includes(first.name) ? first.name : null) : (SHAPE_TYPES.includes(first.value) ? first.value : null))
       if (first?.kind === 'res' && !type) throw new Error(`unknown shape "${first.name}(…)"`)
       const existing = shapes.get(id)
@@ -791,6 +792,7 @@
         if (RESOURCES[type]) RESOURCES[type](shape, first.arg, context)
         applyProps(shape, props, id, warn, meta)
         if (isVar) setValue(shape, varValue || { label: '' })
+        if (varFollows) followValue(shape, varFollows, warn)
         shape.layer = layerOf(props)
         if (existing) {
           // Lines attached to the old shape attach to its replacement (same id).
@@ -810,8 +812,10 @@
         const known = !word || KEYWORDS[word] || RESERVED.has(word)
         throw new Error(known ? `no shape called "${id}" (to create one, put a type after the colon, e.g. "${id}: rect")` : `unknown shape type "${first.value}"`)
       }
-      // "V3: V1 + V2": a value worked out from others, once (OPERATORS)
-      const worked = exprValue(existing, tokens)
+      // "V2: {V1 * 2}": a value that follows a sum (LINKS: value); "V3: V1 + V2": one worked out
+      // from others, once (OPERATORS)
+      const followed = existing.holds ? followedValue(id, first) : null
+      const worked = followed ? { label: followed.label, next: 1 } : exprValue(existing, tokens)
       // a digit given a word that isn't a name: what it holds ("H.0: G")
       if (existing.digit && !worked && holderRef(first) && !shapes.has(first.value)) checkDigit(existing.digit, { label: first.value })
       // "V1: A.1" / "A.2: V2": a copy of another var's or cell's value glides over
@@ -841,6 +845,7 @@
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
       const shape = structuredClone(existing)
       if (newValue && !existing.layout) setValue(shape, newValue)
+      if (newValue) followValue(shape, followed, warn) // a value given stops it following one
       const beforeRounds = props.repeat && lerpedNow()
       const path = applyProps(shape, props, false, warn, meta)
       const firstRound = props.repeat && lerpedNow(shape)
@@ -1104,7 +1109,7 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let addTo, assignValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+    let addTo, assignValue, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
       readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
@@ -1112,7 +1117,7 @@
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ addTo, assignValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+      ({ addTo, assignValue, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
         readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()

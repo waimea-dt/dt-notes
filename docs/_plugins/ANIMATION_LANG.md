@@ -330,11 +330,12 @@ Done: ring clear
 ## Colours from values
 
 ```anim
-Sw: rect at 8,3 fill rgb(R G B)    # red, green, blue (0-255): follows vars r, g, b
-Sw: stroke rgb(Arr.0, 255, N)      # cells, numbers (binary, hex, denary) and plain numbers
-R: 200                             # sw changes with r
-R: binary 0 at 2,2 fill rgb(R 0 0) # a number following its own value
-Sw: fill red                       # stops following
+Sw: rect at 8,3 fill rgb({R} {G} {B})  # red, green, blue (0-255): follows vars R, G, B
+Sw: stroke rgb({Arr.0}, 255, {N * 2})  # cells, numbers (binary, hex, denary) and sums
+R: 200                                 # Sw changes with R
+R: binary 0 at 2,2 fill rgb({R} 0 0)   # a number following its own value
+Sw: fill rgb(R 0 0)                    # no { }: R's value now
+Sw: fill red                           # stops following
 ```
 
 - For `fill`, `stroke`, `ink` and `track`. Values outside 0-255 are held in range.
@@ -346,7 +347,7 @@ C: A + B * 2                       # worked out once, as in code
 Arr.3: Arr.0 mod 4                 # + - * / mod, spaces round each
 B: V1 * 2                          # a number's value too
 C: (A + B) * 2                     # ( ) first
-A: (-5)                            # a negative value (a: -5 takes 5 off)
+A: (-5)                            # a negative value (A: -5 takes 5 off)
 ```
 
 ## Values in labels
@@ -361,13 +362,17 @@ T: text "{1, 2, 3}" at 8,3             # not a sum: shows as written
 ## Following values
 
 ```anim
-Dot: circle y 4 x Px               # x follows Px (in cells)
-Hand: rect at 9,4 angle {Turn * 3} # a sum in { }
+Dot: circle y 4 x {Px}             # x follows Px (in cells)
+Hand: rect at 9,4 angle {Turn * 3} # a sum
+Snap: circle y 3 x Px              # no { }: Px's value now
 Hand: angle 0                      # a number again: stops following
-W: var 2 at 2,2 width W height 1   # its own value
+W: var 2 at 2,2 width {W} height 1 # its own value
+Sum: var {A + B} at 5,2            # a value: vars, cells and numbers
+Sum: 0                             # a new value: stops following
 ```
 
-- For `x` `y` `width` `height` `radius` `corner` `weight` `font` `angle` `scale` `opacity` `show`.
+- `{ }` follows as values change; a bare var or cell is its value now.
+- For values, and `x` `y` `width` `height` `radius` `corner` `weight` `font` `angle` `scale` `opacity` `show`.
 
 ## Counting
 

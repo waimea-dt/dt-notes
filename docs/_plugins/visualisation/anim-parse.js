@@ -200,10 +200,10 @@
     // a colour worked out from values, "rgb(R G B)" (COLOUR_FUNCTIONS): its arguments as tokens,
     // read when it's applied (linkColour)
     if (type === 'colour' && token?.kind === 'res' && COLOUR_FUNCTIONS[token.name]) return { fn: token.name, args: tokenize(token.arg) }
-    // a number that follows values (KEYWORDS: bound): an expression in { }, or a var, cell or
-    // number by name, as tokens, read when it's applied (linkNumber)
+    // a number from values (KEYWORDS: bound), as tokens, read when it's applied (linkNumber): one that
+    // follows an expression in { }, or a var's, cell's or number's value now (once)
     if (type === 'bound' && token?.kind === 'expr') return { bind: tokenize(token.text) }
-    if (type === 'bound' && token?.kind === 'word' && (shapes.get(token.value)?.holds || token.value === making)) return { bind: [token] }
+    if (type === 'bound' && token?.kind === 'word' && (shapes.get(token.value)?.holds || token.value === making)) return { bind: [token], once: true }
     if (!token || token.kind !== 'word') return undefined
     const word = token.value
     switch (type) {
@@ -284,7 +284,7 @@
       const token = tokens[i]
       if (token.kind === 'str') { allow('label', 'quoted text'); set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
-      if (token.kind === 'expr') throw new Error(`{ } holds a sum for a number to follow, after its word, e.g. "x {V1 * 2}"`)
+      if (token.kind === 'expr') throw new Error(`{ } holds a sum to follow, after a word ("x {V1 * 2}") or as a var's or cell's value ("V2: {V1 * 2}")`)
       if (token.kind === 'paren') throw new Error('( ) goes round part of a sum, e.g. "V: (A + B) * 2" or "V: (-5)"')
       if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${BRACKET_NOUNS}, straight after its type, e.g. "row [5 3 8]"`)
       const word = token.value

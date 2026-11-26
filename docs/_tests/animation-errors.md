@@ -226,6 +226,7 @@ Ex1: Er.0 + "x"
 Ex2: rect at 1,1
 Ex2: x {Ex1 +}
 Ex2: width {Ex1 * speed}
+Ex1: {Ex1 + Zz}
 Ex1: (Ex1 + 1
 Ex1: ()
 Ex1: fill red (2)

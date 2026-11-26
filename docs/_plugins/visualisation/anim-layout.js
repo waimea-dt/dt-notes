@@ -13,7 +13,7 @@
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, holderRef, inTurn,
+    let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, followedValue, followValue, holderRef, inTurn,
       layerOf, linkText, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
       takeBareNumber, valueIn, valueOf, warnEffect
 
@@ -443,7 +443,8 @@
       const { noun, digits } = LAYOUTS[layout]
       const example = `e.g. "${id}: ${layout} 67 at 2,3", or a var's value: "${id}: ${layout} V1 at 2,3"`
       const source = !valueOf(tokens[1]) && holderRef(tokens[1]) ? holderRef(tokens[1], `make ${article(noun)} ${noun} from`) : undefined
-      const value = valueOf(tokens[1]) || (source && valueIn(source))
+      const followed = followedValue(id, tokens[1], id) // "B: binary {A}"
+      const value = valueOf(tokens[1]) || followed || (source && valueIn(source))
       if (!value) throw new Error(`a ${noun}'s value goes straight after "${layout}", ${example}`)
       const props = parseProps(tokens, 2, 'layout', shapes, id)
       if (props.label !== undefined) throw new Error(`a ${noun} holds one value, straight after "${layout}", ${example}`)
@@ -451,6 +452,7 @@
       const count = given ? given.v : digits.default
       if (given && (given.rel || !Number.isInteger(count) || count < 1 || count > digits.max)) throw new Error(`"${wordFor(digits.prop)}" is a whole number from 1 to ${digits.max}`)
       makeLayout(id, layout, digitsFor(layout, value, count, warn).map((label) => ({ label })), props, existing, meta, warn)
+      if (followed) followValue(shapes.get(id), followed, warn)
     }
 
     // "Quoted" lines in [ ] from the "[" at tokens[j] (a code block's, a script's): the lines, and
@@ -776,7 +778,7 @@
         typeInTurn, updateParts, withRowMax },
       verbs: { range: changeRange, span: makeSpan },
       link: () => {
-        ({ applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, holderRef,
+        ({ applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, followedValue, followValue, holderRef,
           inTurn, layerOf, linkText, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue,
           speedOf, takeBareNumber, valueIn, valueOf, warnEffect } = cx)
       },

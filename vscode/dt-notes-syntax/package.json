@@ -2,7 +2,7 @@
   "name": "dt-notes-syntax",
   "displayName": "DT Notes Syntax",
   "description": "Editing help for DT Notes pages: a live preview of animations, slides and flash cards, plus highlighting, error marks and colour swatches for animation scenes.",
-  "version": "1.10.9",
+  "version": "1.10.10",
   "publisher": "dt-notes",
   "icon": "icon.png",
   "license": "MIT",

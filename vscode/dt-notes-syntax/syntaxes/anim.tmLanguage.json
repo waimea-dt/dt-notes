@@ -223,7 +223,7 @@
       }
     },
     "colour-function": {
-      "$comment": "a colour worked out from values, rgb(r g b) (COLOUR_FUNCTIONS in anim-core.js): a colour value, its arguments numbers and ids",
+      "$comment": "a colour worked out from values, rgb(255 G {B * 2}) (COLOUR_FUNCTIONS in anim-core.js): a colour value, its arguments numbers, ids and sums in { }",
       "begin": "(?<![\\w-])(rgb)(\\()",
       "beginCaptures": {
         "1": {
@@ -240,6 +240,9 @@
         }
       },
       "patterns": [
+        {
+          "include": "#sum"
+        },
         {
           "include": "#number"
         },

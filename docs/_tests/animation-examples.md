@@ -674,7 +674,7 @@ Ba: arrow from 6.5,5.5 to Plus stroke blue
 ... to form a colour
 
 ```anim
-Col: rect at 11,4 size 2x5 fill rgb(R G B)    # follows r, g and b
+Col: rect at 11,4 size 2x5 fill rgb({R} {G} {B})    # follows R, G and B
 Ca: arrow from Plus to Col
 ```
 
@@ -748,9 +748,9 @@ B: 0
 ## Three binary values: R, G, B
 
 ```anim
-R: binary 0 name "r" at 2,2 powers fill rgb(R 0 0) stroke red decimal   # its fill follows its own value
-G: binary 0 name "g" at 2,4 powers fill rgb(0 G 0) stroke green decimal
-B: binary 0 name "b" at 2,6 powers fill rgb(0 0 B) stroke blue decimal
+R: binary 0 name "r" at 2,2 powers fill rgb({R} 0 0) stroke red decimal   # its fill follows its own value
+G: binary 0 name "g" at 2,4 powers fill rgb(0 {G} 0) stroke green decimal
+B: binary 0 name "b" at 2,6 powers fill rgb(0 0 {B}) stroke blue decimal
 ```
 
 +++
@@ -769,7 +769,7 @@ Ba: arrow from 11,5.5 to Plus stroke blue
 ... to form a colour
 
 ```anim
-Col: rect at 15,4 size 2x5 fill rgb(R G B) corner 0.1    # follows the three numbers
+Col: rect at 15,4 size 2x5 fill rgb({R} {G} {B}) corner 0.1    # follows the three numbers
 Ca: arrow from Plus to Col
 ```
 
