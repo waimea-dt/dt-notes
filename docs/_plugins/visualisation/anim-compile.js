@@ -6,27 +6,28 @@
 ;(function () {
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo, placeAlong,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
-    tokenize, bounds, ID, REF, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
+    tokenize, bounds, ID, REF, canonicalRef, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
     NUMBERINGS, DIRECTIONS, orList, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES, REPEATS, LERPED } = window.Anim
 
-  // The ids of the shapes that go with a var, row or column: a row's / column's cells (id.0,
-  // id.1, …; a code block's lines from id.1) and their numbers (NUMBERINGS: id.index.0, …), and the name
-  // (id.name). Cells are numbered from the layout's base (LAYOUTS): `k` is a cell's number as
-  // written, and its place in the row is k - base.
+  // The ids of the shapes that go with a var, row or column: numbered places in [ ], named parts
+  // after a dot. A row's / column's cells (id[0], id[1], …; a code block's lines from id[1]), their
+  // numbers (NUMBERINGS: id.index[0], …) and the name (id.name). Cells are numbered from the
+  // layout's base (LAYOUTS): `k` is a cell's number as written, and its place in the row is k - base.
   // A grid's / table's (LAYOUTS: views) rows and columns are named like a row's cells, after the
-  // view's word if it has one (G.1, G.col.2), and its heading T.head; their cells like a row's
-  // (G.1.2, T.head.2). Their indices take the same last parts (G.index.1, G.index.col.2).
-  const cellId = (id, k) => `${id}.${k}`
-  const markId = (id, numbering, k) => `${id}.${numbering.part}.${k}`
+  // view's word if it has one (G[1], G.col[2]), and its heading T.head; their cells like a row's
+  // (G[1][2], T.head[2]). Their indices take the same last parts (G.index[1], G.index.col[2]).
+  // These are the ids as written (canonicalRef).
+  const cellId = (id, k) => `${id}[${k}]`
+  const viewKey = (view, k) => (view.word ? `.${view.word}[${k}]` : `[${k}]`)
+  const markId = (id, numbering, key) => `${id}.${numbering.part}${typeof key === 'number' ? `[${key}]` : key}`
   const indexId = (id, k) => markId(id, NUMBERINGS.indices, k)
   const nameId = (id) => `${id}.name`
   const decimalId = (id) => `${id}.decimal` // a number's value, written out (LAYOUTS: decimal)
   const trailId = (id) => `${id}.trail` // where a shape has been (SHAPES: trail)
-  const viewKey = (view, k) => (view.word ? `${view.word}.${k}` : String(k))
-  const viewId = (id, view, k) => `${id}.${viewKey(view, k)}`
+  const viewId = (id, view, k) => `${id}${viewKey(view, k)}`
   const headId = (id, head) => `${id}.${head.word}`
   const baseOf = (layout) => LAYOUTS[layout]?.base || 0
   const cellRange = (row, n) => (n ? `${cellId(row.id, baseOf(row.layout))} to ${cellId(row.id, baseOf(row.layout) + n - 1)}` : 'none')
@@ -740,9 +741,9 @@
       if (cameraLine) return runCameraLine(cameraLine, meta, warn)
       const defaultsLine = text.match(/^defaults(\s*:)?(?:\s+(.*))?$/)
       if (defaultsLine?.[1]) throw new Error('"defaults" takes no colon, e.g. "defaults fill blue"')
-      const match = defaultsLine ? ['', 'defaults', defaultsLine[2] || ''] : text.match(/^([^:\s]+)\s*:\s*(.*)$/)
+      const match = defaultsLine ? ['', 'defaults', defaultsLine[2] || ''] : text.match(/^((?:[^:\s[]|\[[^\]]*\])+)\s*:\s*(.*)$/) // an id may have places in [ ]: "G[1][2]:"
       if (!match) throw new Error('expected "Id: …" (or defaults, camera, pause, auto, then)')
-      const id = match[1]
+      const id = canonicalRef(match[1])
       const tokens = tokenize(match[2])
 
       if (defaultsLine) {
@@ -768,9 +769,12 @@
       if (first?.kind === 'res' && !type) throw new Error(`unknown shape "${first.name}(…)"`)
       const existing = shapes.get(id)
 
-      // "Arr: row [5 3 8 1] at 2,3" (or column): its cells are Arr.0, Arr.1, …
+      // "Arr: row [5 3 8 1] at 2,3" (or column): its cells are Arr[0], Arr[1], …
       const word = first?.kind === 'word' ? first.value : ''
-      if (!existing && (type || LAYOUT_TYPES.includes(word)) && !ID.test(id)) throw new Error(`"${id}" can't be a new shape's id: a "." is for a part, e.g. "Arr.2" or "V1.name"`)
+      if (!existing && (type || LAYOUT_TYPES.includes(word)) && !ID.test(id)) throw new Error(`"${id}" can't be a new shape's id: a "." is for a part, e.g. "Arr[2]" or "V1.name"`)
+      const owner = !existing && !ID.test(id) && shapes.get(id.match(/^[A-Z][\w-]*/)[0]) // "Arr[9]": a part that isn't there
+      if (owner && id.includes(',')) throw new Error(`"${id}": a grid's cell is [row][column], e.g. "${id.replace(/\[([^\]]*),\s*([^\]]*)\]/, '[$1][$2]')}"`)
+      if (owner) throw new Error(`"${owner.id}" has no "${id.slice(owner.id.length)}"${owner.members?.length && owner.layout && !LAYOUTS[owner.layout].views ? ` (its places are ${cellRange(owner, owner.members.length)})` : ''}`)
       if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
       // a verb: delete, swap, insert, remove, copy, group, ungroup, arrange (LINES)
       if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
@@ -816,12 +820,12 @@
       // from others, once (OPERATORS)
       const followed = existing.holds ? followedValue(id, first) : null
       const worked = followed ? { label: followed.label, next: 1 } : exprValue(existing, tokens)
-      // a digit given a word that isn't a name: what it holds ("H.0: G")
+      // a digit given a word that isn't a name: what it holds ("H[0]: G")
       if (existing.digit && !worked && holderRef(first) && !shapes.has(first.value)) checkDigit(existing.digit, { label: first.value })
-      // "V1: A.1" / "A.2: V2": a copy of another var's or cell's value glides over
+      // "V1: A[1]" / "A[2]: V2": a copy of another var's or cell's value glides over
       if (existing.holds && !worked && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
-      // "V: 123" / "Arr.2: null": a new value for a var or a row's / column's cell ("text" is a
-      // label); "H.0: 0xF" a digit's
+      // "V: 123" / "Arr[2]: null": a new value for a var or a row's / column's cell ("text" is a
+      // label); "H[0]: 0xF" a digit's
       const given = existing.holds && first?.kind === 'word' ? valueOf(first) : undefined
       const newValue = worked ? { label: worked.label } : given && addTo(existing, given)
       const props = propsOf(existing.type, tokens, worked ? worked.next : newValue ? 1 : 0, 'change')

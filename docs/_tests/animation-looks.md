@@ -8,44 +8,44 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ```anim
 Pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2.15,1.15 font 0.4 size 0.7 gap 0.3 corner 0.5
-Pal.0: fill red
-Pal.1: fill orange
-Pal.2: fill amber
-Pal.3: fill yellow
-Pal.4: fill green
-Pal.5: fill teal
-Pal.6: fill cyan
-Pal.7: fill blue
-Pal.8: fill purple
-Pal.9: fill pink
-Pal.10: fill magenta
-Pal.11: fill theme
+Pal[0]: fill red
+Pal[1]: fill orange
+Pal[2]: fill amber
+Pal[3]: fill yellow
+Pal[4]: fill green
+Pal[5]: fill teal
+Pal[6]: fill cyan
+Pal[7]: fill blue
+Pal[8]: fill purple
+Pal[9]: fill pink
+Pal[10]: fill magenta
+Pal[11]: fill theme
 Br: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2.15,2.15 font 0.4 size 0.7 gap 0.3 corner 0.5
-Br.0: fill red-bright
-Br.1: fill orange-bright
-Br.2: fill amber-bright
-Br.3: fill yellow-bright
-Br.4: fill green-bright
-Br.5: fill teal-bright
-Br.6: fill cyan-bright
-Br.7: fill blue-bright
-Br.8: fill purple-bright
-Br.9: fill pink-bright
-Br.10: fill magenta-bright
-Br.11: fill theme-bright
+Br[0]: fill red-bright
+Br[1]: fill orange-bright
+Br[2]: fill amber-bright
+Br[3]: fill yellow-bright
+Br[4]: fill green-bright
+Br[5]: fill teal-bright
+Br[6]: fill cyan-bright
+Br[7]: fill blue-bright
+Br[8]: fill purple-bright
+Br[9]: fill pink-bright
+Br[10]: fill magenta-bright
+Br[11]: fill theme-bright
 Mt: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2.15,3.15 font 0.4 size 0.7 gap 0.3 corner 0.5
-Mt.0: fill red-muted
-Mt.1: fill orange-muted
-Mt.2: fill amber-muted
-Mt.3: fill yellow-muted
-Mt.4: fill green-muted
-Mt.5: fill teal-muted
-Mt.6: fill cyan-muted
-Mt.7: fill blue-muted
-Mt.8: fill purple-muted
-Mt.9: fill pink-muted
-Mt.10: fill magenta-muted
-Mt.11: fill theme-muted
+Mt[0]: fill red-muted
+Mt[1]: fill orange-muted
+Mt[2]: fill amber-muted
+Mt[3]: fill yellow-muted
+Mt[4]: fill green-muted
+Mt[5]: fill teal-muted
+Mt[6]: fill cyan-muted
+Mt[7]: fill blue-muted
+Mt[8]: fill purple-muted
+Mt[9]: fill pink-muted
+Mt[10]: fill magenta-muted
+Mt[11]: fill theme-muted
 Lp: text "plain" at 1,1 font 0.45 align right
 Lb: text "-bright" at 1,2 font 0.45 align right
 Lm: text "-muted" at 1,3 font 0.45 align right
@@ -91,13 +91,13 @@ Rm11: line from 13.00,6 to 13.01,6 stroke theme-muted weight 15
 Lo: text "other" at 1,7 font 0.45 align right
 Lro: text "raw other" at 1,8 font 0.45 align right
 Oth: row ["none" "bg" "bg-shape" "black" "white" "fg" "muted"] at 2.15,7.15 font 0.4 size 0.7 gap 0.3 corner 0.5
-Oth.0: fill none
-Oth.1: fill bg
-Oth.2: fill bg-shape
-Oth.3: fill black ink white
-Oth.4: fill white ink black
-Oth.5: fill fg ink bg
-Oth.6: fill muted
+Oth[0]: fill none
+Oth[1]: fill bg
+Oth[2]: fill bg-shape
+Oth[3]: fill black ink white
+Oth[4]: fill white ink black
+Oth[5]: fill fg ink bg
+Oth[6]: fill muted
 Ro0: line from 2.00,8 to 2.01,8 stroke none weight 15
 Ro1: line from 3.00,8 to 3.01,8 stroke bg weight 15
 Ro2: line from 4.00,8 to 4.01,8 stroke bg-shape weight 15
@@ -133,7 +133,7 @@ Pal: stroke black ink black
 Br: stroke black ink black
 Mt: stroke black ink black
 Oth: stroke black ink black
-Oth.3: ink white
+Oth[3]: ink white
 ```
 
 </animation>
@@ -296,7 +296,7 @@ Arr: opacity 0.3 stagger
 
 ```anim
 R1: opacity reset
-Arr.1: opacity 1
+Arr[1]: opacity 1
 T: style reset
 ```
 

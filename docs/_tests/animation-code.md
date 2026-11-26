@@ -23,15 +23,15 @@ Total: var 0 at 12,4 name "total"
 ## Highlighting a line
 
 ```anim
-C.2: highlight line
-Nums.0: fill amber
+C[2]: highlight line
+Nums[0]: fill amber
 ```
 
 +++
 
 ```anim
-C.2: highlight clear
-C.3: highlight line
+C[2]: highlight clear
+C[3]: highlight line
 Total: 5
 ```
 
@@ -41,8 +41,8 @@ A text can be highlighted too, and a fill on a line works as well.
 
 ```anim
 Note: text "adds each number" at 12,5.5 highlight line
-C.3: highlight clear
-C.1: fill teal
+C[3]: highlight clear
+C[1]: fill teal
 ```
 
 ---
@@ -52,7 +52,7 @@ C.1: fill teal
 A longer line widens the block.
 
 ```anim
-C.1: fill none
+C[1]: fill none
 Note: delete
 C: insert "print(total)  # 16" at end
 ```
@@ -60,7 +60,7 @@ C: insert "print(total)  # 16" at end
 +++
 
 ```anim
-C.1: "total = 100" speed slow
+C[1]: "total = 100" speed slow
 ```
 
 +++

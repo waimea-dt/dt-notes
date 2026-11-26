@@ -557,8 +557,8 @@ A cell's trail stays with the cell, bow and all.
 
 ```anim
 Arr: row [5 3 8 1 6 7] at 2,5
-Arr.0: trail
-Arr.3: trail
+Arr[0]: trail
+Arr[3]: trail
 ```
 
 +++

@@ -21,6 +21,7 @@ C: blob at 3,3
 A: wibble 3
 E: rect "x" "y" at 4,2
 remove: rect at 1,1
+Er[9]: fill red
 A.b: rect at 1,1
 A: fill Red
 
@@ -155,7 +156,7 @@ Er: insert 3 at 9
 Er: remove 1 fill red
 Er: delete 0
 Er: remove 0 into Zz
-Er: remove 0 into Er.0
+Er: remove 0 into Er[0]
 Er: insert 3 at front
 Dw: remove 0
 Dw: fill red keep-style
@@ -179,24 +180,26 @@ Sp6: span Er 0 1
 Sp6: move 2,2
 Sp6: size 2
 Eg: grid [[1 2] [3 4 5]] at 1,1
+Eg[5][0]: 7
+Eg[1, 1]: 7
 Eg2: grid [1 2] at 1,1
 Eg3: grid 4 at 1,1
 Eg4: grid [[1 2] [3 at 1,1
 Eg5: grid [[]] at 1,1
-Eg.1: move 2,2
-Eg.col.0: delete
-Eg.1: indices
+Eg[1]: move 2,2
+Eg.col[0]: delete
+Eg[1]: indices
 Eg: swap 0 9
-Eg: swap col 0 1.1
+Eg: swap col 0 [1][1]
 Eg: insert [1 2 3 4] at 0
 Eg: insert col [1] at 5
-Eg: remove 0 into Er.0
-Eg: remove 1.1
+Eg: remove 0 into Er[0]
+Eg: remove [1][1]
 Sg4: grid [[1]] at 1,1
 Sg4: remove 0
-Eg.0: remove 0
-Eg6: group [Eg.0]
-Sg1: span Eg 0.0 5.0
+Eg[0]: remove 0
+Eg6: group [Eg[0]]
+Sg1: span Eg [0][0] [5][0]
 Sg2: span Eg 0 1
 Sg3: span Er end 9
 
@@ -205,7 +208,7 @@ Dw: 5
 Dw: null
 Vv: var 5 "x" at 1,1
 Vv: 6 "x"
-Vv: Er.0 fill red
+Vv: Er[0] fill red
 Br: rect at 1,1 bar
 Bm: var 5 at 1,1 bar max 0
 Rg1: var 5 at 1,1 ring size 2x1
@@ -222,7 +225,7 @@ Ex1: var 4 at 1,1
 Ex1: Ex1 + Zz
 Ex1: Ex1 / 0
 Ex1: Ex1 * 
-Ex1: Er.0 + "x"
+Ex1: Er[0] + "x"
 Ex2: rect at 1,1
 Ex2: x {Ex1 +}
 Ex2: width {Ex1 * speed}
@@ -239,8 +242,8 @@ Ex4: rect at 1,1 width Ex4
 
 # numbers
 Eb: binary 5 at 1,1 digits 4
-Eb.0: 2
-Eb.1: "x"
+Eb[0]: 2
+Eb[1]: "x"
 Eb: -9
 Eb: +1.5
 Vv: +1
@@ -259,23 +262,23 @@ Eb5: binary 5 digits 0 at 1,1
 Eb6: binary 5 digits 40 at 1,1
 Eb10: binary 5 bits 4 at 1,1
 Eh: hex 255 at 1,1
-Eh.0: G
-Eh.0: F
-Eh.0: 16
+Eh[0]: G
+Eh[0]: F
+Eh[0]: 16
 Eh: flip
-Eh.1: flip
+Eh[1]: flip
 Eh2: hex 5 digits 9 at 1,1
 Ed: denary 5 at 1,1 decimal
 Ed2: denary 5 at 1,1
-Ed2.0: Q
-Ed2.0: -9
+Ed2[0]: Q
+Ed2[0]: -9
 Eb7: binary Zz at 1,1
 Eb8: binary 5 [1 0] at 1,1
 Eb9: binary 300 at 1,1
 Er: powers
 Dw: decimal
 Dw: flip
-Eb.0: flip 0 1
+Eb[0]: flip 0 1
 defaults decimal
 
 # code and Scratch

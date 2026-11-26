@@ -21,7 +21,7 @@
     // What a swap, insert or remove moves as one (a unit), read from the line at tokens[1] by its
     // arrangement (EDITS: axis): one of a row's / column's / code block's cells; a grid's rows, or
     // (after a view's word, "col") its columns (LAYOUTS: views); or for a swap of two places
-    // ("1.2 0.0"), its cells one at a time.
+    // ("[1][2] [0][0]"), its cells one at a time.
     //   units   each unit's cells, in order; noun, what one is called; base, the first's number
     //   size    how many cells a unit has; fixed, lines that stay put above them (a table's heading)
     //   across  units go side by side (otherwise one under another); next, the token after any word
@@ -125,7 +125,7 @@
         axis: gridAxis, insert: gridInsert, inserts: 'its values', into: false, keepOne: true,
         swaps: (grid, base) => {
           const ways = Object.values(LAYOUTS[grid.layout].views).map((view) => `"${grid.id}: swap ${view.word ? `${view.word} ` : ''}${base} ${base + 1}"`)
-          return `two of a ${LAYOUTS[grid.layout].noun}'s rows, columns or cells, e.g. ${ways.join(', ')} or "${grid.id}: swap 0.0 1.2"`
+          return `two of a ${LAYOUTS[grid.layout].noun}'s rows, columns or cells, e.g. ${ways.join(', ')} or "${grid.id}: swap [0][0] [1][2]"`
         },
         edits: (grid, removing) => {
           const col = Object.values(LAYOUTS[grid.layout].views).find((view) => view.word).word
@@ -142,9 +142,9 @@
     }
 
     // "Arr: swap 0 3": two cells change places, one arcing over and one under (a column's: to the
-    // right and left). Ids go with the places, so afterwards Arr.0 is the cell now first; whatever
-    // is attached to Arr.0 (a pointer) stays there, and highlights go with the cells. A grid's two
-    // rows, two columns ("G: swap col 1 3") or two cells ("G: swap 1.2 0.0") swap the same way, each
+    // right and left). Ids go with the places, so afterwards Arr[0] is the cell now first; whatever
+    // is attached to Arr[0] (a pointer) stays there, and highlights go with the cells. A grid's two
+    // rows, two columns ("G: swap col 1 3") or two cells ("G: swap [1][2] [0][0]") swap the same way, each
     // cell with the one in the same place in the other.
     function swapCells(id, row, tokens, meta, warn, word) {
       if (!row) throw noShape(id)
@@ -196,7 +196,7 @@
     // "Arr: remove 2" / "Arr: remove end" / "Arr: insert 7 at 3" / "Arr: insert 8 at end": a cell
     // leaves or arrives, sliding out below a row (left of a column) as it fades, and the cells
     // after it close up or open a space. Ids go with the places, as in a swap: after "remove 2",
-    // Arr.2 is the cell that was Arr.3, and what's attached to the last place (now gone) is left
+    // Arr[2] is the cell that was Arr[3], and what's attached to the last place (now gone) is left
     // where it was. "insert V1 at …" copies a var's or cell's value in; "remove … into V1" moves
     // the cell's value out into one. A grid's rows and columns (editAxis) come and go the same way:
     // "G: insert [1 2 3] at 1", "G: remove col end" (a table's new column: its heading first).

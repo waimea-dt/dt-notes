@@ -36,7 +36,7 @@
     then: 0.6,        // insert / remove are two moves in turn: the second starts this far in
     aside: 1.2,       // a cell slides in from / out to this far below a row (left of a column)
     swapLift: { near: 0.6, far: 1.1 }, // how far a swapped cell bows out at most (neighbours / further apart): a semicircle when closer
-    arrive: 1,        // a value copied to a var or cell (V1: A.1) lands after this
+    arrive: 1,        // a value copied to a var or cell (V1: A[1]) lands after this
     arriveOut: 1.2,   // a cell removed into a var drops out, then lands after this
     flyMove: 0.8,     // a flyer moves for this share of its time, then fades out where it landed
     crossfade: 0.5,   // the value it brings crossfades in over this, centred on its landing
@@ -124,9 +124,9 @@
       valued: true, bare: true,
       applies: (shape, n) => Boolean(n == null ? SHAPES[shape.type]?.band : SHAPES[shape.type]?.script),
       refuse: (shape, n) => {
-        if (n != null) return `"highlight line ${n}" lights a line of ${nounList(typesWhere((kind) => kind.script).map((type) => nounOf({ type })))}, e.g. "S: highlight line 2" (a code block's line: "C.2: highlight line")`
+        if (n != null) return `"highlight line ${n}" lights a line of ${nounList(typesWhere((kind) => kind.script).map((type) => nounOf({ type })))}, e.g. "S: highlight line 2" (a code block's line: "C[2]: highlight line")`
         const nouns = Object.keys(SHAPES).filter((type) => SHAPES[type].band).map((type) => `${article(nounOf({ type }))} ${nounOf({ type })}`)
-        return `"highlight line" is for ${nouns.join(' or ')}, e.g. "C.2: highlight line" (a code block's line 2)`
+        return `"highlight line" is for ${nouns.join(' or ')}, e.g. "C[2]: highlight line" (a code block's line 2)`
       },
       check: (shape, n) => blockOnLine(scriptOf(shape), shape.label.split('\n'), n, shape.id, 'lit').problem || null,
     },
@@ -354,7 +354,7 @@
 
   // The ways a layout's places can be numbered, each a text beside every one, shown with its word
   // ("Arr: indices", "... clear" hides them) and kept in step with the places (syncIndices):
-  //   part   its texts' role (PARTS) and the part of their ids before the number (Arr.index.2)
+  //   part   its texts' role (PARTS) and the part of their ids before the number (Arr.index[2])
   //   field  the LAYOUTS field (a grid's: its views') that gives the side they go and their gap
   //   label  label(k, layout): the text for place k (as numbered from the layout's base)
   const NUMBERINGS = {
@@ -383,21 +383,21 @@
   //   panel       a background behind it (and its indices): pad and corner, in cells
   //   spanName    the side a span's name goes (beside its places, away from the indices)
   //   arrange     how its cells are arranged: 'line', one line of them, each place a number; or
-  //               'grid', lines of them (see views), each place "row.column". Laid out and read
+  //               'grid', lines of them (see views), each place "[row][column]". Laid out and read
   //               by ARRANGE in anim-layout.js, and edited by EDITS in anim-edit.js
   //   index       where an index goes beside what it numbers: side, and gap (in cells)
-  //   views       its values are rows, in [ ] ([[1 2] [3 4]]), laid out in a grid of cells: G.1.2 is
+  //   views       its values are rows, in [ ] ([[1 2] [3 4]]), laid out in a grid of cells: G[1][2] is
   //               row 1's cell 2. Its rows and columns are views: groups of its cells that don't own
   //               them (the grid does): row, its lines across; col, its columns. Each: layout, the
-  //               layout it acts as; word, what goes before its number in its id (G.col.2; none:
-  //               G.1, and the one an edit takes with no word); and index, where its indices go. A
-  //               place in it is written "row.column" (span g 1.2 3.4).
+  //               layout it acts as; word, what goes before its number in its id (G.col[2]; none:
+  //               G[1], and the one an edit takes with no word); and index, where its indices go. A
+  //               place in it is written "[row][column]" (span G [1][2] [3][4]).
   //   head        its first row is its headings, a view of its own (T.head; word, its id's last
-  //               part), not counted with the rows (T.0 is the first row after it) or numbered;
+  //               part), not counted with the rows (T[0] is the first row after it) or numbered;
   //               look, the props its cells start with
   //   radix       it holds a whole number, written in this base: its value goes straight after its
   //               type ("B: binary 67"), and a value for it (b: 67) sets its cells, each a digit
-  //               from 0 to radix - 1, written as its symbol (digitSymbol: 0-9, then A-F; B.0 the
+  //               from 0 to radix - 1, written as its symbol (digitSymbol: 0-9, then A-F; B[0] the
   //               lowest). digits: how many cells it has unless given (default), the most it can
   //               (max), and the prop that gives it when it's made (prop: "digits 4"). look: the look its
   //               digits start with (after the defaults); looks: each digit's own look while it holds
@@ -852,10 +852,10 @@
       },
       help: 'a whole number of times or forever, e.g. "repeat 3" or "repeat forever"',
     },
-    // a value copied or moved (V1: A.1, insert V1, remove … into V1) takes its fill, stroke and ink
+    // a value copied or moved (V1: A[1], insert V1, remove … into V1) takes its fill, stroke and ink
     // with it, rather than taking on the look of where it goes
-    'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "V1: A.1", "insert V1 at …" or "remove … into V1"' }),
-    null: { error: '"null" is a value: it goes in a var (V: null) or a row\'s / column\'s cell (Arr.2: null)' },
+    'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "V1: A[1]", "insert V1 at …" or "remove … into V1"' }),
+    null: { error: '"null" is a value: it goes in a var (V: null) or a row\'s / column\'s cell (Arr[2]: null)' },
     // defaults only (elsewhere, clear goes after highlight, callout, name or indices)
     clear: fixed('reset', true, { modes: ['defaults'], where: 'after highlight, callout, name or indices (e.g. "highlight clear"), or on its own on a defaults line' }),
     // camera only
@@ -916,14 +916,14 @@
     swap: { verb: true, takes: TIMING }, // two of a row's / column's cells
     insert: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell into a row / column
     remove: { verb: true, takesOut: true, takes: [...TIMING, 'keepStyle'] }, // a cell out of one
-    assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "V1: A.1"
+    assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "V1: A[1]"
     span: { // "S: span Arr 0 2": a box round some of a row's / column's / code block's places
       verb: true, takes: [...SHAPES.span.takes, 'layer', 'highlight', 'callout', 'name', 'effect', ...TIMING],
       refuse: (word) => `"${word}" doesn't apply to a span: it's a box round its cells, for a fill, stroke, highlight, callout or name`,
     },
     // "S: line 3 "…"": a script's line, replaced (on a script only: elsewhere "line" makes a line)
     line: { verb: true, on: (shape) => Boolean(SHAPES[shape?.type]?.script), takes: TIMING },
-    flip: { verb: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "B: flip", "B: flip 0 3", "B.2: flip"
+    flip: { verb: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "B: flip", "B: flip 0 3", "B[2]: flip"
     range: { // some of a row's / column's cells, "Arr: range 0 3 fill red": how they look, not where they are
       verb: true, takes: [...CELL_STYLE, 'style', 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
       refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,

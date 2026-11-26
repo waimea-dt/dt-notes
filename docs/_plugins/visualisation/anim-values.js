@@ -41,8 +41,8 @@
     // A shape's value: a var's or cell's, or a number's, from its digits
     const valueIn = (shape) => (inDigits(shape) ? { label: String(wholeOf(shape)), nil: false } : { label: shape.label, nil: shape.nil })
 
-    // A digit of a number (layout: LAYOUTS: radix) holds 0 to radix - 1, given as a number ("H.0: 0xF",
-    // "H.0: 15") and kept as its symbol (0-9, then A-F). The number's own edits give symbols
+    // A digit of a number (layout: LAYOUTS: radix) holds 0 to radix - 1, given as a number ("H[0]: 0xF",
+    // "H[0]: 15") and kept as its symbol (0-9, then A-F). The number's own edits give symbols
     // (symbols: true); a value given in a line is a number.
     function digitValue(layout, value, symbols = true) {
       const { noun, item, radix } = LAYOUTS[layout]
@@ -53,7 +53,7 @@
     const checkDigit = (layout, value) => { digitValue(layout, value, false) }
 
     // "V: +1" / "B: -5": a signed value adds to what a var, cell or number holds now (any other
-    // value is as given). A digit adds in its radix ("H.0: +1": 9 to A), checked as it's set.
+    // value is as given). A digit adds in its radix ("H[0]: +1": 9 to A), checked as it's set.
     function addTo(shape, value) {
       if (value.nil || !/^[+-]/.test(value.label)) return value
       if (shape.digit) {
@@ -102,11 +102,11 @@
     }
 
     // "B: flip": each of a number's digits d becomes radix - 1 - d (a bit: 0 <-> 1), crossfading
-    // as when it's given a value; "B: flip 0 3" some of them, "B.2: flip" one
+    // as when it's given a value; "B: flip 0 3" some of them, "B[2]: flip" one
     function flipDigits(id, shape, tokens, meta, warn) {
       if (!shape) throw noShape(id)
       const row = shape.digit ? null : shape
-      if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or one, e.g. "B.0: flip"), and "${id}" isn't one`)
+      if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or one, e.g. "B[0]: flip"), and "${id}" isn't one`)
       let cells = row ? digitsOf(row) : [shape]
       let next = 1
       if (row && placeOf(row, tokens[1]) !== undefined) {
@@ -445,7 +445,7 @@
       if (!use) return token.value
       if (!shape && token.value === making) return { id: making } // the shape this line makes: it isn't there yet
       if (!shape) throw new Error(`unknown word "${token.value}" (and no var or cell has that name to ${use})`)
-      if (!shape.holds) throw new Error(`"${token.value}" doesn't hold a value, so there's nothing to ${use}: use a var or a cell, e.g. V1 or Arr.2`)
+      if (!shape.holds) throw new Error(`"${token.value}" doesn't hold a value, so there's nothing to ${use}: use a var or a cell, e.g. V1 or Arr[2]`)
       return shape
     }
 
@@ -479,7 +479,7 @@
       fly(meta, source, inDigits(target) ? target : landing[0], hops, props, { arrive })
     }
 
-    // "V1: A.1": a copy of A.1 glides onto V1, which takes its value as it lands
+    // "V1: A[1]": a copy of A[1] glides onto V1, which takes its value as it lands
     function assignValue(target, source, tokens, meta, warn) {
       const props = parseProps(tokens, 1, 'assign', shapes)
       if (source.id === target.id) return warn(`"${target.id}" already holds its own value`)

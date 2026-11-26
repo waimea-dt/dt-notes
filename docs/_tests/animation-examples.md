@@ -30,11 +30,11 @@ auto
 Yes it is! So they swap places...
 
 ```anim
-Arr.0: fill amber glow
+Arr[0]: fill amber glow
 then
 Arr: swap 0 1
 then
-Arr.1: fill blue
+Arr[1]: fill blue
 ```
 
 ---
@@ -53,9 +53,9 @@ auto
 No it's not, so they stay in place...
 
 ```anim
-Arr.2: fill amber glow
+Arr[2]: fill amber glow
 then
-Arr.2: fill blue
+Arr[2]: fill blue
 ```
 
 ---
@@ -74,11 +74,11 @@ auto
 Yes it is! So they swap places...
 
 ```anim
-Arr.2: fill amber glow
+Arr[2]: fill amber glow
 then
 Arr: swap 2 3
 then
-Arr.3: fill blue
+Arr[3]: fill blue
 Comp: opacity 0
 ```
 
@@ -91,7 +91,7 @@ The first pass is complete
 The largest value, 8, has 'bubbled' to the end
 
 ```anim
-Arr.3: fill green bounce speed fast
+Arr[3]: fill green bounce speed fast
 ```
 
 ---
@@ -112,9 +112,9 @@ auto
 No it's not, so they stay in place...
 
 ```anim
-Arr.1: fill amber glow
+Arr[1]: fill amber glow
 then
-Arr.1: fill blue
+Arr[1]: fill blue
 ```
 
 ---
@@ -133,11 +133,11 @@ auto
 Yes it is! So they swap places...
 
 ```anim
-Arr.1: fill amber glow
+Arr[1]: fill amber glow
 then
 Arr: swap 1 2
 then
-Arr.2: fill blue
+Arr[2]: fill blue
 Comp: opacity 0
 ```
 
@@ -150,7 +150,7 @@ Comp: opacity 0
 `5` has bubbled up next to it
 
 ```anim
-Arr.2: fill green bounce speed fast
+Arr[2]: fill green bounce speed fast
 ```
 
 ---
@@ -171,11 +171,11 @@ auto
 Yes it is! So they swap places...
 
 ```anim
-Arr.0: fill amber glow
+Arr[0]: fill amber glow
 then
 Arr: swap 0 1
 then
-Arr.1: fill blue
+Arr[1]: fill blue
 Comp: delete
 ```
 
@@ -186,9 +186,9 @@ Comp: delete
 `3` is in place, which leaves `1` on its own - so it must be in place too
 
 ```anim
-Arr.1: fill green bounce speed fast
+Arr[1]: fill green bounce speed fast
 then
-Arr.0: fill green bounce speed fast
+Arr[0]: fill green bounce speed fast
 ```
 
 </animation>

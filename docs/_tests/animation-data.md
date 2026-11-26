@@ -18,8 +18,8 @@ Mem: row 4 at 7.5,5.3 size 0.8
 ## One cell, every cell
 
 ```anim
-Arr.1: fill amber
-Mem.2: "7"
+Arr[1]: fill amber
+Mem[2]: "7"
 ```
 
 +++
@@ -60,8 +60,8 @@ Arr: delete pop
 
 ```anim
 Arr: row [5, 3, 8, 1] at 2,2 fill blue
-I: text "i" attach below Arr.0
-P: arrow from 1,4.5 to Arr.3
+I: text "i" attach below Arr[0]
+P: arrow from 1,4.5 to Arr[3]
 Col: column ["A" "B" "C"] at 10,1.5 size 1.6x0.8 gap 0.2 fill teal
 ```
 
@@ -86,7 +86,7 @@ Arr: swap 0 3 speed slow
 ## A highlight moves with its cell
 
 ```anim
-Arr.1: highlight spotlight
+Arr[1]: highlight spotlight
 ```
 
 +++
@@ -100,7 +100,7 @@ Arr: swap 1 2
 ## Column
 
 ```anim
-Arr.2: highlight clear
+Arr[2]: highlight clear
 Col: swap 0 2 speed slow
 ```
 
@@ -112,7 +112,7 @@ Col: swap 0 2 speed slow
 
 ```anim
 Arr: row [1, 2, 3, 4, 5] at 2,2 fill blue size 0.9 gap 0.2
-I: text "i" attach below Arr.2
+I: text "i" attach below Arr[2]
 St: column [4 9] at 10,1.5 size 1.6x0.8 fill teal
 ```
 
@@ -120,7 +120,7 @@ St: column [4 9] at 10,1.5 size 1.6x0.8 fill teal
 
 ## remove
 
-`Arr.2` slides out below, leaving an empty slot, and the cells after it close it up. `I` stays with place 2.
+`Arr[2]` slides out below, leaving an empty slot, and the cells after it close it up. `I` stays with place 2.
 
 ```anim
 Arr: remove 2
@@ -359,26 +359,26 @@ T: table [
 ## Rows, columns and cells
 
 ```anim
-G.1: fill amber                   # row 1
-G.col.2: highlight outline        # column 2
-G.2.3: 42                         # a cell
+G[1]: fill amber                  # row 1
+G.col[2]: highlight outline       # column 2
+G[2][3]: 42                       # a cell
 ```
 
 +++
 
 ```anim
 T.head: fill blue                 # the headings
-T.0: fill green                   # the first row after them
-T.col.1: highlight outline        # a column, its heading too
+T[0]: fill green                  # the first row after them
+T.col[1]: highlight outline       # a column, its heading too
 ```
 
 +++
 
 ```anim
 G: fill none
-G.col.2: highlight clear
+G.col[2]: highlight clear
 T: fill none
-T.col.1: highlight clear
+T.col[1]: highlight clear
 ```
 
 ---
@@ -386,22 +386,22 @@ T.col.1: highlight clear
 ## Range and span
 
 ```anim
-G: range 0.1 1.2 fill teal                  # a block: row.column to row.column
-S: span G.2 1 end stroke red name "tail"    # within a row
+G: range [0][1] [1][2] fill teal            # a block: [row][column] to [row][column]
+S: span G[2] 1 end stroke red name "tail"   # within a row
 ```
 
 +++
 
 ```anim
-B: span G 0.0 1.end highlight outline       # rows 0 to 1
-T.col.2: range 0 1 fill amber               # within a column
+B: span G [0][0] [1][end] highlight outline # rows 0 to 1
+T.col[2]: range 0 1 fill amber              # within a column
 ```
 
 +++
 
 ```anim
 S: delete
-B: span T head.0 end.0 stroke pink          # a table's head.column
+B: span T [head][0] [end][0] stroke pink    # a table's [head][column]
 ```
 
 ---
@@ -410,23 +410,23 @@ B: span T head.0 end.0 stroke pink          # a table's head.column
 
 ```anim
 T: indices                        # its rows (not the heading) and columns
-G.col.3: pulse stagger 0.1
+G.col[3]: pulse stagger 0.1
 ```
 
 +++
 
 ```anim
 V: var 0 at 8,7 name "v"
-V: G.1.2
-T.1: highlight spotlight
+V: G[1][2]
+T[1]: highlight spotlight
 ```
 
 +++
 
 ```anim
-T.1: highlight clear
+T[1]: highlight clear
 E: grid 3x2 at 2,7 size 0.8       # empty: 3 across, 2 down
-E.1.1: "x"
+E[1][1]: "x"
 ```
 
 ---
@@ -453,8 +453,8 @@ T: delete
 ```anim
 G: grid [[1 2 3] [4 5 6] [7 8 9]] at 2,2 gap 0.4 indices corner 0.1
 T: table [["A" "B"] [1 2] [3 4]] at 10,2 size 1.2x0.8 indices
-G.1: highlight outline            # stays on row 1's place
-S: span G 0.0 0.1 fill red      # and a span on its places
+G[1]: highlight outline           # stays on row 1's place
+S: span G [0][0] [0][1] fill red # and a span on its places
 ```
 
 ---
@@ -475,7 +475,7 @@ T: swap col 0 1                   # a heading goes with its column
 +++
 
 ```anim
-G: swap 1.1 0.0                   # two cells
+G: swap [1][1] [0][0]             # two cells
 T: swap 0 1
 ```
 

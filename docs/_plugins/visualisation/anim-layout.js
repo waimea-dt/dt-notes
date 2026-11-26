@@ -37,11 +37,11 @@
     // A grid's lines from the top, as views: its heading (if it has one), then its rows
     const gridLines = (grid) => [...(grid.heading ? [grid.heading] : []), ...grid.views.row]
 
-    // A place in a grid (LAYOUTS: views), "row.column" ("1.2", "end.0", a table's "head.3"), as its
-    // line from the top (gridLines) and its column, both from 0. Undefined if it isn't one; an error
-    // if the grid has no such row or column.
+    // A place in a grid (LAYOUTS: views), "[row][column]" ("[1][2]", "[end][0]", a table's
+    // "[head][3]"), as its line from the top (gridLines) and its column, both from 0. Undefined if it
+    // isn't one; an error if the grid has no such row or column.
     function gridPlaceOf(grid, token) {
-      const parts = token?.kind === 'word' ? token.value.split('.') : []
+      const parts = token?.kind === 'word' ? token.value.match(/^\[([^\]]*)\]\[([^\]]*)\]$/)?.slice(1) || [] : []
       if (parts.length !== 2) return undefined
       const kind = LAYOUTS[grid.layout]
       const base = baseOf(grid.layout)
@@ -59,7 +59,7 @@
     }
 
     // Two places in a layout, written after a verb at tokens[i] and [i + 1] (a row's "0 2" or
-    // "3 end", a grid's "1.2 3.4"), either way round: the cells between them (a grid's: the block
+    // "3 end", a grid's "[1][2] [3][4]"), either way round: the cells between them (a grid's: the block
     // they're the corners of), in order, and the places, lowest first (as a span keeps them).
     // `example` is the line as it might be written, for the message when they're missing.
     function cellsBetween(row, tokens, i, word, example) {
@@ -82,7 +82,7 @@
     // A grid's two places: the corners of a block, as its top-left and bottom-right
     function gridBetween(grid, tokens, word, example) {
       const [a, b] = tokens.map((token) => gridPlaceOf(grid, token))
-      if (!a || !b) throw new Error(`"${word}" expects two of a ${LAYOUTS[grid.layout].noun}'s cells, as row.column, e.g. ${example('0.0', '1.2')}`)
+      if (!a || !b) throw new Error(`"${word}" expects two of a ${LAYOUTS[grid.layout].noun}'s cells, as [row][column], e.g. ${example('[0][0]', '[1][2]')}`)
       return { from: { r: Math.min(a.r, b.r), c: Math.min(a.c, b.c) }, to: { r: Math.max(a.r, b.r), c: Math.max(a.c, b.c) } }
     }
 
@@ -414,7 +414,7 @@
     }
 
     // A layout of lines (LAYOUTS: lines), "c: code "print(x)" lang python at 2,1", or its lines in
-    // [ ]: a column of code lines, C.1, C.2, … (numbered from 1), each as wide as the longest (fitCode).
+    // [ ]: a column of code lines, C[1], C[2], … (numbered from 1), each as wide as the longest (fitCode).
     function createLines(id, layout, tokens, existing, meta, warn) {
       const { noun, item } = LAYOUTS[layout]
       const example = `e.g. "${id}: ${layout} "print(x)" lang python at 2,1", or its ${item}s in [ ]: "${id}: ${layout} ["x = 1" "print(x)"] at 2,1"`
@@ -437,7 +437,7 @@
     }
 
     // A number (LAYOUTS: radix), "B: binary 67 at 2,3 digits 8", or a var's or cell's value
-    // ("B: binary V1"): a row of its digits, lowest first (B.0) and numbered from the right, as many
+    // ("B: binary V1"): a row of its digits, lowest first (B[0]) and numbered from the right, as many
     // as its digits (LAYOUTS: digits)
     function createNumber(id, layout, tokens, existing, meta, warn) {
       const { noun, digits } = LAYOUTS[layout]

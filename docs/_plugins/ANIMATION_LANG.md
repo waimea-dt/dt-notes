@@ -218,7 +218,7 @@ G: arrange 30 gap 0            # at an angle (degrees, as angle)
 ## Rows and columns
 
 ```anim
-Arr: row [5 3 8 1] at 3,4          # cells arr.0 … arr.3
+Arr: row [5 3 8 1] at 3,4          # cells Arr[0] … Arr[3]
 Col: column ["A" "B" "C"] at 12,2 gap 0.2
 Mem: row 8 at 2,6                  # 8 empty cells
 Arr: swap 0 3                      # two cells change places
@@ -227,7 +227,7 @@ Arr: insert 7 at 3
 Arr: insert 8 at end
 Arr: remove 2
 Arr: remove end
-Arr.2: fill amber                  # one cell
+Arr[2]: fill amber                 # one cell
 Arr: range 0 2 fill amber          # cells 0 to 2 (a look, highlight, emphasis or callout)
 Arr: range 3 end bold              # cell 3 to the last
 Arr: fill green                    # every cell
@@ -237,8 +237,8 @@ Arr: delete                        # the whole row
 - Values in `[ ]`: numbers, `"quoted"` or `null`, commas optional.
 - `size`, `gap` and looks apply to every cell. Cell size is set when it's made.
 - `at` places the first cell by its top-left. `below B` etc. place the whole row.
-- Ids stay with the places: after an edit, `Arr.2` is whichever cell is now third.
-- Cells hold values like a var: `Arr.2: 7`.
+- Ids stay with the places: after an edit, `Arr[2]` is whichever cell is now third.
+- Cells hold values like a var: `Arr[2]: 7`.
 - `swap` `insert` `remove` take `speed`, `delay` and `ease`.
 
 ## Spans
@@ -261,36 +261,36 @@ Sorted: delete
 G: grid [
     [1, 2, 3, 4],
     [5, 6, 7, 8]
-] at 2,2                           # cells g.0.0 … g.1.3 (row.column)
+] at 2,2                           # cells G[0][0] … G[1][3] (row, column)
 T: table [
     ["A", "B", "C"],               # the headings
     [1, 2, 3],
     [4, 5, 6]
 ] at 8,2
 E: grid 4x3 at 2,6                 # empty: 4 across, 3 down
-G.1: fill amber                    # row 1
-G.col.2: highlight outline         # column 2
-G.1.2: 7                           # a cell
-T.head: fill blue                  # the headings (t.head.0 …)
-T.0: bold                          # the first row after them
-T.col.1: fill green                # a column, its heading too
-G: range 0.1 1.2 fill teal         # a block, corner to corner
-S: span G 0.0 1.end                # rows 0 and 1 (end: the last)
-S2: span T head.0 end.0            # a table's column 0, heading too
-G.1: range 0 2 fill green          # within a row
-S3: span G.col.2 0 1
+G[1]: fill amber                   # row 1
+G.col[2]: highlight outline        # column 2
+G[1][2]: 7                         # a cell
+T.head: fill blue                  # the headings (T.head[0] …)
+T[0]: bold                         # the first row after them
+T.col[1]: fill green               # a column, its heading too
+G: range [0][1] [1][2] fill teal   # a block, corner to corner
+S: span G [0][0] [1][end]          # rows 0 and 1 (end: the last)
+S2: span T [head][0] [end][0]      # a table's column 0, heading too
+G[1]: range 0 2 fill green         # within a row
+S3: span G.col[2] 0 1
 G: indices                         # rows down the left, columns along the bottom
 G: swap 0 1                        # rows
 G: swap col 1 end                  # columns
-G: swap 1.2 0.0                    # cells
+G: swap [1][2] [0][0]              # cells
 G: insert [9 9 9 9] at 1           # a row
 T: insert col ["D" 7 8] at end     # a column, its heading first
 G: remove 0
 G: remove col end
 ```
 
-- Rows and columns count from 0. A table's `T.0` is the first row after its headings.
-- A place is `row.column`: a number or `end` (a table's row can be `head`).
+- Rows and columns count from 0. A table's `T[0]` is the first row after its headings.
+- A grid place in an action is `[row][column]`: each a number or `end` (a table's row can be `head`).
 - `size`, `gap`, looks, `name` and `indices` go on the whole grid.
 - A row or column takes looks, highlights, emphasis, callouts, `stagger`, `range`, `span` and a `name`.
 - Ids stay with the places, as in a row.
@@ -331,7 +331,7 @@ Done: ring clear
 
 ```anim
 Sw: rect at 8,3 fill rgb({R} {G} {B})  # red, green, blue (0-255): follows vars R, G, B
-Sw: stroke rgb({Arr.0}, 255, {N * 2})  # cells, numbers (binary, hex, denary) and sums
+Sw: stroke rgb({Arr[0]}, 255, {N * 2}) # cells, numbers (binary, hex, denary) and sums
 R: 200                                 # Sw changes with R
 R: binary 0 at 2,2 fill rgb({R} 0 0)   # a number following its own value
 Sw: fill rgb(R 0 0)                    # no { }: R's value now
@@ -344,7 +344,7 @@ Sw: fill red                           # stops following
 
 ```anim
 C: A + B * 2                       # worked out once, as in code
-Arr.3: Arr.0 mod 4                 # + - * / mod, spaces round each
+Arr[3]: Arr[0] mod 4               # + - * / mod, spaces round each
 B: V1 * 2                          # a number's value too
 C: (A + B) * 2                     # ( ) first
 A: (-5)                            # a negative value (A: -5 takes 5 off)
@@ -387,8 +387,8 @@ defaults counter
 ## Moving values
 
 ```anim
-V1: A.1                            # a copy of a.1's value moves onto v1
-A.2: V2                            # vars and cells both ways
+V1: A[1]                           # a copy of A[1]'s value moves onto V1
+A[2]: V2                           # vars and cells both ways
 A: insert V1 at 3
 A: insert V2 at end
 A: remove end into V2
@@ -410,24 +410,24 @@ Arr: indices clear
 ```
 
 - For vars, rows, columns, grids and tables.
-- Text shapes you can style: `V1.name`, `Arr.index.0`, `G.index.1`, `G.index.col.2` (e.g. `Arr.name: bold`).
+- Text shapes you can style: `V1.name`, `Arr.index[0]`, `G.index[1]`, `G.index.col[2]` (e.g. `Arr.name: bold`).
 
 ## Numbers
 
 ```anim
-B: binary 123 at 2,2               # 8 bits, b.0 (rightmost) … b.7
+B: binary 123 at 2,2               # 8 bits, B[0] (rightmost) … B[7]
 H: hex 123 at 2,2                  # 2 digits, 0-9 then A-F
 D: denary 123 at 2,2               # 3 digits
 N: binary V1 at 2,4 digits 4       # a var's value, 4 bits
 B: binary 123 at 2,2 indices powers decimal  # bit numbers, place values, "= 123"
-B.0: 1                             # one bit
-H.0: 0xF                           # one hex digit (or h.0: 15)
+B[0]: 1                            # one bit
+H[0]: 0xF                          # one hex digit (or H[0]: 15)
 B: 67                              # a new value
 B: +1
-B: V1                              # a var's or cell's value (and v1: b)
+B: V1                              # a var's or cell's value (and V1: B)
 B: flip                            # every bit (binary only)
 B: flip 0 3                        # bits 0 to 3
-B.4: flip                          # one bit
+B[4]: flip                         # one bit
 B: powers clear                    # or decimal clear, indices clear
 ```
 
@@ -444,9 +444,9 @@ C: code [
     "total = 0",
     "for n in nums:",
     "    total += n"
-] at 2,3 lang python name "sum.py" indices   # lines c.1 … c.3
-C.2: highlight line                # highlight clear
-C.1: "total = 100"
+] at 2,3 lang python name "sum.py" indices   # lines C[1] … C[3]
+C[2]: highlight line               # highlight clear
+C[1]: "total = 100"
 S: "print(42)"                     # a one-line block
 C: insert "print(total)" at end
 C: remove 1

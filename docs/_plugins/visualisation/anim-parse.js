@@ -163,15 +163,18 @@
   // Scene parsing
   // ---------------------------------------------------------------------------
 
-  // a "quoted" label, a call (image(…), rgb(…)), an unclosed quote, a bracket, a round bracket (in
-  // a sum), an expression in { } ("x {V1 * 2}"), or a word
-  const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([[\]])|([()])|\{([^{}]*)\}|([^\s,[\](){}]+)/g
+  // a "quoted" label, a call (image(…), rgb(…)), an unclosed quote, a reference with places in [ ]
+  // ("Arr[2]", "G[1][2]", "G.col[2]") or a grid's place alone ("[1][2]", after a verb), a bracket,
+  // a round bracket (in a sum), an expression in { } ("x {V1 * 2}"), or a word
+  const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([A-Z][\w.-]*(?:\[[^\][]*\][\w.-]*)+|(?:\[[^\][\s"]*\]){2})|([[\]])|([()])|\{([^{}]*)\}|([^\s,[\](){}]+)/g
   const NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/
   const LITERAL = /^([+-]?)(0x[0-9a-f]+|0b[01]+)$/i // hex and binary numbers
   // A new shape's id: a capital letter, then letters, digits, _ and - (keywords are lowercase, so
-  // the two never clash). REF: an id, or a path to one of its parts ("Arr.2", "V1.name")
+  // the two never clash). REF: an id, or a path to one of its parts ("Arr[2]", "V1.name")
   const ID = /^[A-Z][\w-]*$/
-  const REF = /^[A-Z][\w-]*(?:\.[\w-]+)*$/
+  const REF = /^[A-Z][\w-]*(?:\.[\w-]+|\[[^\][]*\])*$/
+  // A reference or place as the engine names it, with no spaces in its [ ] ("G[ 1 ]" is "G[1]")
+  const canonicalRef = (ref) => ref.replace(/\[([^\][]*)\]/g, (m, inner) => `[${inner.trim()}]`)
   const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
 
   function tokenize(text) {
@@ -180,14 +183,15 @@
       if (m[1] !== undefined) tokens.push({ kind: 'str', value: m[1].replace(/\\(.)/g, '$1') })
       else if (m[2] !== undefined) tokens.push({ kind: 'res', name: m[2], arg: m[3].trim() })
       else if (m[4] !== undefined) throw new Error('a label is missing its closing quote')
-      else if (m[5] !== undefined) tokens.push({ kind: 'bracket', value: m[5] }) // a row's / column's [values]
-      else if (m[6] !== undefined) tokens.push({ kind: 'paren', value: m[6] }) // "(a + b) * 2", "(-5)": read in a sum (readExpr)
-      else if (m[7] !== undefined) tokens.push({ kind: 'expr', text: m[7].trim() }) // read when it's used (readExpr)
+      else if (m[5] !== undefined) tokens.push({ kind: 'word', value: canonicalRef(m[5]) })
+      else if (m[6] !== undefined) tokens.push({ kind: 'bracket', value: m[6] }) // a row's / column's [values]
+      else if (m[7] !== undefined) tokens.push({ kind: 'paren', value: m[7] }) // "(a + b) * 2", "(-5)": read in a sum (readExpr)
+      else if (m[8] !== undefined) tokens.push({ kind: 'expr', text: m[8].trim() }) // read when it's used (readExpr)
       else {
         // "0x7B" / "0b1011" is a number, read as denary from here on; "2x1" (a size) is two numbers
-        const literal = m[8].match(LITERAL)
-        const pair = !literal && m[8].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
-        const words = literal ? [literal[1] + BigInt(literal[2]).toString()] : pair ? [pair[1], pair[2]] : [m[8]]
+        const literal = m[9].match(LITERAL)
+        const pair = !literal && m[9].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
+        const words = literal ? [literal[1] + BigInt(literal[2]).toString()] : pair ? [pair[1], pair[2]] : [m[9]]
         words.forEach((word) => tokens.push({ kind: 'word', value: word }))
       }
     }
@@ -308,6 +312,6 @@
     return props
   }
 
-  Object.assign(window.Anim, { HEX, ID, REF, NUMBER, findBlocks, parseAs, parseAttrs, parseProps, rewriteBlocks, splitBlock,
+  Object.assign(window.Anim, { HEX, ID, REF, canonicalRef, NUMBER, findBlocks, parseAs, parseAttrs, parseProps, rewriteBlocks, splitBlock,
     stripHeadingAnchors, tokenize })
 })()

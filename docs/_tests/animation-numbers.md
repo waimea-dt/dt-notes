@@ -19,8 +19,8 @@ B1: binary 666 digits 12 at 1,7 indices powers decimal
 ## A bit, or a new value
 
 ```anim
-B.0: 0                            # = 122
-B.7: 1                            # = 250
+B[0]: 0                           # = 122
+B[7]: 1                           # = 250
 ```
 
 +++
@@ -34,14 +34,14 @@ B: 0b01000011 speed slow          # 67: only the bits that change crossfade
 ## flip
 
 ```anim
-B: flip stagger                   # every bit, from b.0
+B: flip stagger                   # every bit, from B[0]
 ```
 
 +++
 
 ```anim
 B: flip 0 3                       # the low four
-B.7: flip
+B[7]: flip
 ```
 
 +++
@@ -98,20 +98,20 @@ B: decimal clear
 
 ```anim
 B: ink blue                    # 0s are muted until given an ink
-B.6: bold
+B[6]: bold
 ```
 
 +++
 
 ```anim
 B: ink reset                   # back as it started: 0s muted again
-B.5: fill red font 1
+B[5]: fill red font 1
 ```
 
 +++
 
 ```anim
-B: style reset                    # every look back as it started (b.6 not bold)
+B: style reset                    # every look back as it started (B[6] not bold)
 ```
 
 +++
@@ -140,15 +140,15 @@ D: denary 123 at 3,5 name "d" indices powers         # 3 digits by default
 ## A digit, or a new value
 
 ```anim
-H.0: 0xF                          # = 127 (or h.0: 15)
-D.2: 9                            # = 923
+H[0]: 0xF                         # = 127 (or H[0]: 15)
+D[2]: 9                           # = 923
 
 ```
 
 +++
 
 ```anim
-H.1: +1                           # 8: a digit adds in its base, = 143
+H[1]: +1                          # 8: a digit adds in its base, = 143
 H: 0xffff speed slow              # = 65535 (either case)
 D: +100                           # wraps round to 23
 
@@ -177,16 +177,16 @@ B: binary 0xCAFE at 3,5 digits 16 name "bin" indices powers decimal
 
 ```anim
 B: range  0  3 fill blue
-H.0: fill blue
+H[0]: fill blue
 
 B: range  4  7 fill cyan   delay 0.5
-H.1:           fill cyan   delay 0.5
+H[1]:           fill cyan   delay 0.5
 
 B: range  8 11 fill green  delay 1.0
-H.2:           fill green  delay 1.0
+H[2]:           fill green  delay 1.0
 
 B: range 12 15 fill yellow delay 1.5
-H.3:           fill yellow delay 1.5
+H[3]:           fill yellow delay 1.5
 ```
 
 ---

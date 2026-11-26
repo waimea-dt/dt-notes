@@ -45,7 +45,7 @@ A cell holds values too.
 
 ```anim
 R: row [1 2 3] at 4,3.5 size 0.8
-R.1: null
+R[1]: null
 ```
 
 </animation>
@@ -64,18 +64,18 @@ A: row [1 2 3] at 4,2.5 name "a" indices fill blue
 
 ## Copy into a var or a cell
 
-A copy of `A.0` glides onto `V1`, which takes its value as it lands.
+A copy of `A[0]` glides onto `V1`, which takes its value as it lands.
 
 ```anim
-V1: A.0
+V1: A[0]
 ```
 
 +++
 
-And back: `A.2` takes v2's value. The copy turns from v2's look into the row's.
+And back: `A[2]` takes v2's value. The copy turns from v2's look into the row's.
 
 ```anim
-A.2: V2 speed slow
+A[2]: V2 speed slow
 ```
 
 ---
@@ -161,7 +161,7 @@ A: insert V1 at 0 keep-style
 +++
 
 ```anim
-V2: A.0 keep-style
+V2: A[0] keep-style
 ```
 
 +++
@@ -169,7 +169,7 @@ V2: A.0 keep-style
 Without it, the box keeps its own look.
 
 ```anim
-A.1: V2
+A[1]: V2
 ```
 
 </animation>
@@ -199,7 +199,7 @@ C: A + B * 2
 
 ```anim
 C: A mod B
-Arr.3: Arr.0 + Arr.1 * 10
+Arr[3]: Arr[0] + Arr[1] * 10
 ```
 
 +++
@@ -223,7 +223,7 @@ B: A - B
 
 ```anim
 C: (A + B) * 2
-Arr.0: (Arr.1 + Arr.2) mod 4
+Arr[0]: (Arr[1] + Arr[2]) mod 4
 ```
 
 +++
@@ -325,7 +325,7 @@ A: 5
 +++
 
 ```anim
-Arr.0: {B * 10}
+Arr[0]: {B * 10}
 B: 1 speed slow
 ```
 
@@ -393,7 +393,7 @@ defaults clear
 Sw: rect "fill and stroke" at 11,2.5 size 4x2.4 fill rgb({R} {G} {B}) stroke rgb(255, {G}, {B}) weight 4 ink contrast
 Arr: row [0 128 255] at 2,6 indices
 Hx: hex 255 at 7,6 name "hx"
-Cell: rect "cells" at 12,6 size 3x1 fill rgb({Arr.2} {Hx} {Arr.0}) ink contrast
+Cell: rect "cells" at 12,6 size 3x1 fill rgb({Arr[2]} {Hx} {Arr[0]}) ink contrast
 ```
 
 ---
@@ -416,7 +416,7 @@ B: 200 speed slow
 ## A value on the move: the colour changes as it lands
 
 ```anim
-B: Arr.0
+B: Arr[0]
 R: Hx
 ```
 
@@ -426,7 +426,7 @@ R: Hx
 
 ```anim
 Hx: 0
-Arr.2: 64
+Arr[2]: 64
 ```
 
 ---
@@ -475,7 +475,7 @@ Hp: 30
 +++
 
 ```anim
-Arr.2: 4
+Arr[2]: 4
 Hp: 100
 ```
 
@@ -497,7 +497,7 @@ T: var 0 at 10,4 size 3x0.5 bar max 9 fill blue name "avg"
 +++
 
 ```anim
-T: Arr.3
+T: Arr[3]
 ```
 
 ---
@@ -533,7 +533,7 @@ Votes: column [12 7 15 4 9] at 4,2 bar stroke none fill teal size 4x0.7 gap 0.15
 ## Changes
 
 ```anim
-Votes.3: 14
+Votes[3]: 14
 ```
 
 +++
@@ -577,7 +577,7 @@ Arr: row [3 8 5 9] at 2,5 size 1.2 gap 0.3 stroke none pie fill pink-bright trac
 Done: 75
 Left: 5
 Cpu: 100
-Arr.1: 2
+Arr[1]: 2
 ```
 
 +++
@@ -595,7 +595,7 @@ Arr: swap 0 3
 
 ```anim
 Cpu: highlight clear
-Done: Arr.2
+Done: Arr[2]
 ```
 
 ---
