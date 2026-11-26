@@ -201,19 +201,19 @@ Arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.2 indices
 ## A look on some cells
 
 ```anim
-Arr: range 0 2 fill green
+Arr[0..2]: fill green
 ```
 
 +++
 
 ```anim
-Arr: range 4 1 fill amber          # either way round
+Arr[4..1]: fill amber              # either way round
 ```
 
 +++
 
 ```anim
-Arr: range 3 end fill teal         # end: the last cell
+Arr[3..end]: fill teal             # end: the last cell
 ```
 
 ---
@@ -221,19 +221,19 @@ Arr: range 3 end fill teal         # end: the last cell
 ## Highlights and emphasis, staggered
 
 ```anim
-Arr: range 3 5 highlight outline stagger 0.2
+Arr[3..5]: highlight outline stagger 0.2
 ```
 
 +++
 
 ```anim
-Arr: range 1 4 pulse stagger 0.1
+Arr[1..4]: pulse stagger 0.1
 ```
 
 +++
 
 ```anim
-Arr: range 0 5 highlight clear
+Arr[0..5]: highlight clear
 ```
 
 </animation>
@@ -244,7 +244,7 @@ Arr: range 0 5 highlight clear
 
 ```anim
 Arr: row [5, 3, 8, 1, 9, 2] at 3,3 size 1 gap 0.2 indices corner 0.05
-Sorted: span Arr 0 2 name "sorted" highlight outline
+Sorted: span Arr[0..2] name "sorted" highlight outline
 ```
 
 ---
@@ -258,20 +258,20 @@ Arr: swap 1 4
 +++
 
 ```anim
-Sorted: span Arr 0 3                      # spanned again: it glides
-Win: span Arr 3 5 fill teal-bright name "window"
+Sorted: span Arr[0..3]                    # spanned again: it glides
+Win: span Arr[3..5] fill teal-bright name "window"
 ```
 
 +++
 
 ```anim
-Win: span Arr 2 4                         # a sliding window
+Win: span Arr[2..4]                       # a sliding window
 ```
 
 +++
 
 ```anim
-Win: span Arr 3 end                       # end: the last place
+Win: span Arr[3..end]                     # end: the last place
 ```
 
 ---
@@ -311,9 +311,9 @@ Arr: remove end
 
 ```anim
 Col: column [4 8 15 16] at 12,2 gap 0.1 corner 0.05
-Top: span Col 0 1 name "top" stroke teal dotted
+Top: span Col[0..1] name "top" stroke teal dotted
 C: code ["total = 0" "for n in nums:" "    total += n" "print(total)"] at 2,6.5 lang python indices
-Loop: span C 2 3 name "loop" highlight outline
+Loop: span C[2..3] name "loop" highlight outline
 ```
 
 +++
@@ -386,22 +386,22 @@ T.col[1]: highlight clear
 ## Range and span
 
 ```anim
-G: range [0][1] [1][2] fill teal            # a block: [row][column] to [row][column]
-S: span G[2] 1 end stroke red name "tail"   # within a row
+G[0..1][1..2]: fill teal                    # a block: [row][column] to [row][column]
+S: span G[2][1..end] stroke red name "tail" # within a row
 ```
 
 +++
 
 ```anim
-B: span G [0][0] [1][end] highlight outline # rows 0 to 1
-T.col[2]: range 0 1 fill amber              # within a column
+B: span G[0..1][0..end] highlight outline   # rows 0 to 1
+T.col[2][0..1]: fill amber                  # within a column
 ```
 
 +++
 
 ```anim
 S: delete
-B: span T [head][0] [end][0] stroke pink    # a table's [head][column]
+B: span T[head..end][0] stroke pink         # a table's [head][column]
 ```
 
 ---
@@ -454,7 +454,7 @@ T: delete
 G: grid [[1 2 3] [4 5 6] [7 8 9]] at 2,2 gap 0.4 indices corner 0.1
 T: table [["A" "B"] [1 2] [3 4]] at 10,2 size 1.2x0.8 indices
 G[1]: highlight outline           # stays on row 1's place
-S: span G [0][0] [0][1] fill red # and a span on its places
+S: span G[0][0..1] fill red      # and a span on its places
 ```
 
 ---

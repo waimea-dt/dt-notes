@@ -228,8 +228,8 @@ Arr: insert 8 at end
 Arr: remove 2
 Arr: remove end
 Arr[2]: fill amber                 # one cell
-Arr: range 0 2 fill amber          # cells 0 to 2 (a look, highlight, emphasis or callout)
-Arr: range 3 end bold              # cell 3 to the last
+Arr[0..2]: fill amber              # cells 0 to 2 (a look, highlight, emphasis or callout)
+Arr[3..end]: bold                  # cell 3 to the last
 Arr: fill green                    # every cell
 Arr: delete                        # the whole row
 ```
@@ -239,16 +239,17 @@ Arr: delete                        # the whole row
 - `at` places the first cell by its top-left. `below B` etc. place the whole row.
 - Ids stay with the places: after an edit, `Arr[2]` is whichever cell is now third.
 - Cells hold values like a var: `Arr[2]: 7`.
+- A range `[from..to]` includes both ends, either way round.
 - `swap` `insert` `remove` take `speed`, `delay` and `ease`.
 
 ## Spans
 
 ```anim
-Sorted: span Arr 0 2 name "sorted"     # a box round places 0 to 2
+Sorted: span Arr[0..2] name "sorted"   # a box round places 0 to 2
 Sorted: highlight outline
-Win: span Arr 3 5 fill amber
-Win: span Arr 2 4                      # move it
-Tail: span Arr 3 end                   # place 3 to the last
+Win: span Arr[3..5] fill amber
+Win: span Arr[2..4]                    # move it
+Tail: span Arr[3..end]                 # place 3 to the last
 Sorted: delete
 ```
 
@@ -274,11 +275,11 @@ G[1][2]: 7                         # a cell
 T.head: fill blue                  # the headings (T.head[0] …)
 T[0]: bold                         # the first row after them
 T.col[1]: fill green               # a column, its heading too
-G: range [0][1] [1][2] fill teal   # a block, corner to corner
-S: span G [0][0] [1][end]          # rows 0 and 1 (end: the last)
-S2: span T [head][0] [end][0]      # a table's column 0, heading too
-G[1]: range 0 2 fill green         # within a row
-S3: span G.col[2] 0 1
+G[0..1][1..2]: fill teal           # a block, corner to corner
+S: span G[0..1][0..end]            # rows 0 and 1 (end: the last)
+S2: span T[head..end][0]           # a table's column 0, heading too
+G[1][0..2]: fill green             # within a row
+S3: span G.col[2][0..1]
 G: indices                         # rows down the left, columns along the bottom
 G: swap 0 1                        # rows
 G: swap col 1 end                  # columns
@@ -290,9 +291,9 @@ G: remove col end
 ```
 
 - Rows and columns count from 0. A table's `T[0]` is the first row after its headings.
-- A grid place in an action is `[row][column]`: each a number or `end` (a table's row can be `head`).
+- A range is `G[rows][columns]` (`G[0..1]`: whole rows). A cell in a swap is `[row][column]`. Each is a number or `end` (a table's row can be `head`).
 - `size`, `gap`, looks, `name` and `indices` go on the whole grid.
-- A row or column takes looks, highlights, emphasis, callouts, `stagger`, `range`, `span` and a `name`.
+- A row or column takes looks, highlights, emphasis, callouts, `stagger`, ranges, `span` and a `name`.
 - Ids stay with the places, as in a row.
 
 ## Variables
@@ -426,7 +427,7 @@ B: 67                              # a new value
 B: +1
 B: V1                              # a var's or cell's value (and V1: B)
 B: flip                            # every bit (binary only)
-B: flip 0 3                        # bits 0 to 3
+B[0..3]: flip                      # bits 0 to 3
 B[4]: flip                         # one bit
 B: powers clear                    # or decimal clear, indices clear
 ```

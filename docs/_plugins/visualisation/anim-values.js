@@ -17,7 +17,7 @@
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow
+    let applyStagger, busiest, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow
     // making (in the link functions and holderRef): the id the line being run makes, if it makes one
     // (applyLook's creating), so a look can follow its own value ("R: binary 0 fill rgb(R 0 0)"),
     // though it isn't there yet: such a link is worked out once it is (fitLinks, after the line)
@@ -102,18 +102,14 @@
     }
 
     // "B: flip": each of a number's digits d becomes radix - 1 - d (a bit: 0 <-> 1), crossfading
-    // as when it's given a value; "B: flip 0 3" some of them, "B[2]: flip" one
-    function flipDigits(id, shape, tokens, meta, warn) {
+    // as when it's given a value; "B[0..3]: flip" some of them (range: rangeOf's), "B[2]: flip" one
+    function flipDigits(id, shape, tokens, meta, warn, word, range) {
       if (!shape) throw noShape(id)
       const row = shape.digit ? null : shape
-      if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or one, e.g. "B[0]: flip"), and "${id}" isn't one`)
-      let cells = row ? digitsOf(row) : [shape]
-      let next = 1
-      if (row && placeOf(row, tokens[1]) !== undefined) {
-        ({ cells } = cellsBetween(row, tokens, 1, 'flip', (a, b) => `"${id}: flip ${a} ${b}"`))
-        next = 3
-      }
-      const props = parseProps(tokens, next, 'flip', shapes)
+      if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or some, e.g. "B[0..3]: flip"), and "${id}" isn't one`)
+      if (row && placeOf(row, tokens[1]) !== undefined) throw new Error(`some of a number's digits go in its id, e.g. "${id}[0..3]: flip"`)
+      const cells = range ? range.cells : row ? digitsOf(row) : [shape]
+      const props = parseProps(tokens, 1, 'flip', shapes)
       for (const cell of cells) {
         const changed = structuredClone(cell)
         const { radix } = LAYOUTS[cell.digit]
@@ -491,7 +487,7 @@
         setNumber, setValue, unlink, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {
-        ({ applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow } = cx)
+        ({ applyStagger, busiest, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow } = cx)
       },
     }
   })

@@ -7,14 +7,14 @@
 ;(function () {
   const { CELL, placeNextTo, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
-    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, digitLooks, EDIT_WORDS,
+    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, digitLooks, EDIT_WORDS, REF,
     LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor, PARTS } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, followedValue, followValue, holderRef, inTurn,
-      layerOf, linkText, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
+      layerOf, linkText, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
       takeBareNumber, valueIn, valueOf, warnEffect
 
     // A cell's number as written after a verb ("swap 0 3", "range 3 end"): a whole number, or end,
@@ -122,14 +122,29 @@
       return { x: shape.x - frame.x, y: shape.y - frame.y }
     }
 
-    // "Arr: range 0 3 fill red": a change to some of a row's / column's cells, each changed as if on
+    // A range of a layout's places, written in its id with .. ("Arr[0..2]", "G[1][0..2]",
+    // "G.col[2][0..1]", "G[0..1][1..2]", "G[0..1]": whole rows, "T[head..end][0]"): the outermost
+    // layout (or a view the path names, G.col[2]) that the [ ] groups after it belong to, and its
+    // cells and places between the ends, as cellsBetween gives them. A group with no .. is one place.
+    // Undefined if no layout is named.
+    function rangeOf(ref, use) {
+      const groups = ref.match(/(?:\[[^\][]*\])*$/)[0].match(/[^\][]+(?=\])/g) || []
+      let id = ref.slice(0, ref.length - ref.match(/(?:\[[^\][]*\])*$/)[0].length)
+      while (!shapes.get(id)?.layout && groups.length) id += `[${groups.shift()}]`
+      const row = shapes.get(id)
+      if (!row?.layout) return undefined
+      const kind = arranged(row)
+      if (!groups.length) throw new Error(`"${id}" needs some of its places in [ ], e.g. "${kind.rangeExample(id)}"`)
+      if (groups.length > kind.axes) throw new Error(`"${ref}" isn't a range of "${id}"'s places, e.g. "${kind.rangeExample(id)}"`)
+      const ends = groups.map((group) => { const [a, b = a] = group.split('..'); return [a.trim(), b.trim()] })
+      return { row, ...cellsBetween(row, kind.corners(ends), 0, use, () => `"${kind.rangeExample(id)}"`) }
+    }
+
+    // "Arr[0..3]: fill red": a change to some of a row's / column's cells, each changed as if on
     // its own line (stagger: in cell order). Only a look, highlights, emphasis and callouts: the cells
     // stay in the row (LINES: range).
-    function changeRange(id, row, tokens, meta, warn) {
-      if (!row) throw noShape(id)
-      if (!row.layout) throw new Error(`"range" picks some of the cells of ${LAYOUT_NOUNS}, and "${id}" isn't one`)
-      const { cells } = cellsBetween(row, tokens, 1, 'range', (a, b) => `"${id}: range ${a} ${b} fill red"`)
-      const props = parseProps(tokens, 3, 'range', shapes)
+    function changeRange({ row, cells }, tokens, meta, warn) {
+      const props = parseProps(tokens, 0, 'range', shapes)
       const own = { ...props }
       delete own.stagger
       withRowMax(row, own)
@@ -143,18 +158,19 @@
       applyStagger(row, cells.map((cell) => [cell.uid]), props, meta, warn)
     }
 
-    // "S: span Arr 0 2": a box round some of a row's / column's / code block's places (SHAPES: span),
+    // "S: span Arr[0..2]": a box round some of a row's / column's / code block's places (SHAPES: span),
     // as one shape for highlights, a callout and a name. It's a part of the row (it goes when the
     // row does) and stays on its places through swaps, inserts and removes (fitSpans). Spanning an
     // existing span again moves it to the new places, gliding there.
     function makeSpan(id, existing, tokens, meta, warn) {
-      const example = `e.g. "${id}: span Arr 0 2"`
-      const rowId = parseAs('id', tokens[1], shapes)
-      const row = rowId && shapes.get(rowId)
-      if (!row) throw new Error(`"span" expects ${LAYOUT_NOUNS} and two of its places, ${example}${tokens[1] && !rowId ? `: no shape called "${tokens[1].value}"` : ''}`)
-      if (!row.layout) throw new Error(`"span" goes round some of the cells of ${LAYOUT_NOUNS}, and "${rowId}" isn't one`)
-      const { from, to } = cellsBetween(row, tokens, 2, 'span', (a, b) => `"${id}: span ${rowId} ${a} ${b}"`)
-      const props = parseProps(tokens, 4, 'span', shapes)
+      const example = `e.g. "${id}: span Arr[0..2]"`
+      const ref = tokens[1]?.kind === 'word' ? tokens[1].value : ''
+      const range = REF.test(ref) ? rangeOf(ref, 'span') : undefined
+      const named = ref.replace(/\[.*$/, '')
+      if (!range) throw new Error(`"span" expects some of the places of ${LAYOUT_NOUNS}, ${example}${!ref ? '' : shapes.has(named) ? `, and "${named}" isn't one` : `: no shape called "${named}"`}`)
+      const { row, from, to } = range
+      const rowId = row.id
+      const props = parseProps(tokens, 2, 'span', shapes)
       if (rowId === id) throw new Error('a span needs an id of its own')
       const respan = existing?.type === 'span'
       if (existing && !respan) {
@@ -602,15 +618,23 @@
     //   between(row, tokens, word, example)  two places written after a verb, lowest first
     //   cells(row, places)  the ids at some places
     //   marks(row, numbering)  what its numbers go beside (indexMarks)
+    //   axes  how many [ ] groups a range of its places has (rangeOf): a line's [from..to], a grid's
+    //         [rows][columns]
+    //   corners(ends)  a range's two ends (each group's [from, to]; a grid with one group: whole rows)
+    //                  as the tokens between reads
+    //   rangeExample(id)  a range written out, for messages
+    const wordToken = (value) => ({ kind: 'word', value })
     const ARRANGE = {
       line: {
         create: createLine, ids: lineIds, lay: (frame, cells) => layoutCells(frame, cells), relay: layoutCells, sync: () => {},
         between: lineBetween, cells: lineCells, marks: lineMarks,
+        axes: 1, corners: ([[a, b]]) => [wordToken(a), wordToken(b)], rangeExample: (id) => `${id}[0..2]`,
       },
       grid: {
         create: createGrid, ids: gridIds, lay: (frame, cells, values) => layoutGrid(frame, chunk(cells, values[0].length)), sync: syncViews,
         relay: (grid, cells) => layoutGrid(grid, chunk(cells, cells.length / gridLines(grid).length)),
         between: gridBetween, cells: gridCells, marks: gridMarks,
+        axes: 2, corners: ([rows, cols = [0, EDIT_WORDS.end]]) => [0, 1].map((k) => wordToken(`[${rows[k]}][${cols[k]}]`)), rangeExample: (id) => `${id}[0..1][1..2]`,
       },
     }
     // A layout's arrangement (ARRANGE)
@@ -773,13 +797,13 @@
     }
 
     return {
-      functions: { arranged, cellsBetween, checkParts, chunk, createLayout, fitCode, fitLines, fitNumbers, fitSpans, gridLines,
+      functions: { arranged, cellsBetween, changeRange, checkParts, chunk, createLayout, fitCode, fitLines, fitNumbers, fitSpans, gridLines,
         gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, relayLayout, syncIndices, transpose,
-        typeInTurn, updateParts, withRowMax },
-      verbs: { range: changeRange, span: makeSpan },
+        rangeOf, typeInTurn, updateParts, withRowMax },
+      verbs: { span: makeSpan },
       link: () => {
         ({ applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, followedValue, followValue, holderRef,
-          inTurn, layerOf, linkText, noShape, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue,
+          inTurn, layerOf, linkText, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue,
           speedOf, takeBareNumber, valueIn, valueOf, warnEffect } = cx)
       },
     }

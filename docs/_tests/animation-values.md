@@ -505,7 +505,7 @@ T: Arr[3]
 ## Some cells, a new max, and back to boxes
 
 ```anim
-Arr: range 0 2 fill amber
+Arr[0..2]: fill amber
 Hp: max 200
 ```
 
@@ -545,7 +545,7 @@ Votes: swap 2 3
 +++
 
 ```anim
-Votes: range 0 1 fill amber
+Votes[0..1]: fill amber
 ```
 
 +++

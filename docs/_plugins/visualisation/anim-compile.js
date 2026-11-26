@@ -758,6 +758,8 @@
         return
       }
 
+      // "Arr[0..2]: fill red", "B[0..3]: flip": some of a layout's places (rangeOf)
+      if (id.includes('..')) return runRange(id, tokens, meta, warn)
       if (!REF.test(id)) throw new Error(`"${id}" isn't an id: an id starts with a capital letter, then letters, digits, _ or -${/^[a-z]/.test(id) ? `, e.g. "${id[0].toUpperCase()}${id.slice(1)}"` : ''}`)
 
       const first = tokens[0]
@@ -906,6 +908,17 @@
     // Making a shape (or a copy, or a group) has no members to stagger
     function noStagger(props, warn) {
       if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
+    }
+
+    // A line on a range of a layout's places: a flip (a number's digits), or a change to how they
+    // look (changeRange)
+    function runRange(id, tokens, meta, warn) {
+      const word = tokens[0]?.kind === 'word' ? tokens[0].value : ''
+      const range = rangeOf(id, word || 'range')
+      if (!range) throw new Error(`"${id}" isn't a range of a layout's places, e.g. "Arr[0..2]" or "G[0..1][1..2]"`)
+      if (!LINES[word]?.verb) return changeRange(range, tokens, meta, warn)
+      if (!LINES[word].onRange) throw new Error(`"${word}" doesn't go on a range of places`)
+      VERBS[word](range.row.id, range.row, tokens, meta, warn, word, range)
     }
 
     // "A: delete": a shape goes, with the line's exit effect (a group's members and a var's or
@@ -1113,7 +1126,7 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let addTo, assignValue, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+    let addTo, assignValue, changeRange, rangeOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
       readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
@@ -1121,7 +1134,7 @@
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ addTo, assignValue, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+      ({ addTo, assignValue, changeRange, rangeOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
         readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()

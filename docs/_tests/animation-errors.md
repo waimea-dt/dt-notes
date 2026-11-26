@@ -167,16 +167,16 @@ Er2: row [1 2] at 1,3 end arrow
 Er3: row [1 2] at 1,4 "x"
 Er: swap 0 1 fill red
 Er: insert 3 at 0 keep-style
-Er: range 0 5 fill red
-Dw: range 0 1 fill red
-Er: range 0 1 move 2,2
+Er[0..5]: fill red
+Dw[0..1]: fill red
+Er[0..1]: move 2,2
 Er: range 0 fill red
-Sp1: span Er 0 9
-Sp2: span Dw 0 1
+Sp1: span Er[0..9]
+Sp2: span Dw[0..1]
 Sp3: span Er 0
-Sp4: span Zz 0 1
-Sp5: span Er 0 1 at 2,2
-Sp6: span Er 0 1
+Sp4: span Zz[0..1]
+Sp5: span Er[0..1] at 2,2
+Sp6: span Er[0..1]
 Sp6: move 2,2
 Sp6: size 2
 Eg: grid [[1 2] [3 4 5]] at 1,1
@@ -199,9 +199,9 @@ Sg4: grid [[1]] at 1,1
 Sg4: remove 0
 Eg[0]: remove 0
 Eg6: group [Eg[0]]
-Sg1: span Eg [0][0] [5][0]
-Sg2: span Eg 0 1
-Sg3: span Er end 9
+Sg1: span Eg[0..5][0]
+Sg2: span Eg[0..1][0..1][0]
+Sg3: span Er[end..9]
 
 # values
 Dw: 5
@@ -251,7 +251,7 @@ Eb: swap 0 1
 Eb: insert 1 at 0
 Eb: remove 0
 Eb: digits 8
-Eb: flip 0 9
+Eb[0..9]: flip
 Eb: flip fill red
 Eb: ink clear
 Eb: style
@@ -278,7 +278,7 @@ Eb9: binary 300 at 1,1
 Er: powers
 Dw: decimal
 Dw: flip
-Eb[0]: flip 0 1
+Eb[0][0..1]: flip
 defaults decimal
 
 # code and Scratch
@@ -321,7 +321,7 @@ Es4: rect at 1,1
 Es4: ["move (10) steps"]
 Ec: highlight line
 Er: highlight line
-Ec: range 1 2 bar
+Ec[1..2]: bar
 ```
 
 </animation>

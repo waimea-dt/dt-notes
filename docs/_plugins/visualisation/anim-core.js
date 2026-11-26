@@ -812,6 +812,7 @@
     'stagger-reverse': { key: 'stagger', sigs: [['num'], []], build: (v) => buildStagger(v, true), help: 'a number of seconds between members (or nothing, for 0.1)', what: 'stagger' },
     ...words(EFFECTS, 'effect', 'effect'),
     ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
+    range: { error: 'a range of places goes in the id, e.g. "Arr[0..2]: fill red" or "G[0..1][1..2]: fill red"' },
     // emphasis, highlights and callouts
     ...words(Object.keys(EMPHASES), 'emphasis', 'emphasis'),
     highlight: {
@@ -897,6 +898,7 @@
   // Every kind of scene line and the props it can have, checked as its props are read (parseProps).
   //   verb     typed straight after "id:" (the others are known by the line's shape)
   //   on       on(shape): a verb only on such a shape (elsewhere its word is read as usual)
+  //   onRange  it also goes on a range of a layout's places ("B[0..3]: flip": the verb is given rangeOf's range)
   //   takesOut a row edit that takes cells out (remove), rather than putting them in (insert)
   //   takes    the props it takes (left out: any), with `what` naming it in the message
   //   refuses  props it doesn't take, with `refuse(word)` the message
@@ -923,10 +925,10 @@
     },
     // "S: line 3 "…"": a script's line, replaced (on a script only: elsewhere "line" makes a line)
     line: { verb: true, on: (shape) => Boolean(SHAPES[shape?.type]?.script), takes: TIMING },
-    flip: { verb: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "B: flip", "B: flip 0 3", "B[2]: flip"
-    range: { // some of a row's / column's cells, "Arr: range 0 3 fill red": how they look, not where they are
-      verb: true, takes: [...CELL_STYLE, 'style', 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
-      refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,
+    flip: { verb: true, onRange: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "B: flip", "B[0..3]: flip", "B[2]: flip"
+    range: { // some of a row's / column's cells, "Arr[0..3]: fill red": how they look, not where they are
+      takes: [...CELL_STYLE, 'style', 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
+      refuse: (word) => `a range of cells changes how they look, so it doesn't go with "${word}"`,
     },
     layout: { // "Arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
       spaces: true,

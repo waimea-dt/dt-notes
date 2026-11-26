@@ -40,7 +40,7 @@ B: flip stagger                   # every bit, from B[0]
 +++
 
 ```anim
-B: flip 0 3                       # the low four
+B[0..3]: flip                     # the low four
 B[7]: flip
 ```
 
@@ -88,8 +88,8 @@ N: binary V at 9,5 digits 4 decimal  # a var's value, in 4 bits (wraps round to 
 ## Looks, range, span and switching off
 
 ```anim
-B: range 4 7 fill blue            # the high four
-S: span B 0 3 stroke amber
+B[4..7]: fill blue                # the high four
+S: span B[0..3] stroke amber
 B: powers clear
 B: decimal clear
 ```
@@ -176,16 +176,16 @@ B: binary 0xCAFE at 3,5 digits 16 name "bin" indices powers decimal
 ---
 
 ```anim
-B: range  0  3 fill blue
+B[0..3]: fill blue
 H[0]: fill blue
 
-B: range  4  7 fill cyan   delay 0.5
+B[4..7]: fill cyan   delay 0.5
 H[1]:           fill cyan   delay 0.5
 
-B: range  8 11 fill green  delay 1.0
+B[8..11]: fill green  delay 1.0
 H[2]:           fill green  delay 1.0
 
-B: range 12 15 fill yellow delay 1.5
+B[12..15]: fill yellow delay 1.5
 H[3]:           fill yellow delay 1.5
 ```
 

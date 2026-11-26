@@ -21,7 +21,7 @@ Arr: row [5 3 8 1] at 3,2 font 2 size 1.5x3 gap 0.5 corner 0.05 fill blue bar st
 Is `5` bigger than `3`?
 
 ```anim
-Comp: span Arr 0 1 stroke pink-bright name "Compare"
+Comp: span Arr[0..1] stroke pink-bright name "Compare"
 auto
 ```
 
@@ -44,7 +44,7 @@ Arr[1]: fill blue
 Is `5` bigger than `8`?
 
 ```anim
-Comp: span Arr 1 2
+Comp: span Arr[1..2]
 auto
 ```
 
@@ -65,7 +65,7 @@ Arr[2]: fill blue
 Is `8` bigger than `1`?
 
 ```anim
-Comp: span Arr 2 3
+Comp: span Arr[2..3]
 auto
 ```
 
@@ -101,7 +101,7 @@ Arr[3]: fill green bounce speed fast
 Back to the start. Is `3` bigger than `5`?
 
 ```anim
-Comp: span Arr 0 1 speed instant
+Comp: span Arr[0..1] speed instant
 then
 Comp: opacity reset
 auto
@@ -124,7 +124,7 @@ Arr[1]: fill blue
 Is `5` bigger than `1`?
 
 ```anim
-Comp: span Arr 1 2
+Comp: span Arr[1..2]
 auto
 ```
 
@@ -160,7 +160,7 @@ Arr[2]: fill green bounce speed fast
 Is `3` bigger than `1`?
 
 ```anim
-Comp: span Arr 0 1 speed instant
+Comp: span Arr[0..1] speed instant
 then
 Comp: opacity reset
 auto
