@@ -507,6 +507,11 @@
           "$comment": "a row's / column's [values]",
           "name": "punctuation.section.brackets.anim",
           "match": "[\\[\\]]"
+        },
+        {
+          "$comment": "( ) round part of a sum: (a + b) * 2, (-5)",
+          "name": "punctuation.section.parens.anim",
+          "match": "[()]"
         }
       ]
     },

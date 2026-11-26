@@ -163,9 +163,9 @@
   // Scene parsing
   // ---------------------------------------------------------------------------
 
-  // a "quoted" label, a call (image(…), rgb(…)), an unclosed quote, a bracket, an expression in
-  // { } ("x {v1 * 2}"), or a word
-  const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([[\]])|\{([^{}]*)\}|([^\s,[\]{}]+)/g
+  // a "quoted" label, a call (image(…), rgb(…)), an unclosed quote, a bracket, a round bracket (in
+  // a sum), an expression in { } ("x {v1 * 2}"), or a word
+  const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([[\]])|([()])|\{([^{}]*)\}|([^\s,[\](){}]+)/g
   const NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/
   const LITERAL = /^([+-]?)(0x[0-9a-f]+|0b[01]+)$/i // hex and binary numbers
   const ID = /^[A-Za-z][\w.-]*$/
@@ -178,12 +178,13 @@
       else if (m[2] !== undefined) tokens.push({ kind: 'res', name: m[2].toLowerCase(), arg: m[3].trim() })
       else if (m[4] !== undefined) throw new Error('a label is missing its closing quote')
       else if (m[5] !== undefined) tokens.push({ kind: 'bracket', value: m[5] }) // a row's / column's [values]
-      else if (m[6] !== undefined) tokens.push({ kind: 'expr', text: m[6].trim() }) // read when it's used (readExpr)
+      else if (m[6] !== undefined) tokens.push({ kind: 'paren', value: m[6] }) // "(a + b) * 2", "(-5)": read in a sum (readExpr)
+      else if (m[7] !== undefined) tokens.push({ kind: 'expr', text: m[7].trim() }) // read when it's used (readExpr)
       else {
         // "0x7B" / "0b1011" is a number, read as denary from here on; "2x1" (a size) is two numbers
-        const literal = m[7].match(LITERAL)
-        const pair = !literal && m[7].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
-        const words = literal ? [literal[1] + BigInt(literal[2]).toString()] : pair ? [pair[1], pair[2]] : [m[7]]
+        const literal = m[8].match(LITERAL)
+        const pair = !literal && m[8].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
+        const words = literal ? [literal[1] + BigInt(literal[2]).toString()] : pair ? [pair[1], pair[2]] : [m[8]]
         words.forEach((word) => tokens.push({ kind: 'word', value: word, lower: word.toLowerCase() }))
       }
     }
@@ -281,6 +282,7 @@
       if (token.kind === 'str') { allow('label', 'quoted text'); set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
       if (token.kind === 'expr') throw new Error(`{ } holds a sum for a number to follow, after its word, e.g. "x {v1 * 2}"`)
+      if (token.kind === 'paren') throw new Error('( ) goes round part of a sum, e.g. "v: (a + b) * 2" or "v: (-5)"')
       if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${BRACKET_NOUNS}, straight after its type, e.g. "row [5 3 8]"`)
       const word = token.lower
       const entry = KEYWORDS[word]

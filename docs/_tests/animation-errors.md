@@ -226,6 +226,9 @@ ex1: er.0 + "x"
 ex2: rect at 1,1
 ex2: x {ex1 +}
 ex2: width {ex1 * speed}
+ex1: (ex1 + 1
+ex1: ()
+ex1: fill red (2)
 ex2: {ex1}
 ex2: angle ex1 about 1,1
 ex2: counter

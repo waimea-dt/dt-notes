@@ -345,6 +345,8 @@ sw: fill red                       # stops following
 c: a + b * 2                       # worked out once, as in code
 arr.3: arr.0 mod 4                 # + - * / mod, spaces round each
 b: v1 * 2                          # a number's value too
+c: (a + b) * 2                     # ( ) first
+a: (-5)                            # a negative value (a: -5 takes 5 off)
 ```
 
 ## Values in labels

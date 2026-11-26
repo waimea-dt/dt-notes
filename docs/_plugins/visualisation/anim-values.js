@@ -6,7 +6,7 @@
 
 ;(function () {
   const { parseProps, ID, RESERVED, KEYWORDS, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
-    nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, applyOps, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol, tween } = window.Anim
+    nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, evaluate, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol, tween } = window.Anim
 
   // The numbers whose digits flip (LAYOUTS: flip), for messages: "a binary number"
   const FLIP_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => LAYOUTS[layout].flip).map((layout) => LAYOUTS[layout].noun))
@@ -143,27 +143,38 @@
 
     // ---- Expressions (OPERATORS): "v3: v1 + v2", "x {v1 * 2}", "{total / 4}" in a label ----
 
-    // An expression from tokens[i]: operands (a number, or a var, cell or number by name) with an
-    // operator between each, read until a token that's neither. { terms (each { v } or { ref }),
-    // ops, next }, or null if there's no operator after the first operand, unless it can be
-    // `alone` ("x v1", "{n}"). `use` says what a name is for, in messages.
+    // An expression from tokens[i]: operands (a number, a var, cell or number by name, or a sum in
+    // ( )) with an operator between each, read until a token that's neither. { terms (each { v },
+    // { ref } or { sum }), ops, next }, or null if it's one operand, unless that's a sum in ( ) or it
+    // can be `alone` ("x v1", "{n}"). `use` says what a name is for, in messages.
     function readExpr(tokens, i, { alone = false, use = 'work out', making } = {}) {
-      const operand = (token) => {
-        if (token?.kind === 'word' && NUMBER.test(token.value)) return { v: Number(token.value) }
-        return holderRef(token) ? { ref: holderRef(token, use, making).id } : null
+      const isParen = (token, value) => token?.kind === 'paren' && token.value === value
+      const shown = (token) => token.value ?? token.name ?? token.text
+      // an operand at tokens[j], and the index after it
+      const operand = (j) => {
+        const token = tokens[j]
+        if (token?.kind === 'word' && NUMBER.test(token.value)) return { term: { v: Number(token.value) }, next: j + 1 }
+        if (isParen(token, '(')) {
+          const sum = readExpr(tokens, j + 1, { alone: true, use, making })
+          if (!sum) throw new Error(`( ) needs a sum inside it${tokens[j + 1] ? `, not "${shown(tokens[j + 1])}"` : ''}`)
+          if (!isParen(tokens[sum.next], ')')) throw new Error(`a "(" needs a ")" after its sum${tokens[sum.next] ? `, not "${shown(tokens[sum.next])}"` : ''}`)
+          return { term: { sum }, next: sum.next + 1 }
+        }
+        return holderRef(token) ? { term: { ref: holderRef(token, use, making).id }, next: j + 1 } : null
       }
       const operator = (token) => (token?.kind === 'word' && OPERATORS[token.lower] ? token.lower : null)
-      if (!alone && !operator(tokens[i + 1])) return null
-      const first = operand(tokens[i])
+      if (!alone && !isParen(tokens[i], '(') && !operator(tokens[i + 1])) return null
+      const first = operand(i)
       if (!first) return null
-      const expr = { terms: [first], ops: [], next: i + 1 }
+      const expr = { terms: [first.term], ops: [], next: first.next }
       while (operator(tokens[expr.next])) {
-        const [op, after] = [tokens[expr.next], tokens[expr.next + 1]]
-        const term = operand(after)
-        if (!term) throw new Error(`"${op.value}" needs a number, var or cell after it${after ? `, not "${after.value ?? after.name ?? after.text}"` : ''} (with spaces round it)`)
+        const op = tokens[expr.next]
+        const after = operand(expr.next + 1)
+        const bad = tokens[expr.next + 1]
+        if (!after) throw new Error(`"${op.value}" needs a number, var, cell or ( ) after it${bad ? `, not "${shown(bad)}"` : ''} (with spaces round it)`)
         expr.ops.push(op.lower)
-        expr.terms.push(term)
-        expr.next += 2
+        expr.terms.push(after.term)
+        expr.next = after.next
       }
       return expr
     }
@@ -176,11 +187,11 @@
       }
       return expr
     }
-    const exprRefs = (expr) => expr.terms.filter((term) => term.ref).map((term) => term.ref)
+    const exprRefs = (expr) => expr.terms.flatMap((term) => (term.sum ? exprRefs(term.sum) : term.ref ? [term.ref] : []))
     // An expression's value now: its operands' numbers (what each var, cell or number holds), then
-    // its operators (applyOps). Throws why when it can't be worked out.
-    function workOut({ terms, ops }) {
-      const numbers = terms.map((term) => {
+    // its operators (evaluate). Throws why when it can't be worked out.
+    function workOut(expr) {
+      return evaluate(expr, (term) => {
         if (term.ref === undefined) return term.v
         if (!shapes.has(term.ref)) throw new Error(`"${term.ref}" has gone`)
         if (!shapes.get(term.ref).holds) throw new Error(`"${term.ref}" doesn't hold a value (only a var, cell or number does)`)
@@ -188,7 +199,6 @@
         if (value.nil || !NUMBER.test(value.label)) throw new Error(`"${term.ref}" holds ${value.nil ? 'null' : `"${value.label}"`}, not a number`)
         return Number(value.label)
       })
-      return applyOps(numbers, ops)
     }
     // "v3: v1 + v2": the expression a value line starts with (tokens[0], with an operator after its
     // first operand), worked out once, as code does, as the value it's given; or null
@@ -300,7 +310,7 @@
     // What's in { } looks like a sum (names, numbers and OPERATORS), so a name in it that isn't a
     // var or cell is worth a warning
     const escaped = (text) => text.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&')
-    const SUM_LIKE = new RegExp(`^(?:[\\w.+-]+|${Object.keys(OPERATORS).map(escaped).join('|')}|\\s+)+$`)
+    const SUM_LIKE = new RegExp(`^(?:[\\w.+()-]+|${Object.keys(OPERATORS).map(escaped).join('|')}|\\s+)+$`)
     const templated = (shape) => !shape.holds && !kindOf(shape).pre && !kindOf(shape).script
     function linkText(shape, warn, making) {
       unlink(shape, 'label')

@@ -176,7 +176,7 @@ a.1: v2
 
 ## Feature: Sums
 
-`+ - * / mod`, with spaces round each: worked out once, when the line runs (as in code).
+`+ - * / mod`, with spaces round each, and `( )`: worked out once, when the line runs (as in code).
 
 <animation name="Sums" grid="12x5">
 
@@ -215,6 +215,23 @@ c: c / 4
 
 ```anim
 b: a - b
+```
+
+---
+
+## ( ) first
+
+```anim
+c: (a + b) * 2
+arr.0: (arr.1 + arr.2) mod 4
+```
+
++++
+
+A negative number in ( ) is a value, not a change: `a: -5` would take 5 off.
+
+```anim
+a: (-5)
 ```
 
 </animation>

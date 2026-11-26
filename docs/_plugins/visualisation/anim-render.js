@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, applyOps } = window.Anim
+    END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, evaluate } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -127,7 +127,7 @@
   function countedText({ parts, counts, values }, t) {
     const numberOf = (term) => (term.ref === undefined ? term.v : counts[term.ref] ? Number(countLabel(counts[term.ref], t)) : values[term.ref])
     try {
-      return parts.map((part) => (part.expr ? String(applyOps(part.expr.terms.map(numberOf), part.expr.ops)) : part.text)).join('')
+      return parts.map((part) => (part.expr ? String(evaluate(part.expr, numberOf)) : part.text)).join('')
     } catch {
       return null
     }
