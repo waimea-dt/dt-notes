@@ -323,7 +323,7 @@
       const start = { x: shape.x, y: shape.y }
       setPosition(shape, props, creating, warn)
       if (props.attach || props.detach || (props.gap && shape.attach?.kind === 'beside')) attachShape(shape, props, warn) // "Lock: gap 0": a new gap
-      else if (props.gap && props.at?.kind !== 'ref') warn('"gap" goes with a point on a shape\'s edge ("at B.right gap 0.5") or an attached shape, so it does nothing here')
+      else if (props.gap && props.at?.kind !== 'ref' && !props.via?.some((via) => via.anchor)) warn('"gap" goes with a point on a shape\'s edge ("at B.right gap 0.5", "via B.top gap 0.5") or an attached shape, so it does nothing here')
       if (creating && (shape.x === undefined || shape.y === undefined)) throw new Error('needs a position, e.g. "at 3,2"')
       const route = routeOf(shape, props, start)
       keepOffset(shape, props)
@@ -422,6 +422,8 @@
       }
       if (!props.via) return null
       const vias = props.via.map((via) => {
+        // "via B.bottom gap 0.25": beside that side or corner, as a gap puts every edge point on the line
+        if (via.kind === 'ref' && via.anchor && props.gap?.v !== undefined) return placeBeside(shape, shapes.get(via.ref), via.anchor, props.gap.v * CELL)
         if (via.kind === 'ref') return onto(refPoint(via, shapes))
         return { x: coord(via.x, start.x), y: coord(via.y, start.y) }
       })

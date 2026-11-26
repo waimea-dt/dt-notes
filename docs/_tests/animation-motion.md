@@ -333,7 +333,7 @@ C: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
 ## Via a shape, and relative
 
 ```anim
-A: move 2,4 via B.bottom speed slow
+A: move 2,4 via B.bottom gap 0.25 speed slow
 C: move 2,2.5 via -2,+2 speed slow
 ```
 

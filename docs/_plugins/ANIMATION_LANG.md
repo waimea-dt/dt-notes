@@ -115,7 +115,7 @@ R: row [
 | Property | Syntax |
 |---|---|
 | position | `at 3,2` · `at B` (as it's made) · `move 5,3` · `move B` (once it's there) · `x 3` · `y 2` |
-| beside | `at B.right gap 0.5` · `at B.top-left gap 0` (touching) · `gap clear` (back on the point) |
+| beside | `at B.right gap 0.5` · `at B.top-left gap 0` (touching) · `via B.bottom gap 0.5` · `gap clear` (back on the point) |
 | line ends | `from 2,3 to B` (an end on a shape follows it) · `from A.right to B.left` · `start dot` · `end arrow` |
 | size | `size 2x1` · `size 2` (circle: diameter) · `width 3` · `height 0.5` |
 | radius / corner | `radius 0.5` (circle: both ways) · `corner 0.2` (rect; line, arrow: rounds its corners) |
@@ -172,16 +172,17 @@ C: via 6,1           # a curve's bends, a line's corners
 ## Movement
 
 ```anim
-A: move 9,3 via 5,1           # an arc through a point
-A: move 9,3 via 3,1 via 6,5   # a wave through several
-A: travel R1 R2 4,3           # hop by hop (speed per hop)
-A: follow L                   # along line / curve l
-A: follow-reverse L           # from its end
-A: angle +90 about 5,5        # round a point, turning with it
-A: angle +90 about B          # round b's centre
-A: angle +90 about +0,+1      # signed: from its own centre
-Hand: angle 210 about Hub     # a line: its free ends go round
-Car: angle +180 about 9,6     # a group, as one
+A: move 9,3 via 5,1                # an arc through a point
+A: move 9,3 via 3,1 via 6,5        # a wave through several
+A: move 9,3 via B.bottom gap 0.25  # beside B on the way (a gap puts every edge point beside)
+A: travel R1 R2 4,3                # hop by hop (speed per hop)
+A: follow L                        # along line / curve L
+A: follow-reverse L                # from its end
+A: angle +90 about 5,5             # round a point, turning with it
+A: angle +90 about B               # round B's centre
+A: angle +90 about +0,+1           # signed: from its own centre
+Hand: angle 210 about Hub          # a line: its free ends go round
+Car: angle +180 about 9,6          # a group, as one
 ```
 
 - `about` goes with an angle. An absolute angle turns from as drawn.
