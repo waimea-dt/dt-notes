@@ -117,16 +117,14 @@
         return `"highlight inside" needs a shape with an inside (${types.slice(0, -1).join(', ')} or ${types[types.length - 1]}), not ${article(what)} ${what}`
       },
     },
-    // with no number, a band behind a shape's text, in the highlight colour (shapes with a band:
-    // SHAPES); with one, a script's line (from 1): the block it starts stays lit and the others dim,
-    // as outside a spotlight (a C block's inner blocks too)
+    // a band behind a shape's text, in the highlight colour (shapes with a band: SHAPES); or a
+    // script's line ("S[3]: highlight line": { line: 3 }, from 1): the block it starts stays lit and
+    // the others dim, as outside a spotlight (a C block's inner blocks too)
     line: {
-      valued: true, bare: true,
       applies: (shape, n) => Boolean(n == null ? SHAPES[shape.type]?.band : SHAPES[shape.type]?.script),
-      refuse: (shape, n) => {
-        if (n != null) return `"highlight line ${n}" lights a line of ${nounList(typesWhere((kind) => kind.script).map((type) => nounOf({ type })))}, e.g. "S: highlight line 2" (a code block's line: "C[2]: highlight line")`
+      refuse: () => {
         const nouns = Object.keys(SHAPES).filter((type) => SHAPES[type].band).map((type) => `${article(nounOf({ type }))} ${nounOf({ type })}`)
-        return `"highlight line" is for ${nouns.join(' or ')}, e.g. "C[2]: highlight line" (a code block's line 2)`
+        return `"highlight line" is for ${nouns.join(' or ')}, or a script's line, e.g. "C[2]: highlight line" or "S[3]: highlight line"`
       },
       check: (shape, n) => blockOnLine(scriptOf(shape), shape.label.split('\n'), n, shape.id, 'lit').problem || null,
     },
@@ -897,7 +895,6 @@
 
   // Every kind of scene line and the props it can have, checked as its props are read (parseProps).
   //   verb     typed straight after "id:" (the others are known by the line's shape)
-  //   on       on(shape): a verb only on such a shape (elsewhere its word is read as usual)
   //   onRange  it also goes on a range of a layout's places ("B[0..3]: flip": the verb is given rangeOf's range)
   //   takesOut a row edit that takes cells out (remove), rather than putting them in (insert)
   //   takes    the props it takes (left out: any), with `what` naming it in the message
@@ -923,8 +920,8 @@
       verb: true, takes: [...SHAPES.span.takes, 'layer', 'highlight', 'callout', 'name', 'effect', ...TIMING],
       refuse: (word) => `"${word}" doesn't apply to a span: it's a box round its cells, for a fill, stroke, highlight, callout or name`,
     },
-    // "S: line 3 "…"": a script's line, replaced (on a script only: elsewhere "line" makes a line)
-    line: { verb: true, on: (shape) => Boolean(SHAPES[shape?.type]?.script), takes: TIMING },
+    // "S[3]: "…"", "S[3]: highlight line": a script's line, replaced or lit (runScriptLine)
+    scriptLine: { takes: ['label', 'highlight', ...TIMING], what: 'a script\'s line' },
     flip: { verb: true, onRange: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "B: flip", "B[0..3]: flip", "B[2]: flip"
     range: { // some of a row's / column's cells, "Arr[0..3]: fill red": how they look, not where they are
       takes: [...CELL_STYLE, 'style', 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],

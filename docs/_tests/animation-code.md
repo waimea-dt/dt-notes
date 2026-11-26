@@ -151,8 +151,8 @@ S: [
 The same script with some new values
 
 ```anim
-S: line 3 "turn right (45) degrees"
-S: line 5 "say [Eek!] for (3) seconds"
+S[3]: "turn right (45) degrees"
+S[5]: "say [Eek!] for (3) seconds"
 ```
 
 +++
@@ -190,7 +190,7 @@ S: move 3,5 angle -10
 
 # Stepping Through a Script
 
-`highlight line N` dims every block but the one on line N, like a spotlight. Lines count from 1, as written.
+`S[N]: highlight line` dims every block but the one on line N, like a spotlight. Lines count from 1, as written.
 
 ```anim
 S: scratch [
@@ -211,13 +211,13 @@ R: rect "TEST" size 2x2 at 9,2 fill pink
 +++
 
 ```anim
-S: highlight line 1
+S[1]: highlight line
 ```
 
 +++
 
 ```anim
-S: highlight line 2
+S[2]: highlight line
 ```
 
 +++
@@ -225,13 +225,13 @@ S: highlight line 2
 The light moves from block to block.
 
 ```anim
-S: highlight line 3
+S[3]: highlight line
 ```
 
 +++
 
 ```anim
-S: highlight line 4
+S[4]: highlight line
 ```
 
 +++
@@ -239,7 +239,7 @@ S: highlight line 4
 Line 6 is the else, so the next block is on line 7.
 
 ```anim
-S: highlight line 7
+S[7]: highlight line
 ```
 
 ---
@@ -260,7 +260,7 @@ S: [
     "    end",
     "end"
 ] speed instant
-S: highlight line 3
+S[3]: highlight line
 ```
 
 +++
@@ -295,7 +295,7 @@ S: scratch [
 Lines are numbered from 1, as written, `end` lines too.
 
 ```anim
-S: highlight line 3
+S[3]: highlight line
 ```
 
 ---
@@ -303,7 +303,7 @@ S: highlight line 3
 ## Replace a line
 
 ```anim
-S: line 3 "turn right (45) degrees"
+S[3]: "turn right (45) degrees"
 ```
 
 +++
@@ -311,7 +311,7 @@ S: line 3 "turn right (45) degrees"
 Instant, the new value just replaces the old one.
 
 ```anim
-S: line 3 "turn right (90) degrees" speed instant
+S[3]: "turn right (90) degrees" speed instant
 ```
 
 +++

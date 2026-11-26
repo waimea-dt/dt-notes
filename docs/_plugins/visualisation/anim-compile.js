@@ -775,11 +775,13 @@
       const word = first?.kind === 'word' ? first.value : ''
       if (!existing && (type || LAYOUT_TYPES.includes(word)) && !ID.test(id)) throw new Error(`"${id}" can't be a new shape's id: a "." is for a part, e.g. "Arr[2]" or "V1.name"`)
       const owner = !existing && !ID.test(id) && shapes.get(id.match(/^[A-Z][\w-]*/)[0]) // "Arr[9]": a part that isn't there
+      const scriptLine = owner && kindOf(owner).script && id.slice(owner.id.length).match(/^\[([^\][]+)\]$/)
+      if (scriptLine) return runScriptLine(owner, scriptLine[1], tokens, meta, warn)
       if (owner && id.includes(',')) throw new Error(`"${id}": a grid's cell is [row][column], e.g. "${id.replace(/\[([^\]]*),\s*([^\]]*)\]/, '[$1][$2]')}"`)
       if (owner) throw new Error(`"${owner.id}" has no "${id.slice(owner.id.length)}"${owner.members?.length && owner.layout && !LAYOUTS[owner.layout].views ? ` (its places are ${cellRange(owner, owner.members.length)})` : ''}`)
       if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
       // a verb: delete, swap, insert, remove, copy, group, ungroup, arrange (LINES)
-      if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
+      if (LINES[word]?.verb) return VERBS[word](id, existing, tokens, meta, warn, word)
 
       // "L: arrow" on a line that already exists, with no new ends, isn't a new line: its ends'
       // marks are changed with start / end
@@ -908,6 +910,22 @@
     // Making a shape (or a copy, or a group) has no members to stagger
     function noStagger(props, warn) {
       if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
+    }
+
+    // "S[3]: "…"" / "S[3]: highlight line": a script's line (its lines aren't shapes of their own),
+    // replaced (editScript) or lit ({ line: 3 }); "highlight clear" puts the script's lights out
+    function runScriptLine(script, place, tokens, meta, warn) {
+      const props = parseProps(tokens, 0, 'scriptLine', shapes)
+      const token = { kind: 'word', value: place }
+      if (props.label !== undefined) editScript(script.id, script, tokens, meta, warn, 'line', token)
+      if (!props.highlight) return
+      const n = numberOf(token, script.label.split('\n').length, 1) // from 1, or end
+      if (n === undefined) throw new Error(`"${script.id}[${place}]": a script's line is a number from 1, or end`)
+      const highlight = props.highlight.map((item) => (item === 'line' ? { line: n } : item))
+      const changed = structuredClone(shapes.get(script.id))
+      applyProps(changed, { highlight }, false, warn, meta)
+      shapes.set(changed.id, changed)
+      schedule(meta, changed.uid, props)
     }
 
     // A line on a range of a layout's places: a flip (a number's digits), or a change to how they
@@ -1126,7 +1144,7 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let addTo, assignValue, changeRange, rangeOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+    let addTo, assignValue, changeRange, rangeOf, editScript, numberOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
       readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
@@ -1134,7 +1152,7 @@
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ addTo, assignValue, changeRange, rangeOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+      ({ addTo, assignValue, changeRange, rangeOf, editScript, numberOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
         readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()

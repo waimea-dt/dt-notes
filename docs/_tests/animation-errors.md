@@ -302,21 +302,20 @@ Es3: scratch "move (10) steps" at 1,1 fill red
 Es3: scratch "move (10) steps" at 1,1 typed
 Es3: highlight line
 Es5: scratch ["move (10) steps" "turn right (5) degrees"] at 1,1
-Es5: highlight line 3
-Es5: highlight line 1.5
+Es5[3]: highlight line
+Es5[1.5]: highlight line
 Hlr2: rect at 1,1 highlight line 1
-Es5: line 9 "move (10) steps"
-Es5: line x "move (10) steps"
+Es5[9]: "move (10) steps"
+Es5[x]: "move (10) steps"
 Es5: insert "move (10) steps"
 Es5: insert at 1
 Es5: swap 1 1
 Es5: remove 3
-Er: line 1 "move (10) steps"
 Es6: scratch ["forever" "move (10) steps" "" "end"] at 1,1
 Es6: swap 1 2
 Es6: remove 1
 Es6: remove 3
-Es6: highlight line 4
+Es6[4]: highlight line
 Es4: rect at 1,1
 Es4: ["move (10) steps"]
 Ec: highlight line

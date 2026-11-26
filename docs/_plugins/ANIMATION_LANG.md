@@ -473,8 +473,8 @@ S: scratch "move (10) steps" at 4,3  # one line
 S: [ "when green flag clicked" "move (10) steps" ]   # a new script
 S: font 0.8
 F: scratch [ … ] at 12,5 size 4x3  # fitted in the box
-S: highlight line 3                # the others dim
-S: line 3 "turn right (45) degrees"  # replace line 3
+S[3]: highlight line               # the others dim
+S[3]: "turn right (45) degrees"    # replace line 3
 S: insert "move (10) steps" at 6   # before line 6, or at end; several in [ ]
 S: remove 3                        # the block on line 3
 S: swap 2 4
@@ -482,7 +482,7 @@ S: swap 2 4
 
 - [scratchblocks](https://scratchblocks.github.io) syntax. `at` is the top-left.
 - Lines count from 1 as written, including end, else and blank lines.
-- One shape: no line ids or `typed`.
+- One shape: a line `S[3]` takes only a new line or `highlight line`. No `typed`.
 
 ## Stagger
 
@@ -517,7 +517,7 @@ Don't replay going back. `signal` is for lines.
 A: highlight outline       # not lines
 A: highlight inside        # not text, lines or groups
 T: highlight line          # text or a code line
-S: highlight line 3        # a scratch script's line
+S[3]: highlight line       # a scratch script's line
 A: highlight arrow
 A: highlight glow
 A: highlight number        # the next number: 1, then 2, …

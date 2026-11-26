@@ -351,7 +351,7 @@
     }
 
     // A script's edits (SHAPES: script), made on its lines (from 1, as written in its [ ], counting
-    // end, else, blank lines and comments): "S: line 3 "…"" replaces line 3, "S: insert "…" at 3"
+    // end, else, blank lines and comments): "S[3]: "…"" replaces line 3, "S: insert "…" at 3"
     // puts lines in before it (or at end), "S: remove 3" takes out the block it starts and
     // "S: swap 2 4" swaps two (a C block goes with the blocks inside it, to its end). Lines go in
     // with the indent of where they go. A lit line (highlight line) keeps its light wherever it
@@ -359,12 +359,13 @@
     // before, or null for a new one; edits in one beat compose), so its blocks are seen to move.
     const SCRIPT_NOUNS = nounList(Object.keys(SHAPES).filter((type) => SHAPES[type].script).map((type) => nounOf({ type })))
     const SCRIPT_EDITS = {
-      line: { example: (id) => `"${id}: line 2 "move (10) steps""`, edit: replaceLine },
+      line: { example: (id) => `"${id}[2]: "move (10) steps""`, edit: replaceLine },
       insert: { example: (id) => `"${id}: insert "say [Hi!]" at 2" (or at end)`, edit: insertLines },
       remove: { example: (id) => `"${id}: remove 2"`, edit: removeBlock },
       swap: { example: (id) => `"${id}: swap 2 3"`, edit: swapBlocks },
     }
-    function editScript(id, shape, tokens, meta, warn, word) {
+    // place: the line a line edit is on (its id's [ ]: "S[3]"), as a token
+    function editScript(id, shape, tokens, meta, warn, word, place) {
       if (!shape) throw noShape(id)
       if (!scriptOf(shape)) throw new Error(`"${word}" changes the lines of ${SCRIPT_NOUNS}, and "${id}" isn't one`)
       const script = scriptOf(shape)
@@ -372,7 +373,7 @@
       const lit = typeof shape.hl?.line === 'number' ? lines[shape.hl.line - 1] : null
       const before = [...lines]
       const { example, edit } = SCRIPT_EDITS[word]
-      const next = edit({ id, script, tokens, lines, warn, example: example(id) })
+      const next = edit({ id, script, tokens, lines, warn, place, example: example(id) })
       const props = parseProps(tokens, next, word, shapes)
       const changed = structuredClone(shape)
       const record = tween(meta, changed.uid)
@@ -419,13 +420,13 @@
     }
     const indentOf = (line) => line.text.match(/^\s*/)[0]
 
-    // "S: line 3 "…"": keeping its indent (its first new line stays the same line, so a light on it
+    // "S[3]: "…"": keeping its indent (its first new line stays the same line, so a light on it
     // stays)
     function replaceLine(ask) {
-      const { lines, tokens } = ask
-      const at = lineAt(ask, tokens[1], '"line"')
+      const { lines } = ask
+      const at = lineAt(ask, ask.place, 'a script\'s line')
       const line = lines[at]
-      const { added, next } = newLines(ask, 2, '"line"', indentOf(line))
+      const { added, next } = newLines(ask, 0, 'a script\'s line', indentOf(line))
       line.text = added[0].text
       lines.splice(at + 1, 0, ...added.slice(1))
       return next
@@ -491,8 +492,8 @@
     }
 
     return {
-      functions: { },
-      verbs: { swap: swapCells, insert: editCells, remove: editCells, line: editScript },
+      functions: { editScript },
+      verbs: { swap: swapCells, insert: editCells, remove: editCells },
       link: () => {
         ({ applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines,
           gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, pointOf, readLines,
