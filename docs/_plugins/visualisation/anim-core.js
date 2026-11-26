@@ -1357,7 +1357,7 @@
     const own = (line.via || []).map((p) => pointOf(p, 0))
     const smooth = !!kindOf(line).bends
     const corner = line.corner || 0
-    const worked = own.length ? null : workedVias(line, a, b, fromShape, toShape)
+    const worked = own.length ? null : workedVias(line, a, b, fromShape)
     if (worked?.from) return { ...worked, smooth, corner, worked: true }
     const vias = own.length ? own : worked?.vias || []
     let from = fromShape ? edgePoint(fromShape, vias[0] || b) : a
@@ -1373,7 +1373,7 @@
   // A line's via points worked out from its look when it has none of its own, from where its
   // shapes are now, so it keeps its shape as they move: a loop (SHAPES: loop), with its ends too,
   // or a curve's bend. Null when there are none.
-  function workedVias(line, a, b, fromShape, toShape) {
+  function workedVias(line, a, b, fromShape) {
     if (isLoop(line) && fromShape) return loopEnds(line, fromShape, kindOf(line).loop)
     if (kindOf(line).bends) return bendVias(line, a, b)
     return null

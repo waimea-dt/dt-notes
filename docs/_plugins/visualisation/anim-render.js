@@ -359,7 +359,7 @@
       },
       text: { make: () => {}, size: () => {} },
       image: {
-        make: (node, shape) => {
+        make: (node) => {
           node.image = node.g.appendChild(svgEl('image'))
           node.body = node.g.appendChild(svgEl('rect', { fill: 'none' }))
         },
