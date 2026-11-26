@@ -284,7 +284,7 @@
       if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${BRACKET_NOUNS}, straight after its type, e.g. "row [5 3 8]"`)
       const word = token.lower
       const entry = KEYWORDS[word]
-      if (entry?.modes && !entry.modes.includes(kind)) throw new Error(`"${word}" only goes ${entry.where}`)
+      if ((entry?.modes && !entry.modes.includes(kind)) || entry?.notIn?.includes(kind)) throw new Error(`"${word}" only goes ${entry.where}`)
       if (!entry) {
         if (SHAPE_TYPES.includes(word) || LAYOUT_TYPES.includes(word) || LINE_STARTS.includes(word)) throw new Error(`"${word}" must come straight after the id`)
         throw new Error(`unknown word "${token.value}"`)

@@ -112,7 +112,7 @@ r: row [
 
 | Property | Syntax |
 |---|---|
-| position | `at 3,2` · `at b` · `x 3` · `y 2` (`move` / `goto` = `at`) |
+| position | `at 3,2` · `at b` (as it's made) · `move 5,3` · `move b` (once it's there) · `x 3` · `y 2` |
 | placement | `below b` · `above b` · `left-of b` · `right-of b` · `gap 1` |
 | line ends | `from 2,3 to b` (an end on a shape follows it) · `from a.right to b.left` · `start dot` · `end arrow` |
 | size | `size 2x1` · `size 2` (circle: diameter) · `width 3` · `height 0.5` |
@@ -398,7 +398,7 @@ v1: var 0 at 5,3 name "total"
 arr: row [5 3 8] at 3,4 name "arr" indices
 v1: name "sum" above               # rename, or another side
 v1: name clear
-arr: indices                       # or numbered
+arr: indices
 arr: indices clear
 ```
 
@@ -437,7 +437,7 @@ c: code [
     "total = 0",
     "for n in nums:",
     "    total += n"
-] at 2,3 lang python name "sum.py" numbered  # lines c.1 … c.3
+] at 2,3 lang python name "sum.py" indices   # lines c.1 … c.3
 c.2: highlight line                # highlight clear
 c.1: "total = 100"
 s: "print(42)"                     # a one-line block
@@ -494,7 +494,7 @@ g: delete pop stagger 0.2                  # group members, in listed order
 ```anim
 a: pulse
 a: shake
-a: wobble            # or wiggle
+a: wobble
 a: bounce
 a: glow
 l: signal            # a blip along a line / curve
@@ -559,15 +559,15 @@ then 0.5                         # 0.5 s after that
 ## Camera (no id, no colon)
 
 ```anim
-camera at 4,3 zoom 2
-camera at a zoom 3 speed slow
+camera move 4,3 zoom 2
+camera move a zoom 3 speed slow
 camera move +2,0
 camera zoom +1
 camera travel b c d
 camera reset
 ```
 
-Takes `at` `x` `y` `travel` `zoom` `reset` `speed` `delay` `ease`.
+Takes `move` `x` `y` `travel` `zoom` `reset` `speed` `delay` `ease`.
 
 ## Switching off
 

@@ -683,11 +683,11 @@
     // A shape id centres on where the shape is now (the camera doesn't follow it).
     // `camera travel b c d` pans hop by hop through the stops, like a shape's travel.
     function runCameraLine([, colon, rest = ''], meta, warn) {
-      if (colon) throw new Error('"camera" takes no colon, e.g. "camera at 4,3 zoom 2"')
+      if (colon) throw new Error('"camera" takes no colon, e.g. "camera move 4,3 zoom 2"')
       const props = parseProps(tokenize(rest), 0, 'camera', shapes)
-      if (props.at?.kind === 'place') throw new Error('"camera at" takes "x,y" or a shape id')
+      if (props.at?.kind === 'place') throw new Error('"camera move" takes "x,y" or a shape id')
       if (props.x?.bind || props.y?.bind) throw new Error('the camera goes to a number, not one that follows values, e.g. "camera x 4"')
-      if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'travel', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects at, travel, zoom or reset, e.g. "camera at 4,3 zoom 2"')
+      if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'travel', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects move, travel, zoom or reset, e.g. "camera move 4,3 zoom 2"')
       if (props.reset && (props.at || props.x || props.y || props.travel || props.zoom)) throw new Error('"camera reset" takes only a speed, a delay and an ease')
       if (props.travel && (props.at || props.x || props.y)) throw new Error('"camera travel" sets the route, so it can\'t go with at / x / y')
 

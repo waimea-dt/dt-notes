@@ -312,7 +312,7 @@ arr: remove end
 ```anim
 col: column [4 8 15 16] at 12,2 gap 0.1 corner 0.05
 top: span col 0 1 name "top" stroke teal dotted
-c: code ["total = 0" "for n in nums:" "    total += n" "print(total)"] at 2,6.5 lang python numbered
+c: code ["total = 0" "for n in nums:" "    total += n" "print(total)"] at 2,6.5 lang python indices
 loop: span c 2 3 name "loop" highlight outline
 ```
 

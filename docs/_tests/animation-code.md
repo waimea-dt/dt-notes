@@ -13,7 +13,7 @@ c: code [
     "total = 0",
     "for n in [5, 3, 8]:",
     "    total += n"
-] at 2,2 lang python name "sum.py" numbered
+] at 2,2 lang python name "sum.py" indices
 nums: row [5 3 8] at 12,2 name "nums"
 total: var 0 at 12,4 name "total"
 ```

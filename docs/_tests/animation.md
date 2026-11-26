@@ -114,7 +114,7 @@ ball: move 5,5.5 speed slow
 ## Camera in and out
 
 ```anim
-camera at edge zoom 2.5 speed slow
+camera move edge zoom 2.5 speed slow
 ```
 
 +++
@@ -156,7 +156,7 @@ ball: move 5,5.5 speed slow
 ## Camera in and out
 
 ```anim
-camera at edge zoom 2.5 speed slow
+camera move edge zoom 2.5 speed slow
 ```
 
 +++

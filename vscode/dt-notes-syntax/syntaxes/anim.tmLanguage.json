@@ -375,12 +375,12 @@
     "property": {
       "$comment": "named params, which a value follows",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|goto|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|opacity|about|trail|font|style|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|numbered|powers|decimal|digits|max|track|show|start|zoom|into|above|below|left-of|right-of)(?![\\w-])"
+      "match": "(?<![\\w-])(at|move|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|colour|weight|opacity|about|trail|font|style|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|powers|decimal|digits|max|track|show|start|zoom|into|above|below|left-of|right-of)(?![\\w-])"
     },
     "flag": {
       "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, counter)",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(keep-style|bar|ring|pie|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|wiggle|bounce|glow|signal-reverse|signal|counter)(?![\\w-])"
+      "match": "(?<![\\w-])(keep-style|bar|ring|pie|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|bounce|glow|signal-reverse|signal|counter)(?![\\w-])"
     },
     "value": {
       "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",

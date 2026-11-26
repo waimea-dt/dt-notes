@@ -38,14 +38,6 @@ wo: wobble
 
 +++
 
-`wiggle` is the same.
-
-```anim
-wo: wiggle
-```
-
-+++
-
 ```anim
 bn: bounce
 ```

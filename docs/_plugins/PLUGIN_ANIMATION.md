@@ -68,7 +68,7 @@ In your summary, say that you checked, and name any exception you kept.
 | A look prop (`fill`, `weight` …) | `LOOKS` (field or fields, unit, min, map, hints, quiet, check, default), its word in `KEYWORDS`, and the types in `SHAPES` that take it | `anim-core.js` |
 | A verb (`delete`, `swap` …) | `LINES` (`verb: true`, `on`, `takes` / `refuses`), then a function in `VERBS` | `anim-core.js`, `anim-compile.js` |
 | An entrance or exit (`pop` …) | `ENTRANCES` (`applies`, `unless`, `quiet`), then its frame in `FRAMES` | `anim-core.js`, `anim-render.js` |
-| An emphasis (`pulse` …) | `EMPHASES` (`along`, `aliases`), then its frame in `EMPHASIS_FRAMES` | `anim-core.js`, `anim-render.js` |
+| An emphasis (`pulse` …) | `EMPHASES` (`along`), then its frame in `EMPHASIS_FRAMES` | `anim-core.js`, `anim-render.js` |
 | A highlight (`outline` …) | `HIGHLIGHT_KINDS` (`off`, `valued`, `next`, `bare`, `applies`, `refuse`, `check`), and an entry in `OVERLAYS` if it's drawn over the shape | `anim-core.js`, `anim-render.js` |
 | A kind of bar (`bar`, `ring`, `pie`) | `BARS` (`outlines` it fits, `slot`, `round`; its key is its word), then its drawer in `BAR_DRAWS` (`make`, `draw`, `label`, `cover`, `holed`); the shape types it fits need `bar`, `max` and `track` in their `takes` | `anim-core.js`, `anim-render.js` |
 | A mark on a line's end (`arrow`, `dot`, `crow`, `bar`: the values of `start` / `end`) | `END_MARKS` (`blank`), then its drawer in `END_DRAWS` (`d`, `filled`, `back`) | `anim-core.js`, `anim-render.js` |
@@ -189,9 +189,10 @@ Notes on each area, for finding your way round before a change.
   - A word that can only mean one thing stands alone: `pop`, `dashed`, `front`, `bold`, `mono`, `pulse`, `keep-style`.
   - Enumerations whose words would be ambiguous alone keep their label. For example, `speed normal` (`normal` is also a layer), `ease in`, `align left`.
 - **Don't add verbose forms** (no `by fade`, `family mono`). Keep one form per meaning.
-- **One spelling per word, British only:** `colour`, `centre`. No US spellings, and avoid new aliases. `wiggle` and `numbered` (for `indices`) are the only ones.
+- **One spelling per word, British only:** `colour`, `centre`. No US spellings, and no aliases.
 - **Reversed variants** are `<word>-reverse`: `flow-reverse`, `follow-reverse`, `signal-reverse`, `stagger-reverse`.
 - **Number literals:** `0x7B` and `0b1011` (`LITERAL`) are turned into denary by `tokenize`, so the rest of the engine only sees denary numbers.
+- **Placing:** `at` places a shape as it's made, `move` one that's there (`KEYWORDS`: `modes`, `notIn`); both set the `at` prop.
 - **Signed numbers** are relative on a change (`move +2,0`) and absolute when creating. That includes a value (`v: +1`, `b: -5`: `addTo`), so a signed value given as text is quoted.
 - **Reset** puts looks back as a shape started: `applyDefaults` records `shape.start` (its `STYLE` looks), and `fill reset` (`resettable` keywords) or `style reset` (`resetLook`) take them from it. `clear` is for taking something away (a highlight, a name); `reset` is for going back.
 - **Angles** are clockwise degrees from as drawn, which faces right (as Scratch sprites do). Direction words (`angle up`, `DIRECTIONS`) are absolute but turn the short way (`numberValue`'s `turn`); numbers turn exactly as written, so `angle +360` spins.

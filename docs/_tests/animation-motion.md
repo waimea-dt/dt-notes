@@ -19,23 +19,23 @@ on: circle at a radius 0.15 fill amber front
 
 ---
 
-## x, y and at
+## x, y and move
 
 ```anim
 rt: x 11
 up: y 1
-on: at lt
+on: move lt
 ```
 
 ---
 
-## move and goto
+## move
 
-Both are `at` by another name.
+`at` places a shape as it's made; `move` places one that's there.
 
 ```anim
 lt: move 2,2
-down: goto 11,4
+down: move 11,4
 ```
 
 ---
@@ -202,7 +202,7 @@ b: move 4.5,4.5
 
 ```anim
 no: angle +360 about no.bottom-left speed slow
-camera at q.top zoom 1.5
+camera move q.top zoom 1.5
 ```
 
 +++
@@ -729,7 +729,7 @@ l: arrow from a to b
 ## at a zoom 3
 
 ```anim
-camera at a zoom 3
+camera move a zoom 3
 ```
 
 ---
@@ -737,7 +737,7 @@ camera at a zoom 3
 ## at 6,3.5 zoom 2
 
 ```anim
-camera at 6,3.5 zoom 2 speed slow
+camera move 6,3.5 zoom 2 speed slow
 ```
 
 ---
@@ -780,7 +780,7 @@ d: circle "d" at 2,5
 ---
 
 ```anim
-camera at a zoom 3
+camera move a zoom 3
 ```
 
 +++

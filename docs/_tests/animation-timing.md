@@ -94,7 +94,7 @@ e5: move 11,5 speed slow ease spring
 
 ```anim
 b: rect "spring" at 7,3 size 2x1 fill pink pop ease spring
-camera at b zoom 1.5 ease spring
+camera move b zoom 1.5 ease spring
 ```
 
 +++
@@ -452,7 +452,7 @@ a: move 10,3.5 fill amber
 b: pulse
 then
 a: move 10,1 fill green
-camera at a zoom 1.5
+camera move a zoom 1.5
 pause 1
 ```
 

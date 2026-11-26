@@ -298,7 +298,7 @@ auto
 The route is **A → B → C → D → E → A**. Is it the shortest one?
 
 ```anim
-camera goto a zoom 1.5
+camera move a zoom 1.5
 auto
 ```
 
@@ -880,7 +880,7 @@ rocket: image(../_assets/scratch/sprites/rocket1.svg) at 4,7 size 1.5x2.5 angle 
 The camera zooms in on the rocket.
 
 ```anim
-camera at rocket zoom 2.5 speed slow
+camera move rocket zoom 2.5 speed slow
 ```
 
 +++
@@ -897,7 +897,7 @@ An arc towards the moon: turning a further 60° (a signed angle on a change is r
 
 ```anim
 rocket: move 11,4 via 5,2 angle +60 scale 0.6 speed vslow
-camera at rocket zoom 1.5 speed vslow
+camera move rocket zoom 1.5 speed vslow
 ```
 
 ---
@@ -929,7 +929,7 @@ The rocket turns upright and settles on the moon, the camera closing in.
 a1: delete
 a2: delete
 rocket: move 13.5,1.4 angle up scale 0.4 speed slow
-camera at moon zoom 3 speed slow
+camera move moon zoom 3 speed slow
 ```
 
 +++
@@ -952,7 +952,7 @@ flag: image(../_assets/scratch/sprites/flag.svg) at 12.7,2.3 size 0.6 pop
 Zoom out past the stage (zoom below 1): the stage shows smaller, and with `crop` nothing outside it is drawn, so the UFO appears at its edge as it flies in, wobbling, and zips round the scene.
 
 ```anim
-camera at 8.5,6.5 zoom 0.7 speed slow
+camera move 8.5,6.5 zoom 0.7 speed slow
 ufo: image(../_assets/scratch/sprites/ufo.svg) at -2,1 size 2 front
 ```
 
@@ -1028,14 +1028,14 @@ f3: angle 15 speed slow
 The camera follows the crab along the sea bed.
 
 ```anim
-camera at crab zoom 2.5 speed slow
+camera move crab zoom 2.5 speed slow
 ```
 
 +++
 
 ```anim
 crab: move 9,11 speed slow ease linear
-camera at crab zoom 2.5 speed slow ease linear
+camera move crab zoom 2.5 speed slow ease linear
 ```
 
 +++

@@ -57,9 +57,11 @@ defaults fill reset
 defaults style reset
 
 # placing and moving, and the camera
-camera: at 2,2
+pm: rect move 2,2
+dw: at 2,2
+camera: move 2,2
 camera
-camera at below dw
+camera move below dw
 camera fill red
 camera reset zoom 2
 camera zoom 0
@@ -164,7 +166,6 @@ er2: row [1 2] at 1,3 end arrow
 er3: row [1 2] at 1,4 "x"
 er: swap 0 1 fill red
 er: insert 3 at 0 keep-style
-er: numbered indices
 er: range 0 5 fill red
 dw: range 0 1 fill red
 er: range 0 1 move 2,2

@@ -139,11 +139,11 @@
   const HIGHLIGHTS = [...Object.keys(HIGHLIGHT_KINDS).filter((kind) => !HIGHLIGHT_KINDS[kind].valued), 'clear']
   const VALUED_HIGHLIGHTS = Object.keys(HIGHLIGHT_KINDS).filter((kind) => HIGHLIGHT_KINDS[kind].valued)
   // One-off emphasis on an existing shape (rendered by EMPHASIS_FRAMES in anim-render.js); along:
-  // it runs along a line, arrow or curve (on a group: each of its lines). aliases: other words for it.
+  // it runs along a line, arrow or curve (on a group: each of its lines).
   const EMPHASES = {
     pulse: {},
     shake: {},
-    wobble: { aliases: ['wiggle'] },
+    wobble: {},
     bounce: {},
     glow: {},
     signal: { along: true },
@@ -703,7 +703,7 @@
   //   list   value lists repeated one after another, at least once (travel, highlight)
   //   build  turns the matched values into the prop (default: the first value)
   //   repeat the word can be given more than once, collecting an array (via)
-  //   modes  only allowed in these line kinds (clear: in defaults)
+  //   modes  only allowed in these line kinds (clear: in defaults); notIn: not allowed in these
   //   error  the word isn't allowed here, with a hint
   // A point: x,y, a shape (its centre), or a point on its edge (an anchor, "a.top": ANCHORS);
   // POINT also takes one beside a shape (a placement and a shape id)
@@ -745,7 +745,9 @@
 
   const KEYWORDS = {
     // position
-    at, move: at, goto: at,
+    // "at" places a shape as it's made, "move" one that's there
+    at: { ...at, modes: ['create', 'layout', 'group', 'span'], where: 'as a shape is made, e.g. "a: rect at 2,3" (to move one that\'s there: "a: move 5,3")' },
+    move: { ...at, what: 'move', notIn: ['create', 'layout'], where: 'on a shape that\'s there, e.g. "a: move 5,3" (to place a new one: "a: rect at 2,3")' },
     ...Object.fromEntries(PLACEMENTS.map((place) => [place, { key: 'at', sigs: [['id']], build: (v) => ({ kind: 'place', place, ref: v[0] }), help: 'a shape id' }])),
     x: bound(number('x')),
     y: bound(number('y')),
@@ -809,7 +811,6 @@
     ...Object.fromEntries(Object.keys(SPEEDS).filter((w) => w !== 'normal').map((w) => [w, { error: `"${w}" goes after speed, e.g. "speed ${w}"` }])),
     // emphasis, highlights and callouts
     ...words(Object.keys(EMPHASES), 'emphasis', 'emphasis'),
-    ...Object.fromEntries(Object.entries(EMPHASES).flatMap(([name, e]) => (e.aliases || []).map((alias) => [alias, fixed('emphasis', name, { what: 'emphasis' })]))),
     highlight: {
       key: 'highlight', list: [['valued', 'num'], ['valued'], ['highlight']],
       // one that takes a number: { kind: n }, n null when not given (number: the next in the sequence)
@@ -836,7 +837,6 @@
     powers: { key: 'powers', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
     decimal: { key: 'decimal', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show it) or clear' },
     digits: { ...number('digits', 'a whole number of digits'), modes: ['layout'], where: 'when a number is made, e.g. "b: binary 67 digits 4"' },
-    numbered: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear', what: 'indices' },
     // a new value for a var, cell or number counts its way there, showing each value in between
     counter: fixed('count', true),
     // a change done again, a number of times in a row or forever (REPEATS)
