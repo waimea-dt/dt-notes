@@ -30,7 +30,7 @@
       return undefined
     }
     function setValue(shape, value) {
-      if (shape.digit) checkDigit(shape.digit, value)
+      if (shape.digit) value = digitValue(shape.digit, value)
       shape.label = value.label
       shape.nil = Boolean(value.nil)
     }
@@ -41,17 +41,16 @@
     // A shape's value: a var's or cell's, or a number's, from its digits
     const valueIn = (shape) => (inDigits(shape) ? { label: String(wholeOf(shape)), nil: false } : { label: shape.label, nil: shape.nil })
 
-    // A digit of a number (layout: LAYOUTS: radix) is a symbol for 0 to radix - 1 (0-9, A-F)
-    function checkDigit(layout, value) {
+    // A digit of a number (layout: LAYOUTS: radix) holds 0 to radix - 1, given as a number ("h.0: 0xF",
+    // "h.0: 15") and kept as its symbol (0-9, then A-F). The number's own edits give symbols
+    // (symbols: true); a value given in a line is a number.
+    function digitValue(layout, value, symbols = true) {
       const { noun, item, radix } = LAYOUTS[layout]
-      if (!value.nil && !Number.isNaN(symbolDigit(value.label, radix))) return
-      throw new Error(`a ${noun}'s ${item}s hold ${radix > 2 ? `0 to ${digitSymbol(radix - 1)}` : '0 or 1'}, not ${value.nil ? 'null' : `"${value.label}"`}`)
+      const n = value.nil ? NaN : NUMBER.test(value.label) ? Number(value.label) : symbols ? symbolDigit(value.label, radix) : NaN
+      if (Number.isInteger(n) && n >= 0 && n < radix) return { label: digitSymbol(n) }
+      throw new Error(`a ${noun}'s ${item}s hold ${radix > 10 ? `0 to ${radix - 1} (0x${digitSymbol(radix - 1)})` : radix > 2 ? `0 to ${radix - 1}` : '0 or 1'}, not ${value.nil ? 'null' : `"${value.label}"`}`)
     }
-    // "h.0: f": a word that's a digit's symbol (any case), as its value, before it's read as a name
-    function symbolValue(shape, token) {
-      const symbol = shape?.digit && token?.kind === 'word' ? token.value.toUpperCase() : ''
-      return symbol && !Number.isNaN(symbolDigit(symbol, LAYOUTS[shape.digit].radix)) ? { label: symbol } : undefined
-    }
+    const checkDigit = (layout, value) => { digitValue(layout, value, false) }
 
     // "v: +1" / "b: -5": a signed value adds to what a var, cell or number holds now (any other
     // value is as given). A digit adds in its radix ("h.0: +1": 9 to A), checked as it's set.
@@ -451,7 +450,7 @@
     }
 
     return {
-      functions: { addTo, assignValue, symbolValue, checkDigit, countUp, digitsFor, exprValue, fitLinks, fly, flyValue, holderRef, keptStyle, linkColour, linkNumber, linkText, pointOf,
+      functions: { addTo, assignValue, checkDigit, countUp, digitsFor, exprValue, fitLinks, fly, flyValue, holderRef, keptStyle, linkColour, linkNumber, linkText, pointOf,
         setNumber, setValue, unlink, valueIn, valueOf },
       verbs: { flip: flipDigits },
       link: () => {

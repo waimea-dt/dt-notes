@@ -414,7 +414,7 @@ d: denary 123 at 2,2               # 3 digits
 n: binary v1 at 2,4 digits 4       # a var's value, 4 bits
 b: binary 123 at 2,2 indices powers decimal  # bit numbers, place values, "= 123"
 b.0: 1                             # one bit
-h.0: F                             # one hex digit
+h.0: 0xF                           # one hex digit (or h.0: 15)
 b: 67                              # a new value
 b: +1
 b: v1                              # a var's or cell's value (and v1: b)
@@ -425,7 +425,7 @@ b: powers clear                    # or decimal clear, indices clear
 ```
 
 - `at` places the leftmost digit. `digits` (when made): binary 8 (max 32), hex 2 (max 8), denary 3 (max 10).
-- Values are written in denary. One that doesn't fit wraps round.
+- Values are numbers: denary, `0x7B` (hex) or `0b1111011` (binary), any case. One that doesn't fit wraps round.
 - 0s are muted; a digit given a `colour` keeps it until `colour reset`.
 - No swap, insert or remove; no `decimal` on denary. Otherwise like a row.
 

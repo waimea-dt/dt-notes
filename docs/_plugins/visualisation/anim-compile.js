@@ -812,14 +812,13 @@
       }
       // "v3: v1 + v2": a value worked out from others, once (OPERATORS)
       const worked = exprValue(existing, tokens)
+      // a digit given a word that isn't a name: what it holds ("h.0: G")
+      if (existing.digit && !worked && holderRef(first) && !shapes.has(first.value)) checkDigit(existing.digit, { label: first.value })
       // "v1: a.1" / "a.2: v2": a copy of another var's or cell's value glides over
-      const symbol = !worked && symbolValue(existing, first)
-      // a digit given a word that isn't its symbol or a name: what it holds ("h.0: G")
-      if (existing.digit && !worked && !symbol && holderRef(first) && !shapes.has(first.value)) checkDigit(existing.digit, { label: first.value })
-      if (existing.holds && !worked && !symbol && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
+      if (existing.holds && !worked && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
       // "v: 123" / "arr.2: null": a new value for a var or a row's / column's cell ("text" is a
-      // label); "h.0: F" a digit's symbol
-      const given = symbol || (existing.holds && first?.kind === 'word' ? valueOf(first) : undefined)
+      // label); "h.0: 0xF" a digit's
+      const given = existing.holds && first?.kind === 'word' ? valueOf(first) : undefined
       const newValue = worked ? { label: worked.label } : given && addTo(existing, given)
       const props = propsOf(existing.type, tokens, worked ? worked.next : newValue ? 1 : 0, 'change')
       if (newValue && props.label !== undefined) throw new Error('give one value: a number, "quoted" text or null')
@@ -1105,7 +1104,7 @@
 
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
-    let addTo, assignValue, symbolValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+    let addTo, assignValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
       readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
@@ -1113,7 +1112,7 @@
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
-      ({ addTo, assignValue, symbolValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
+      ({ addTo, assignValue, checkDigit, checkParts, countUp, createLayout, exprValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
         readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()

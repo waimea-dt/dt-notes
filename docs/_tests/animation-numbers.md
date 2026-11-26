@@ -26,7 +26,7 @@ b.7: 1                            # = 250
 +++
 
 ```anim
-b: 67 speed slow                  # only the bits that change crossfade
+b: 0b01000011 speed slow          # 67: only the bits that change crossfade
 ```
 
 ---
@@ -140,7 +140,7 @@ d: denary 123 at 3,5 name "d" indices powers         # 3 digits by default
 ## A digit, or a new value
 
 ```anim
-h.0: f                            # = 127 (any case, shown upper)
+h.0: 0xF                          # = 127 (or h.0: 15)
 d.2: 9                            # = 923
 
 ```
@@ -149,7 +149,7 @@ d.2: 9                            # = 923
 
 ```anim
 h.1: +1                           # 8: a digit adds in its base, = 143
-h: 65535 speed slow               # FFFF
+h: 0xffff speed slow              # = 65535 (either case)
 d: +100                           # wraps round to 23
 
 ```
@@ -169,8 +169,8 @@ d: h                              # h's value glides over: 65535 wraps round to 
 Hex digits 4 squares wide, one over each nibble: `at` places a layout by the top-left of its first cell.
 
 ```anim
-h: hex 51966 at 3,2 digits 4 size 4x1 name "hex" powers indices decimal   # CAFE
-b: binary 51966 at 3,5 digits 16 name "bin" indices powers decimal
+h: hex 0xCAFE at 3,2 digits 4 size 4x1 name "hex" powers indices decimal
+b: binary 0xCAFE at 3,5 digits 16 name "bin" indices powers decimal
 ```
 
 ---
@@ -192,7 +192,7 @@ h.3:           fill yellow delay 1.5
 ---
 
 ```anim
-b: 4660 speed slow                # 0001 0010 0011 0100
+b: 0x1234 speed slow              # 0001 0010 0011 0100
 h: b                              # = 1234
 ```
 

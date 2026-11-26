@@ -255,6 +255,7 @@ eb6: binary 5 digits 40 at 1,1
 eb10: binary 5 bits 4 at 1,1
 eh: hex 255 at 1,1
 eh.0: G
+eh.0: F
 eh.0: 16
 eh: flip
 eh.1: flip
