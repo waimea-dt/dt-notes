@@ -99,6 +99,44 @@ A3: anchor centre
 
 </animation>
 
+### Anchoring a polygon
+
+A polygon is placed by its points' `0,0`. An `anchor` places it by its box instead, as any single shape, so `anchor centre` differs from none; `anchor clear` goes back to its `0,0`.
+
+<animation name="Polygon anchor" grid="16x7">
+
+Each triangle's `0,0` is its apex. The dotted squares are the squares each is placed at.
+
+```anim
+P1: polygon [0,0 1,1.5 -1,1.5] at 3,3 "none" font 0.7 fill blue-muted
+P2: polygon [0,0 1,1.5 -1,1.5] at 8,3 "centre" font 0.7 anchor centre fill teal-muted
+P3: polygon [0,0 1,1.5 -1,1.5] at 13,3 "top-left" font 0.7 anchor top-left fill purple-muted
+defaults fill none stroke amber dotted front
+S1: rect at 3,3
+S2: rect at 8,3
+S3: rect at 13,3
+defaults clear
+```
+
+---
+
+## New points: each holds its own point still
+
+```anim
+P1: [0,0 1.5,2.5 -1.5,2.5]
+P2: [0,0 1.5,2.5 -1.5,2.5]
+P3: [0,0 1.5,2.5 -1.5,2.5]
+```
+
++++
+
+```anim
+P2: anchor clear
+P3: anchor clear
+```
+
+</animation>
+
 ## Feature: arrange
 
 <animation name="Arrange" grid="fit">

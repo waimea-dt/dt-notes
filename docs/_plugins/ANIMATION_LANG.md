@@ -64,7 +64,7 @@ Markers go alone on their line. Everything in a beat plays at once.
 - Cells from 1, top-left. `at 3,2` = centre of column 3, row 2. Fractions OK.
 - Points `5,4`, sizes `2x1`, all in cells. A point is x,y (column, row); a place is `[row][column]`, as in code (`G[1][2]`).
 - A point can be a shape (`A`: its centre) or a point on its edge: `A.top` `A.bottom` `A.left` `A.right` `A.top-left` `A.top-right` `A.bottom-left` `A.bottom-right`.
-- A single shape goes on a point by its centre (or its `anchor`); anything with parts (rows, grids, numbers, code, Scratch) by its top-left square. At an edge point with a `gap`, it goes beside that side or corner instead.
+- A single shape goes on a point by its centre (or its `anchor`), a polygon by its `0,0` (or its `anchor`, on its box); anything with parts (rows, grids, numbers, code, Scratch) by its top-left square. At an edge point with a `gap`, it goes beside that side or corner instead.
 
 ## Lines
 
@@ -126,7 +126,7 @@ R: row [
 | flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |
 | angle / scale | `angle 45` (clockwise, 0 = right) · `angle up` (`right` `down` `left` `up`) · `scale 1.5` (not lines) |
 | font | `font 1.5` · `bold` · `regular` (not bold) · `mono` |
-| anchor | `anchor left` · `top-left` · `bottom` · `centre` (single shapes: what goes on the square) |
+| anchor | `anchor left` · `top-left` · `bottom` · `centre` (single shapes: what goes on the square) · `anchor clear` (back to its type's: a polygon's `0,0`) |
 | layer | `back` · `normal` · `front` |
 | image fit | `contain` · `cover` (cropped) |
 

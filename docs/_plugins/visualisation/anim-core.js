@@ -152,7 +152,8 @@
   //             'diamond' or 'polygon' (its points, stretched to its box)
   //   points    its points go in [ ] straight after its type (offsets from where it's placed, in
   //             cells: "P: polygon [0,-1 1,1 -1,1] at 5,4"), or alone on a change ("P: [ … ]"). It's
-  //             placed by their 0,0 (cx, cy: from there to its box's middle), its box round them
+  //             placed by their 0,0 (cx, cy: from there to its box's middle), its box round them,
+  //             unless it's given an anchor: then by its box, as any other single shape
   //   label     where its label goes: 'centre', 'content' (text: the label is the shape, measured),
   //             'below' (image, icon: it adds to the shape's height), 'along' (lines) or 'script'
   //             (the label is the shape's script, drawn to fit its box: see script). A bar
@@ -206,7 +207,7 @@
       defaults: { w: CELL, h: CELL, fill: 'bg-shape' }, outline: 'diamond', label: 'centre', inside: true,
     },
     polygon: {
-      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow'],
+      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg-shape' }, outline: 'polygon', label: 'centre', inside: true, points: true,
     },
     text: { takes: ANCHORED_PROPS, defaults: { w: 0, h: 0 }, outline: 'box', label: 'content', band: { pad: 0.2, corner: 0.15 } },
@@ -643,7 +644,7 @@
     stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use ink' } },
     ink: { field: 'ink', cell: true, kept: true },
     weight: { field: 'weight', unit: 1, min: 0, cell: true, quiet: ['text'] },
-    anchor: { field: 'anchor' },
+    anchor: { field: 'anchor', map: { clear: null } }, // a side, corner or centre (ANCHORS); clear: placed as its type is
     angle: { field: 'angle', unit: 1 },
     scale: { field: 'scale', unit: 1, min: 0 },
     bold: { field: 'bold', cell: true },
@@ -775,7 +776,8 @@
     font: resettable(bound(number('font', 'a number (a multiple of the normal size)'))),
     angle: bound({ key: 'angle', sigs: [['num'], ['direction']], help: `a number of degrees (clockwise, 0 = facing right, as drawn) or a direction: ${Object.keys(DIRECTIONS).join(', ')}` }),
     scale: bound(number('scale', 'a number (a multiple of the normal size)')),
-    anchor: { key: 'anchor', sigs: [['edge']], help: 'a side, a corner or centre, e.g. top-left' },
+    // what a single shape is placed by (clear: back to how its type is placed)
+    anchor: { key: 'anchor', sigs: [['edge'], ['clear']], help: 'a side, a corner, centre or clear, e.g. top-left' },
     bold: { key: 'bold', sigs: [['reset'], []], build: (v) => v[0] ?? true, help: 'nothing or reset' },
     regular: fixed('bold', false, { what: 'bold' }), // not bold
     mono: { key: 'mono', sigs: [['reset'], []], build: (v) => v[0] ?? true, help: 'nothing or reset' }, // a monospace font
@@ -1196,14 +1198,16 @@
     top: { x: 0, y: -1 }, bottom: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
     'top-left': { x: -1, y: -1 }, 'top-right': { x: 1, y: -1 }, 'bottom-left': { x: -1, y: 1 }, 'bottom-right': { x: 1, y: 1 },
   }
-  const edgeOf = (shape) => ANCHORS[shape.anchor ?? kindOf(shape).anchor] || null
+  // What a shape is placed by: its anchor, else its type's (SHAPES: anchor), else none (null)
+  const anchorOf = (shape) => shape.anchor ?? kindOf(shape).anchor ?? null
+  const edgeOf = (shape) => ANCHORS[anchorOf(shape)] || null
 
-  // How far a shape's box's centre is from the point it's placed by (its x, y): a row / column is
-  // placed by the square its first cell starts in (cx, cy: from there to its middle), and a shape placed by an edge
-  // (edgeOf) by that edge of its cell; any other by its centre. Worked out from its size as it is,
-  // so that edge stays put as its size changes.
+  // How far a shape's box's centre is from the point it's placed by (its x, y): a shape with an
+  // anchor (anchorOf) by that edge of its cell (centre: its centre); one without by its own point if
+  // it has one (cx, cy: from there to its middle; a row's / column's first cell's square, a polygon's
+  // 0,0), else its centre. Worked out from its size as it is, so that edge stays put as its size changes.
   function centreShift(shape) {
-    if (shape.cx !== undefined) return { x: shape.cx, y: shape.cy }
+    if (anchorOf(shape) === null && shape.cx !== undefined) return { x: shape.cx, y: shape.cy }
     const edge = edgeOf(shape)
     if (!edge?.x && !edge?.y) return { x: 0, y: 0 }
     const { hw, hh } = sized(shape)
