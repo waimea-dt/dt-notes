@@ -97,14 +97,14 @@ b: decimal clear
 +++
 
 ```anim
-b: colour blue                    # 0s are muted until given a colour
+b: ink blue                    # 0s are muted until given an ink
 b.6: bold
 ```
 
 +++
 
 ```anim
-b: colour reset                   # back as it started: 0s muted again
+b: ink reset                   # back as it started: 0s muted again
 b.5: fill red font 1
 ```
 

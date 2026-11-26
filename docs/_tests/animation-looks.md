@@ -94,9 +94,9 @@ oth: row ["none" "bg" "bg-shape" "black" "white" "fg" "muted"] at 2.15,7.15 font
 oth.0: fill none
 oth.1: fill bg
 oth.2: fill bg-shape
-oth.3: fill black colour white
-oth.4: fill white colour black
-oth.5: fill fg colour bg
+oth.3: fill black ink white
+oth.4: fill white ink black
+oth.5: fill fg ink bg
 oth.6: fill muted
 ro0: line from 2.00,8 to 2.01,8 stroke none weight 15
 ro1: line from 3.00,8 to 3.01,8 stroke bg weight 15
@@ -106,9 +106,9 @@ ro4: line from 6.00,8 to 6.01,8 stroke white weight 15
 ro5: line from 7.00,8 to 7.01,8 stroke fg weight 15
 ro6: line from 8.00,8 to 8.01,8 stroke muted weight 15
 st: rect "stroke" at 3,9.5 size 2x0.8 stroke red weight 2
-cl: rect "colour" at 6,9.5 size 2x0.8 colour amber
-hx: text "#f80" at 9,9.5 colour #f80
-mu: text "muted" at 12,9.5 colour muted
+cl: rect "ink" at 6,9.5 size 2x0.8 ink amber
+hx: text "#f80" at 9,9.5 ink #f80
+mu: text "muted" at 12,9.5 ink muted
 ```
 
 ---
@@ -117,8 +117,8 @@ mu: text "muted" at 12,9.5 colour muted
 
 ```anim
 st: fill green stroke blue
-cl: colour pink
-hx: colour teal
+cl: ink pink
+hx: ink teal
 ```
 
 +++
@@ -127,35 +127,35 @@ Variants on fills, strokes and text.
 
 ```anim
 st: fill green-muted stroke blue-bright
-cl: colour pink-muted
-hx: colour teal-bright
-pal: stroke black colour black
-br: stroke black colour black
-mt: stroke black colour black
-oth: stroke black colour black
-oth.3: colour white
+cl: ink pink-muted
+hx: ink teal-bright
+pal: stroke black ink black
+br: stroke black ink black
+mt: stroke black ink black
+oth: stroke black ink black
+oth.3: ink white
 ```
 
 </animation>
 
 ## Feature: contrast
 
-`colour contrast`: black or white text, whichever reads on what's behind it. On a bar, the part of the label over the bar is picked against the bar.
+`ink contrast`: black or white text, whichever reads on what's behind it. On a bar, the part of the label over the bar is picked against the bar.
 
 <animation name="Contrast" grid="14x7">
 
 ```anim
-defaults colour contrast size 2.4x1
+defaults ink contrast size 2.4x1
 c1: rect "black" at 2,1.5 fill black
 c2: rect "white" at 5,1.5 fill white
 c3: rect "yellow" at 8,1.5 fill #ff0
 c4: rect "blue" at 11,1.5 fill #00f
 defaults clear
-t: text "on the page" at 1,3.2 align left colour contrast
-h: var 50 at 7,3.2 size 6x1 bar fill #f00 track black colour contrast font 1.4
-v: var 50 at 13,4 size 1x4 bar fill #ff0 track #004 colour contrast
-p: var 40 at 3,5.5 size 2 pie fill #ff0 track #000 colour contrast
-r: var 60 at 7,5.5 size 2 ring fill #ff0 track #000 colour contrast
+t: text "on the page" at 1,3.2 align left ink contrast
+h: var 50 at 7,3.2 size 6x1 bar fill #f00 track black ink contrast font 1.4
+v: var 50 at 13,4 size 1x4 bar fill #ff0 track #004 ink contrast
+p: var 40 at 3,5.5 size 2 pie fill #ff0 track #000 ink contrast
+r: var 60 at 7,5.5 size 2 ring fill #ff0 track #000 ink contrast
 ```
 
 ---
@@ -184,8 +184,8 @@ v: 90 speed vslow
 +++
 
 ```anim
-c3: colour amber
-h: colour fg
+c3: ink amber
+h: ink fg
 ```
 
 </animation>
@@ -598,7 +598,7 @@ defaults fill blue font 1.2
 a: rect "a" at 3,2
 defaults clear
 b: rect "b" at 6.5,2 fill amber weight 3 corner 0.3
-t: text "text" at 10,2 colour teal bold
+t: text "text" at 10,2 ink teal bold
 ```
 
 ---
@@ -608,19 +608,19 @@ t: text "text" at 10,2 colour teal bold
 ```anim
 a: fill red stroke green weight 2
 b: fill pink dashed opacity 0.5
-t: colour pink mono font 1.6
+t: ink pink mono font 1.6
 ```
 
 ---
 
-## fill reset, colour reset
+## fill reset, ink reset
 
 `a`'s fill goes back to blue (its defaults); `b`'s amber goes.
 
 ```anim
 a: fill reset
 b: fill reset
-t: colour reset
+t: ink reset
 ```
 
 +++

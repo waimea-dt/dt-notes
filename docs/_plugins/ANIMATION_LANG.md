@@ -117,7 +117,7 @@ r: row [
 | line ends | `from 2,3 to b` (an end on a shape follows it) · `from a.right to b.left` · `start dot` · `end arrow` |
 | size | `size 2x1` · `size 2` (circle: diameter) · `width 3` · `height 0.5` |
 | radius / corner | `radius 0.5` (circle: both ways) · `corner 0.2` (rect; line, arrow: rounds its corners) |
-| colour | `fill blue` · `stroke #f80` · `colour amber` (text and labels) · `fill rgb(255 128 0)` |
+| colour | `fill blue` · `stroke #f80` · `ink amber` (text and labels) · `fill rgb(255 128 0)` |
 | weight | `weight 2` (× normal, `0` hides) |
 | opacity | `opacity 0.5` (`0` hidden … `1` solid; its name and indices too) |
 | line style | `solid` · `dashed` · `dotted` |
@@ -135,7 +135,7 @@ r: row [
 
 **Variants** of `red` … `theme`: `-bright` (`red-bright`) · `-muted` (`blue-muted`).
 
-`colour contrast`: black or white text, whichever reads on what's behind it (on a bar, each part).
+`ink contrast`: black or white text, whichever reads on what's behind it (on a bar, each part).
 
 ## Relative values
 
@@ -156,7 +156,7 @@ a: fill reset        # back as it started
 a: style reset       # every look
 ```
 
-- `reset` goes after `fill` `stroke` `colour` `weight` `font` `bold` `mono` `corner` `opacity`.
+- `reset` goes after `fill` `stroke` `ink` `weight` `font` `bold` `mono` `corner` `opacity`.
 
 ## Moving lines
 
@@ -337,7 +337,7 @@ r: binary 0 at 2,2 fill rgb(r 0 0) # a number following its own value
 sw: fill red                       # stops following
 ```
 
-- For `fill`, `stroke`, `colour` and `track`. Values outside 0-255 are held in range.
+- For `fill`, `stroke`, `ink` and `track`. Values outside 0-255 are held in range.
 
 ## Sums
 
@@ -391,7 +391,7 @@ a: remove 1 into v1
 ```
 
 - Values are copied. Takes `speed`, `delay` and `ease`.
-- `keep-style` (or `defaults keep-style`): the value takes its fill, stroke and colour with it.
+- `keep-style` (or `defaults keep-style`): the value takes its fill, stroke and ink with it.
 
 ## Names and indices
 
@@ -428,7 +428,7 @@ b: powers clear                    # or decimal clear, indices clear
 
 - `at` places the leftmost digit. `digits` (when made): binary 8 (max 32), hex 2 (max 8), denary 3 (max 10).
 - Values are numbers: denary, `0x7B` (hex) or `0b1111011` (binary), any case. One that doesn't fit wraps round.
-- 0s are muted; a digit given a `colour` keeps it until `colour reset`.
+- 0s are muted; a digit given an `ink` keeps it until `ink reset`.
 - No swap, insert or remove; no `decimal` on denary. Otherwise like a row.
 
 ## Code

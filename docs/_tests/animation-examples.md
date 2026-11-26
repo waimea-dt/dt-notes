@@ -651,7 +651,7 @@ This is the older RSA-style key exchange, as it's the easiest to follow. Modern 
 ## Three colour values: R, G, B
 
 ```anim
-defaults corner 0.1 max 255 size 5x1 track black stroke muted colour contrast
+defaults corner 0.1 max 255 size 5x1 track black stroke muted ink contrast
 r: var 0 name "r" bar at 4,2 fill #f00
 g: var 0 name "g" bar at 4,4 fill #0f0
 b: var 0 name "b" bar at 4,6 fill #00f

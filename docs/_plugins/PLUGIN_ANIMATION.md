@@ -189,7 +189,7 @@ Notes on each area, for finding your way round before a change.
   - A word that can only mean one thing stands alone: `pop`, `dashed`, `front`, `bold`, `mono`, `pulse`, `keep-style`.
   - Enumerations whose words would be ambiguous alone keep their label. For example, `speed normal` (`normal` is also a layer), `ease in`, `align left`.
 - **Don't add verbose forms** (no `by fade`, `family mono`). Keep one form per meaning.
-- **One spelling per word, British only:** `colour`, `centre`. No US spellings, and no aliases.
+- **One spelling per word, British only:** `centre`, and text colour is `ink`. No US spellings, and no aliases.
 - **Reversed variants** are `<word>-reverse`: `flow-reverse`, `follow-reverse`, `signal-reverse`, `stagger-reverse`.
 - **Number literals:** `0x7B` and `0b1011` (`LITERAL`) are turned into denary by `tokenize`, so the rest of the engine only sees denary numbers.
 - **Placing:** `at` places a shape as it's made, `move` one that's there (`KEYWORDS`: `modes`, `notIn`); both set the `at` prop.

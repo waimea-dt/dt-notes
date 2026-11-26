@@ -22,7 +22,7 @@ Serve `docs/` from inside the puppeteer script (Node's `http` module, closed in 
 - `docs/_plugins/PLUGIN_ANIMATION.md` - engine guide: how it's built, language rules, where to add things. Read before changing the plugin.
 - Code: `docs/_plugins/visualisation/` (`anim-core.js`, `anim-parse.js`, `anim-compile.js`, `anim-render.js`, `animation.js`). CSS: `docs/_css/visualisation/animation.css`.
 - Tests: `docs/_tests/animation*.md` (menu page `animation.md`). Step every animation on the changed test pages.
-- Syntax design: one way to do each thing, natural reading (e.g. `colour`, no `stroke` alias; side-first placement words; `speed <word|seconds>`).
+- Syntax design: one way to do each thing, natural reading (e.g. `ink` for text colour, no aliases; side-first placement words; `speed <word|seconds>`).
 
 ## VS Code extension
 

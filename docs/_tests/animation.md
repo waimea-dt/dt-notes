@@ -208,7 +208,7 @@ two:
     fill blue
     corner 0.2
 
-hx: text "C# and #f80" at 6,3 colour #f80    # a hex colour and a "#" in a label are kept
+hx: text "C# and #f80" at 6,3 ink #f80    # a hex colour and a "#" in a label are kept
 ```
 
 ---

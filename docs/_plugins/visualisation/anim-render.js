@@ -589,7 +589,7 @@
       g.style.opacity = v.opacity * (s.opacity ?? 1)
       // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
       // (the highlight colour if it has none); highlight glow (v.hlGlow) the highlight colour.
-      const glowColour = LABEL_PLACES[kindOf(s).label]?.own ? colours.colour : colours.stroke // text glows its own colour
+      const glowColour = LABEL_PLACES[kindOf(s).label]?.own ? colours.ink : colours.stroke // text glows its own ink
       const halo = (k, colour) => `drop-shadow(0 0 ${0.15 * CELL * k}px ${colour})`
       const filters = []
       const bright = Math.max(v.glow || 0, v.hlGlow || 0)
@@ -603,8 +603,8 @@
       paint(node.label, 'fontFamily', s.mono ? MONO_FONT : '')
       paint(node.label, 'fontStyle', (v.nil ?? s.nil) ? 'italic' : '') // a null value
       node.label.style.opacity = v.labelOpacity
-      paint(node.label, 'fill', colours.colour) // a text shape's colour, or any shape's label
-      if (kindOf(node).pre) paint(node.label, 'color', colours.colour) // for tokens code.css doesn't colour
+      paint(node.label, 'fill', colours.ink) // a text shape's ink, or any shape's label
+      if (kindOf(node).pre) paint(node.label, 'color', colours.ink) // for tokens code.css doesn't colour
       setLabel(node, kindOf(node).script ? '' : v.label, v.typed, v.erase, s.lang) // a script is drawn by drawScript
 
       if (LINE_TYPES.includes(node.type)) {
@@ -757,7 +757,7 @@
         const [hw, hh] = [(drawing.w * k) / 2, (drawing.h * k) / 2]
         attr(drawing.svg, 'x', at.x - hw); attr(drawing.svg, 'y', at.y - hh)
         attr(drawing.svg, 'width', 2 * hw); attr(drawing.svg, 'height', 2 * hh)
-        if (drawing.text) paint(drawing.text, 'fill', colours.colour) // plain text takes the shape's colour
+        if (drawing.text) paint(drawing.text, 'fill', colours.ink) // plain text takes the shape's ink
       }
       // how far A's drawing's middle is from B's, and a cell, in the drawings' units
       moveBlocks(from, to, step, { x: (atA.x - atB.x) / k, y: (atA.y - atB.y) / k }, CELL / k)
@@ -1476,7 +1476,7 @@
         const to = item.b || item.a
         const t = item.a && item.b ? clamp01(item.tOnce ?? item.t) : 1 // a repeated change's colours change in its first round
         // a null value is muted (colour none still hides it); a digit, its value's colour
-        const ink = (s) => (s.nil && s.colour !== 'none' ? 'muted' : lookOf(s, 'colour'))
+        const ink = (s) => (s.nil && s.ink !== 'none' ? 'muted' : lookOf(s, 'ink'))
         const [fillA, fillB] = [colourCss(from.fill, 'fill'), colourCss(to.fill, 'fill')]
         const colours = {
           fill: mixCss(fillA, fillB, t),
@@ -1498,7 +1498,7 @@
         // sits on a bar, the part of it over the bar is drawn again in the colour picked against
         // the bar (colours.cover: drawCover). What's behind is only worked out for a picked colour.
         const inkOn = (backing) => mixRgba(...[from, to].map((s) => (COLOUR_PICKS[ink(s)] ? pickInk(COLOUR_PICKS[ink(s)], backing) : rgba(colourCss(ink(s), 'stroke')))), t)
-        if (![from, to].some((s) => COLOUR_PICKS[ink(s)])) colours.colour = mixCss(colourCss(ink(from), 'stroke'), colourCss(ink(to), 'stroke'), t)
+        if (![from, to].some((s) => COLOUR_PICKS[ink(s)])) colours.ink = mixCss(colourCss(ink(from), 'stroke'), colourCss(ink(to), 'stroke'), t)
         else {
           const fill = mixRgba(rgba(fillA), rgba(fillB), t)
           const backdrop = rgba(COLOURS.bg)
@@ -1506,7 +1506,7 @@
           const bar = BAR_DRAWS[item.v.barKind]
           const base = onShape ? over(track && !bar?.holed ? track : null, backdrop) : backdrop
           const behind = onShape ? over(fill && [...fill.slice(0, 3), fill[3] * plainFill(item.v)], base) : backdrop
-          colours.colour = cssOf(inkOn(behind))
+          colours.ink = cssOf(inkOn(behind))
           if (onShape && raw && bar?.cover) colours.cover = cssOf(inkOn(over(raw, base)))
         }
         // highlight glow fades in / out like the box; a shape glows too when one covering it does

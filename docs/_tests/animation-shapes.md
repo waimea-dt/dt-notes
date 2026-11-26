@@ -144,7 +144,7 @@ t3: text "align right" at 6,4 align right
 Longer, then shorter: left-aligned text grows and shrinks to the right, right-aligned to the left, centred both ways.
 
 ```anim
-t1: "centred, and longer" colour amber
+t1: "centred, and longer" ink amber
 t2: "left, and longer"
 t3: "right, and longer"
 ```

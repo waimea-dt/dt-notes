@@ -1,5 +1,5 @@
 // Colour swatches for named colours in anim scenes (.anim files and ```anim fences in Markdown).
-// VS Code's own swatches only cover hex / rgb(); this adds the scene colour names after fill / stroke / colour / track.
+// VS Code's own swatches only cover hex / rgb(); this adds the scene colour names after fill / stroke / ink / track.
 const vscode = require('vscode')
 
 // The site's dark-theme values (docs/_css/core/theme.css). In the browser these follow the theme.
@@ -41,9 +41,9 @@ function saturate(hex, k) {
   return `#${to(r1)}${to(g1)}${to(b1)}`
 }
 // the words a colour follows (the engine's colour props: KEYWORDS in anim-core.js)
-const NAMED = new RegExp(`\\b(fill|stroke|colour|track)(\\s+)(${Object.keys(COLOURS).join('|')})(?![\\w-])`, 'g')
+const NAMED = new RegExp(`\\b(fill|stroke|ink|track)(\\s+)(${Object.keys(COLOURS).join('|')})(?![\\w-])`, 'g')
 // rgb(…) written with three numbers (COLOUR_FUNCTIONS in anim-core.js; one following vars has no swatch)
-const RGB = /\b(fill|stroke|colour|track)(\s+)(rgb\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*\))/g
+const RGB = /\b(fill|stroke|ink|track)(\s+)(rgb\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*\))/g
 const RGB_CALL = /^rgb\(/
 const FENCE = /^\s*(`{3,}|~{3,})\s*([\w-]*)/
 

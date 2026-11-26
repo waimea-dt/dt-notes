@@ -328,7 +328,7 @@
     }
 
     // How a numbering's marks look (unless lit: fitNumbers)
-    const MARK_LOOK = { font: 0.88, colour: 'muted' }
+    const MARK_LOOK = { font: 0.88, ink: 'muted' }
 
     // Whether a layout shows any of its numberings (NUMBERINGS)
     const numbered = (row) => Object.keys(NUMBERINGS).some((key) => row[key])

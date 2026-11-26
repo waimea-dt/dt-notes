@@ -149,7 +149,7 @@ v2: v1
 A red value keeps its look as it goes in, so it can be followed.
 
 ```anim
-v1: 5 fill red colour white
+v1: 5 fill red ink white
 ```
 
 +++
@@ -334,20 +334,20 @@ b: 3
 
 ## Feature: Colours from values
 
-`rgb(r g b)` works a colour out from three values from 0 to 255: numbers, or vars, cells and numbers that it follows as they change. It goes wherever a colour does: `fill`, `stroke`, `colour` and `track`.
+`rgb(r g b)` works a colour out from three values from 0 to 255: numbers, or vars, cells and numbers that it follows as they change. It goes wherever a colour does: `fill`, `stroke`, `ink` and `track`.
 
 <animation name="Colours from Values" grid="16x7">
 
 ```anim
-defaults max 255 size 4x0.8 track black stroke muted colour contrast
+defaults max 255 size 4x0.8 track black stroke muted ink contrast
 r: var 255 name "r" bar at 3,1.5 fill #f00
 g: var 128 name "g" bar at 3,2.5 fill #0f0
 b: var 0 name "b" bar at 3,3.5 fill #00f
 defaults clear
-sw: rect "fill and stroke" at 11,2.5 size 4x2.4 fill rgb(r g b) stroke rgb(255, g, b) weight 4 colour contrast
+sw: rect "fill and stroke" at 11,2.5 size 4x2.4 fill rgb(r g b) stroke rgb(255, g, b) weight 4 ink contrast
 arr: row [0 128 255] at 2,6 indices
 hx: hex 255 at 7,6 name "hx"
-cell: rect "cells" at 12,6 size 3x1 fill rgb(arr.2 hx arr.0) colour contrast
+cell: rect "cells" at 12,6 size 3x1 fill rgb(arr.2 hx arr.0) ink contrast
 ```
 
 ---
@@ -436,8 +436,8 @@ hp: 100
 +++
 
 ```anim
-arr: colour none
-hp: colour none
+arr: ink none
+hp: ink none
 ```
 
 ---

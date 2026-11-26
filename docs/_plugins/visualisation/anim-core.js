@@ -192,7 +192,7 @@
   //   lines     its label can be given as "quoted" lines in [ ], where the label would go
   //   anchor    it's placed by a corner (ANCHORS), not its centre: at x,y puts that corner of its
   //             box at that corner of the cell, and it stays put as its size changes (centreShift)
-  const COMMON_PROPS = ['colour', 'weight', 'font', 'bold', 'mono', 'opacity']
+  const COMMON_PROPS = ['ink', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   // a line's angle only turns it about a point ("angle +90 about 5,5"), apart from a loop's
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'start', 'end', 'show', 'angle']
@@ -360,7 +360,7 @@
   const NUMBERINGS = {
     indices: { part: 'index', field: 'index', label: (k) => k },
     // a number's place values: 1, 2, 4 …, each lit (its look) while its digit isn't 0
-    powers: { part: 'power', field: 'power', label: (k, layout) => layout.radix ** k, lit: { colour: 'fg' } },
+    powers: { part: 'power', field: 'power', label: (k, layout) => layout.radix ** k, lit: { ink: 'fg' } },
   }
 
   // Every layout: a group of cells (the type after "id:"), in one place:
@@ -401,7 +401,7 @@
   //               lowest). digits: how many cells it has unless given (default), the most it can
   //               (max), and the prop that gives it when it's made (prop: "digits 4"). look: the look its
   //               digits start with (after the defaults); looks: each digit's own look while it holds
-  //               that value, a look at a time until the digit is given that look ("colour reset":
+  //               that value, a look at a time until the digit is given that look ("ink reset":
   //               again; digitLooks)
   //   power       where its place values go (NUMBERINGS: powers), as index does
   //   decimal     its value written out, when shown: where it goes (side and gap, in cells, and its
@@ -418,7 +418,7 @@
     cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false, arrange: 'line', bow: 'own',
     index: INDEX_BELOW, power: INDEX_ABOVE, decimal: { side: 'right-of', gap: 0.3, align: 'left', label: (id) => `= {${id}}` }, fixed: true,
   }
-  const NUMBER_DIGITS = { prop: 'digits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { colour: 'muted' } } }
+  const NUMBER_DIGITS = { prop: 'digits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { ink: 'muted' } } }
   const GRID_VIEWS = {
     row: { layout: 'row', index: INDEX_LEFT }, // numbered down the left, as a column's cells are
     col: { layout: 'column', word: 'col', index: INDEX_BELOW }, // numbered along the bottom, as a row's cells are
@@ -448,7 +448,7 @@
   const digitSymbol = (d) => d.toString(36).toUpperCase()
   // The props only some layouts take (LAYOUTS: props)
   const LAYOUT_PROPS = [...new Set(LAYOUT_TYPES.flatMap((layout) => LAYOUTS[layout].props || []))]
-  // The looks a layout's digits take from their values (LAYOUTS: digits.looks), e.g. ['colour']
+  // The looks a layout's digits take from their values (LAYOUTS: digits.looks), e.g. ['ink']
   const digitLooks = (layout) => Object.keys(Object.assign({}, ...Object.values(LAYOUTS[layout]?.digits?.looks || {})))
 
   // ease <name>: how a change speeds up and slows down (t: 0-1 of its time -> 0-1 of the way).
@@ -586,7 +586,7 @@
   //   soft       how far either side of the threshold they blend, so a backdrop changing colour
   //              doesn't make the text flick from one to the other
   const COLOUR_PICKS = {
-    contrast: { looks: ['colour'], dark: 'black', light: 'white', threshold: 0.32, soft: 0.03 },
+    contrast: { looks: ['ink'], dark: 'black', light: 'white', threshold: 0.32, soft: 0.03 },
   }
 
   // Which shape types each prop applies to (from SHAPES' takes)
@@ -646,8 +646,8 @@
     corner: { field: 'corner', unit: CELL, min: 0, cell: true, check: cornerCheck },
     bend: { field: 'bend', unit: CELL }, // how far a curve bows out halfway along (+ to its left, - right)
     fill: { field: 'fill', cell: true, kept: true },
-    stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use colour' } },
-    colour: { field: 'colour', cell: true, kept: true },
+    stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use ink' } },
+    ink: { field: 'ink', cell: true, kept: true },
     weight: { field: 'weight', unit: 1, min: 0, cell: true, quiet: ['text'] },
     align: { field: 'align' },
     angle: { field: 'angle', unit: 1 },
@@ -674,7 +674,7 @@
   const CELL_STYLE = looksWith('cell')
   // A shape's style: the looks "style reset" puts back as they started (and "fill reset" and the
   // like, one at a time)
-  const STYLE = ['fill', 'stroke', 'colour', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner', 'opacity']
+  const STYLE = ['fill', 'stroke', 'ink', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner', 'opacity']
   // What a value on the move takes with it (keep-style): not its size, or highlights
   const KEPT_STYLE = looksWith('kept')
   // The shape fields that blend between beats: its place, and every number in its look
@@ -778,7 +778,7 @@
     bend: number('bend', 'a number of cells (bowing to the left of the way it goes, or to the right when negative)'),
     fill: resettable(colour('fill')),
     stroke: resettable(colour('stroke')),
-    colour: resettable(colour('colour')),
+    ink: resettable(colour('ink')),
     weight: resettable(bound(number('weight', 'a number (a multiple of the normal stroke thickness)'))),
     font: resettable(bound(number('font', 'a number (a multiple of the normal size)'))),
     angle: bound({ key: 'angle', sigs: [['num'], ['direction']], help: `a number of degrees (clockwise, 0 = facing right, as drawn) or a direction: ${Object.keys(DIRECTIONS).join(', ')}` }),
@@ -852,7 +852,7 @@
       },
       help: 'a whole number of times or forever, e.g. "repeat 3" or "repeat forever"',
     },
-    // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and colour
+    // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and ink
     // with it, rather than taking on the look of where it goes
     'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"' }),
     null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },

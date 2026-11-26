@@ -140,7 +140,7 @@ dr: delete draw delay 4
 <animation name="Typed" grid="12x3">
 
 ```anim
-prompt: text "$" at 2,1 mono colour yellow
+prompt: text "$" at 2,1 mono ink yellow
 ```
 
 +++

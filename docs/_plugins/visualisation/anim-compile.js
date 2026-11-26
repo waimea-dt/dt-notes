@@ -38,7 +38,7 @@
   // ---------------------------------------------------------------------------
 
   function baseShape(type) {
-    const shape = { type, label: '', stroke: 'fg', colour: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, opacity: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
+    const shape = { type, label: '', stroke: 'fg', ink: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, opacity: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
     return Object.assign(shape, SHAPES[type]?.defaults)
   }
 
