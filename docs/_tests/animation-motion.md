@@ -4,16 +4,16 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: Position and placement
 
-`at` a point or a shape (its centre), `x` and `y` alone, or beside a shape: `above`, `below`, `left-of`, `right-of`, with a `gap`.
+`at` a point, a shape (its centre) or a point on its edge, or `x` and `y` alone. With a `gap`, an edge point puts the shape beside that side or corner, that far from it (`gap 0`: touching).
 
 <animation name="Placement" grid="12x5">
 
 ```anim
 A: rect "a" at 6.5,3
-Up: circle "above" above A font 0.5
-Down: circle "below" below A font 0.5
-Lt: circle "left-of" left-of A font 0.5
-Rt: circle "gap 1" right-of A gap 1 font 0.5
+Up: circle "top" at A.top gap 0.25 font 0.5
+Down: circle "bottom" at A.bottom gap 0.25 font 0.5
+Lt: circle "left" at A.left gap 0.25 font 0.5
+Rt: circle "gap 1" at A.right gap 1 font 0.5
 On: circle at A radius 0.15 fill amber front
 ```
 
@@ -124,7 +124,7 @@ G: arrange right gap 1.5
 
 ## arrange down
 
-0.25 apart by default, as with below.
+0.25 apart by default.
 
 ```anim
 G: arrange down
@@ -333,7 +333,7 @@ C: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
 ## Via a shape, and relative
 
 ```anim
-A: move 2,4 via below B speed slow
+A: move 2,4 via B.bottom speed slow
 C: move 2,2.5 via -2,+2 speed slow
 ```
 
@@ -653,10 +653,12 @@ Msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
 
 ---
 
-## attach right-of msg
+## attach Msg.right gap 0.25
+
+Beside its right side, a quarter of a cell from it.
 
 ```anim
-Lock: icon(lock) attach right-of Msg stroke amber pop
+Lock: icon(lock) attach Msg.right gap 0.25 stroke amber pop
 ```
 
 +++
@@ -683,12 +685,36 @@ Msg: move 3,4 speed slow
 
 ---
 
-## attach msg
+## attach Msg
 
 On top.
 
 ```anim
 Lock: attach Msg
+```
+
++++
+
+On its corner: the point.
+
+```anim
+Lock: attach Msg.top-right
+```
+
++++
+
+A gap puts it beside the corner (`gap 0`: touching).
+
+```anim
+Lock: gap 0
+```
+
++++
+
+`gap clear`: back on the point.
+
+```anim
+Lock: gap clear
 ```
 
 </animation>

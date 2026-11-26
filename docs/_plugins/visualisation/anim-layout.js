@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { CELL, placeNextTo, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
+  const { CELL, placeBeside, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
     markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, digitLooks, EDIT_WORDS, REF,
     LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor, PARTS } = window.Anim
@@ -282,15 +282,15 @@
     // The side a name goes, unless given: its layout's (LAYOUTS: name), a span's by its row's layout
     // (LAYOUTS: spanName), or left of a var
     function nameSide(owner) {
-      if (owner.span) return LAYOUTS[shapes.get(owner.span.of)?.layout]?.spanName || 'above'
-      return LAYOUTS[owner.layout]?.name || 'left-of'
+      if (owner.span) return LAYOUTS[shapes.get(owner.span.of)?.layout]?.spanName || 'top'
+      return LAYOUTS[owner.layout]?.name || 'left'
     }
 
     function setName(owner, name, props, meta, warn) {
       const id = nameId(owner.id)
       const old = shapes.get(id)
       if (name.none && !old) return warn(`"${owner.id}" has no name to clear`)
-      const side = name.side || old?.attach?.side || nameSide(owner)
+      const side = name.side || old?.attach?.anchor || nameSide(owner)
       setTag(owner, id, 'name', name.none ? null : { text: name.text, side, gap: NAME_GAP }, props, meta, warn)
     }
     const NAME_GAP = 0.2 // in cells, between a name and its owner
@@ -369,7 +369,7 @@
         const place = { ...mark.of, ...offsetIn(mark.of, row) }
         place.x += row.x
         place.y += row.y
-        const p = placeNextTo(text, place, mark.index.side, mark.index.gap * CELL)
+        const p = placeBeside(text, place, mark.index.side, mark.index.gap * CELL)
         text.attach = offsetFrom(row.id, p.x - row.x, p.y - row.y)
         Object.assign(text, p)
         if (old) continue

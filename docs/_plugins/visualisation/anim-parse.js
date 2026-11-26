@@ -4,8 +4,8 @@
  */
 
 ;(function () {
-  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, DIRECTIONS, COLOURS, COLOUR_FUNCTIONS, COLOUR_PICKS, SPEEDS, EASES, RESERVED,
-    ANCHORS, END_MARKS, KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, BRACKET_NOUNS, LINE_STARTS, LINES, listProps } = window.Anim
+  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, SIDES, DIRECTIONS, COLOURS, COLOUR_FUNCTIONS, COLOUR_PICKS, SPEEDS, EASES, RESERVED,
+    ANCHORS, END_MARKS, KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, BRACKET_NOUNS, LINE_STARTS, LINES, listProps } = window.Anim
 
   // ---------------------------------------------------------------------------
   // Markdown -> source markup (beforeEach)
@@ -213,7 +213,7 @@
     switch (type) {
       case 'highlight': return HIGHLIGHTS.includes(word) ? word : undefined
       case 'valued': return VALUED_HIGHLIGHTS.includes(word) ? word : undefined // a highlight that takes a number
-      case 'side': return CALLOUT_SIDES[word]
+      case 'side': return SIDES.includes(word) ? word : undefined // where a callout, name or number goes
       case 'clear': return word === 'clear' ? word : undefined
       case 'forever': return word === 'forever' ? word : undefined // repeat forever
       case 'reset': return word === 'reset' ? word : undefined
@@ -225,7 +225,6 @@
         const m = !shapes.has(token.value) && token.value.match(/^(.+)\.([a-z-]+)$/i)
         return m && shapes.has(m[1]) && ANCHORS[m[2]] ? { ref: m[1], anchor: m[2] } : undefined
       }
-      case 'placement': return PLACEMENTS.includes(word) ? word : undefined
       case 'edge': return ANCHORS[word] || word === 'centre' ? word : undefined // what a shape is placed by
       // a direction word as an absolute angle, turned to the short way (numberValue: turn)
       case 'direction': return word in DIRECTIONS ? { v: DIRECTIONS[word], rel: false, turn: true } : undefined
@@ -276,7 +275,7 @@
       const refused = (line.takes && !line.takes.includes(key)) || line.refuses?.includes(key)
       if (!refused) return
       if (line.refuse) throw new Error(line.refuse(word))
-      throw new Error(line.takes.length ? `${name} only takes ${listProps(line.takes)}, not "${word}"` : `${name} takes nothing after it`)
+      throw new Error(line.takes.length ? `${name} only takes ${listProps(line.takes, kind)}, not "${word}"` : `${name} takes nothing after it`)
     }
     const props = {}
     const set = (key, value, what = key) => {
@@ -307,7 +306,7 @@
     }
 
     // a line that spaces things out (LINES: spaces) takes a gap of its own: a row's between its cells
-    if (props.gap && !LINES[kind]?.spaces && props.at?.kind !== 'place' && !props.attach) throw new Error(`"gap" only works with above / below / left-of / right-of, or attach (or between the cells of ${LAYOUT_NOUNS}, or a group's shapes with arrange)`)
+    if (props.gap && LINES[kind]?.spaces && props.gap.none) throw new Error('"gap clear" takes a gap away from a shape beside another, not the space between cells')
     if (props.at && (props.x || props.y)) throw new Error('the position is given twice (at/move and x/y)')
     return props
   }

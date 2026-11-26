@@ -221,7 +221,7 @@ Ce: line from C to E
 De: line from D to E
 
 defaults clear
-S: icon(user) left-of A gap 0.1 pop front
+S: icon(user) at A.left gap 0.1 pop front
 A: fill blue
 ```
 
@@ -234,7 +234,7 @@ The first leg of the route.
 ```anim
 defaults stroke blue weight 2 speed slow
 R1: arrow from A to B draw
-S: move above B gap 0.1
+S: move B.top gap 0.1
 B: fill blue delay 0.5
 ```
 
@@ -244,7 +244,7 @@ B: fill blue delay 0.5
 
 ```anim
 R2: arrow from B to C draw
-S: move above C gap 0.1
+S: move C.top gap 0.1
 C: fill blue delay 0.5
 ```
 
@@ -254,7 +254,7 @@ C: fill blue delay 0.5
 
 ```anim
 R3: arrow from C to D draw
-S: move right-of D gap 0.1
+S: move D.right gap 0.1
 D: fill blue delay 0.5
 ```
 
@@ -266,7 +266,7 @@ Every city has now been visited.
 
 ```anim
 R4: arrow from D to E draw
-S: move below E gap 0.1
+S: move E.bottom gap 0.1
 E: fill blue delay 0.5
 ```
 
@@ -278,7 +278,7 @@ The salesperson returns home to finish the tour.
 
 ```anim
 R5: arrow from E to A draw
-S: move left-of A gap 0.1
+S: move A.left gap 0.1
 A: fill green delay 0.5
 ```
 
@@ -373,9 +373,9 @@ PubE: copy Pub move 9.5,7 via 11,4.5 speed slow
 Alice locks her message with **Bob's public key**. It's now scrambled.
 
 ```anim
-PubA: move above Msg speed slow
+PubA: move Msg.top gap 0.25 speed slow
 Msg: "x7#q!" fill amber delay 1
-Lock: icon(lock) attach right-of Msg stroke amber pop delay 1
+Lock: icon(lock) attach Msg.right gap 0.25 stroke amber pop delay 1
 ```
 
 +++
@@ -401,7 +401,7 @@ Msg: move +8,+0 speed slow
 Eve copies it as it passes, but her public key can't unlock it. All she sees is `x7#q!`.
 
 ```anim
-Eve: stroke red callout "x7#q! ???" left-of
+Eve: stroke red callout "x7#q! ???" left
 PubE: shake
 ```
 
@@ -483,7 +483,7 @@ M1: delete
 Pub: icon(key-round) "Public" at 12.3,0.9 stroke green pop
 Priv: icon(key-round) "Private" at 15.3,0.9 stroke red pop
 M2: rect "Certificate" at 11.5,5.5 size 3x0.8 font 0.8 fill teal pop
-PubB: icon(key-round) attach above M2 stroke green scale 0.8 pop
+PubB: icon(key-round) attach M2.top gap 0.25 stroke green scale 0.8 pop
 ```
 
 +++
@@ -502,7 +502,7 @@ It checks the CA's signature, the name **bank.example** and the dates. A fake ce
 
 ```anim
 M2: fill green delay 0.25 highlight outline
-Check: icon(badge-check) attach left-of M2 stroke green pop
+Check: icon(badge-check) attach M2.left gap 0.25 stroke green pop
 ```
 
 ---
@@ -524,7 +524,7 @@ It locks a copy with the **server's public key**...
 ```anim
 PubB: move 4.5,4.3 speed slow
 M3: rect "session key" at 4.5,5.5 size 3x0.8 font 0.8 fill amber pop delay 1
-Lock3: icon(lock) attach right-of M3 stroke amber pop delay 1
+Lock3: icon(lock) attach M3.right gap 0.25 stroke amber pop delay 1
 ```
 
 +++
@@ -576,7 +576,7 @@ Req: rect "GET /balance" at 4.5,5.5 size 3x0.8 font 0.8 fill blue pop
 
 ```anim
 Req: "k#2@Lp" fill amber
-Lk4: icon(lock) attach right-of Req stroke amber pop
+Lk4: icon(lock) attach Req.right gap 0.25 stroke amber pop
 ```
 
 +++
@@ -585,7 +585,7 @@ Lk4: icon(lock) attach right-of Req stroke amber pop
 
 ```anim
 Req: move +7,+0 speed slow
-Eve: callout "k#2@Lp ???" left-of
+Eve: callout "k#2@Lp ???" left
 ```
 
 ---
@@ -607,7 +607,7 @@ Req: "GET /balance" fill blue
 ```anim
 Req: delete
 Res: rect "Zq!7x" at 11.5,5.5 size 3x0.8 font 0.8 fill amber pop
-Lk5: icon(lock) attach left-of Res stroke amber pop
+Lk5: icon(lock) attach Res.left gap 0.25 stroke amber pop
 ```
 
 +++
@@ -632,7 +632,7 @@ Res: "Balance: $42" fill green pulse
 That padlock in the address bar means all of this happened: the certificate checked out, and everything since has been encrypted with the session key.
 
 ```anim
-Pad: icon(lock) "https://" above Browser stroke green pop
+Pad: icon(lock) "https://" at Browser.top gap 0.25 stroke green pop
 ```
 
 - **Public and private keys** are only used to share the session key safely.

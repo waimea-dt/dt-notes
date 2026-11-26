@@ -74,9 +74,6 @@
   // How an image fills its box (its SVG preserveAspectRatio): contain, all of it inside the box;
   // cover, filling the box, cropped to it (e.g. a backdrop of another shape than the grid)
   const IMAGE_FITS = { contain: 'xMidYMid meet', cover: 'xMidYMid slice' }
-  // The placement words, each the way it goes from its ref (DIRECTIONS)
-  const PLACE_DIRECTIONS = { above: 'up', below: 'down', 'left-of': 'left', 'right-of': 'right' }
-  const PLACEMENTS = Object.keys(PLACE_DIRECTIONS)
   // Angles: clockwise degrees from as drawn, which faces right (as sprites do). The direction words
   // for "angle", as degrees; a shape turns to one the short way (numberValue: turn)
   const DIRECTIONS = { right: 0, down: 90, left: 180, up: -90 }
@@ -96,8 +93,8 @@
   // What every line starts with: nothing on either end (a line type can set its own: arrow), and
   // all of it shown (LOOKS: show)
   const LINE_DEFAULTS = { start: 'none', end: 'none', show: 1 }
-  // Callout sides use the placement words (the bubble's side of the shape)
-  const CALLOUT_SIDES = { above: 'above', below: 'below', 'left-of': 'left', 'right-of': 'right' }
+  // The sides of a shape (ANCHORS without the corners): where a callout, a name or a row's numbers go
+  const SIDES = ['top', 'bottom', 'left', 'right']
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
   // anim-render.js (glow and spotlight change the shape itself).
   //   off      its value when off (default false); valued: it takes a number ("number 5")
@@ -408,29 +405,29 @@
   //   fixed       its cells stay as made: no swap, insert or remove (a value changes them)
   //   flip        "flip" turns each digit d to radix - 1 - d (a bit: 0 <-> 1)
   //   props       props only it (and other layouts listing them) takes (LAYOUT_PROPS)
-  const INDEX_BELOW = { side: 'below', gap: 0.1 }
-  const INDEX_ABOVE = { side: 'above', gap: 0.1 }
-  const INDEX_LEFT = { side: 'left-of', gap: 0.2 }
+  const INDEX_BOTTOM = { side: 'bottom', gap: 0.1 }
+  const INDEX_TOP = { side: 'top', gap: 0.1 }
+  const INDEX_LEFT = { side: 'left', gap: 0.2 }
   // What every number (LAYOUTS: radix) shares: a reversed row of fixed digits
   const NUMBER = {
-    cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false, arrange: 'line', bow: 'own',
-    index: INDEX_BELOW, power: INDEX_ABOVE, decimal: { side: 'right-of', gap: 0.3, anchor: 'left', label: (id) => `= {${id}}` }, fixed: true,
+    cell: 'rect', across: true, reverse: true, base: 0, name: 'left', spanName: 'top', slide: false, slot: false, arrange: 'line', bow: 'own',
+    index: INDEX_BOTTOM, power: INDEX_TOP, decimal: { side: 'right', gap: 0.3, anchor: 'left', label: (id) => `= {${id}}` }, fixed: true,
   }
   const NUMBER_DIGITS = { prop: 'digits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { ink: 'muted' } } }
   const GRID_VIEWS = {
     row: { layout: 'row', index: INDEX_LEFT }, // numbered down the left, as a column's cells are
-    col: { layout: 'column', word: 'col', index: INDEX_BELOW }, // numbered along the bottom, as a row's cells are
+    col: { layout: 'column', word: 'col', index: INDEX_BOTTOM }, // numbered along the bottom, as a row's cells are
   }
   const LAYOUTS = {
-    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left-of', spanName: 'above', slide: true, slot: true, arrange: 'line', bow: 'own', index: INDEX_BELOW },
-    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'above', spanName: 'right-of', slide: true, slot: true, arrange: 'line', bow: 'own', index: INDEX_LEFT },
+    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left', spanName: 'top', slide: true, slot: true, arrange: 'line', bow: 'own', index: INDEX_BOTTOM },
+    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'top', spanName: 'right', slide: true, slot: true, arrange: 'line', bow: 'own', index: INDEX_LEFT },
     code: {
-      noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'above', spanName: 'right-of', lines: true, fit: true, typeInTurn: true,
+      noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'top', spanName: 'right', lines: true, fit: true, typeInTurn: true,
       arrange: 'line', slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 }, index: INDEX_LEFT,
     },
-    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS },
+    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'top', spanName: 'top', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS },
     table: {
-      noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'above', spanName: 'above', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS,
+      noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'top', spanName: 'top', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS,
       head: { word: 'head', look: { bold: true } },
     },
     binary: {
@@ -706,15 +703,12 @@
   //   repeat the word can be given more than once, collecting an array (via)
   //   modes  only allowed in these line kinds (clear: in defaults); notIn: not allowed in these
   //   error  the word isn't allowed here, with a hint
-  // A point: x,y, a shape (its centre), or a point on its edge (an anchor, "A.top": ANCHORS);
-  // POINT also takes one beside a shape (a placement and a shape id)
+  // A point: x,y, a shape (its centre), or a point on its edge (an anchor, "A.top": ANCHORS)
   const SPOT = [['num', 'num'], ['anchor'], ['id']]
-  const POINT = [...SPOT, ['placement', 'id']]
   const buildPoint = (v, sig) => (sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
-    : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] }
-      : sig[0] === 'anchor' ? { kind: 'ref', ...v[0] } : { kind: 'ref', ref: v[0] })
+    : sig[0] === 'anchor' ? { kind: 'ref', ...v[0] } : { kind: 'ref', ref: v[0] })
   const SPOT_HELP = '"x,y", a shape id or a point on its edge (e.g. A.top, A.bottom-left)'
-  const at = { key: 'at', sigs: POINT, build: buildPoint, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "below A"` }
+  const at = { key: 'at', sigs: SPOT, build: buildPoint, help: `${SPOT_HELP}, e.g. "at B.right" (with a gap: beside it, "at B.right gap 0.5")` }
   const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
   // a number that can follow values instead: a var's, cell's or number's ("x V1"), or an
   // expression's in { } ("x {V1 * 2}"), worked out again as they change (linkNumber in anim-values.js)
@@ -749,22 +743,23 @@
     // "at" places a shape as it's made, "move" one that's there
     at: { ...at, modes: ['create', 'layout', 'group', 'span'], where: 'as a shape is made, e.g. "A: rect at 2,3" (to move one that\'s there: "A: move 5,3")' },
     move: { ...at, what: 'move', notIn: ['create', 'layout'], where: 'on a shape that\'s there, e.g. "A: move 5,3" (to place a new one: "A: rect at 2,3")' },
-    ...Object.fromEntries(PLACEMENTS.map((place) => [place, { key: 'at', sigs: [['id']], build: (v) => ({ kind: 'place', place, ref: v[0] }), help: 'a shape id' }])),
     x: bound(number('x')),
     y: bound(number('y')),
     from: { key: 'from', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
     to: { key: 'to', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
-    via: { ...at, key: 'via', repeat: true, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "via above B"` },
-    gap: number('gap'),
+    via: { ...at, key: 'via', repeat: true, help: SPOT_HELP },
+    // between the things a line spaces out (LINES: spaces); or with a point on a shape's edge, how far
+    // beside that edge a shape goes (clear: back on the point)
+    gap: { key: 'gap', sigs: [['num'], ['clear']], build: (v, sig) => (sig[0] === 'clear' ? { none: true } : v[0]), help: 'a number of cells, or clear' },
     travel: { key: 'travel', list: SPOT, build: buildPoint, help: 'shape ids, points on their edges and/or x,y points, e.g. "travel R1 R2.top B"' },
     // the point a turn goes round ("angle +90 about 5,5"): fixed where it is now
     about: { key: 'about', sigs: SPOT, build: buildPoint, help: `${SPOT_HELP}, after an angle, e.g. "angle +90 about 5,5"` },
     follow: { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: false }), help: 'a line or arrow id' },
     'follow-reverse': { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: true }), help: 'a line or arrow id', what: 'follow' },
     attach: {
-      key: 'attach', sigs: [['placement', 'id'], ['anchor'], ['id']],
-      build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : sig[0] === 'anchor' ? { side: 'centre', ...v[0] } : { side: 'centre', ref: v[0] }),
-      help: 'a shape id, optionally after a side, or a point on its edge, e.g. "attach right-of A" or "attach A.top-right"',
+      key: 'attach', sigs: [['anchor'], ['id']],
+      build: (v, sig) => (sig[0] === 'anchor' ? v[0] : { ref: v[0] }),
+      help: 'a shape id or a point on its edge, e.g. "attach A" or "attach A.top-right" (with a gap: beside it)',
     },
     detach: fixed('detach', true),
     // size and look
@@ -820,15 +815,15 @@
     },
     callout: {
       key: 'callout', sigs: [['str', 'side'], ['str'], ['clear']],
-      build: (v, sig) => (sig[0] === 'clear' ? { none: true } : { text: v[0], side: v[1] || 'above' }),
+      build: (v, sig) => (sig[0] === 'clear' ? { none: true } : { text: v[0], side: v[1] || 'top' }),
       help: 'quoted text (e.g. callout "Look!"), optionally then a side, or clear',
     },
     // a var's / row's / column's name tag (a text shape that goes with it), and a row's / column's
     // cell numbers
     name: {
-      key: 'name', sigs: [['str', 'placement'], ['str'], ['clear']],
+      key: 'name', sigs: [['str', 'side'], ['str'], ['clear']],
       build: (v, sig) => (sig[0] === 'clear' ? { none: true } : { text: v[0], side: v[1] || null }),
-      help: 'quoted text (e.g. name "total"), optionally then a side (above, below, left-of, right-of), or clear',
+      help: `quoted text (e.g. name "total"), optionally then a side (${SIDES.join(', ')}), or clear`,
     },
     indices: { key: 'indices', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
     // a line where it goes from now on (SHAPES: trail)
@@ -864,17 +859,20 @@
 
   // The word an author types for a prop, for messages: "quoted text" for a label, the word itself
   // for a one-word prop given its value (dashed, pop, …), otherwise the keyword that sets it.
-  function wordFor(key, value) {
+  // (kind: a line kind, LINES: the word for the key that can go on it, as "move" for a camera's at)
+  const goesIn = (word, kind) => !kind || ((!KEYWORDS[word].modes || KEYWORDS[word].modes.includes(kind)) && !KEYWORDS[word].notIn?.includes(kind))
+  function wordFor(key, value, kind) {
     if (key === 'label') return 'quoted text'
     if (typeof value === 'string' && KEYWORDS[value]?.key === key) return value
-    if (KEYWORDS[key]?.key === key) return key
-    return Object.keys(KEYWORDS).find((word) => KEYWORDS[word].key === key) || key
+    const words = Object.keys(KEYWORDS).filter((word) => KEYWORDS[word].key === key)
+    const own = KEYWORDS[key]?.key === key ? [key] : []
+    return [...own, ...words].find((word) => goesIn(word, kind)) || own[0] || words[0] || key
   }
 
   // A list of props for a message: "a speed, a delay and an ease"
   const ARTICLES = { speed: 'a speed', delay: 'a delay', ease: 'an ease', effect: 'an effect', stagger: 'a stagger' }
-  function listProps(keys) {
-    const words = keys.map((key) => ARTICLES[key] || wordFor(key))
+  function listProps(keys, kind) {
+    const words = keys.map((key) => ARTICLES[key] || wordFor(key, undefined, kind))
     return words.length > 1 ? `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}` : words[0] || 'nothing'
   }
 
@@ -1243,22 +1241,31 @@
     // its box goes there: a row / column's first cell, or an aligned shape's side, is off-centre
     return placeFor(self, { x: c.x + along * ux, y: c.y + along * uy })
   }
-  // A placement word's place (PLACE_DIRECTIONS)
-  const placeNextTo = (self, other, place, gap) => placeAlong(self, other, DIRECTIONS[PLACE_DIRECTIONS[place]], gap)
+  // Where self goes to be beside other's side or corner (ANCHORS), gap from it: their upright boxes
+  // (outline) gap apart that way, across and down for a corner. A label below an image or icon
+  // counts as part of its box.
+  function placeBeside(self, other, anchor, gap) {
+    const a = outline(self)
+    const b = outline(other)
+    const c = boxCentre(other)
+    const side = ANCHORS[anchor]
+    const label = side.y > 0 ? labelBelow(other) : side.y < 0 ? labelBelow(self) : 0 // the one between them
+    return placeFor(self, { x: c.x + side.x * (a.hw + b.hw + gap), y: c.y + side.y * (a.hh + b.hh + gap + label) })
+  }
 
   // A shape's attachment (shape.attach), one of two kinds:
-  //   beside  next to its ref (side: a placement word, or 'centre' on top of it, and a gap; on top,
-  //           an anchor puts it on that point of its ref's edge instead): attach, and a var's / row's name
+  //   beside  on its ref: on its centre, or on the point of its edge an anchor names; with a gap,
+  //           beside that side or corner, gap from it (placeBeside): attach, and a var's / row's name
   //   offset  at a fixed offset from its ref (dx, dy): a group's members (a row's cells too), and a
   //           row's index labels
-  const besideOf = (ref, side, gap, anchor) => ({ kind: 'beside', ref, side, gap, ...(anchor ? { anchor } : {}) })
+  const besideOf = (ref, anchor, gap) => ({ kind: 'beside', ref, ...(anchor ? { anchor } : {}), ...(gap != null ? { gap } : {}) })
   const offsetFrom = (ref, dx, dy) => ({ kind: 'offset', ref, dx, dy })
 
   // Where an attached shape sits, from its ref and its attachment.
   function attachPos(shape, ref, spec) {
     if (spec.kind === 'offset') return { x: ref.x + spec.dx, y: ref.y + spec.dy }
-    if (spec.side === 'centre') return placeFor(shape, spec.anchor ? anchorPoint(ref, spec.anchor) : boxCentre(ref))
-    return placeNextTo(shape, ref, spec.side, spec.gap ?? PLACE_GAP)
+    if (spec.gap == null) return placeFor(shape, spec.anchor ? anchorPoint(ref, spec.anchor) : boxCentre(ref))
+    return placeBeside(shape, ref, spec.anchor, spec.gap)
   }
 
   // The one constraint resolver: places every attached shape and group member from its ref, refs
@@ -1619,11 +1626,11 @@
     })))
   }
 
-  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
-    PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
+    PATTERNS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
-    escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeNextTo, placeAlong, pointAt, pointOnHops, pointOnPath, reducedMotion,
+    escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeBeside, placeAlong, pointAt, pointOnHops, pointOnPath, reducedMotion,
     resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, OUTLINES, ANCHORS, anchorPoint, refPoint, polygonPoints, roundCorners, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

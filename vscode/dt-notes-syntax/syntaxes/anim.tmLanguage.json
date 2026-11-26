@@ -373,7 +373,7 @@
     "property": {
       "$comment": "params: every keyword (KEYWORDS) but the commands, named (at, speed, fill) or standalone (bold, pop, dashed), and a row edit's into",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(stagger-reverse|follow-reverse|signal-reverse|flow-reverse|keep-style|highlight|right-of|callout|contain|counter|decimal|indices|left-of|opacity|regular|stagger|anchor|attach|bounce|corner|dashed|digits|dotted|follow|height|normal|powers|radius|repeat|signal|static|stroke|travel|weight|wobble|about|above|angle|below|cover|delay|front|pulse|scale|shake|slide|solid|speed|start|style|track|trail|typed|width|back|bend|bold|draw|ease|fade|fill|flow|font|from|glow|into|lang|mono|move|name|ring|show|size|zoom|bar|gap|ink|max|pie|pop|via|at|to|x|y)(?![\\w-])"
+      "match": "(?<![\\w-])(stagger-reverse|follow-reverse|signal-reverse|flow-reverse|keep-style|highlight|callout|contain|counter|decimal|indices|opacity|regular|stagger|anchor|attach|bounce|corner|dashed|digits|dotted|follow|height|normal|powers|radius|repeat|signal|static|stroke|travel|weight|wobble|about|angle|cover|delay|front|pulse|scale|shake|slide|solid|speed|start|style|track|trail|typed|width|back|bend|bold|draw|ease|fade|fill|flow|font|from|glow|into|lang|mono|move|name|ring|show|size|zoom|bar|gap|ink|max|pie|pop|via|at|to|x|y)(?![\\w-])"
     },
     "value": {
       "$comment": "value words, after a param (highlight, speed, anchor and ease values have their own rules)",
@@ -509,7 +509,7 @@
       ]
     },
     "shape-ref": {
-      "$comment": "a capitalised word is a shape id used as a value (from A to B, attach right-of Msg, travel R1 R2), with any places in [ ] (Arr[2], G[1, 2]): keywords are lowercase; keep this last",
+      "$comment": "a capitalised word is a shape id used as a value (from A to B, attach Msg.right, travel R1 R2), with any places in [ ] (Arr[2], G[1][2]): keywords are lowercase; keep this last",
       "name": "variable.parameter.anim",
       "match": "(?<![\\w#.-])[A-Z][\\w.-]*(?:\\[[^\\]\\[]*\\][\\w.-]*)*(?![\\w-])"
     }

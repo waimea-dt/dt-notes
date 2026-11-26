@@ -124,7 +124,7 @@ S: scratch [
     "turn right (15) degrees",
     "say [Hello!] for (2) seconds"
 ] at 2,2 pop
-T: text "Flag script" attach below S
+T: text "Flag script" attach S.bottom gap 0.25
 A: arrow from 11,3 to S
 ```
 

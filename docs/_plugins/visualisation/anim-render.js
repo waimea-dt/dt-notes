@@ -1383,7 +1383,7 @@
         const spec = item && !LINE_TYPES.includes(item.shape.type) && (item.b || item.a).attach
         if (!spec || passed.has(spec.ref)) return null
         const before = item.a?.attach
-        if (item.a && item.b && !(before && before.kind === spec.kind && before.ref === spec.ref && before.side === spec.side && before.anchor === spec.anchor)) return null
+        if (item.a && item.b && !(before && before.kind === spec.kind && before.ref === spec.ref && before.anchor === spec.anchor && before.gap === spec.gap)) return null
         const turn = meta.tweens.get(item.uid)?.turn
         if (turn && !turn.carried) return null // turning on its own, round its own pivot
         if (spec.kind !== 'offset' || before?.kind !== 'offset') return spec
@@ -1751,18 +1751,18 @@
       // A side with no room for the bubble (a shape at the drawing's edge) flips to the opposite
       // side, then tries the other two; with no room anywhere it keeps its side.
       const room = {
-        above: b.y0 - tail - h >= viewBox.y + m,
-        below: b.y1 + tail + h <= viewBox.y + viewBox.h - m,
+        top: b.y0 - tail - h >= viewBox.y + m,
+        bottom: b.y1 + tail + h <= viewBox.y + viewBox.h - m,
         left: b.x0 - tail - w >= viewBox.x + m,
         right: b.x1 + tail + w <= viewBox.x + viewBox.w - m,
       }
-      const opposite = { above: 'below', below: 'above', left: 'right', right: 'left' }
-      const across = callout.side === 'above' || callout.side === 'below' ? ['left', 'right'] : ['above', 'below']
+      const opposite = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' }
+      const across = callout.side === 'top' || callout.side === 'bottom' ? ['left', 'right'] : ['top', 'bottom']
       const side = [callout.side, opposite[callout.side], ...across].find((s) => room[s]) || callout.side
       const cx0 = (b.x0 + b.x1) / 2
       const cy0 = (b.y0 + b.y1) / 2
       let cx = cx0, cy = cy0, tip
-      if (side === 'below') { tip = { x: cx0, y: b.y1 + 4 }; cy = b.y1 + tail + h / 2 }
+      if (side === 'bottom') { tip = { x: cx0, y: b.y1 + 4 }; cy = b.y1 + tail + h / 2 }
       else if (side === 'left') { tip = { x: b.x0 - 4, y: cy0 }; cx = b.x0 - tail - w / 2 }
       else if (side === 'right') { tip = { x: b.x1 + 4, y: cy0 }; cx = b.x1 + tail + w / 2 }
       else { tip = { x: cx0, y: b.y0 - 4 }; cy = b.y0 - tail - h / 2 }
@@ -1805,11 +1805,11 @@
       const tx = Math.min(x1 - r - half, Math.max(x0 + r + half, tip.x))
       const ty = Math.min(y1 - r - half, Math.max(y0 + r + half, tip.y))
       let d = `M ${x0 + r} ${y0}`
-      if (side === 'below') d += ` L ${tx - half} ${y0} L ${tip.x} ${tip.y} L ${tx + half} ${y0}`
+      if (side === 'bottom') d += ` L ${tx - half} ${y0} L ${tip.x} ${tip.y} L ${tx + half} ${y0}`
       d += ` L ${x1 - r} ${y0} Q ${x1} ${y0} ${x1} ${y0 + r}`
       if (side === 'left') d += ` L ${x1} ${ty - half} L ${tip.x} ${tip.y} L ${x1} ${ty + half}`
       d += ` L ${x1} ${y1 - r} Q ${x1} ${y1} ${x1 - r} ${y1}`
-      if (side === 'above') d += ` L ${tx + half} ${y1} L ${tip.x} ${tip.y} L ${tx - half} ${y1}`
+      if (side === 'top') d += ` L ${tx + half} ${y1} L ${tip.x} ${tip.y} L ${tx - half} ${y1}`
       d += ` L ${x0 + r} ${y1} Q ${x0} ${y1} ${x0} ${y1 - r}`
       if (side === 'right') d += ` L ${x0} ${ty + half} L ${tip.x} ${tip.y} L ${x0} ${ty - half}`
       return `${d} L ${x0} ${y0 + r} Q ${x0} ${y0} ${x0 + r} ${y0} Z`

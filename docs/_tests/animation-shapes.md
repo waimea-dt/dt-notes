@@ -167,8 +167,8 @@ Placed beside a shape, a text is placed by its box, as any shape is: centred und
 T1: delete
 Cell: delete
 B: rect "b" at 6,3 size 4x0.8 dotted stroke muted fill none
-T2: below B
-T3: attach above B
+T2: move B.bottom gap 0.25
+T3: attach B.top gap 0.25
 ```
 
 +++

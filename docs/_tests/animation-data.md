@@ -32,7 +32,7 @@ Arr: fill green
 
 ## Placed
 
-`move` places the first cell; `below` the whole row.
+`move` places the first cell; `move Col.bottom gap 0.5` the whole row, beside `Col`.
 
 ```anim
 Arr: move 3,3 speed slow
@@ -41,7 +41,7 @@ Arr: move 3,3 speed slow
 +++
 
 ```anim
-Words: below Col gap 0.5 speed slow
+Words: move Col.bottom gap 0.5 speed slow
 ```
 
 ---
@@ -60,7 +60,7 @@ Arr: delete pop
 
 ```anim
 Arr: row [5, 3, 8, 1] at 2,2 fill blue
-I: text "i" attach below Arr[0]
+I: text "i" attach Arr[0].bottom gap 0.25
 P: arrow from 1,4.5 to Arr[3]
 Col: column ["A" "B" "C"] at 10,1.5 size 1.6x0.8 gap 0.2 fill teal
 ```
@@ -112,7 +112,7 @@ Col: swap 0 2 speed slow
 
 ```anim
 Arr: row [1, 2, 3, 4, 5] at 2,2 fill blue size 0.9 gap 0.2
-I: text "i" attach below Arr[2]
+I: text "i" attach Arr[2].bottom gap 0.25
 St: column [4 9] at 10,1.5 size 1.6x0.8 fill teal
 ```
 
@@ -286,7 +286,7 @@ Sorted: highlight spotlight
 
 ```anim
 Sorted: highlight clear
-Win: callout "max?" below
+Win: callout "max?" bottom
 ```
 
 ---
@@ -542,7 +542,7 @@ Arr: move 7,4.5 speed slow
 +++
 
 ```anim
-Total: name "sum" above
+Total: name "sum" top
 ```
 
 ---

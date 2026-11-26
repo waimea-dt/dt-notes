@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo, placeAlong,
+  const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeBeside, placeAlong,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, REF, canonicalRef, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
@@ -275,7 +275,7 @@
       if (owned && (props.at || props.from || props.to || props.via || props.bend)) throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
       if (props.angle && !props.about && !kindOf(shape).loop) throw new Error(`a line's angle turns it about a point, e.g. "${shape.id}: angle +90 about 5,5" (a loop's angle is a curve's)`)
       if (props.travel || props.follow || props.attach) throw new Error('a line has no single position, so it can\'t travel, follow or attach (its ends can follow shapes)')
-      if (props.x || props.y || props.at?.kind === 'ref' || props.at?.kind === 'place') throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
+      if (props.x || props.y || props.at?.kind === 'ref') throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
       if (props.at) {
         if (!props.at.x.rel || !props.at.y.rel || creating) throw new Error('a line has no single position: use from / to, or "move +x,+y" to shift it')
         const ends = resolveEnds(shape, shapes)
@@ -295,16 +295,14 @@
       if (props.via && props.bend) throw new Error('give either "via" or "bend", not both: a curve bends through its via points, or by its bend when it has none')
       if (props.bend) shape.via = null // bends by its bend from now on
       if (props.via) {
-        // Via points (replacing any it had): a shape id stays on that shape, a placement is fixed
+        // Via points (replacing any it had): a shape id (or a point on its edge) stays on that shape
         // where it is now, and a signed number is relative to the point before.
-        const point = { type: 'point', x: 0, y: 0, w: 0, h: 0 } // something to place next to a shape
         const ends = resolveEnds({ ...shape, via: [] }, shapes)
         let prev = ends.from
         shape.via = props.via.map((via) => {
           let p
           if (via.kind === 'ref') { p = onShape(via); prev = refPoint(via, shapes); return p }
-          if (via.kind === 'place') p = placeNextTo(point, shapes.get(via.ref), via.place, PLACE_GAP)
-          else p = { x: coord(via.x, prev.x), y: coord(via.y, prev.y) }
+          p = { x: coord(via.x, prev.x), y: coord(via.y, prev.y) }
           prev = p
           return { x: p.x, y: p.y }
         })
@@ -324,7 +322,8 @@
       checkMove(shape, props, creating)
       const start = { x: shape.x, y: shape.y }
       setPosition(shape, props, creating, warn)
-      if (props.attach || props.detach) attachShape(shape, props, warn)
+      if (props.attach || props.detach || (props.gap && shape.attach?.kind === 'beside')) attachShape(shape, props, warn) // "Lock: gap 0": a new gap
+      else if (props.gap && props.at?.kind !== 'ref') warn('"gap" goes with a point on a shape\'s edge ("at B.right gap 0.5") or an attached shape, so it does nothing here')
       if (creating && (shape.x === undefined || shape.y === undefined)) throw new Error('needs a position, e.g. "at 3,2"')
       const route = routeOf(shape, props, start)
       keepOffset(shape, props)
@@ -359,11 +358,11 @@
       for (const axis of AXES) if (placed || props[axis]) unlink(shape, axis)
       for (const axis of AXES) if (props[axis]?.bind) linkNumber(shape, axis, props[axis], warn, creating)
       if (at?.kind === 'abs') { shape.x = coord(at.x, now(shape.x)); shape.y = coord(at.y, now(shape.y)) }
-      if (at?.kind === 'ref') Object.assign(shape, placeFor(shape, refPoint(at, shapes)))
-      if (at?.kind === 'place') {
-        const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
-        Object.assign(shape, placeNextTo(shape, shapes.get(at.ref), at.place, gap))
-      }
+      // "at B.right": on that point; with a gap, beside that side or corner ("at B.right gap 0.5")
+      if (at?.kind === 'ref' && props.gap?.v !== undefined) {
+        if (!at.anchor) throw new Error(`"gap" puts a shape beside a side or corner of "${at.ref}", e.g. "at ${at.ref}.right gap 0.5"`)
+        Object.assign(shape, placeBeside(shape, shapes.get(at.ref), at.anchor, props.gap.v * CELL))
+      } else if (at?.kind === 'ref') Object.assign(shape, placeFor(shape, refPoint(at, shapes)))
       if (props.x && !props.x.bind) shape.x = coord(props.x, now(shape.x))
       if (props.y && !props.y.bind) shape.y = coord(props.y, now(shape.y))
     }
@@ -373,9 +372,16 @@
       if (props.attach) {
         if (props.attach.ref === shape.id) throw new Error('a shape can\'t attach to itself')
         leaveGroup(shape)
-        if (props.gap && props.attach.side === 'centre') warn('"gap" does nothing when attaching on top of a shape (give a side, e.g. attach right-of a)')
-        shape.attach = besideOf(props.attach.ref, props.attach.side, props.gap ? props.gap.v * CELL : PLACE_GAP, props.attach.anchor)
+        const gap = props.gap?.v !== undefined ? props.gap.v * CELL : null
+        if (gap !== null && !props.attach.anchor) throw new Error(`"gap" puts a shape beside a side or corner of "${props.attach.ref}", e.g. "attach ${props.attach.ref}.right gap 0.5"`)
+        shape.attach = besideOf(props.attach.ref, props.attach.anchor, gap)
         Object.assign(shape, attachPos(shape, shapes.get(props.attach.ref), shape.attach))
+      } else if (props.gap && shape.attach?.kind === 'beside') {
+        // "Lock: gap 0.5" / "Lock: gap clear": further beside, or back on the point
+        const { ref, anchor } = shape.attach
+        if (!anchor && !props.gap.none) throw new Error(`"gap" puts a shape beside a side or corner of "${ref}", e.g. "attach ${ref}.right gap 0.5"`)
+        shape.attach = besideOf(ref, anchor, props.gap.none ? null : props.gap.v * CELL)
+        Object.assign(shape, attachPos(shape, shapes.get(ref), shape.attach))
       }
       if (props.detach) {
         if (!shape.attach) warn('this shape isn\'t attached or in a group, so "detach" does nothing')
@@ -417,7 +423,6 @@
       if (!props.via) return null
       const vias = props.via.map((via) => {
         if (via.kind === 'ref') return onto(refPoint(via, shapes))
-        if (via.kind === 'place') return placeNextTo(shape, shapes.get(via.ref), via.place, PLACE_GAP)
         return { x: coord(via.x, start.x), y: coord(via.y, start.y) }
       })
       return buildPath([start, ...vias, { x: shape.x, y: shape.y }])
@@ -687,7 +692,6 @@
     function runCameraLine([, colon, rest = ''], meta, warn) {
       if (colon) throw new Error('"camera" takes no colon, e.g. "camera move 4,3 zoom 2"')
       const props = parseProps(tokenize(rest), 0, 'camera', shapes)
-      if (props.at?.kind === 'place') throw new Error('"camera move" takes "x,y" or a shape id')
       if (props.x?.bind || props.y?.bind) throw new Error('the camera goes to a number, not one that follows values, e.g. "camera x 4"')
       if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'travel', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects move, travel, zoom or reset, e.g. "camera move 4,3 zoom 2"')
       if (props.reset && (props.at || props.x || props.y || props.travel || props.zoom)) throw new Error('"camera reset" takes only a speed, a delay and an ease')

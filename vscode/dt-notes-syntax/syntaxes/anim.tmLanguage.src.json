@@ -509,7 +509,7 @@
       ]
     },
     "shape-ref": {
-      "$comment": "a capitalised word is a shape id used as a value (from A to B, attach right-of Msg, travel R1 R2), with any places in [ ] (Arr[2], G[1, 2]): keywords are lowercase; keep this last",
+      "$comment": "a capitalised word is a shape id used as a value (from A to B, attach Msg.right, travel R1 R2), with any places in [ ] (Arr[2], G[1][2]): keywords are lowercase; keep this last",
       "name": "variable.parameter.anim",
       "match": "(?<![\\w#.-])[A-Z][\\w.-]*(?:\\[[^\\]\\[]*\\][\\w.-]*)*(?![\\w-])"
     }

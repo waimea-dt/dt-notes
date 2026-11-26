@@ -65,6 +65,7 @@ Markers go alone on their line. Everything in a beat plays at once.
 - `at` puts a shape's centre on the middle of the square, and anything with parts (rows, grids, numbers, code, Scratch) by its top-left. `anchor top-left` (or any side, corner or `centre`) puts that part of a single shape on that part of the square, and it holds as the shape changes size.
 - Points `5,4`, sizes `2x1`, all in cells. A point is x,y (column, row); a place is `[row][column]`, as in code (`G[1][2]`).
 - A point can be a shape (`A`: its centre) or a point on its edge: `A.top` `A.bottom` `A.left` `A.right` `A.top-left` `A.top-right` `A.bottom-left` `A.bottom-right`.
+- A shape placed at a point on an edge (`at`, `move`, `attach`) goes on it; with a `gap`, beside that side or corner, that far away.
 
 ## Lines
 
@@ -114,7 +115,7 @@ R: row [
 | Property | Syntax |
 |---|---|
 | position | `at 3,2` · `at B` (as it's made) · `move 5,3` · `move B` (once it's there) · `x 3` · `y 2` |
-| placement | `below B` · `above B` · `left-of B` · `right-of B` · `gap 1` |
+| beside | `at B.right gap 0.5` · `at B.top-left gap 0` (touching) · `gap clear` (back on the point) |
 | line ends | `from 2,3 to B` (an end on a shape follows it) · `from A.right to B.left` · `start dot` · `end arrow` |
 | size | `size 2x1` · `size 2` (circle: diameter) · `width 3` · `height 0.5` |
 | radius / corner | `radius 0.5` (circle: both ways) · `corner 0.2` (rect; line, arrow: rounds its corners) |
@@ -201,20 +202,21 @@ A: trail clear
 ## Copy, attach, group
 
 ```anim
-K2: copy Key move 8,1          # copy, then move off
-Lock: attach right-of Msg      # rides beside Msg
-Lock: attach Msg               # on top of Msg
-Lock: attach Msg.top-right     # on its corner
+K2: copy Key move 8,1            # copy, then move off
+Lock: attach Msg.right gap 0.25  # rides beside Msg
+Lock: attach Msg                 # on top of Msg
+Lock: attach Msg.top-right       # on its corner
+Lock: gap 0                      # beside the corner, touching (gap clear: back on it)
 Lock: detach
-Pkt: group [Msg Lock]          # acts as one
+Pkt: group [Msg Lock]            # acts as one
 Pkt: ungroup
-G: arrange right gap 0.5       # in a line, from the first, centres level
-G: arrange 30 gap 0            # at an angle (degrees, as angle)
+G: arrange right gap 0.5         # in a line, from the first, centres level
+G: arrange 30 gap 0              # at an angle (degrees, as angle)
 ```
 
 - Moving an attached shape detaches it.
 - A look or delete on a group goes to its members.
-- `arrange`: in the group's order, each from the one before as `right-of` would (`gap` 0.25). Takes `speed`, `delay`, `ease`, `stagger`.
+- `arrange`: in the group's order, each the `gap` (0.25) from the one before, that way. Takes `speed`, `delay`, `ease`, `stagger`.
 
 ## Rows and columns
 
@@ -237,7 +239,7 @@ Arr: delete                        # the whole row
 
 - Values in `[ ]`: numbers, `"quoted"` or `null`, commas optional.
 - `size`, `gap` and looks apply to every cell. Cell size is set when it's made.
-- `at` places it by its top-left. `below B` etc. place the whole row.
+- `at` places it by its top-left. `at B.bottom gap 0.5` places the whole row beside `B`.
 - Ids stay with the places: after an edit, `Arr[2]` is whichever cell is now third.
 - Cells hold values like a var: `Arr[2]: 7`.
 - A range `[from..to]` includes both ends, either way round.
@@ -405,7 +407,7 @@ A: remove 1 into V1
 ```anim
 V1: var 0 at 5,3 name "total"
 Arr: row [5 3 8] at 3,4 name "arr" indices
-V1: name "sum" above               # rename, or another side
+V1: name "sum" top                 # rename, or another side
 V1: name clear
 Arr: indices
 Arr: indices clear
@@ -527,8 +529,8 @@ Arr: highlight number      # numbers each cell / member
 A: highlight spotlight     # dims everything else
 A: highlight outline arrow # several
 A: highlight clear
-A: callout "Look!"         # above
-A: callout "Look!" below   # or left-of / right-of
+A: callout "Look!"         # on top
+A: callout "Look!" bottom  # or left / right
 A: callout clear
 ```
 

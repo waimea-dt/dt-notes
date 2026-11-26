@@ -339,7 +339,7 @@ A: callout "Look at this!"
 +++
 
 ```anim
-A: callout "Now below" below
+A: callout "Now below" bottom
 ```
 
 +++
@@ -347,7 +347,7 @@ A: callout "Now below" below
 Long text wraps.
 
 ```anim
-A: callout "A much longer callout that wraps onto several lines" left-of
+A: callout "A much longer callout that wraps onto several lines" left
 ```
 
 +++
