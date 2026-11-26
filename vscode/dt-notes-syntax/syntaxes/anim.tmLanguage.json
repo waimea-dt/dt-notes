@@ -1,5 +1,5 @@
 {
-  "$comment": "Scene lines for <animation> blocks: see docs/_plugins/ANIMATION_LANG.md. Three roles: commands (keyword, and a shape type straight after id:), params (support.type.property-name: named ones like speed, and standalone ones like bold, pop, dashed) and their values (support.constant.property-value, numbers, colours, strings, ids). See docs/_plugins/PLUGIN_ANIMATION.md.",
+  "$comment": "Built by build-grammar.js from anim.tmLanguage.src.json and the engine's tables: edit those, not this. Scene lines for <animation> blocks: see docs/_plugins/ANIMATION_LANG.md. Three roles: commands (keyword, and a shape type straight after id:), params (support.type.property-name: named ones like speed, and standalone ones like bold, pop, dashed) and their values (support.constant.property-value, numbers, colours, strings, ids). See docs/_plugins/PLUGIN_ANIMATION.md.",
   "name": "Anim",
   "scopeName": "source.anim",
   "patterns": [
@@ -59,9 +59,6 @@
     },
     {
       "include": "#property"
-    },
-    {
-      "include": "#flag"
     },
     {
       "include": "#value"
@@ -150,7 +147,7 @@
     },
     "line-end": {
       "$comment": "start / end and what's on that end of a line (END_MARKS); elsewhere end is a literal (the last place)",
-      "match": "(?<![\\w-])(start|end)\\s+(none|arrow|dot|crow|bar)(?![\\w-])",
+      "match": "(?<![\\w-])(start|end)\\s+(arrow|crow|none|bar|dot)(?![\\w-])",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"
@@ -162,7 +159,7 @@
     },
     "anchor": {
       "$comment": "a point on a shape's edge (ANCHORS): the shape's id, then its side or corner as a value (A.top-left)",
-      "match": "(?<![\\w#.-])([A-Z][\\w.-]*?(?:\\[[^\\]\\[]*\\][\\w.-]*?)*)(\\.)(top-left|top-right|bottom-left|bottom-right|top|bottom|left|right)(?![\\w.-])",
+      "match": "(?<![\\w#.-])([A-Z][\\w.-]*?(?:\\[[^\\]\\[]*\\][\\w.-]*?)*)(\\.)(bottom-right|bottom-left|top-right|top-left|bottom|right|left|top)(?![\\w.-])",
       "captures": {
         "1": {
           "name": "variable.parameter.anim"
@@ -177,7 +174,7 @@
     },
     "line-head": {
       "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is a line end's mark). Ids start with a capital letter, so a lowercase one isn't coloured as an id",
-      "match": "^\\s*([A-Z][\\w.-]*(?:\\[[^\\]\\[]*\\][\\w.-]*)*)\\s*(:)(?:\\s*(?:(rect|circle|diamond|polygon|text|line|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])))?",
+      "match": "^\\s*([A-Z][\\w.-]*(?:\\[[^\\]\\[]*\\][\\w.-]*)*)\\s*(:)(?:\\s*(?:(diamond|polygon|scratch|binary|circle|column|denary|arrow|curve|table|code|grid|line|rect|text|hex|row|var)(?![\\w-])))?",
       "captures": {
         "1": {
           "name": "entity.name.tag.anim"
@@ -266,11 +263,11 @@
     "action": {
       "$comment": "the verbs: words that start a line's command, and the actions detach (like ungroup) and clear (callout clear, name clear, indices clear, powers clear; highlight clear is in its own rule) and reset (fill reset, style reset)",
       "name": "keyword.control.anim",
-      "match": "(?<![\\w-])(copy|group|ungroup|arrange|delete|swap|insert|remove|span|flip|detach|clear|reset)(?![\\w-])"
+      "match": "(?<![\\w-])(arrange|ungroup|delete|insert|remove|group|copy|flip|span|swap|detach|clear|reset)(?![\\w-])"
     },
     "ease": {
       "$comment": "ease and its value (in and out are only values here)",
-      "match": "(?<![\\w-])(ease)(?:\\s+(in-out|linear|in|out|spring)(?![\\w-]))?",
+      "match": "(?<![\\w-])(ease)(?:\\s+(in-out|linear|spring|out|in)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"
@@ -295,7 +292,7 @@
             },
             {
               "name": "support.constant.property-value.anim",
-              "match": "(?<![\\w-])(outline|inside|line|spotlight|arrow|glow|number)(?![\\w-])"
+              "match": "(?<![\\w-])(spotlight|outline|inside|number|arrow|glow|line)(?![\\w-])"
             },
             {
               "include": "#number"
@@ -318,7 +315,7 @@
     },
     "speed": {
       "$comment": "speed and its word (normal is a value here, the layer param elsewhere)",
-      "match": "(?<![\\w-])(speed)(?:\\s+(instant|vfast|fast|normal|slow|vslow)(?![\\w-]))?",
+      "match": "(?<![\\w-])(speed)(?:\\s+(instant|normal|vfast|vslow|fast|slow)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"
@@ -341,7 +338,7 @@
       }
     },
     "align": {
-      "match": "(?<![\\w-])(align)(?:\\s+(left|centre|right)(?![\\w-]))?",
+      "match": "(?<![\\w-])(align)(?:\\s+(centre|right|left)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"
@@ -353,7 +350,7 @@
     },
     "angle": {
       "$comment": "angle and a direction word (DIRECTIONS in anim-core.js); a number after it is matched as a number",
-      "match": "(?<![\\w-])(angle)(?:\\s+(up|down|left|right)(?![\\w-]))?",
+      "match": "(?<![\\w-])(angle)(?:\\s+(right|down|left|up)(?![\\w-]))?",
       "captures": {
         "1": {
           "name": "support.type.property-name.anim"
@@ -365,7 +362,7 @@
     },
     "shape-type": {
       "$comment": "a shape type starting a continuation line (an indented line of a long command)",
-      "match": "^\\s+(rect|circle|diamond|polygon|text|line|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])",
+      "match": "^\\s+(diamond|polygon|scratch|binary|circle|column|denary|arrow|curve|table|code|grid|line|rect|text|hex|row|var)(?![\\w-])",
       "captures": {
         "1": {
           "name": "storage.type.anim"
@@ -373,14 +370,9 @@
       }
     },
     "property": {
-      "$comment": "named params, which a value follows",
+      "$comment": "params: every keyword (KEYWORDS) but the commands, named (at, speed, fill) or standalone (bold, pop, dashed), and a row edit's into",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(at|move|x|y|from|to|via|gap|travel|follow-reverse|follow|attach|size|width|height|radius|corner|bend|fill|stroke|ink|weight|opacity|about|trail|font|style|angle|scale|delay|stagger-reverse|stagger|highlight|callout|name|indices|powers|decimal|digits|max|track|show|start|zoom|into|above|below|left-of|right-of)(?![\\w-])"
-    },
-    "flag": {
-      "$comment": "standalone params: a word that sets something on its own (looks, effects, emphasis, counter)",
-      "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(keep-style|bar|ring|pie|bold|regular|mono|solid|dashed|dotted|flow-reverse|flow|static|back|normal|front|contain|cover|fade|pop|draw|slide|typed|pulse|shake|wobble|bounce|glow|signal-reverse|signal|counter)(?![\\w-])"
+      "match": "(?<![\\w-])(stagger-reverse|follow-reverse|signal-reverse|flow-reverse|keep-style|highlight|right-of|callout|contain|counter|decimal|indices|left-of|opacity|regular|stagger|attach|bounce|corner|dashed|digits|dotted|follow|height|normal|powers|radius|repeat|signal|static|stroke|travel|weight|wobble|about|above|align|angle|below|cover|delay|front|pulse|scale|shake|slide|solid|speed|start|style|track|trail|typed|width|back|bend|bold|draw|ease|fade|fill|flow|font|from|glow|into|lang|mono|move|name|ring|show|size|zoom|bar|gap|ink|max|pie|pop|via|at|to|x|y)(?![\\w-])"
     },
     "value": {
       "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",
@@ -427,8 +419,8 @@
         },
         {
           "name": "support.constant.color.anim",
-          "$comment": "the named colours, the hues' variants (hue-bright, hue-muted: COLOUR_VARIANTS in anim-core.js) and colours picked as they're drawn (COLOUR_PICKS: contrast)",
-          "match": "(?<![\\w-])((?:red|orange|amber|yellow|green|teal|cyan|blue|purple|pink|magenta|theme)(?:-(?:bright|muted))?|muted|fg|bg-shape|bg|black|white|none|contrast)(?![\\w-])"
+          "$comment": "the named colours, the hues' variants (COLOURS, with COLOUR_VARIANTS) and colours picked as they're drawn (COLOUR_PICKS)",
+          "match": "(?<![\\w-])(magenta-bright|magenta-muted|orange-bright|purple-bright|yellow-bright|amber-bright|green-bright|orange-muted|purple-muted|theme-bright|yellow-muted|amber-muted|blue-bright|cyan-bright|green-muted|pink-bright|teal-bright|theme-muted|blue-muted|cyan-muted|pink-muted|red-bright|teal-muted|red-muted|bg-shape|contrast|magenta|orange|purple|yellow|amber|black|green|muted|theme|white|blue|cyan|none|pink|teal|red|bg|fg)(?![\\w-])"
         }
       ]
     },
@@ -453,7 +445,7 @@
           }
         },
         {
-          "match": "(?<![\\w.])(?:([+-](?:\\d+\\.?\\d*|\\.\\d+))|(\\d+\\.?\\d*|\\.\\d+))(?:([xX\u00d7])(?:([+-](?:\\d+\\.?\\d*|\\.\\d+))|(\\d+\\.?\\d*|\\.\\d+)))?(?![\\w.])",
+          "match": "(?<![\\w.])(?:([+-](?:\\d+\\.?\\d*|\\.\\d+))|(\\d+\\.?\\d*|\\.\\d+))(?:([xX×])(?:([+-](?:\\d+\\.?\\d*|\\.\\d+))|(\\d+\\.?\\d*|\\.\\d+)))?(?![\\w.])",
           "captures": {
             "1": {
               "name": "constant.numeric.relative.anim",

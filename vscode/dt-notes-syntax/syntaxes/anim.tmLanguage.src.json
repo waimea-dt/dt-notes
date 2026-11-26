@@ -1,0 +1,516 @@
+{
+  "$comment": "Scene lines for <animation> blocks: see docs/_plugins/ANIMATION_LANG.md. Three roles: commands (keyword, and a shape type straight after id:), params (support.type.property-name: named ones like speed, and standalone ones like bold, pop, dashed) and their values (support.constant.property-value, numbers, colours, strings, ids). See docs/_plugins/PLUGIN_ANIMATION.md.",
+  "name": "Anim",
+  "scopeName": "source.anim",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#line-head"
+    },
+    {
+      "include": "#beat-line"
+    },
+    {
+      "include": "#resource"
+    },
+    {
+      "include": "#colour-function"
+    },
+    {
+      "include": "#sum"
+    },
+    {
+      "include": "#line-end"
+    },
+    {
+      "include": "#edit-axis"
+    },
+    {
+      "include": "#action"
+    },
+    {
+      "include": "#highlight"
+    },
+    {
+      "include": "#ease"
+    },
+    {
+      "include": "#speed"
+    },
+    {
+      "include": "#repeat"
+    },
+    {
+      "include": "#align"
+    },
+    {
+      "include": "#angle"
+    },
+    {
+      "include": "#lang"
+    },
+    {
+      "include": "#shape-type"
+    },
+    {
+      "include": "#property"
+    },
+    {
+      "include": "#value"
+    },
+    {
+      "include": "#place"
+    },
+    {
+      "include": "#literal"
+    },
+    {
+      "include": "#colour"
+    },
+    {
+      "include": "#operator"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#anchor"
+    },
+    {
+      "include": "#shape-ref"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "$comment": "# followed by a space (or the end of the line) starts a comment; #f80 is a colour",
+      "name": "comment.line.number-sign.anim",
+      "match": "(?:^|(?<=\\s))#(?=\\s|$).*$"
+    },
+    "string": {
+      "name": "string.quoted.double.anim",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.anim",
+          "match": "\\\\."
+        },
+        {
+          "$comment": "a label's marks: <sup>…</sup>, <sub>…</sub>, <b>…</b>, <i>…</i> (TEXT_MARKS)",
+          "name": "entity.name.tag.anim",
+          "match": "</?(?:sup|sub|b|i)>"
+        },
+        {
+          "include": "#sum"
+        }
+      ]
+    },
+    "sum": {
+      "$comment": "a sum in { } (OPERATORS): a number that follows values (x {V1 * 2}), or a value in a label (\"{N * 2}\")",
+      "name": "meta.embedded.expression.anim",
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.embedded.begin.anim"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.embedded.end.anim"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#operator"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#shape-ref"
+        }
+      ]
+    },
+    "operator": {
+      "$comment": "an operator in a sum (OPERATORS), with spaces round it: + - * / mod",
+      "name": "keyword.operator.arithmetic.anim",
+      "match": "(?<=\\s|\\{)(\\*|/|\\+|-|mod)(?=\\s|\\}|$)"
+    },
+    "line-end": {
+      "$comment": "start / end and what's on that end of a line (END_MARKS); elsewhere end is a literal (the last place)",
+      "match": "(?<![\\w-])(start|end)\\s+({{MARKS}})(?![\\w-])",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "anchor": {
+      "$comment": "a point on a shape's edge (ANCHORS): the shape's id, then its side or corner as a value (A.top-left)",
+      "match": "(?<![\\w#.-])([A-Z][\\w.-]*?(?:\\[[^\\]\\[]*\\][\\w.-]*?)*)(\\.)({{ANCHORS}})(?![\\w.-])",
+      "captures": {
+        "1": {
+          "name": "variable.parameter.anim"
+        },
+        "2": {
+          "name": "punctuation.separator.anim"
+        },
+        "3": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "line-head": {
+      "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is a line end's mark). Ids start with a capital letter, so a lowercase one isn't coloured as an id",
+      "match": "^\\s*([A-Z][\\w.-]*(?:\\[[^\\]\\[]*\\][\\w.-]*)*)\\s*(:)(?:\\s*(?:({{TYPES}})(?![\\w-])))?",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.anim"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.anim"
+        },
+        "3": {
+          "name": "storage.type.anim"
+        }
+      }
+    },
+    "beat-line": {
+      "$comment": "lines with no id; defaults clear and camera reset are commands too, like clear everywhere",
+      "match": "^\\s*(defaults|camera|pause|auto|then)(?![\\w-])(?:\\s+(clear|reset)(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "keyword.control.anim"
+        },
+        "2": {
+          "name": "keyword.control.anim"
+        }
+      }
+    },
+    "resource": {
+      "match": "(?<![\\w-])({{RESOURCES}})(\\()([^)]*)(\\))",
+      "captures": {
+        "1": {
+          "name": "storage.type.anim"
+        },
+        "2": {
+          "name": "punctuation.definition.arguments.begin.anim"
+        },
+        "3": {
+          "name": "string.unquoted.anim"
+        },
+        "4": {
+          "name": "punctuation.definition.arguments.end.anim"
+        }
+      }
+    },
+    "colour-function": {
+      "$comment": "a colour worked out from values, rgb(255 G {B * 2}) (COLOUR_FUNCTIONS in anim-core.js): a colour value, its arguments numbers, ids and sums in { }",
+      "begin": "(?<![\\w-])({{COLOUR_FUNCTIONS}})(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "support.constant.color.anim"
+        },
+        "2": {
+          "name": "punctuation.definition.arguments.begin.anim"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.arguments.end.anim"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#sum"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#shape-ref"
+        },
+        {
+          "include": "#punctuation"
+        }
+      ]
+    },
+    "edit-axis": {
+      "$comment": "the word for a grid's columns straight after a row edit (g: swap col 1 3): a param. Only there, as col is often an id",
+      "match": "(?<![\\w-])(swap|insert|remove)\\s+(col)(?![\\w.-])",
+      "captures": {
+        "1": {
+          "name": "keyword.control.anim"
+        },
+        "2": {
+          "name": "support.type.property-name.anim"
+        }
+      }
+    },
+    "action": {
+      "$comment": "the verbs: words that start a line's command, and the actions detach (like ungroup) and clear (callout clear, name clear, indices clear, powers clear; highlight clear is in its own rule) and reset (fill reset, style reset)",
+      "name": "keyword.control.anim",
+      "match": "(?<![\\w-])({{VERBS}}|{{COMMANDS}})(?![\\w-])"
+    },
+    "ease": {
+      "$comment": "ease and its value (in and out are only values here)",
+      "match": "(?<![\\w-])(ease)(?:\\s+({{EASES}})(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "highlight": {
+      "$comment": "highlight and its words (outline, inside, line N, spotlight, arrow, number N, clear; line's and number's N is optional), so arrow and line here aren't shape types",
+      "match": "(?<![\\w-])(highlight)((?:\\s+(?:outline|inside|spotlight|arrow|glow|clear|(?:number|line)(?:\\s+[+-]?(?:\\d+\\.?\\d*|\\.\\d+))?)(?![\\w-]))*)",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "patterns": [
+            {
+              "name": "keyword.control.anim",
+              "match": "(?<![\\w-])clear(?![\\w-])"
+            },
+            {
+              "name": "support.constant.property-value.anim",
+              "match": "(?<![\\w-])({{HIGHLIGHTS}})(?![\\w-])"
+            },
+            {
+              "include": "#number"
+            }
+          ]
+        }
+      }
+    },
+    "repeat": {
+      "$comment": "repeat and its forever (REPEATS); a number of times is a number",
+      "match": "(?<![\\w-])(repeat)(?:\\s+(forever)(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "speed": {
+      "$comment": "speed and its word (normal is a value here, the layer param elsewhere)",
+      "match": "(?<![\\w-])(speed)(?:\\s+({{SPEEDS}})(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "lang": {
+      "$comment": "lang and a code block's language (any word: Prism's name for it)",
+      "match": "(?<![\\w-])(lang)(?:\\s+([A-Za-z][\\w+#-]*))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "align": {
+      "match": "(?<![\\w-])(align)(?:\\s+({{ALIGNS}})(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "angle": {
+      "$comment": "angle and a direction word (DIRECTIONS in anim-core.js); a number after it is matched as a number",
+      "match": "(?<![\\w-])(angle)(?:\\s+({{DIRECTIONS}})(?![\\w-]))?",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.anim"
+        },
+        "2": {
+          "name": "support.constant.property-value.anim"
+        }
+      }
+    },
+    "shape-type": {
+      "$comment": "a shape type starting a continuation line (an indented line of a long command)",
+      "match": "^\\s+({{TYPES}})(?![\\w-])",
+      "captures": {
+        "1": {
+          "name": "storage.type.anim"
+        }
+      }
+    },
+    "property": {
+      "$comment": "params: every keyword (KEYWORDS) but the commands, named (at, speed, fill) or standalone (bold, pop, dashed), and a row edit's into",
+      "name": "support.type.property-name.anim",
+      "match": "(?<![\\w-])({{PARAMS}})(?![\\w-])"
+    },
+    "value": {
+      "$comment": "value words, after a param (highlight, speed, align and ease values have their own rules)",
+      "name": "support.constant.property-value.anim",
+      "match": "(?<![\\w-])(outline|inside|spotlight)(?![\\w-])"
+    },
+    "place": {
+      "$comment": "a grid's place alone, in an action: [row][column], each a number or end, a table's row head (G: swap [1][2] [0][0], span T [head][0] [end][0])",
+      "match": "(?<![\\w\\].-])(\\[)(?:(\\d+)|(end|head))(\\]\\[)(?:(\\d+)|(end))(\\])",
+      "captures": {
+        "1": {
+          "name": "punctuation.section.brackets.anim"
+        },
+        "2": {
+          "name": "constant.numeric.anim"
+        },
+        "3": {
+          "name": "constant.language.anim variable.other.constant.anim"
+        },
+        "4": {
+          "name": "punctuation.section.brackets.anim"
+        },
+        "5": {
+          "name": "constant.numeric.anim"
+        },
+        "6": {
+          "name": "constant.language.anim variable.other.constant.anim"
+        },
+        "7": {
+          "name": "punctuation.section.brackets.anim"
+        }
+      }
+    },
+    "literal": {
+      "$comment": "words that stand in for a value, like a number does: end (a row's last place) and null (no value). Also a named constant (variable.other.constant), the innermost scope, so themes that colour language constants like an error (Catppuccin: red) show them as constants (peach, like numbers and true)",
+      "name": "constant.language.anim variable.other.constant.anim",
+      "match": "(?<![\\w-])(end|null)(?![\\w-])"
+    },
+    "colour": {
+      "patterns": [
+        {
+          "name": "constant.other.color.anim",
+          "match": "#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?![\\w])"
+        },
+        {
+          "name": "support.constant.color.anim",
+          "$comment": "the named colours, the hues' variants (COLOURS, with COLOUR_VARIANTS) and colours picked as they're drawn (COLOUR_PICKS)",
+          "match": "(?<![\\w-])({{COLOURS}})(?![\\w-])"
+        }
+      ]
+    },
+    "number": {
+      "$comment": "numbers, and sizes like 2x1 (the x is a separator, like the comma in 2,1). A signed number is relative on a change (move +2,0): constant.numeric.relative (for a colour of its own in editor.tokenColorCustomizations), its sign an operator. When creating, a signed number is absolute, but the grammar can't tell.",
+      "patterns": [
+        {
+          "$comment": "hex and binary literals (0x7B, 0b1011), before sizes, which 0x10 would otherwise read as",
+          "match": "(?<![\\w.])(?:([+-]0(?:[xX][0-9a-fA-F]+|[bB][01]+))|(0(?:[xX][0-9a-fA-F]+|[bB][01]+)))(?![\\w.])",
+          "captures": {
+            "1": {
+              "name": "constant.numeric.relative.anim",
+              "patterns": [
+                {
+                  "include": "#relative"
+                }
+              ]
+            },
+            "2": {
+              "name": "constant.numeric.anim"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\w.])(?:([+-](?:\\d+\\.?\\d*|\\.\\d+))|(\\d+\\.?\\d*|\\.\\d+))(?:([xX×])(?:([+-](?:\\d+\\.?\\d*|\\.\\d+))|(\\d+\\.?\\d*|\\.\\d+)))?(?![\\w.])",
+          "captures": {
+            "1": {
+              "name": "constant.numeric.relative.anim",
+              "patterns": [
+                {
+                  "include": "#relative"
+                }
+              ]
+            },
+            "2": {
+              "name": "constant.numeric.anim"
+            },
+            "3": {
+              "name": "punctuation.separator.anim"
+            },
+            "4": {
+              "name": "constant.numeric.relative.anim",
+              "patterns": [
+                {
+                  "include": "#relative"
+                }
+              ]
+            },
+            "5": {
+              "name": "constant.numeric.anim"
+            }
+          }
+        }
+      ]
+    },
+    "relative": {
+      "$comment": "inside a signed number: the sign, then the number",
+      "patterns": [
+        {
+          "name": "keyword.operator.sign.anim",
+          "match": "[+-]"
+        },
+        {
+          "name": "constant.numeric.relative.anim",
+          "match": "0(?:[xX][0-9a-fA-F]+|[bB][01]+)|\\d+\\.?\\d*|\\.\\d+"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.anim",
+          "match": ","
+        },
+        {
+          "$comment": "a row's / column's [values]",
+          "name": "punctuation.section.brackets.anim",
+          "match": "[\\[\\]]"
+        },
+        {
+          "$comment": "( ) round part of a sum: (a + b) * 2, (-5)",
+          "name": "punctuation.section.parens.anim",
+          "match": "[()]"
+        }
+      ]
+    },
+    "shape-ref": {
+      "$comment": "a capitalised word is a shape id used as a value (from A to B, attach right-of Msg, travel R1 R2), with any places in [ ] (Arr[2], G[1, 2]): keywords are lowercase; keep this last",
+      "name": "variable.parameter.anim",
+      "match": "(?<![\\w#.-])[A-Z][\\w.-]*(?:\\[[^\\]\\[]*\\][\\w.-]*)*(?![\\w-])"
+    }
+  }
+}

@@ -54,12 +54,15 @@ code --install-extension "$TEMP/dt-notes-syntax.vsix" --force
 
 Then run **Developer: Reload Window**. To update after changing the extension, bump `version` in `package.json` and run the same two commands.
 
-Changes to the site's plugins don't need a reinstall: the error marks reload the engine when its files are saved, and the preview pane reloads when a file it uses is saved.
+Packaging builds the grammar first (`build-grammar.js`): its word lists come from the engine's tables, so a new word in the engine is highlighted after a reinstall, with no grammar edit. Edit the template, `syntaxes/anim.tmLanguage.src.json`, never the built `anim.tmLanguage.json`.
+
+Otherwise, changes to the site's plugins don't need a reinstall: the error marks reload the engine when its files are saved, and the preview pane reloads when a file it uses is saved.
 
 ## Files
 
 - `extension.js`: starts each feature, and the colour swatches
-- `syntaxes/`: the anim grammar, and its injection into Markdown (including ```` ```anim ```` fences inside ```` ```markdown ```` examples)
+- `build-grammar.js`: builds the anim grammar from its template and the engine's tables (run by packaging)
+- `syntaxes/`: the anim grammar (`anim.tmLanguage.src.json`, its template), and its injection into Markdown (including ```` ```anim ```` fences inside ```` ```markdown ```` examples)
 - `language-configuration.json`: comments, quote and bracket pairs
 - `preview.js`, `preview.css`: highlighting and shading in VS Code's Markdown preview
 - `shading.js`: block shading in the editor
