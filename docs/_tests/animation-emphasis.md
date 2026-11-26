@@ -10,42 +10,42 @@ One-off effects on a shape that's already there. They don't replay going back.
 
 ```anim
 defaults size 1.6x0.8 font 0.6
-pu: rect "pulse" at 2.5,2
-sh: rect "shake" at 4.5,2
-wo: rect "wobble" at 6.5,2
-bn: rect "bounce" at 8.5,2
-gl: rect "glow" at 10.5,2
+Pu: rect "pulse" at 2.5,2
+Sh: rect "shake" at 4.5,2
+Wo: rect "wobble" at 6.5,2
+Bn: rect "bounce" at 8.5,2
+Gl: rect "glow" at 10.5,2
 defaults clear
 ```
 
 ---
 
 ```anim
-pu: pulse
+Pu: pulse
 ```
 
 +++
 
 ```anim
-sh: shake
+Sh: shake
 ```
 
 +++
 
 ```anim
-wo: wobble
+Wo: wobble
 ```
 
 +++
 
 ```anim
-bn: bounce
+Bn: bounce
 ```
 
 +++
 
 ```anim
-gl: glow
+Gl: glow
 ```
 
 ---
@@ -53,15 +53,15 @@ gl: glow
 ## Several at once, and on a group
 
 ```anim
-pu: pulse
-sh: pulse
-g: group [bn gl]
+Pu: pulse
+Sh: pulse
+G: group [Bn Gl]
 ```
 
 +++
 
 ```anim
-g: bounce
+G: bounce
 ```
 
 </animation>
@@ -71,10 +71,10 @@ g: bounce
 <animation name="Signal" grid="12x5">
 
 ```anim
-a: circle "a" at 2,2
-b: rect "b" at 10,2
-l: arrow from a to b stroke muted
-c: curve from a to b via 6,4.5 stroke muted
+A: circle "a" at 2,2
+B: rect "b" at 10,2
+L: arrow from A to B stroke muted
+C: curve from A to B via 6,4.5 stroke muted
 ```
 
 ---
@@ -82,13 +82,13 @@ c: curve from a to b via 6,4.5 stroke muted
 ## signal
 
 ```anim
-l: signal
+L: signal
 ```
 
 +++
 
 ```anim
-c: signal speed slow
+C: signal speed slow
 ```
 
 ---
@@ -96,7 +96,7 @@ c: signal speed slow
 ## signal-reverse
 
 ```anim
-l: signal-reverse
+L: signal-reverse
 ```
 
 ---
@@ -104,8 +104,8 @@ l: signal-reverse
 ## On a group: each of its lines
 
 ```anim
-g: group [a, b, l, c]
-g: signal speed fast
+G: group [A, B, L, C]
+G: signal speed fast
 ```
 
 </animation>
@@ -118,28 +118,28 @@ Highlights stay on until `highlight clear`, and go where their shape goes.
 
 ```anim
 defaults size 1.6x0.8 font 0.6
-ar: rect "arrow" at 3.5,2
-gl: rect "glow" at 6.5,2
-both: rect "both" at 9.5,2
+Ar: rect "arrow" at 3.5,2
+Gl: rect "glow" at 6.5,2
+Both: rect "both" at 9.5,2
 defaults clear
-t: text "a line of text" at 6.5,3.5
+T: text "a line of text" at 6.5,3.5
 ```
 
 ---
 
 ```anim
-ar: highlight arrow
-gl: highlight glow
-both: highlight arrow glow
-t: highlight line
+Ar: highlight arrow
+Gl: highlight glow
+Both: highlight arrow glow
+T: highlight line
 ```
 
 +++
 
 ```anim
-ar: move +0,-0.5
-gl: angle 20
-both: scale 1.4
+Ar: move +0,-0.5
+Gl: angle 20
+Both: scale 1.4
 ```
 
 ---
@@ -147,10 +147,10 @@ both: scale 1.4
 ## clear
 
 ```anim
-ar: highlight clear
-gl: highlight clear
-both: highlight clear
-t: highlight clear
+Ar: highlight clear
+Gl: highlight clear
+Both: highlight clear
+T: highlight clear
 ```
 
 </animation>
@@ -162,15 +162,15 @@ The outline follows each shape's own outline (turned and scaled with it); inside
 <animation name="Outline & Inside" grid="14x5">
 
 ```anim
-r: rect "rect" at 2,2 size 2x1
-rc: rect "corner" at 5,2 size 2x1 corner 0.3
-c: circle "circle" at 8,2 radius 0.7
-d: diamond "diamond" at 11,2 size 2x1.4
-t: text "text" at 13.5,2
-tr: rect "turned" at 2.5,4.2 size 2x0.8 angle 20
-th: rect "thick" at 6,4.2 size 2x0.8 weight 3
-sc: circle "scaled" at 9,4.2 radius 0.6 scale 1.5
-i: icon(laptop) "icon" at 12,4
+R: rect "rect" at 2,2 size 2x1
+Rc: rect "corner" at 5,2 size 2x1 corner 0.3
+C: circle "circle" at 8,2 radius 0.7
+D: diamond "diamond" at 11,2 size 2x1.4
+T: text "text" at 13.5,2
+Tr: rect "turned" at 2.5,4.2 size 2x0.8 angle 20
+Th: rect "thick" at 6,4.2 size 2x0.8 weight 3
+Sc: circle "scaled" at 9,4.2 radius 0.6 scale 1.5
+I: icon(laptop) "icon" at 12,4
 ```
 
 ---
@@ -178,22 +178,22 @@ i: icon(laptop) "icon" at 12,4
 ## outline
 
 ```anim
-r: highlight outline
-rc: highlight outline
-c: highlight outline
-d: highlight outline
-t: highlight outline
-tr: highlight outline
-th: highlight outline
-sc: highlight outline
-i: highlight outline
+R: highlight outline
+Rc: highlight outline
+C: highlight outline
+D: highlight outline
+T: highlight outline
+Tr: highlight outline
+Th: highlight outline
+Sc: highlight outline
+I: highlight outline
 ```
 
 +++
 
 ```anim
-tr: angle +45
-sc: pulse
+Tr: angle +45
+Sc: pulse
 ```
 
 ---
@@ -201,15 +201,15 @@ sc: pulse
 ## inside
 
 ```anim
-r: highlight clear inside
-rc: highlight clear inside
-c: highlight clear inside
-d: highlight clear inside
-t: highlight clear
-tr: highlight clear inside
-th: highlight clear inside
-sc: highlight clear inside
-i: highlight clear inside
+R: highlight clear inside
+Rc: highlight clear inside
+C: highlight clear inside
+D: highlight clear inside
+T: highlight clear
+Tr: highlight clear inside
+Th: highlight clear inside
+Sc: highlight clear inside
+I: highlight clear inside
 ```
 
 ---
@@ -217,14 +217,14 @@ i: highlight clear inside
 ## Both
 
 ```anim
-r: highlight outline
-rc: highlight outline
-c: highlight outline
-d: highlight outline
-tr: highlight outline
-th: highlight outline
-sc: highlight outline
-i: highlight outline
+R: highlight outline
+Rc: highlight outline
+C: highlight outline
+D: highlight outline
+Tr: highlight outline
+Th: highlight outline
+Sc: highlight outline
+I: highlight outline
 ```
 
 </animation>
@@ -237,11 +237,11 @@ A bare `number` takes the next one; `number N` sets where the sequence is. On a 
 
 ```anim
 defaults size 1.2x0.8 font 0.6
-a: rect "a" at 2,1.5
-b: rect "b" at 4.5,1.5
-c: rect "c" at 7,1.5
-d: rect "d" at 9.5,1.5
-e: rect "e" at 12,1.5
+A: rect "a" at 2,1.5
+B: rect "b" at 4.5,1.5
+C: rect "c" at 7,1.5
+D: rect "d" at 9.5,1.5
+E: rect "e" at 12,1.5
 defaults clear
 ```
 
@@ -250,11 +250,11 @@ defaults clear
 ## 1, 2, then 5, 6, 7
 
 ```anim
-a: highlight number
-b: highlight number
-c: highlight number 5
-d: highlight number
-e: highlight number
+A: highlight number
+B: highlight number
+C: highlight number 5
+D: highlight number
+E: highlight number
 ```
 
 ---
@@ -262,7 +262,7 @@ e: highlight number
 ## A row numbers its cells
 
 ```anim
-arr: row [4, 8, 2] at 2,4 highlight number
+Arr: row [4, 8, 2] at 2,4 highlight number
 ```
 
 ---
@@ -270,15 +270,15 @@ arr: row [4, 8, 2] at 2,4 highlight number
 ## A group, staggered
 
 ```anim
-p: circle "p" at 10,4 radius 0.4
-q: circle "q" at 12,4 radius 0.4
-pq: group [p, q]
+P: circle "p" at 10,4 radius 0.4
+Q: circle "q" at 12,4 radius 0.4
+Pq: group [P, Q]
 ```
 
 +++
 
 ```anim
-pq: highlight number stagger 0.3
+Pq: highlight number stagger 0.3
 ```
 
 </animation>
@@ -290,16 +290,16 @@ Everything else dims, including their highlights and callouts.
 <animation name="Spotlight" grid="12x3">
 
 ```anim
-a: rect "a" at 2,2
-b: rect "b" at 5,2 highlight outline
-c: rect "c" at 8,2 callout "hi"
-d: rect "d" at 11,2
+A: rect "a" at 2,2
+B: rect "b" at 5,2 highlight outline
+C: rect "c" at 8,2 callout "hi"
+D: rect "d" at 11,2
 ```
 
 ---
 
 ```anim
-a: highlight spotlight
+A: highlight spotlight
 ```
 
 +++
@@ -307,7 +307,7 @@ a: highlight spotlight
 Several can be spotlit.
 
 ```anim
-d: highlight spotlight
+D: highlight spotlight
 ```
 
 ---
@@ -315,8 +315,8 @@ d: highlight spotlight
 ## clear
 
 ```anim
-a: highlight clear
-d: highlight clear
+A: highlight clear
+D: highlight clear
 ```
 
 </animation>
@@ -326,20 +326,20 @@ d: highlight clear
 <animation name="Callouts" grid="12x4">
 
 ```anim
-a: rect "a" at 6,2.5
-edge: rect "edge" at 11.5,0.5
+A: rect "a" at 6,2.5
+Edge: rect "edge" at 11.5,0.5
 ```
 
 ---
 
 ```anim
-a: callout "Look at this!"
+A: callout "Look at this!"
 ```
 
 +++
 
 ```anim
-a: callout "Now below" below
+A: callout "Now below" below
 ```
 
 +++
@@ -347,7 +347,7 @@ a: callout "Now below" below
 Long text wraps.
 
 ```anim
-a: callout "A much longer callout that wraps onto several lines" left-of
+A: callout "A much longer callout that wraps onto several lines" left-of
 ```
 
 +++
@@ -355,8 +355,8 @@ a: callout "A much longer callout that wraps onto several lines" left-of
 It stays inside the drawing.
 
 ```anim
-a: callout clear
-edge: callout "Near the edge"
+A: callout clear
+Edge: callout "Near the edge"
 ```
 
 </animation>

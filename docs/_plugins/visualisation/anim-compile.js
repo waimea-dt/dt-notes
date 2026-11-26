@@ -6,7 +6,7 @@
 ;(function () {
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeNextTo, placeAlong,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
-    tokenize, bounds, ID, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
+    tokenize, bounds, ID, REF, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
@@ -17,8 +17,8 @@
   // (id.name). Cells are numbered from the layout's base (LAYOUTS): `k` is a cell's number as
   // written, and its place in the row is k - base.
   // A grid's / table's (LAYOUTS: views) rows and columns are named like a row's cells, after the
-  // view's word if it has one (g.1, g.col.2), and its heading t.head; their cells like a row's
-  // (g.1.2, t.head.2). Their indices take the same last parts (g.index.1, g.index.col.2).
+  // view's word if it has one (G.1, G.col.2), and its heading T.head; their cells like a row's
+  // (G.1.2, T.head.2). Their indices take the same last parts (G.index.1, G.index.col.2).
   const cellId = (id, k) => `${id}.${k}`
   const markId = (id, numbering, k) => `${id}.${numbering.part}.${k}`
   const indexId = (id, k) => markId(id, NUMBERINGS.indices, k)
@@ -102,8 +102,8 @@
           if (problem) warn(problem)
           unlink(shape, key) // a look given again no longer follows any values
           if (value === 'reset') resetLook(shape, key)
-          else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, key, value, warn, creating) // "rgb(r g b)"
-          else if (value?.bind) linkNumber(shape, key, value.bind, warn, creating) // "weight v1", "angle {v1 * 2}"
+          else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, key, value, warn, creating) // "rgb(R G B)"
+          else if (value?.bind) linkNumber(shape, key, value.bind, warn, creating) // "weight V1", "angle {V1 * 2}"
           else if (look.unit) for (const field of fieldsOf(look)) shape[field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[field]), { unit: look.unit })))
           else shape[look.field] = look.map && value in look.map ? look.map[value] : value
           // a digit given a look no longer takes that look from its value
@@ -149,7 +149,7 @@
         if (shape.digit) checkDigit(shape.digit, { label: props.label })
         shape.label = props.label
         if (shape.nil) shape.nil = false
-        linkText(shape, warn, creating) // "Total: {v1}"
+        linkText(shape, warn, creating) // "Total: {V1}"
       }
       if (props.points) setPoints(shape, props.points) // before its look, so a size given with them stretches them
       // a turn about a point sets the angle itself (turnAbout), so it isn't a look here
@@ -166,7 +166,7 @@
       return route
     }
 
-    // "a: angle +90 about 5,5": how far a shape turns (by, in degrees: an absolute angle turns it
+    // "A: angle +90 about 5,5": how far a shape turns (by, in degrees: an absolute angle turns it
     // by the difference, as a direction word turns it the short way) and the point it turns about
     // (a shape's centre, or a point: signed, from the shape's own centre, or a line's start)
     function turnOf(shape, props, creating) {
@@ -264,7 +264,7 @@
     }
 
     // A point of a line kept on a shape, which it follows: its centre, or the point on its edge an
-    // anchor names (a.top)
+    // anchor names (A.top)
     const onShape = (p) => ({ ref: p.ref, ...(p.anchor ? { anchor: p.anchor } : {}) })
 
     // A line's ends (from / to, or the whole line shifted by a relative move) and its via points
@@ -290,7 +290,7 @@
         const current = creating ? undefined : resolveEnds(shape, shapes)[key]
         shape[key] = { x: coord(end.x, current?.x), y: coord(end.y, current?.y) }
       }
-      if (creating && (!shape.from || !shape.to)) throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} needs both ends, e.g. "from 2,3 to 7,8" or "from a to b"`)
+      if (creating && (!shape.from || !shape.to)) throw new Error(`${article(nounOf(shape))} ${nounOf(shape)} needs both ends, e.g. "from 2,3 to 7,8" or "from A to B"`)
       if (props.via && props.bend) throw new Error('give either "via" or "bend", not both: a curve bends through its via points, or by its bend when it has none')
       if (props.bend) shape.via = null // bends by its bend from now on
       if (props.via) {
@@ -312,7 +312,7 @@
       if (creating && kindOf(shape).bends && !shape.via?.length && !loops && !props.bend) warn('a curve with no "via" points or "bend" is a straight line')
       if (props.bend && loops) warn('"bend" has no effect on a loop: its angle and size shape it')
       if (kindOf(shape).loop?.props.some((key) => props[key]) && !loops) {
-        warn('angle and size shape a loop: a curve from a shape to itself with no "via" points, e.g. "curve from a to a angle up"')
+        warn('angle and size shape a loop: a curve from a shape to itself with no "via" points, e.g. "curve from A to A angle up"')
       }
       return null
     }
@@ -353,7 +353,7 @@
     function setPosition(shape, props, creating, warn) {
       const now = (value) => (creating ? undefined : value)
       const { at } = props
-      // a new place no longer follows values; "x v1": x (or y) follows one (KEYWORDS: bound)
+      // a new place no longer follows values; "x V1": x (or y) follows one (KEYWORDS: bound)
       const placed = at || props.travel || props.follow || props.attach || props.about
       for (const axis of AXES) if (placed || props[axis]) unlink(shape, axis)
       for (const axis of AXES) if (props[axis]?.bind) linkNumber(shape, axis, props[axis].bind, warn, creating)
@@ -499,10 +499,10 @@
     }
 
     // A line's props, read from tokens[i]. A shape whose label is lines (SHAPES: lines) can have
-    // them in [ ] where its label would go: "s: scratch [ "…" "…" ] at 2,1", "s: [ "…" ]". making: the id
+    // them in [ ] where its label would go: "S: scratch [ "…" "…" ] at 2,1", "S: [ "…" ]". making: the id
     // of the shape the line makes, if it makes one (parseProps)
     function propsOf(type, tokens, i, kind, making) {
-      // a polygon's points: straight after its type, or alone on a change ("p: [ … ]")
+      // a polygon's points: straight after its type, or alone on a change ("P: [ … ]")
       if (SHAPES[type]?.points && (making || tokens[i]?.kind === 'bracket')) {
         const { points, next } = readPoints(tokens, i, type)
         return { ...parseProps(tokens, next, kind, shapes, making), points }
@@ -522,7 +522,7 @@
     // from where it's placed ("[0,-1 1,1 -1,1]", commas optional), at least three. Returns them as
     // { x, y } and the token after the "]".
     function readPoints(tokens, i, type) {
-      const example = `e.g. "p: ${type} [0,-1 1,1 -1,1] at 5,4"`
+      const example = `e.g. "P: ${type} [0,-1 1,1 -1,1] at 5,4"`
       if (tokens[i]?.kind !== 'bracket' || tokens[i].value !== '[') throw new Error(`${article(type)} ${type}'s points go in [ ] straight after "${type}", ${example}`)
       const numbers = []
       let j = i + 1
@@ -736,12 +736,12 @@
 
     function runLine(text, meta, warn) {
       // `defaults …` has no id (and no colon), like pause and auto
-      const cameraLine = text.match(/^camera(\s*:)?(?:\s+(.*))?$/i)
+      const cameraLine = text.match(/^camera(\s*:)?(?:\s+(.*))?$/)
       if (cameraLine) return runCameraLine(cameraLine, meta, warn)
-      const defaultsLine = text.match(/^defaults(\s*:)?(?:\s+(.*))?$/i)
+      const defaultsLine = text.match(/^defaults(\s*:)?(?:\s+(.*))?$/)
       if (defaultsLine?.[1]) throw new Error('"defaults" takes no colon, e.g. "defaults fill blue"')
       const match = defaultsLine ? ['', 'defaults', defaultsLine[2] || ''] : text.match(/^([^:\s]+)\s*:\s*(.*)$/)
-      if (!match) throw new Error('expected "id: …" (or defaults, camera, pause, auto, then)')
+      if (!match) throw new Error('expected "Id: …" (or defaults, camera, pause, auto, then)')
       const id = match[1]
       const tokens = tokenize(match[2])
 
@@ -753,30 +753,30 @@
         if (props.reset) { for (const key of Object.keys(defaults)) delete defaults[key]; delete props.reset }
         const before = JSON.stringify(defaults)
         Object.assign(defaults, props)
-        if (JSON.stringify(defaults) === before && !tokens.some((t) => t.lower === 'clear')) warn('this defaults line changes nothing')
+        if (JSON.stringify(defaults) === before && !tokens.some((t) => t.value === 'clear')) warn('this defaults line changes nothing')
         return
       }
 
-      if (!ID.test(id)) throw new Error(`"${id}" isn't a valid id (letters, digits, _ - and ., starting with a letter)`)
-      if (RESERVED.has(id.toLowerCase())) throw new Error(`"${id}" is a reserved word, so it can't be an id`)
+      if (!REF.test(id)) throw new Error(`"${id}" isn't an id: an id starts with a capital letter, then letters, digits, _ or -${/^[a-z]/.test(id) ? `, e.g. "${id[0].toUpperCase()}${id.slice(1)}"` : ''}`)
 
       const first = tokens[0]
-      // "v: var 67 at 5,3": a rect that holds a value (a number, "text" or null), straight after "var"
-      const isVar = first?.kind === 'word' && first.lower === 'var'
+      // "V: var 67 at 5,3": a rect that holds a value (a number, "text" or null), straight after "var"
+      const isVar = first?.kind === 'word' && first.value === 'var'
       const varValue = isVar ? valueOf(tokens[1]) : undefined
-      const type = isVar ? 'rect' : first && (first.kind === 'res' ? (RESOURCE_TYPES.includes(first.name) ? first.name : null) : (SHAPE_TYPES.includes(first.lower) ? first.lower : null))
+      const type = isVar ? 'rect' : first && (first.kind === 'res' ? (RESOURCE_TYPES.includes(first.name) ? first.name : null) : (SHAPE_TYPES.includes(first.value) ? first.value : null))
       if (first?.kind === 'res' && !type) throw new Error(`unknown shape "${first.name}(…)"`)
       const existing = shapes.get(id)
 
-      // "arr: row [5 3 8 1] at 2,3" (or column): its cells are arr.0, arr.1, …
-      const word = first?.kind === 'word' ? first.lower : ''
+      // "Arr: row [5 3 8 1] at 2,3" (or column): its cells are Arr.0, Arr.1, …
+      const word = first?.kind === 'word' ? first.value : ''
+      if (!existing && (type || LAYOUT_TYPES.includes(word)) && !ID.test(id)) throw new Error(`"${id}" can't be a new shape's id: a "." is for a part, e.g. "Arr.2" or "V1.name"`)
       if (LAYOUT_TYPES.includes(word)) return createLayout(id, word, tokens, existing, meta, warn)
       // a verb: delete, swap, insert, remove, copy, group, ungroup, arrange (LINES)
       if (LINES[word]?.verb && (LINES[word].on?.(existing) ?? true)) return VERBS[word](id, existing, tokens, meta, warn, word)
 
-      // "l: arrow" on a line that already exists, with no new ends, isn't a new line: its ends'
+      // "L: arrow" on a line that already exists, with no new ends, isn't a new line: its ends'
       // marks are changed with start / end
-      const newEnds = tokens.some((t) => t.kind === 'word' && LINE_ENDS[t.lower])
+      const newEnds = tokens.some((t) => t.kind === 'word' && LINE_ENDS[t.value])
       if (type && SHAPES[type].line && existing && LINE_TYPES.includes(existing.type) && !newEnds) {
         throw new Error(`"${id}" is already a line: to change what's on its ends, e.g. "${id}: end arrow" or "${id}: start dot"`)
       }
@@ -806,27 +806,27 @@
       }
 
       if (!existing) {
-        const word = first?.kind === 'word' ? first.lower : ''
+        const word = first?.kind === 'word' ? first.value : ''
         const known = !word || KEYWORDS[word] || RESERVED.has(word)
         throw new Error(known ? `no shape called "${id}" (to create one, put a type after the colon, e.g. "${id}: rect")` : `unknown shape type "${first.value}"`)
       }
-      // "v3: v1 + v2": a value worked out from others, once (OPERATORS)
+      // "V3: V1 + V2": a value worked out from others, once (OPERATORS)
       const worked = exprValue(existing, tokens)
-      // a digit given a word that isn't a name: what it holds ("h.0: G")
+      // a digit given a word that isn't a name: what it holds ("H.0: G")
       if (existing.digit && !worked && holderRef(first) && !shapes.has(first.value)) checkDigit(existing.digit, { label: first.value })
-      // "v1: a.1" / "a.2: v2": a copy of another var's or cell's value glides over
+      // "V1: A.1" / "A.2: V2": a copy of another var's or cell's value glides over
       if (existing.holds && !worked && holderRef(first)) return assignValue(existing, holderRef(first, 'copy from'), tokens, meta, warn)
-      // "v: 123" / "arr.2: null": a new value for a var or a row's / column's cell ("text" is a
-      // label); "h.0: 0xF" a digit's
+      // "V: 123" / "Arr.2: null": a new value for a var or a row's / column's cell ("text" is a
+      // label); "H.0: 0xF" a digit's
       const given = existing.holds && first?.kind === 'word' ? valueOf(first) : undefined
       const newValue = worked ? { label: worked.label } : given && addTo(existing, given)
       const props = propsOf(existing.type, tokens, worked ? worked.next : newValue ? 1 : 0, 'change')
       if (newValue && props.label !== undefined) throw new Error('give one value: a number, "quoted" text or null')
-      if (props.count && !newValue) warn('"counter" goes with a new value, e.g. "v1: 100 counter"')
+      if (props.count && !newValue) warn('"counter" goes with a new value, e.g. "V1: 100 counter"')
       const before = newValue && valueIn(existing) // what it held, for counter
-      // "b: 67": a number's digits (LAYOUTS: radix) take the value, each that changes crossfading
+      // "B: 67": a number's digits (LAYOUTS: radix) take the value, each that changes crossfading
       if (newValue && existing.layout) for (const cell of setNumber(existing, newValue, warn)) schedule(meta, cell.uid, props)
-      // "s: "print(y)"": a one-line code block's text is its line's
+      // "S: "print(y)"": a one-line code block's text is its line's
       if (LAYOUTS[existing.layout]?.lines && props.label !== undefined) {
         const { item, base } = LAYOUTS[existing.layout]
         if (existing.members.length !== 1) throw new Error(`"${id}" has ${existing.members.length} ${item}s, so say which one, e.g. "${cellId(id, base)}: "x = 1""`)
@@ -899,12 +899,12 @@
       if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
     }
 
-    // "a: delete": a shape goes, with the line's exit effect (a group's members and a var's or
+    // "A: delete": a shape goes, with the line's exit effect (a group's members and a var's or
     // row's name and indices too)
     function deleteShape(id, existing, tokens, meta, warn) {
       if (!existing) throw noShape(id)
       refuseView(existing, 'delete')
-      const where = tokens[1]?.kind === 'word' && (/^\d+$/.test(tokens[1].value) || tokens[1].lower === EDIT_WORDS.end) ? tokens[1].value : null
+      const where = tokens[1]?.kind === 'word' && (/^\d+$/.test(tokens[1].value) || tokens[1].value === EDIT_WORDS.end) ? tokens[1].value : null
       if (existing.layout && where) throw new Error(`"delete" deletes the whole ${existing.layout}: to take one cell out, "${id}: remove ${where}"`)
       const props = parseProps(tokens, 1, 'delete', shapes)
       const order = staggerOrder(existing) // taken before its members go
@@ -915,7 +915,7 @@
       applyStagger(existing, order, props, meta, warn)
     }
 
-    // "b: copy a": an identical copy that starts on the original, so a move on the same line
+    // "B: copy A": an identical copy that starts on the original, so a move on the same line
     // animates away from it
     function copyShape(id, existing, tokens, meta, warn) {
       const srcId = parseAs('id', tokens[1], shapes)
@@ -938,7 +938,7 @@
       if (props.trail !== undefined) setTrail(src, shape, props, meta, warn) // from the original, where the copy starts
     }
 
-    // "g: group [a b c]": shapes that act as one, riding on the group at their offsets. The shapes
+    // "G: group [A B C]": shapes that act as one, riding on the group at their offsets. The shapes
     // go in [ ] (commas optional), like a row's values.
     function makeGroup(id, existing, tokens, meta, warn) {
       if (existing) throw new Error(`"${id}" already exists`)
@@ -973,7 +973,7 @@
       if (props.trail !== undefined) setTrail(group, group, props, meta, warn)
     }
 
-    // "g: ungroup": the group goes, its shapes stay where they are
+    // "G: ungroup": the group goes, its shapes stay where they are
     function ungroup(id, existing, tokens, meta) {
       if (!existing) throw noShape(id)
       if (!isGroup(existing) || bound(existing)) throw new Error(`"${id}" isn't a group`)
@@ -983,13 +983,13 @@
       tween(meta, existing.uid).exit = 'fade'
     }
 
-    // "g: arrange right gap 0.5" (a direction, or degrees): its shapes in a line that way, in the
+    // "G: arrange right gap 0.5" (a direction, or degrees): its shapes in a line that way, in the
     // order they're listed, each placed from the one before as "right-of" would (placeAlong). The
     // first stays put, and lines follow the shapes they join. They stay in the group, at their new
     // places in it (as keepOffset does).
     function arrangeGroup(id, group, tokens, meta, warn) {
       if (!group) throw noShape(id)
-      if (!isGroup(group) || bound(group)) throw new Error(`"${id}" isn't a group: "arrange" lays out a group's shapes, e.g. "g: group [a b c]", then "g: arrange right"`)
+      if (!isGroup(group) || bound(group)) throw new Error(`"${id}" isn't a group: "arrange" lays out a group's shapes, e.g. "G: group [A B C]", then "G: arrange right"`)
       if (group.layout) throw new Error(`a ${LAYOUTS[group.layout].noun} lays out its own ${LAYOUTS[group.layout].item}s`)
       const way = parseAs('num', tokens[1], shapes) ?? parseAs('direction', tokens[1], shapes)
       if (!way) throw new Error(`"arrange" needs a way to go, a number of degrees (clockwise, 0 = right) or ${orList(Object.keys(DIRECTIONS))}, e.g. "${id}: arrange right gap 0.5"`)
@@ -1028,7 +1028,7 @@
       if (props.effect) warnEffect(target, props.effect, warn)
     }
 
-    // "arr: fill green" on a row, column or group: the look goes to each of its shapes that takes
+    // "Arr: fill green" on a row, column or group: the look goes to each of its shapes that takes
     // it. With a stagger, a highlight does too (one each, in turn, rather than one round them all).
     function restyleMembers(group, props, meta, warn) {
       if (group.layout) {
@@ -1185,7 +1185,7 @@
   // part before the last is in the beat's `chain`), and play as one beat. Returns the wait (ms)
   // before the next part, or null if the line isn't a `then`.
   function thenLine(text) {
-    const match = text.match(/^then(?:\s+(.*))?$/i)
+    const match = text.match(/^then(?:\s+(.*))?$/)
     if (!match) return null
     const rest = match[1] || ''
     if (!rest) return 0
@@ -1197,10 +1197,10 @@
   // `auto` goes straight on to the next beat when this one finishes. Both are the whole beat's
   // (its last part's, after any `then`). Returns true if handled.
   function runTimingLine(text, meta) {
-    const match = text.match(/^(pause|auto)\b\s*(.*)$/i)
+    const match = text.match(/^(pause|auto)\b\s*(.*)$/)
     if (!match) return false
     const [, word, rest] = match
-    if (word.toLowerCase() === 'auto') {
+    if (word === 'auto') {
       if (rest) throw new Error('"auto" takes nothing after it')
       meta.auto = true
       return true

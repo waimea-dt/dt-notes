@@ -8,33 +8,33 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ```anim
 defaults radius 0.3 fill blue
-s1: circle at 3,1
-s2: circle at 3,2
-s3: circle at 3,3
-s4: circle at 3,4
-s5: circle at 3,5
-s6: circle at 3,6
-s7: circle at 3,7
+S1: circle at 3,1
+S2: circle at 3,2
+S3: circle at 3,3
+S4: circle at 3,4
+S5: circle at 3,5
+S6: circle at 3,6
+S7: circle at 3,7
 defaults clear
-t1: text "instant" at 1.5,1 font 0.6
-t2: text "vfast" at 1.5,2 font 0.6
-t3: text "fast" at 1.5,3 font 0.6
-t4: text "normal" at 1.5,4 font 0.6
-t5: text "slow" at 1.5,5 font 0.6
-t6: text "vslow" at 1.5,6 font 0.6
-t7: text "3 s" at 1.5,7 font 0.6
+T1: text "instant" at 1.5,1 font 0.6
+T2: text "vfast" at 1.5,2 font 0.6
+T3: text "fast" at 1.5,3 font 0.6
+T4: text "normal" at 1.5,4 font 0.6
+T5: text "slow" at 1.5,5 font 0.6
+T6: text "vslow" at 1.5,6 font 0.6
+T7: text "3 s" at 1.5,7 font 0.6
 ```
 
 ---
 
 ```anim
-s1: move 11,1 speed instant
-s2: move 11,2 speed vfast
-s3: move 11,3 speed fast
-s4: move 11,4 speed normal
-s5: move 11,5 speed slow
-s6: move 11,6 speed vslow
-s7: move 11,7 speed 3
+S1: move 11,1 speed instant
+S2: move 11,2 speed vfast
+S3: move 11,3 speed fast
+S4: move 11,4 speed normal
+S5: move 11,5 speed slow
+S6: move 11,6 speed vslow
+S7: move 11,7 speed 3
 ```
 
 </animation>
@@ -44,17 +44,17 @@ s7: move 11,7 speed 3
 <animation name="Delay" grid="12x3">
 
 ```anim
-a: rect "0" at 3,2
-b: rect "1 s" at 6,2
-c: rect "2 s" at 9,2
+A: rect "0" at 3,2
+B: rect "1 s" at 6,2
+C: rect "2 s" at 9,2
 ```
 
 ---
 
 ```anim
-a: fill green
-b: fill green delay 1
-c: fill green delay 2
+A: fill green
+B: fill green delay 1
+C: fill green delay 2
 ```
 
 </animation>
@@ -65,27 +65,27 @@ c: fill green delay 2
 
 ```anim
 defaults radius 0.3 fill blue
-e1: circle at 3,1
-e2: circle at 3,2
-e3: circle at 3,3
-e4: circle at 3,4
-e5: circle at 3,5
+E1: circle at 3,1
+E2: circle at 3,2
+E3: circle at 3,3
+E4: circle at 3,4
+E5: circle at 3,5
 defaults clear
-t1: text "in-out" at 1.5,1 font 0.6
-t2: text "linear" at 1.5,2 font 0.6
-t3: text "in" at 1.5,3 font 0.6
-t4: text "out" at 1.5,4 font 0.6
-t5: text "spring" at 1.5,5 font 0.6
+T1: text "in-out" at 1.5,1 font 0.6
+T2: text "linear" at 1.5,2 font 0.6
+T3: text "in" at 1.5,3 font 0.6
+T4: text "out" at 1.5,4 font 0.6
+T5: text "spring" at 1.5,5 font 0.6
 ```
 
 ---
 
 ```anim
-e1: move 11,1 speed slow ease in-out
-e2: move 11,2 speed slow ease linear
-e3: move 11,3 speed slow ease in
-e4: move 11,4 speed slow ease out
-e5: move 11,5 speed slow ease spring
+E1: move 11,1 speed slow ease in-out
+E2: move 11,2 speed slow ease linear
+E3: move 11,3 speed slow ease in
+E4: move 11,4 speed slow ease out
+E5: move 11,5 speed slow ease spring
 ```
 
 ---
@@ -93,8 +93,8 @@ e5: move 11,5 speed slow ease spring
 ## spring on pop, and on the camera
 
 ```anim
-b: rect "spring" at 7,3 size 2x1 fill pink pop ease spring
-camera move b zoom 1.5 ease spring
+B: rect "spring" at 7,3 size 2x1 fill pink pop ease spring
+camera move B zoom 1.5 ease spring
 ```
 
 +++
@@ -114,11 +114,11 @@ camera reset ease out
 +++
 
 ```anim
-no: rect "none" at 2,2
-fd: rect "fade" at 5,2 fade delay 1
-pp: rect "pop" at 8,2 pop delay 2
-sl: circle "slide" at 11,2 slide delay 3
-dr: arrow from 1,3.5 to 11,3.5 draw delay 4
+No: rect "none" at 2,2
+Fd: rect "fade" at 5,2 fade delay 1
+Pp: rect "pop" at 8,2 pop delay 2
+Sl: circle "slide" at 11,2 slide delay 3
+Dr: arrow from 1,3.5 to 11,3.5 draw delay 4
 ```
 
 ---
@@ -126,11 +126,11 @@ dr: arrow from 1,3.5 to 11,3.5 draw delay 4
 ## Exits
 
 ```anim
-no: delete
-fd: delete fade delay 1
-pp: delete pop delay 2
-sl: delete slide delay 3
-dr: delete draw delay 4
+No: delete
+Fd: delete fade delay 1
+Pp: delete pop delay 2
+Sl: delete slide delay 3
+Dr: delete draw delay 4
 ```
 
 </animation>
@@ -140,19 +140,19 @@ dr: delete draw delay 4
 <animation name="Typed" grid="12x3">
 
 ```anim
-prompt: text "$" at 2,1 mono ink yellow
+Prompt: text "$" at 2,1 mono ink yellow
 ```
 
 +++
 
 ```anim
-t1: text "ls -la" at 3,1 align left mono typed speed slow
+T1: text "ls -la" at 3,1 align left mono typed speed slow
 ```
 
 +++
 
 ```anim
-t2: text "Hello, world!" at 2,2 align left bold mono typed speed slow delay 2
+T2: text "Hello, world!" at 2,2 align left bold mono typed speed slow delay 2
 ```
 
 ---
@@ -160,7 +160,7 @@ t2: text "Hello, world!" at 2,2 align left bold mono typed speed slow delay 2
 ## As an exit it un-types
 
 ```anim
-t2: delete typed
+T2: delete typed
 ```
 
 </animation>
@@ -170,7 +170,7 @@ t2: delete typed
 <animation name="Stagger" grid="12x5">
 
 ```anim
-arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.3 fill blue corner 0.3 pop stagger 0.15
+Arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.3 fill blue corner 0.3 pop stagger 0.15
 ```
 
 ---
@@ -178,13 +178,13 @@ arr: row [5, 3, 8, 1, 9, 2] at 3,2 size 1 gap 0.3 fill blue corner 0.3 pop stagg
 ## stagger
 
 ```anim
-arr: fill green stagger
+Arr: fill green stagger
 ```
 
 +++
 
 ```anim
-arr: pulse stagger 0.1
+Arr: pulse stagger 0.1
 ```
 
 ---
@@ -192,7 +192,7 @@ arr: pulse stagger 0.1
 ## stagger-reverse, after a delay
 
 ```anim
-arr: fill amber stagger-reverse 0.2 delay 0.5
+Arr: fill amber stagger-reverse 0.2 delay 0.5
 ```
 
 ---
@@ -200,19 +200,19 @@ arr: fill amber stagger-reverse 0.2 delay 0.5
 ## One highlight per cell
 
 ```anim
-arr: highlight arrow stagger 0.2
+Arr: highlight arrow stagger 0.2
 ```
 
 +++
 
 ```anim
-arr: highlight clear stagger 0.1
+Arr: highlight clear stagger 0.1
 ```
 
 +++
 
 ```anim
-arr: highlight number stagger 0.4
+Arr: highlight number stagger 0.4
 ```
 
 ---
@@ -220,22 +220,22 @@ arr: highlight number stagger 0.4
 ## A group, in listed order
 
 ```anim
-a: rect "a" at 3,4
-b: circle "b" at 6,4
-c: rect "c" at 9,4
-g: group [c, a, b]
+A: rect "a" at 3,4
+B: circle "b" at 6,4
+C: rect "c" at 9,4
+G: group [C, A, B]
 ```
 
 +++
 
 ```anim
-g: fill pink stagger 0.3
+G: fill pink stagger 0.3
 ```
 
 +++
 
 ```anim
-g: delete pop stagger 0.2
+G: delete pop stagger 0.2
 ```
 
 </animation>
@@ -245,11 +245,11 @@ g: delete pop stagger 0.2
 <animation name="Repeat" grid="12x5">
 
 ```anim
-r: rect "r" at 2,2 size 1.4x0.8
-s: rect "s" at 5,2 size 1.4x0.8
-hub: circle at 10,2.5 radius 0.1 fill fg
-hand: arrow from 10,2.5 to 10,1.3 weight 2
-c: circle "c" at 2,4 radius 0.4
+R: rect "r" at 2,2 size 1.4x0.8
+S: rect "s" at 5,2 size 1.4x0.8
+Hub: circle at 10,2.5 radius 0.1 fill fg
+Hand: arrow from 10,2.5 to 10,1.3 weight 2
+C: circle "c" at 2,4 radius 0.4
 ```
 
 ---
@@ -259,7 +259,7 @@ c: circle "c" at 2,4 radius 0.4
 Three turns of +30 in a row.
 
 ```anim
-r: angle +30 repeat 3
+R: angle +30 repeat 3
 ```
 
 +++
@@ -267,7 +267,7 @@ r: angle +30 repeat 3
 Everything on the line repeats: relative changes add up, the fill changes in the first round.
 
 ```anim
-s: fill red x +1 width -0.5 angle -10 repeat 2 speed slow
+S: fill red x +1 width -0.5 angle -10 repeat 2 speed slow
 ```
 
 +++
@@ -275,8 +275,8 @@ s: fill red x +1 width -0.5 angle -10 repeat 2 speed slow
 The beat's other lines carry on.
 
 ```anim
-r: angle -90 repeat 3 speed fast
-c: move 6,4 speed slow
+R: angle -90 repeat 3 speed fast
+C: move 6,4 speed slow
 ```
 
 ---
@@ -286,8 +286,8 @@ c: move 6,4 speed slow
 Goes round until you move on.
 
 ```anim
-hand: angle +360 about hub repeat forever speed slow ease linear
-c: pulse repeat forever
+Hand: angle +360 about Hub repeat forever speed slow ease linear
+C: pulse repeat forever
 ```
 
 ---
@@ -295,7 +295,7 @@ c: pulse repeat forever
 ## Stopped
 
 ```anim
-hand: stroke teal
+Hand: stroke teal
 ```
 
 </animation>
@@ -306,10 +306,10 @@ hand: stroke teal
 
 ```anim
 defaults fill blue size 2x1
-a: rect "a" at 2,1.5
-b: rect "b" at 5,1.5
+A: rect "a" at 2,1.5
+B: rect "b" at 5,1.5
 defaults clear
-c: rect "c" at 8,1.5
+C: rect "c" at 8,1.5
 ```
 
 ---
@@ -318,9 +318,9 @@ c: rect "c" at 8,1.5
 
 ```anim
 defaults speed slow ease spring
-a: move 2,3
-b: move 5,3
-c: move 8,3
+A: move 2,3
+B: move 5,3
+C: move 8,3
 ```
 
 ---
@@ -332,9 +332,9 @@ The top line flows right to left; the bottom one is still.
 ```anim
 defaults clear
 defaults dashed flow-reverse
-l1: line from 1,0.5 to 11,0.5
+L1: line from 1,0.5 to 11,0.5
 defaults static
-l2: line from 1,3.7 to 11,3.7
+L2: line from 1,3.7 to 11,3.7
 ```
 
 </animation>
@@ -346,7 +346,7 @@ Press `A` to play.
 <animation name="Pause" grid="12x3">
 
 ```anim
-dot: circle at 2,2 radius 0.4 fill blue
+Dot: circle at 2,2 radius 0.4 fill blue
 ```
 
 ---
@@ -356,7 +356,7 @@ dot: circle at 2,2 radius 0.4 fill blue
 Holds 2 seconds here.
 
 ```anim
-dot: move 6,2
+Dot: move 6,2
 pause 2
 ```
 
@@ -367,7 +367,7 @@ pause 2
 Waits here for Next.
 
 ```anim
-dot: move 10,2
+Dot: move 10,2
 pause
 ```
 
@@ -376,7 +376,7 @@ pause
 ## Done
 
 ```anim
-dot: fill green
+Dot: fill green
 ```
 
 </animation>
@@ -390,7 +390,7 @@ One click on Next plays the chain; Back undoes it.
 ## Before the chain
 
 ```anim
-a: rect "a" at 2,2
+A: rect "a" at 2,2
 ```
 
 ---
@@ -400,7 +400,7 @@ a: rect "a" at 2,2
 Right...
 
 ```anim
-a: move 6,2
+A: move 6,2
 auto
 ```
 
@@ -409,7 +409,7 @@ auto
 ...over...
 
 ```anim
-a: move 10,2 via 8,0.8
+A: move 10,2 via 8,0.8
 auto
 ```
 
@@ -418,7 +418,7 @@ auto
 ...green.
 
 ```anim
-a: fill green
+A: fill green
 ```
 
 ---
@@ -434,11 +434,11 @@ The lines after `then` start once those before it have finished, all in one beat
 <animation name="Then" grid="12x4">
 
 ```anim
-a: rect "a" at 2,2 pop
+A: rect "a" at 2,2 pop
 then
-b: circle "b" at 6,2 pop
+B: circle "b" at 6,2 pop
 then 0.5
-l: arrow from a to b draw
+L: arrow from A to B draw
 ```
 
 ---
@@ -446,13 +446,13 @@ l: arrow from a to b draw
 ## The same shape, in turn
 
 ```anim
-a: move 2,3.5
+A: move 2,3.5
 then
-a: move 10,3.5 fill amber
-b: pulse
+A: move 10,3.5 fill amber
+B: pulse
 then
-a: move 10,1 fill green
-camera move a zoom 1.5
+A: move 10,1 fill green
+camera move A zoom 1.5
 pause 1
 ```
 
@@ -462,7 +462,7 @@ pause 1
 
 ```anim
 camera reset
-a: move 2,2 fill bg-shape
+A: move 2,2 fill bg-shape
 ```
 
 </animation>

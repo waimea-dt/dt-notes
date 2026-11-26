@@ -1,7 +1,7 @@
 /**
  * anim-trail.js - Part of the animation plugin (animation.js), and of its compiler (createCompiler
- * in anim-compile.js): trails. "a: trail" gives a shape a trail (a part, "a.trail": a line, SHAPES:
- * trail) that grows along the way it goes from then on, until "a: trail clear".
+ * in anim-compile.js): trails. "A: trail" gives a shape a trail (a part, "A.trail": a line, SHAPES:
+ * trail) that grows along the way it goes from then on, until "A: trail clear".
  */
 
 ;(function () {
@@ -16,8 +16,8 @@
     const { shapes, newUid } = cx
     let schedule // linked once every part is made
 
-    // "a: trail" / "a: trail clear". `before` is the shape as it was before this line, so a trail
-    // turned on with a move ("a: move 9,3 trail") starts where the move does.
+    // "A: trail" / "A: trail clear". `before` is the shape as it was before this line, so a trail
+    // turned on with a move ("A: move 9,3 trail") starts where the move does.
     function setTrail(before, shape, props, meta, warn) {
       if (LINE_TYPES.includes(shape.type)) throw new Error('a line has no single position, so it can\'t leave a trail (a shape on its end can)')
       const id = trailId(shape.id)

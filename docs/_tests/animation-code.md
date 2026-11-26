@@ -9,13 +9,13 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 A code block: its lines in [ ] (one per line, the closing "]" lined up with the id), highlighted by Prism. Lines are numbered from 1, like line numbers.
 
 ```anim
-c: code [
+C: code [
     "total = 0",
     "for n in [5, 3, 8]:",
     "    total += n"
 ] at 2,2 lang python name "sum.py" indices
-nums: row [5 3 8] at 12,2 name "nums"
-total: var 0 at 12,4 name "total"
+Nums: row [5 3 8] at 12,2 name "nums"
+Total: var 0 at 12,4 name "total"
 ```
 
 ---
@@ -23,16 +23,16 @@ total: var 0 at 12,4 name "total"
 ## Highlighting a line
 
 ```anim
-c.2: highlight line
-nums.0: fill amber
+C.2: highlight line
+Nums.0: fill amber
 ```
 
 +++
 
 ```anim
-c.2: highlight clear
-c.3: highlight line
-total: 5
+C.2: highlight clear
+C.3: highlight line
+Total: 5
 ```
 
 +++
@@ -40,9 +40,9 @@ total: 5
 A text can be highlighted too, and a fill on a line works as well.
 
 ```anim
-note: text "adds each number" at 12,5.5 highlight line
-c.3: highlight clear
-c.1: fill teal
+Note: text "adds each number" at 12,5.5 highlight line
+C.3: highlight clear
+C.1: fill teal
 ```
 
 ---
@@ -52,28 +52,28 @@ c.1: fill teal
 A longer line widens the block.
 
 ```anim
-c.1: fill none
-note: delete
-c: insert "print(total)  # 16" at end
+C.1: fill none
+Note: delete
+C: insert "print(total)  # 16" at end
 ```
 
 +++
 
 ```anim
-c.1: "total = 100" speed slow
+C.1: "total = 100" speed slow
 ```
 
 +++
 
 ```anim
-c: swap 1 2
+C: swap 1 2
 ```
 
 +++
 
 ```anim
-c: remove 1
-c: font 0.8
+C: remove 1
+C: font 0.8
 ```
 
 ---
@@ -83,19 +83,19 @@ c: font 0.8
 A single line goes in quotes. Typed, a block's lines type out one after another.
 
 ```anim
-s: code "console.log(\"Hello, world!\")" lang js at 2,6 typed
+S: code "console.log(\"Hello, world!\")" lang js at 2,6 typed
 ```
 
 +++
 
 ```anim
-s: "console.log(42)"
+S: "console.log(42)"
 ```
 
 +++
 
 ```anim
-p: code [
+P: code [
     "def greet(name):",
     "    return f\"Hi {name}\""
 ] at 10,5.5 lang python typed speed 2
@@ -104,8 +104,8 @@ p: code [
 +++
 
 ```anim
-p: delete typed
-c: delete
+P: delete typed
+C: delete
 ```
 
 </animation>
@@ -119,13 +119,13 @@ c: delete
 A script is as big as its blocks. Shapes placed beside it fit round it.
 
 ```anim
-s: scratch [
+S: scratch [
     "when green flag clicked",
     "turn right (15) degrees",
     "say [Hello!] for (2) seconds"
 ] at 2,2 pop
-t: text "Flag script" attach below s
-a: arrow from 11,3 to s
+T: text "Flag script" attach below S
+A: arrow from 11,3 to S
 ```
 
 ---
@@ -135,7 +135,7 @@ a: arrow from 11,3 to s
 A change fades the old script out and the new one in, while its box grows to fit.
 
 ```anim
-s: [
+S: [
     "when green flag clicked",
     "forever",
     "    turn right (15) degrees",
@@ -151,8 +151,8 @@ s: [
 The same script with some new values
 
 ```anim
-s: line 3 "turn right (45) degrees"
-s: line 5 "say [Eek!] for (3) seconds"
+S: line 3 "turn right (45) degrees"
+S: line 5 "say [Eek!] for (3) seconds"
 ```
 
 +++
@@ -160,7 +160,7 @@ s: line 5 "say [Eek!] for (3) seconds"
 One line goes in quotes.
 
 ```anim
-s: "move (10) steps"
+S: "move (10) steps"
 ```
 
 ---
@@ -170,16 +170,16 @@ s: "move (10) steps"
 Given a size, a script fits inside it. Its font makes it bigger or smaller.
 
 ```anim
-b: rect at 13.5,6 size 4x3 fill none stroke muted dashed
-f: scratch [ "when this sprite clicked" "play sound (Meow v) until done" ] at 12,5 size 4x3
-s: font 0.7
+B: rect at 13.5,6 size 4x3 fill none stroke muted dashed
+F: scratch [ "when this sprite clicked" "play sound (Meow v) until done" ] at 12,5 size 4x3
+S: font 0.7
 ```
 
 +++
 
 ```anim
-f: highlight outline
-s: move 3,5 angle -10
+F: highlight outline
+S: move 3,5 angle -10
 ```
 
 </animation>
@@ -193,7 +193,7 @@ s: move 3,5 angle -10
 `highlight line N` dims every block but the one on line N, like a spotlight. Lines count from 1, as written.
 
 ```anim
-s: scratch [
+S: scratch [
     "when green flag clicked",
     "forever",
     "    turn right (15) degrees",
@@ -205,19 +205,19 @@ s: scratch [
     "end"
 ] at 2,2
 
-r: rect "TEST" size 2x2 at 9,2 fill pink
+R: rect "TEST" size 2x2 at 9,2 fill pink
 ```
 
 +++
 
 ```anim
-s: highlight line 1
+S: highlight line 1
 ```
 
 +++
 
 ```anim
-s: highlight line 2
+S: highlight line 2
 ```
 
 +++
@@ -225,13 +225,13 @@ s: highlight line 2
 The light moves from block to block.
 
 ```anim
-s: highlight line 3
+S: highlight line 3
 ```
 
 +++
 
 ```anim
-s: highlight line 4
+S: highlight line 4
 ```
 
 +++
@@ -239,7 +239,7 @@ s: highlight line 4
 Line 6 is the else, so the next block is on line 7.
 
 ```anim
-s: highlight line 7
+S: highlight line 7
 ```
 
 ---
@@ -249,7 +249,7 @@ s: highlight line 7
 A highlight stays on through a change to the script.
 
 ```anim
-s: [
+S: [
     "when green flag clicked",
     "forever",
     "    turn right (45) degrees",
@@ -260,13 +260,13 @@ s: [
     "    end",
     "end"
 ] speed instant
-s: highlight line 3
+S: highlight line 3
 ```
 
 +++
 
 ```anim
-s: highlight clear
+S: highlight clear
 ```
 
 </animation>
@@ -278,7 +278,7 @@ s: highlight clear
 # Editing a Script
 
 ```anim
-s: scratch [
+S: scratch [
     "when green flag clicked",
     "repeat (10)",
     "    turn right (15) degrees",
@@ -295,7 +295,7 @@ s: scratch [
 Lines are numbered from 1, as written, `end` lines too.
 
 ```anim
-s: highlight line 3
+S: highlight line 3
 ```
 
 ---
@@ -303,7 +303,7 @@ s: highlight line 3
 ## Replace a line
 
 ```anim
-s: line 3 "turn right (45) degrees"
+S: line 3 "turn right (45) degrees"
 ```
 
 +++
@@ -311,13 +311,13 @@ s: line 3 "turn right (45) degrees"
 Instant, the new value just replaces the old one.
 
 ```anim
-s: line 3 "turn right (90) degrees" speed instant
+S: line 3 "turn right (90) degrees" speed instant
 ```
 
 +++
 
 ```anim
-s: highlight clear
+S: highlight clear
 ```
 
 ---
@@ -327,19 +327,19 @@ s: highlight clear
 Line 6 is the if's end, so this goes inside the if. A lit line keeps its light as the lines round it change.
 
 ```anim
-s: insert "move (10) steps" at 6
+S: insert "move (10) steps" at 6
 ```
 
 +++
 
 ```anim
-s: swap 3 4
+S: swap 3 4
 ```
 
 +++
 
 ```anim
-s: highlight clear
+S: highlight clear
 ```
 
 +++
@@ -347,7 +347,7 @@ s: highlight clear
 A C block goes with the blocks inside it.
 
 ```anim
-s: remove 3
+S: remove 3
 ```
 
 +++
@@ -355,7 +355,7 @@ s: remove 3
 Several lines go in [ ]. Line 4 is the forever's end, so they go inside it.
 
 ```anim
-s: insert [
+S: insert [
     "repeat (3)",
     "    play sound (Meow v) until done",
     "end"
@@ -365,10 +365,10 @@ s: insert [
 +++
 
 ```anim
-s: insert [
+S: insert [
     "repeat (3)",
 ] at 3
-s: insert [
+S: insert [
     "end"
 ] at 5
 ```

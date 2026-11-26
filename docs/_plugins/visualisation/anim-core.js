@@ -36,7 +36,7 @@
     then: 0.6,        // insert / remove are two moves in turn: the second starts this far in
     aside: 1.2,       // a cell slides in from / out to this far below a row (left of a column)
     swapLift: { near: 0.6, far: 1.1 }, // how far a swapped cell bows out at most (neighbours / further apart): a semicircle when closer
-    arrive: 1,        // a value copied to a var or cell (v1: a.1) lands after this
+    arrive: 1,        // a value copied to a var or cell (V1: A.1) lands after this
     arriveOut: 1.2,   // a cell removed into a var drops out, then lands after this
     flyMove: 0.8,     // a flyer moves for this share of its time, then fades out where it landed
     crossfade: 0.5,   // the value it brings crossfades in over this, centred on its landing
@@ -124,9 +124,9 @@
       valued: true, bare: true,
       applies: (shape, n) => Boolean(n == null ? SHAPES[shape.type]?.band : SHAPES[shape.type]?.script),
       refuse: (shape, n) => {
-        if (n != null) return `"highlight line ${n}" lights a line of ${nounList(typesWhere((kind) => kind.script).map((type) => nounOf({ type })))}, e.g. "s: highlight line 2" (a code block's line: "c.2: highlight line")`
+        if (n != null) return `"highlight line ${n}" lights a line of ${nounList(typesWhere((kind) => kind.script).map((type) => nounOf({ type })))}, e.g. "S: highlight line 2" (a code block's line: "C.2: highlight line")`
         const nouns = Object.keys(SHAPES).filter((type) => SHAPES[type].band).map((type) => `${article(nounOf({ type }))} ${nounOf({ type })}`)
-        return `"highlight line" is for ${nouns.join(' or ')}, e.g. "c.2: highlight line" (a code block's line 2)`
+        return `"highlight line" is for ${nouns.join(' or ')}, e.g. "C.2: highlight line" (a code block's line 2)`
       },
       check: (shape, n) => blockOnLine(scriptOf(shape), shape.label.split('\n'), n, shape.id, 'lit').problem || null,
     },
@@ -158,7 +158,7 @@
   //             corner if it takes one), 'round' (the ellipse in its box: a circle when square),
   //             'diamond' or 'polygon' (its points, stretched to its box)
   //   points    its points go in [ ] straight after its type (offsets from where it's placed, in
-  //             cells: "p: polygon [0,-1 1,1 -1,1] at 5,4"), or alone on a change ("p: [ … ]"). It's
+  //             cells: "P: polygon [0,-1 1,1 -1,1] at 5,4"), or alone on a change ("P: [ … ]"). It's
   //             placed by their 0,0 (cx, cy: from there to its box's middle), its box round them
   //   label     where its label goes: 'centre', 'content' (text: the label is the shape, measured),
   //             'below' (image, icon: it adds to the shape's height), 'along' (lines) or 'script'
@@ -235,8 +235,8 @@
       takes: [...LINE_PROPS, ...LOOP_PROPS, 'bend'], label: 'along', line: true, bends: true,
       defaults: { ...LINE_DEFAULTS, angle: DIRECTIONS.up, w: CELL, h: CELL, bend: 0 }, loop: { spread: 30, shoulder: 0.6, props: LOOP_PROPS },
     },
-    // where a shape has been ("a: trail"): a line through the points it's passed, made and grown by
-    // the shape's moves (anim-trail.js), dashed and muted unless styled ("a.trail: stroke red")
+    // where a shape has been ("A: trail"): a line through the points it's passed, made and grown by
+    // the shape's moves (anim-trail.js), dashed and muted unless styled ("A.trail: stroke red")
     trail: {
       takes: ['stroke', 'weight', 'linestyle', 'flow', 'opacity', 'start', 'end'], label: 'along', line: true,
       defaults: { ...LINE_DEFAULTS, stroke: 'muted', linestyle: 'dashed', layer: 'back' },
@@ -249,13 +249,13 @@
       defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', mono: true, align: 'left' }, outline: 'box', label: 'code', inside: true,
       internal: true, noun: 'code line', fitted: true, band: { pad: 0, corner: null }, pre: { height: 1.4, pad: 0.3 },
     },
-    // some of a row's / column's / code block's places as one ("s: span arr 0 2"): a box round them
+    // some of a row's / column's / code block's places as one ("S: span Arr 0 2"): a box round them
     // (fitSpans in anim-compile.js), invisible unless given a fill or stroke, for highlights, a
     // callout and a name. Made by the span verb (LINES).
     span: {
       takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight', 'opacity'],
       defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', corner: 0.15 * CELL, layer: 'back' }, outline: 'box', label: 'centre',
-      internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again, e.g. "s: span arr 2 4"',
+      internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again, e.g. "S: span Arr 2 4"',
     },
   }
   const typesWhere = (test) => Object.keys(SHAPES).filter((type) => test(SHAPES[type]))
@@ -353,8 +353,8 @@
   }
 
   // The ways a layout's places can be numbered, each a text beside every one, shown with its word
-  // ("arr: indices", "... clear" hides them) and kept in step with the places (syncIndices):
-  //   part   its texts' role (PARTS) and the part of their ids before the number (arr.index.2)
+  // ("Arr: indices", "... clear" hides them) and kept in step with the places (syncIndices):
+  //   part   its texts' role (PARTS) and the part of their ids before the number (Arr.index.2)
   //   field  the LAYOUTS field (a grid's: its views') that gives the side they go and their gap
   //   label  label(k, layout): the text for place k (as numbered from the layout's base)
   const NUMBERINGS = {
@@ -386,18 +386,18 @@
   //               'grid', lines of them (see views), each place "row.column". Laid out and read
   //               by ARRANGE in anim-layout.js, and edited by EDITS in anim-edit.js
   //   index       where an index goes beside what it numbers: side, and gap (in cells)
-  //   views       its values are rows, in [ ] ([[1 2] [3 4]]), laid out in a grid of cells: g.1.2 is
+  //   views       its values are rows, in [ ] ([[1 2] [3 4]]), laid out in a grid of cells: G.1.2 is
   //               row 1's cell 2. Its rows and columns are views: groups of its cells that don't own
   //               them (the grid does): row, its lines across; col, its columns. Each: layout, the
-  //               layout it acts as; word, what goes before its number in its id (g.col.2; none:
-  //               g.1, and the one an edit takes with no word); and index, where its indices go. A
+  //               layout it acts as; word, what goes before its number in its id (G.col.2; none:
+  //               G.1, and the one an edit takes with no word); and index, where its indices go. A
   //               place in it is written "row.column" (span g 1.2 3.4).
-  //   head        its first row is its headings, a view of its own (t.head; word, its id's last
-  //               part), not counted with the rows (t.0 is the first row after it) or numbered;
+  //   head        its first row is its headings, a view of its own (T.head; word, its id's last
+  //               part), not counted with the rows (T.0 is the first row after it) or numbered;
   //               look, the props its cells start with
   //   radix       it holds a whole number, written in this base: its value goes straight after its
-  //               type ("b: binary 67"), and a value for it (b: 67) sets its cells, each a digit
-  //               from 0 to radix - 1, written as its symbol (digitSymbol: 0-9, then A-F; b.0 the
+  //               type ("B: binary 67"), and a value for it (b: 67) sets its cells, each a digit
+  //               from 0 to radix - 1, written as its symbol (digitSymbol: 0-9, then A-F; B.0 the
   //               lowest). digits: how many cells it has unless given (default), the most it can
   //               (max), and the prop that gives it when it's made (prop: "digits 4"). look: the look its
   //               digits start with (after the defaults); looks: each digit's own look while it holds
@@ -532,7 +532,7 @@
     }
   }
 
-  // Colours worked out from values, written as a call where a colour goes: "fill rgb(r g b)". Each
+  // Colours worked out from values, written as a call where a colour goes: "fill rgb(R G B)". Each
   // argument is a number, or the id of a var, cell or number, whose value it follows: the colour is
   // worked out again whenever one changes (fitLinks in anim-values.js), until that look is given
   // again. The colour is used as it is (a #hex), never tinted as a named fill is.
@@ -543,7 +543,7 @@
   const COLOUR_FUNCTIONS = {
     rgb: { args: ['red', 'green', 'blue'], max: 255, css: (values) => `#${values.map((v) => v.toString(16).padStart(2, '0')).join('')}`, example: 'rgb(255 128 0)' },
   }
-  // What an expression can do with numbers ("v3: v1 + v2", "x {n * 2}", "{total / 4}" in a label:
+  // What an expression can do with numbers ("V3: V1 + V2", "x {N * 2}", "{Total / 4}" in a label:
   // readExpr and workOut in anim-values.js). Each operator is its own word, with spaces round it (an
   // id can have a "-" in it):
   //   rank     how tightly it binds: higher ranks are worked out first, then left to right
@@ -708,19 +708,19 @@
   //   repeat the word can be given more than once, collecting an array (via)
   //   modes  only allowed in these line kinds (clear: in defaults); notIn: not allowed in these
   //   error  the word isn't allowed here, with a hint
-  // A point: x,y, a shape (its centre), or a point on its edge (an anchor, "a.top": ANCHORS);
+  // A point: x,y, a shape (its centre), or a point on its edge (an anchor, "A.top": ANCHORS);
   // POINT also takes one beside a shape (a placement and a shape id)
   const SPOT = [['num', 'num'], ['anchor'], ['id']]
   const POINT = [...SPOT, ['placement', 'id']]
   const buildPoint = (v, sig) => (sig[0] === 'num' ? { kind: 'abs', x: v[0], y: v[1] }
     : sig[0] === 'placement' ? { kind: 'place', place: v[0], ref: v[1] }
       : sig[0] === 'anchor' ? { kind: 'ref', ...v[0] } : { kind: 'ref', ref: v[0] })
-  const SPOT_HELP = '"x,y", a shape id or a point on its edge (e.g. a.top, a.bottom-left)'
-  const at = { key: 'at', sigs: POINT, build: buildPoint, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "below a"` }
+  const SPOT_HELP = '"x,y", a shape id or a point on its edge (e.g. A.top, A.bottom-left)'
+  const at = { key: 'at', sigs: POINT, build: buildPoint, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "below A"` }
   const number = (key, help = 'a number') => ({ key, sigs: [['num']], help })
-  // a number that can follow values instead: a var's, cell's or number's ("x v1"), or an
-  // expression's in { } ("x {v1 * 2}"), worked out again as they change (linkNumber in anim-values.js)
-  const bound = (keyword) => ({ ...keyword, sigs: [...keyword.sigs, ['bound']], help: `${keyword.help}, or a var or cell to follow (e.g. v1, or {v1 * 2})` })
+  // a number that can follow values instead: a var's, cell's or number's ("x V1"), or an
+  // expression's in { } ("x {V1 * 2}"), worked out again as they change (linkNumber in anim-values.js)
+  const bound = (keyword) => ({ ...keyword, sigs: [...keyword.sigs, ['bound']], help: `${keyword.help}, or a var or cell to follow (e.g. V1, or {V1 * 2})` })
   // a colour look: a colour (a name, #hex or a call: COLOUR_FUNCTIONS), or one picked as it's drawn
   // (COLOUR_PICKS) if any is for this look
   const colour = (key) => {
@@ -749,16 +749,16 @@
   const KEYWORDS = {
     // position
     // "at" places a shape as it's made, "move" one that's there
-    at: { ...at, modes: ['create', 'layout', 'group', 'span'], where: 'as a shape is made, e.g. "a: rect at 2,3" (to move one that\'s there: "a: move 5,3")' },
-    move: { ...at, what: 'move', notIn: ['create', 'layout'], where: 'on a shape that\'s there, e.g. "a: move 5,3" (to place a new one: "a: rect at 2,3")' },
+    at: { ...at, modes: ['create', 'layout', 'group', 'span'], where: 'as a shape is made, e.g. "A: rect at 2,3" (to move one that\'s there: "A: move 5,3")' },
+    move: { ...at, what: 'move', notIn: ['create', 'layout'], where: 'on a shape that\'s there, e.g. "A: move 5,3" (to place a new one: "A: rect at 2,3")' },
     ...Object.fromEntries(PLACEMENTS.map((place) => [place, { key: 'at', sigs: [['id']], build: (v) => ({ kind: 'place', place, ref: v[0] }), help: 'a shape id' }])),
     x: bound(number('x')),
     y: bound(number('y')),
     from: { key: 'from', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
     to: { key: 'to', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
-    via: { ...at, key: 'via', repeat: true, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "via above b"` },
+    via: { ...at, key: 'via', repeat: true, help: `${SPOT_HELP}, or a placement and a shape id, e.g. "via above B"` },
     gap: number('gap'),
-    travel: { key: 'travel', list: SPOT, build: buildPoint, help: 'shape ids, points on their edges and/or x,y points, e.g. "travel r1 r2.top b"' },
+    travel: { key: 'travel', list: SPOT, build: buildPoint, help: 'shape ids, points on their edges and/or x,y points, e.g. "travel R1 R2.top B"' },
     // the point a turn goes round ("angle +90 about 5,5"): fixed where it is now
     about: { key: 'about', sigs: SPOT, build: buildPoint, help: `${SPOT_HELP}, after an angle, e.g. "angle +90 about 5,5"` },
     follow: { key: 'follow', sigs: [['id']], build: (v) => ({ ref: v[0], reverse: false }), help: 'a line or arrow id' },
@@ -766,7 +766,7 @@
     attach: {
       key: 'attach', sigs: [['placement', 'id'], ['anchor'], ['id']],
       build: (v, sig) => (sig.length === 2 ? { side: v[0], ref: v[1] } : sig[0] === 'anchor' ? { side: 'centre', ...v[0] } : { side: 'centre', ref: v[0] }),
-      help: 'a shape id, optionally after a side, or a point on its edge, e.g. "attach right-of a" or "attach a.top-right"',
+      help: 'a shape id, optionally after a side, or a point on its edge, e.g. "attach right-of A" or "attach A.top-right"',
     },
     detach: fixed('detach', true),
     // size and look
@@ -788,7 +788,7 @@
     regular: fixed('bold', false, { what: 'bold' }), // not bold
     mono: { key: 'mono', sigs: [['reset'], []], build: (v) => v[0] ?? true, help: 'nothing or reset' }, // a monospace font
     // every look (STYLE) back as it started
-    style: { key: 'style', sigs: [['reset']], help: 'reset (every look back to how it started), e.g. "a: style reset"' },
+    style: { key: 'style', sigs: [['reset']], help: 'reset (every look back to how it started), e.g. "A: style reset"' },
     lang: { key: 'lang', sigs: [['lang']], help: 'a language, e.g. "lang python" or "lang js"' },
     // a var's or cell's value as a bar, ring or pie (BARS: each its own word, "ring clear" turning it
     // off), max its full value, track the colour of the rest
@@ -839,7 +839,7 @@
     // how many digits it has (LAYOUTS: digits), given as it's made
     powers: { key: 'powers', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
     decimal: { key: 'decimal', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show it) or clear' },
-    digits: { ...number('digits', 'a whole number of digits'), modes: ['layout'], where: 'when a number is made, e.g. "b: binary 67 digits 4"' },
+    digits: { ...number('digits', 'a whole number of digits'), modes: ['layout'], where: 'when a number is made, e.g. "B: binary 67 digits 4"' },
     // a new value for a var, cell or number counts its way there, showing each value in between
     counter: fixed('count', true),
     // a change done again, a number of times in a row or forever (REPEATS)
@@ -852,10 +852,10 @@
       },
       help: 'a whole number of times or forever, e.g. "repeat 3" or "repeat forever"',
     },
-    // a value copied or moved (v1: a.1, insert v1, remove … into v1) takes its fill, stroke and ink
+    // a value copied or moved (V1: A.1, insert V1, remove … into V1) takes its fill, stroke and ink
     // with it, rather than taking on the look of where it goes
-    'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "v1: a.1", "insert v1 at …" or "remove … into v1"' }),
-    null: { error: '"null" is a value: it goes in a var (v: null) or a row\'s / column\'s cell (arr.2: null)' },
+    'keep-style': fixed('keepStyle', true, { modes: ['insert', 'remove', 'assign', 'defaults'], where: 'on a value being copied or moved: "V1: A.1", "insert V1 at …" or "remove … into V1"' }),
+    null: { error: '"null" is a value: it goes in a var (V: null) or a row\'s / column\'s cell (Arr.2: null)' },
     // defaults only (elsewhere, clear goes after highlight, callout, name or indices)
     clear: fixed('reset', true, { modes: ['defaults'], where: 'after highlight, callout, name or indices (e.g. "highlight clear"), or on its own on a defaults line' }),
     // camera only
@@ -902,33 +902,33 @@
   //   refuses  props it doesn't take, with `refuse(word)` the message
   //   spaces   it takes a gap of its own: the space between the things it lays out
   const LINES = {
-    create: { refuses: ['repeat'], refuse: () => '"repeat" repeats a change to a shape that\'s already there, e.g. "a: angle +30 repeat 3"' }, // "a: rect …"
-    change: {}, // "a: fill red …"
-    copy: { verb: true, refuses: ['repeat'], refuse: () => '"repeat" repeats a change to a shape that\'s already there: copy it, then repeat a change on the next line' }, // "b: copy a …", then any change
+    create: { refuses: ['repeat'], refuse: () => '"repeat" repeats a change to a shape that\'s already there, e.g. "A: angle +30 repeat 3"' }, // "A: rect …"
+    change: {}, // "A: fill red …"
+    copy: { verb: true, refuses: ['repeat'], refuse: () => '"repeat" repeats a change to a shape that\'s already there: copy it, then repeat a change on the next line' }, // "B: copy A …", then any change
     group: {
       verb: true,
       refuses: ['at', 'x', 'y', 'via', 'travel', 'follow', 'attach', 'about'],
       refuse: () => 'create the group first, then move it on the next line',
     },
     ungroup: { verb: true, takes: [] },
-    arrange: { verb: true, spaces: true, takes: ['gap', ...TIMING, 'stagger'] }, // a group's shapes in a line, "g: arrange right"
+    arrange: { verb: true, spaces: true, takes: ['gap', ...TIMING, 'stagger'] }, // a group's shapes in a line, "G: arrange right"
     delete: { verb: true, takes: [...TIMING, 'effect', 'stagger'] }, // a shape
     swap: { verb: true, takes: TIMING }, // two of a row's / column's cells
     insert: { verb: true, takes: [...TIMING, 'keepStyle'] }, // a cell into a row / column
     remove: { verb: true, takesOut: true, takes: [...TIMING, 'keepStyle'] }, // a cell out of one
-    assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "v1: a.1"
-    span: { // "s: span arr 0 2": a box round some of a row's / column's / code block's places
+    assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "V1: A.1"
+    span: { // "S: span Arr 0 2": a box round some of a row's / column's / code block's places
       verb: true, takes: [...SHAPES.span.takes, 'layer', 'highlight', 'callout', 'name', 'effect', ...TIMING],
       refuse: (word) => `"${word}" doesn't apply to a span: it's a box round its cells, for a fill, stroke, highlight, callout or name`,
     },
-    // "s: line 3 "…"": a script's line, replaced (on a script only: elsewhere "line" makes a line)
+    // "S: line 3 "…"": a script's line, replaced (on a script only: elsewhere "line" makes a line)
     line: { verb: true, on: (shape) => Boolean(SHAPES[shape?.type]?.script), takes: TIMING },
-    flip: { verb: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "b: flip", "b: flip 0 3", "b.2: flip"
-    range: { // some of a row's / column's cells, "arr: range 0 3 fill red": how they look, not where they are
+    flip: { verb: true, takes: [...TIMING, 'stagger'] }, // a number's digits (LAYOUTS: radix), "B: flip", "B: flip 0 3", "B.2: flip"
+    range: { // some of a row's / column's cells, "Arr: range 0 3 fill red": how they look, not where they are
       verb: true, takes: [...CELL_STYLE, 'style', 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
       refuse: (word) => `"range" changes how cells look, so it doesn't go with "${word}"`,
     },
-    layout: { // "arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
+    layout: { // "Arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
       spaces: true,
       takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices', ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" doesn't apply to ${LAYOUT_NOUNS}`,
@@ -942,7 +942,7 @@
 
   // Words that start a line (after "id:") rather than describe it: the verbs, and var
   const LINE_STARTS = [...Object.keys(LINES).filter((kind) => LINES[kind].verb), 'var']
-  // Words inside a row edit: "insert 7 at end", "remove 2 into v1"
+  // Words inside a row edit: "insert 7 at end", "remove 2 into V1"
   const EDIT_WORDS = { end: 'end', into: 'into' }
 
   const RESERVED = new Set([
@@ -1193,7 +1193,7 @@
   // The sides and corners of a shape's box, each saying which side it's on (-1: left / top, 1:
   // right / bottom, 0: its middle). They're the edges a shape can be placed by (SHAPES: anchor, a
   // corner, or for a shape that takes align, a side: ALIGN_EDGES), where each is on that side of its
-  // cell; and the points on a shape's edge a point can name ("from a.right", "at b.top-left":
+  // cell; and the points on a shape's edge a point can name ("from A.right", "at B.top-left":
   // anchorPoint), turning with it.
   const ANCHORS = {
     top: { x: 0, y: -1 }, bottom: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
@@ -1349,7 +1349,7 @@
   // edge towards its nearest via point). A cornered line meets the edge towards its nearest corner,
   // and carries its corner radius.
   function resolveEnds(line, byId) {
-    // an end on a shape's anchor (from a.right) is that point, just off the edge, not trimmed
+    // an end on a shape's anchor (from A.right) is that point, just off the edge, not trimmed
     const target = (end) => (end.ref && !end.anchor && byId.get(end.ref)) || null
     const pointOf = (end, gap) => (end.ref && byId.get(end.ref) ? refPoint(end, byId, gap) : { x: end.x, y: end.y })
     const a = pointOf(line.from, EDGE_GAP)

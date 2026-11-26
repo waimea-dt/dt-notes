@@ -10,9 +10,9 @@ A box that holds a value: a number, "text" or null (muted).
 
 ```anim
 defaults corner 0.2
-v1: var 67 at 3,2
-v2: var "Dog" at 6,2 size 1.6x1
-v3: var null at 9,2
+V1: var 67 at 3,2
+V2: var "Dog" at 6,2 size 1.6x1
+V3: var null at 9,2
 ```
 
 ---
@@ -20,23 +20,23 @@ v3: var null at 9,2
 ## A new value
 
 ```anim
-v1: 123
-v2: "Cat"
-v3: 4
+V1: 123
+V2: "Cat"
+V3: 4
 ```
 
 +++
 
 ```anim
-v1: +7                            # signed: relative, = 130
-v3: -0.5                          # = 3.5
+V1: +7                            # signed: relative, = 130
+V3: -0.5                          # = 3.5
 ```
 
 +++
 
 ```anim
-v1: null
-v2: null fill red
+V1: null
+V2: null fill red
 ```
 
 +++
@@ -44,8 +44,8 @@ v2: null fill red
 A cell holds values too.
 
 ```anim
-r: row [1 2 3] at 4,3.5 size 0.8
-r.1: null
+R: row [1 2 3] at 4,3.5 size 0.8
+R.1: null
 ```
 
 </animation>
@@ -55,65 +55,65 @@ r.1: null
 <animation name="Moving Values" grid="14x7">
 
 ```anim
-v1: var 7 at 2,6 name "v1" fill teal
-v2: var "Dog" at 10,6 size 1.6x1 name "v2"
-a: row [1 2 3] at 4,2.5 name "a" indices fill blue
+V1: var 7 at 2,6 name "v1" fill teal
+V2: var "Dog" at 10,6 size 1.6x1 name "v2"
+A: row [1 2 3] at 4,2.5 name "a" indices fill blue
 ```
 
 ---
 
 ## Copy into a var or a cell
 
-A copy of `a.0` glides onto `v1`, which takes its value as it lands.
+A copy of `A.0` glides onto `V1`, which takes its value as it lands.
 
 ```anim
-v1: a.0
+V1: A.0
 ```
 
 +++
 
-And back: `a.2` takes v2's value. The copy turns from v2's look into the row's.
+And back: `A.2` takes v2's value. The copy turns from v2's look into the row's.
 
 ```anim
-a.2: v2 speed slow
+A.2: V2 speed slow
 ```
 
 ---
 
 ## insert a var
 
-The space opens while a copy of `v1` glides to just below it, then slides up into it.
+The space opens while a copy of `V1` glides to just below it, then slides up into it.
 
 ```anim
-v1: 9
+V1: 9
 ```
 
 +++
 
 ```anim
-a: insert v1 at 1
+A: insert V1 at 1
 ```
 
 +++
 
 ```anim
-a: insert v2 at end speed slow
+A: insert V2 at end speed slow
 ```
 
 ---
 
 ## remove into a var
 
-The last cell itself drops out and glides onto `v1`, while the space closes behind it.
+The last cell itself drops out and glides onto `V1`, while the space closes behind it.
 
 ```anim
-a: remove end into v1
+A: remove end into V1
 ```
 
 +++
 
 ```anim
-a: remove end into v2 speed slow
+A: remove end into V2 speed slow
 ```
 
 +++
@@ -121,7 +121,7 @@ a: remove end into v2 speed slow
 From the middle: the cells after it close up.
 
 ```anim
-a: remove 1 into v1
+A: remove 1 into V1
 ```
 
 ---
@@ -131,7 +131,7 @@ a: remove 1 into v1
 New value for v1
 
 ```anim
-v1: "Egg"
+V1: "Egg"
 ```
 
 +++
@@ -139,7 +139,7 @@ v1: "Egg"
 Copy to v2
 
 ```anim
-v2: v1
+V2: V1
 ```
 
 ---
@@ -149,19 +149,19 @@ v2: v1
 A red value keeps its look as it goes in, so it can be followed.
 
 ```anim
-v1: 5 fill red ink white
+V1: 5 fill red ink white
 ```
 
 +++
 
 ```anim
-a: insert v1 at 0 keep-style
+A: insert V1 at 0 keep-style
 ```
 
 +++
 
 ```anim
-v2: a.0 keep-style
+V2: A.0 keep-style
 ```
 
 +++
@@ -169,7 +169,7 @@ v2: a.0 keep-style
 Without it, the box keeps its own look.
 
 ```anim
-a.1: v2
+A.1: V2
 ```
 
 </animation>
@@ -181,10 +181,10 @@ a.1: v2
 <animation name="Sums" grid="12x5">
 
 ```anim
-a: var 7 name "a" at 2,2
-b: var 3 name "b" at 5,2
-c: var 0 name "c" at 8,2
-arr: row [1 2 3 4] at 2,4 name "arr"
+A: var 7 name "a" at 2,2
+B: var 3 name "b" at 5,2
+C: var 0 name "c" at 8,2
+Arr: row [1 2 3 4] at 2,4 name "arr"
 ```
 
 ---
@@ -192,29 +192,29 @@ arr: row [1 2 3 4] at 2,4 name "arr"
 ## c: a + b * 2
 
 ```anim
-c: a + b * 2
+C: A + B * 2
 ```
 
 +++
 
 ```anim
-c: a mod b
-arr.3: arr.0 + arr.1 * 10
+C: A mod B
+Arr.3: Arr.0 + Arr.1 * 10
 ```
 
 +++
 
-Changing `a` leaves `c` as it is.
+Changing `A` leaves `c` as it is.
 
 ```anim
-a: 100
-c: c / 4
+A: 100
+C: C / 4
 ```
 
 +++
 
 ```anim
-b: a - b
+B: A - B
 ```
 
 ---
@@ -222,16 +222,16 @@ b: a - b
 ## ( ) first
 
 ```anim
-c: (a + b) * 2
-arr.0: (arr.1 + arr.2) mod 4
+C: (A + B) * 2
+Arr.0: (Arr.1 + Arr.2) mod 4
 ```
 
 +++
 
-A negative number in ( ) is a value, not a change: `a: -5` would take 5 off.
+A negative number in ( ) is a value, not a change: `A: -5` would take 5 off.
 
 ```anim
-a: (-5)
+A: (-5)
 ```
 
 </animation>
@@ -243,11 +243,11 @@ a: (-5)
 <animation name="Values in Labels" grid="12x5">
 
 ```anim
-n: var 3 name "n" at 2,2
-s: var 4 name "s" at 4,2
-t: text "{n} × {s} = {n * s}" at 8,2
-box: rect "sides: {s}" at 8,4 size 3x1
-set: text "{1, 2, 3}" at 3,4
+N: var 3 name "n" at 2,2
+S: var 4 name "s" at 4,2
+T: text "{N} × {S} = {N * S}" at 8,2
+Box: rect "sides: {S}" at 8,4 size 3x1
+Set: text "{1, 2, 3}" at 3,4
 ```
 
 ---
@@ -257,8 +257,8 @@ set: text "{1, 2, 3}" at 3,4
 The labels change with their values.
 
 ```anim
-n: 5 speed slow
-s: 6
+N: 5 speed slow
+S: 6
 ```
 
 </animation>
@@ -270,12 +270,12 @@ A number given a var or cell (or `{ }`) follows it as it changes.
 <animation name="Following Values" grid="12x6">
 
 ```anim
-px: var 2 name "px" at 2,1
-turn: var 0 name "turn" at 5,1
-w: var 1 name "w" at 8,1
-dot: circle y 4 x px size 0.6 fill amber
-hand: rect at 9,4 height 0.2 angle {turn * 3} width w fill teal
-arr: arrow from 2,5.5 to 11,5.5 show {w / 4}
+Px: var 2 name "px" at 2,1
+Turn: var 0 name "turn" at 5,1
+W: var 1 name "w" at 8,1
+Dot: circle y 4 x Px size 0.6 fill amber
+Hand: rect at 9,4 height 0.2 angle {Turn * 3} width W fill teal
+Arr: arrow from 2,5.5 to 11,5.5 show {W / 4}
 ```
 
 ---
@@ -283,9 +283,9 @@ arr: arrow from 2,5.5 to 11,5.5 show {w / 4}
 ## Changing the values
 
 ```anim
-px: 10 speed slow
-turn: 60 speed slow
-w: 3 speed slow
+Px: 10 speed slow
+Turn: 60 speed slow
+W: 3 speed slow
 ```
 
 +++
@@ -293,8 +293,8 @@ w: 3 speed slow
 A number given again stops following.
 
 ```anim
-dot: x 2
-px: 4
+Dot: x 2
+Px: 4
 ```
 
 </animation>
@@ -306,10 +306,10 @@ A new value counts its way there.
 <animation name="Counter" grid="12x5">
 
 ```anim
-score: var 0 name "score" at 3,2 size 2x1
-hp: var 100 at 7,2 size 4x0.6 bar fill green track muted
-b: binary 0 at 3,4 digits 4 decimal
-i1: icon(laptop) "laptop {score}" at 10,4
+Score: var 0 name "score" at 3,2 size 2x1
+Hp: var 100 at 7,2 size 4x0.6 bar fill green track muted
+B: binary 0 at 3,4 digits 4 decimal
+I1: icon(laptop) "laptop {Score}" at 10,4
 ```
 
 ---
@@ -317,17 +317,17 @@ i1: icon(laptop) "laptop {score}" at 10,4
 ## Counting
 
 ```anim
-score: 25 counter speed slow
-hp: 37 counter speed slow
-b: 11 counter speed slow
+Score: 25 counter speed slow
+Hp: 37 counter speed slow
+B: 11 counter speed slow
 ```
 
 +++
 
 ```anim
 defaults counter
-score: score * 4
-b: 3
+Score: Score * 4
+B: 3
 ```
 
 </animation>
@@ -340,14 +340,14 @@ b: 3
 
 ```anim
 defaults max 255 size 4x0.8 track black stroke muted ink contrast
-r: var 255 name "r" bar at 3,1.5 fill #f00
-g: var 128 name "g" bar at 3,2.5 fill #0f0
-b: var 0 name "b" bar at 3,3.5 fill #00f
+R: var 255 name "r" bar at 3,1.5 fill #f00
+G: var 128 name "g" bar at 3,2.5 fill #0f0
+B: var 0 name "b" bar at 3,3.5 fill #00f
 defaults clear
-sw: rect "fill and stroke" at 11,2.5 size 4x2.4 fill rgb(r g b) stroke rgb(255, g, b) weight 4 ink contrast
-arr: row [0 128 255] at 2,6 indices
-hx: hex 255 at 7,6 name "hx"
-cell: rect "cells" at 12,6 size 3x1 fill rgb(arr.2 hx arr.0) ink contrast
+Sw: rect "fill and stroke" at 11,2.5 size 4x2.4 fill rgb(R G B) stroke rgb(255, G, B) weight 4 ink contrast
+Arr: row [0 128 255] at 2,6 indices
+Hx: hex 255 at 7,6 name "hx"
+Cell: rect "cells" at 12,6 size 3x1 fill rgb(Arr.2 Hx Arr.0) ink contrast
 ```
 
 ---
@@ -355,14 +355,14 @@ cell: rect "cells" at 12,6 size 3x1 fill rgb(arr.2 hx arr.0) ink contrast
 ## New values
 
 ```anim
-r: 0
-g: 255
+R: 0
+G: 255
 ```
 
 +++
 
 ```anim
-b: 200 speed slow
+B: 200 speed slow
 ```
 
 ---
@@ -370,8 +370,8 @@ b: 200 speed slow
 ## A value on the move: the colour changes as it lands
 
 ```anim
-b: arr.0
-r: hx
+B: Arr.0
+R: Hx
 ```
 
 ---
@@ -379,8 +379,8 @@ r: hx
 ## A number's digits, and a cell
 
 ```anim
-hx: 0
-arr.2: 64
+Hx: 0
+Arr.2: 64
 ```
 
 ---
@@ -388,7 +388,7 @@ arr.2: 64
 ## Given a colour again, it stops following
 
 ```anim
-sw: stroke fg
+Sw: stroke fg
 ```
 
 +++
@@ -396,14 +396,14 @@ sw: stroke fg
 The fill still follows; the stroke doesn't.
 
 ```anim
-g: 0
-b: 255
+G: 0
+B: 255
 ```
 
 +++
 
 ```anim
-sw: fill rgb(b 0 r)
+Sw: fill rgb(B 0 R)
 ```
 
 </animation>
@@ -413,8 +413,8 @@ sw: fill rgb(b 0 r)
 <animation name="Bars" grid="13x6">
 
 ```anim
-arr: row [5, 3, 8, 1, 9, 2] at 2,3 bar stroke none fill pink-bright size 0.6x3 gap 0.15 indices
-hp: var 67 name "health" at 10,2 size 3x0.7 bar fill green-bright track red corner 0.25
+Arr: row [5, 3, 8, 1, 9, 2] at 2,3 bar stroke none fill pink-bright size 0.6x3 gap 0.15 indices
+Hp: var 67 name "health" at 10,2 size 3x0.7 bar fill green-bright track red corner 0.25
 ```
 
 ---
@@ -422,22 +422,22 @@ hp: var 67 name "health" at 10,2 size 3x0.7 bar fill green-bright track red corn
 ## Swapping bars, a new value, hidden values
 
 ```anim
-arr: swap 0 3
-hp: 30
+Arr: swap 0 3
+Hp: 30
 ```
 
 +++
 
 ```anim
-arr.2: 4
-hp: 100
+Arr.2: 4
+Hp: 100
 ```
 
 +++
 
 ```anim
-arr: ink none
-hp: ink none
+Arr: ink none
+Hp: ink none
 ```
 
 ---
@@ -445,13 +445,13 @@ hp: ink none
 ## A value on the move
 
 ```anim
-t: var 0 at 10,4 size 3x0.5 bar max 9 fill blue name "avg"
+T: var 0 at 10,4 size 3x0.5 bar max 9 fill blue name "avg"
 ```
 
 +++
 
 ```anim
-t: arr.3
+T: Arr.3
 ```
 
 ---
@@ -459,15 +459,15 @@ t: arr.3
 ## Some cells, a new max, and back to boxes
 
 ```anim
-arr: range 0 2 fill amber
-hp: max 200
+Arr: range 0 2 fill amber
+Hp: max 200
 ```
 
 +++
 
 ```anim
-arr: bar clear
-hp: track none
+Arr: bar clear
+Hp: track none
 ```
 
 </animation>
@@ -479,7 +479,7 @@ A column of wide bars is a bar chart: the bars grow from the left, with their va
 <animation name="Horizontal Bars" grid="10x6">
 
 ```anim
-votes: column [12 7 15 4 9] at 4,2 bar stroke none fill teal size 4x0.7 gap 0.15 name "Votes" indices
+Votes: column [12 7 15 4 9] at 4,2 bar stroke none fill teal size 4x0.7 gap 0.15 name "Votes" indices
 ```
 
 ---
@@ -487,25 +487,25 @@ votes: column [12 7 15 4 9] at 4,2 bar stroke none fill teal size 4x0.7 gap 0.15
 ## Changes
 
 ```anim
-votes.3: 14
+Votes.3: 14
 ```
 
 +++
 
 ```anim
-votes: swap 2 3
+Votes: swap 2 3
 ```
 
 +++
 
 ```anim
-votes: range 0 1 fill amber
+Votes: range 0 1 fill amber
 ```
 
 +++
 
 ```anim
-votes: remove 4
+Votes: remove 4
 ```
 
 </animation>
@@ -517,10 +517,10 @@ A ring or pie shows a var's or cell's value round a circle, clockwise from the t
 <animation name="Rings & Pies" grid="14x7">
 
 ```anim
-done: var 25 name "done" at 3,2 size 2 stroke none ring fill teal-bright track muted
-left: var 60 at 7,2 size 2 stroke none pie fill purple-bright track muted
-cpu: var 45 at 11,2 size 2 ring fill orange-bright
-arr: row [3 8 5 9] at 2,5 size 1.2 gap 0.3 stroke none pie fill pink-bright track muted max 10
+Done: var 25 name "done" at 3,2 size 2 stroke none ring fill teal-bright track muted
+Left: var 60 at 7,2 size 2 stroke none pie fill purple-bright track muted
+Cpu: var 45 at 11,2 size 2 ring fill orange-bright
+Arr: row [3 8 5 9] at 2,5 size 1.2 gap 0.3 stroke none pie fill pink-bright track muted max 10
 ```
 
 ---
@@ -528,19 +528,19 @@ arr: row [3 8 5 9] at 2,5 size 1.2 gap 0.3 stroke none pie fill pink-bright trac
 ## New values
 
 ```anim
-done: 75
-left: 5
-cpu: 100
-arr.1: 2
+Done: 75
+Left: 5
+Cpu: 100
+Arr.1: 2
 ```
 
 +++
 
 ```anim
-done: +25
-left: 0
-cpu: highlight outline
-arr: swap 0 3
+Done: +25
+Left: 0
+Cpu: highlight outline
+Arr: swap 0 3
 ```
 
 ---
@@ -548,8 +548,8 @@ arr: swap 0 3
 ## A value on the move
 
 ```anim
-cpu: highlight clear
-done: arr.2
+Cpu: highlight clear
+Done: Arr.2
 ```
 
 ---
@@ -557,23 +557,23 @@ done: arr.2
 ## Changing kind, and back to a box
 
 ```anim
-done: pie
-left: ring
-cpu: bar
+Done: pie
+Left: ring
+Cpu: bar
 ```
 
 +++
 
 ```anim
-done: bar
-left: corner 0.2
+Done: bar
+Left: corner 0.2
 ```
 
 +++
 
 ```anim
-done: ring clear
-left: pie clear
+Done: ring clear
+Left: pie clear
 ```
 
 ---
@@ -581,14 +581,14 @@ left: pie clear
 ## A wide box turned into a ring is made square
 
 ```anim
-wide: var 40 at 11,5 size 3x1 track muted
+Wide: var 40 at 11,5 size 3x1 track muted
 ```
 
 +++
 
 ```anim
-wide: ring fill green-bright
-arr: ring
+Wide: ring fill green-bright
+Arr: ring
 ```
 
 </animation>

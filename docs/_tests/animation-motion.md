@@ -9,12 +9,12 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 <animation name="Placement" grid="12x5">
 
 ```anim
-a: rect "a" at 6.5,3
-up: circle "above" above a font 0.5
-down: circle "below" below a font 0.5
-lt: circle "left-of" left-of a font 0.5
-rt: circle "gap 1" right-of a gap 1 font 0.5
-on: circle at a radius 0.15 fill amber front
+A: rect "a" at 6.5,3
+Up: circle "above" above A font 0.5
+Down: circle "below" below A font 0.5
+Lt: circle "left-of" left-of A font 0.5
+Rt: circle "gap 1" right-of A gap 1 font 0.5
+On: circle at A radius 0.15 fill amber front
 ```
 
 ---
@@ -22,9 +22,9 @@ on: circle at a radius 0.15 fill amber front
 ## x, y and move
 
 ```anim
-rt: x 11
-up: y 1
-on: move lt
+Rt: x 11
+Up: y 1
+On: move Lt
 ```
 
 ---
@@ -34,8 +34,8 @@ on: move lt
 `at` places a shape as it's made; `move` places one that's there.
 
 ```anim
-lt: move 2,2
-down: move 11,4
+Lt: move 2,2
+Down: move 11,4
 ```
 
 ---
@@ -43,15 +43,15 @@ down: move 11,4
 ## Signed: relative
 
 ```anim
-a: move -1,+0
+A: move -1,+0
 ```
 
 +++
 
 ```anim
-rt: x -1
-up: y +0.5
-on: move +0,+1
+Rt: x -1
+Up: y +0.5
+On: move +0,+1
 ```
 
 </animation>
@@ -61,10 +61,10 @@ on: move +0,+1
 <animation name="Arrange" grid="fit">
 
 ```anim
-a: rect "a" at 2,2
-b: circle "b" at 6,6
-c: icon(laptop) at 9,6
-g: group [a b c] highlight outline
+A: rect "a" at 2,2
+B: circle "b" at 6,6
+C: icon(laptop) at 9,6
+G: group [A B C] highlight outline
 ```
 
 ---
@@ -74,7 +74,7 @@ g: group [a b c] highlight outline
 From the first, in the order they're listed, centres level.
 
 ```anim
-g: arrange right gap 1.5
+G: arrange right gap 1.5
 ```
 
 ---
@@ -84,7 +84,7 @@ g: arrange right gap 1.5
 0.25 apart by default, as with below.
 
 ```anim
-g: arrange down
+G: arrange down
 ```
 
 ---
@@ -94,7 +94,7 @@ g: arrange down
 Any angle
 
 ```anim
-g: arrange 30 gap 1
+G: arrange 30 gap 1
 ```
 
 ---
@@ -102,7 +102,7 @@ g: arrange 30 gap 1
 ## arrange 45 stagger 0.2
 
 ```anim
-g: arrange 45 stagger 0.2
+G: arrange 45 stagger 0.2
 ```
 
 ---
@@ -110,7 +110,7 @@ g: arrange 45 stagger 0.2
 ## Still a group
 
 ```anim
-g: move 5,3
+G: move 5,3
 ```
 
 ---
@@ -118,10 +118,10 @@ g: move 5,3
 ## A group in a group
 
 ```anim
-g: ungroup
-d: rect "d" at 8,1
-inner: group [c d] highlight outline
-outer: group [a b inner] highlight outline
+G: ungroup
+D: rect "d" at 8,1
+Inner: group [C D] highlight outline
+Outer: group [A B Inner] highlight outline
 ```
 
 +++
@@ -129,8 +129,8 @@ outer: group [a b inner] highlight outline
 The inner group is placed by its box.
 
 ```anim
-inner: arrange down gap 0.5
-outer: arrange right gap 0.5
+Inner: arrange down gap 0.5
+Outer: arrange right gap 0.5
 ```
 
 +++
@@ -138,13 +138,13 @@ outer: arrange right gap 0.5
 Its first shape stays put.
 
 ```anim
-inner: arrange right gap 1
+Inner: arrange right gap 1
 ```
 
 +++
 
 ```anim
-outer: arrange down gap 1
+Outer: arrange down gap 1
 ```
 
 </animation>
@@ -156,21 +156,21 @@ outer: arrange down gap 1
 <animation name="Edge Points" grid="14x7">
 
 ```anim
-b: rect "b" at 4.5,3.5 size 4x2 fill blue-muted
+B: rect "b" at 4.5,3.5 size 4x2 fill blue-muted
 defaults size 0.3 fill red front
-p1: circle attach b.top-left
-p2: circle attach b.top
-p3: circle attach b.top-right
-p4: circle attach b.right
-p5: circle attach b.bottom-right
-p6: circle attach b.bottom
-p7: circle attach b.bottom-left
-p8: circle attach b.left
+P1: circle attach B.top-left
+P2: circle attach B.top
+P3: circle attach B.top-right
+P4: circle attach B.right
+P5: circle attach B.bottom-right
+P6: circle attach B.bottom
+P7: circle attach B.bottom-left
+P8: circle attach B.left
 defaults clear
-q: diamond "yes?" at 11,2 size 2.4x1.6 fill amber
-no: rect "no" at 11,5.5 size 2x1
-lb: arrow from b.right to q.left
-ln: arrow from q.bottom to no.top "no"
+Q: diamond "yes?" at 11,2 size 2.4x1.6 fill amber
+No: rect "no" at 11,5.5 size 2x1
+Lb: arrow from B.right to Q.left
+Ln: arrow from Q.bottom to No.top "no"
 ```
 
 ---
@@ -178,13 +178,13 @@ ln: arrow from q.bottom to no.top "no"
 ## They turn and stretch with it
 
 ```anim
-b: angle 30 speed slow
+B: angle 30 speed slow
 ```
 
 +++
 
 ```anim
-b: angle 0 size 2.6x2.6
+B: angle 0 size 2.6x2.6
 ```
 
 ---
@@ -192,8 +192,8 @@ b: angle 0 size 2.6x2.6
 ## A line end on one follows it
 
 ```anim
-q: angle 25
-b: move 4.5,4.5
+Q: angle 25
+B: move 4.5,4.5
 ```
 
 ---
@@ -201,15 +201,15 @@ b: move 4.5,4.5
 ## A turn's pivot, travel and the camera
 
 ```anim
-no: angle +360 about no.bottom-left speed slow
-camera move q.top zoom 1.5
+No: angle +360 about No.bottom-left speed slow
+camera move Q.top zoom 1.5
 ```
 
 +++
 
 ```anim
 camera reset
-no: travel b.bottom-right q.top-right 11,5.5
+No: travel B.bottom-right Q.top-right 11,5.5
 ```
 
 </animation>
@@ -219,10 +219,10 @@ no: travel b.bottom-right q.top-right 11,5.5
 <animation name="Moving Lines" grid="12x5">
 
 ```anim
-a: rect "a" at 2,1
-b: rect "b" at 10,1
-p: arrow from a to b
-l: line from 2,4 to 6,4 "l" stroke pink
+A: rect "a" at 2,1
+B: rect "b" at 10,1
+P: arrow from A to B
+L: line from 2,4 to 6,4 "l" stroke pink
 ```
 
 ---
@@ -232,7 +232,7 @@ l: line from 2,4 to 6,4 "l" stroke pink
 One end.
 
 ```anim
-l: to +4,-1
+L: to +4,-1
 ```
 
 ---
@@ -242,7 +242,7 @@ l: to +4,-1
 The whole line.
 
 ```anim
-l: move +0,+1
+L: move +0,+1
 ```
 
 ---
@@ -250,7 +250,7 @@ l: move +0,+1
 ## p: from 2,3 to b
 
 ```anim
-p: from 2,3 to b
+P: from 2,3 to B
 ```
 
 </animation>
@@ -260,19 +260,19 @@ p: from 2,3 to b
 <animation name="Curved Moves" grid="12x5">
 
 ```anim
-a: circle "a" at 2,4 radius 0.4 fill blue
-b: rect "b" at 6,3
-c: circle "c" at 2,2.5 radius 0.4 fill pink
+A: circle "a" at 2,4 radius 0.4 fill blue
+B: rect "b" at 6,3
+C: circle "c" at 2,2.5 radius 0.4 fill pink
 ```
 
 ---
 
 ## One via
 
-An arc over `b`.
+An arc over `B`.
 
 ```anim
-a: move 8,4 via 5,1 speed slow
+A: move 8,4 via 5,1 speed slow
 ```
 
 ---
@@ -282,7 +282,7 @@ a: move 8,4 via 5,1 speed slow
 A wave, at an even speed.
 
 ```anim
-c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
+C: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
 ```
 
 ---
@@ -290,8 +290,8 @@ c: move 10,2.5 via 4,4 via 6,2.5 via 8,1 speed slow
 ## Via a shape, and relative
 
 ```anim
-a: move 2,4 via below b speed slow
-c: move 2,2.5 via -2,+2 speed slow
+A: move 2,4 via below B speed slow
+C: move 2,2.5 via -2,+2 speed slow
 ```
 
 </animation>
@@ -303,24 +303,24 @@ Hop by hop; each hop takes the speed.
 <animation name="Travel" grid="14x4">
 
 ```anim
-pc: icon(laptop) "PC" at 1.5,2
-r1: circle "R1" at 4.5,1.5 radius 0.45
-r2: circle "R2" at 7.5,3 radius 0.45
-r3: circle "R3" at 10.5,1.5 radius 0.45
-srv: icon(server) "Server" at 13,2
+Pc: icon(laptop) "PC" at 1.5,2
+R1: circle "R1" at 4.5,1.5 radius 0.45
+R2: circle "R2" at 7.5,3 radius 0.45
+R3: circle "R3" at 10.5,1.5 radius 0.45
+Srv: icon(server) "Server" at 13,2
 defaults stroke muted back
-l1: line from pc to r1
-l2: line from r1 to r2
-l3: line from r2 to r3
-l4: line from r3 to srv
+L1: line from Pc to R1
+L2: line from R1 to R2
+L3: line from R2 to R3
+L4: line from R3 to Srv
 defaults clear
-pkt: rect at 1.5,2 size 0.5x0.35 fill amber front
+Pkt: rect at 1.5,2 size 0.5x0.35 fill amber front
 ```
 
 ---
 
 ```anim
-pkt: travel r1 r2 r3 srv
+Pkt: travel R1 R2 R3 Srv
 ```
 
 </animation>
@@ -330,11 +330,11 @@ pkt: travel r1 r2 r3 srv
 <animation name="Follow" grid="12x5">
 
 ```anim
-a: circle "a" at 2,3
-b: circle "b" at 10,3
-l: line from a to b
-c: curve from a to b via 6,1 dashed
-dot: circle at 2,3 radius 0.2 fill amber front
+A: circle "a" at 2,3
+B: circle "b" at 10,3
+L: line from A to B
+C: curve from A to B via 6,1 dashed
+Dot: circle at 2,3 radius 0.2 fill amber front
 ```
 
 ---
@@ -344,7 +344,7 @@ dot: circle at 2,3 radius 0.2 fill amber front
 Ends on b's centre, not at the line's end on b's edge.
 
 ```anim
-dot: follow l speed slow
+Dot: follow L speed slow
 ```
 
 ---
@@ -354,7 +354,7 @@ dot: follow l speed slow
 Back along the curve, ending on a's centre.
 
 ```anim
-dot: follow-reverse c speed slow
+Dot: follow-reverse C speed slow
 ```
 
 ---
@@ -362,7 +362,7 @@ dot: follow-reverse c speed slow
 ## A free end
 
 ```anim
-f: arrow from a to 6,4.6
+F: arrow from A to 6,4.6
 ```
 
 +++
@@ -370,7 +370,7 @@ f: arrow from a to 6,4.6
 Ends at the arrow's tip: there's no shape there.
 
 ```anim
-dot: follow f speed slow
+Dot: follow F speed slow
 ```
 
 </animation>
@@ -380,11 +380,11 @@ dot: follow f speed slow
 <animation name="About" grid="14x7">
 
 ```anim
-face: circle at 3,4 radius 2.2 fill none
-hub: circle at 3,4 radius 0.15 fill fg
-hand: arrow from 3,4 to 3,2.3 weight 2
-box: rect "A" at 9,2 size 1.4x0.8
-p: circle at 9,4 radius 0.08 fill red stroke none
+Face: circle at 3,4 radius 2.2 fill none
+Hub: circle at 3,4 radius 0.15 fill fg
+Hand: arrow from 3,4 to 3,2.3 weight 2
+Box: rect "A" at 9,2 size 1.4x0.8
+P: circle at 9,4 radius 0.08 fill red stroke none
 ```
 
 ---
@@ -394,7 +394,7 @@ p: circle at 9,4 radius 0.08 fill red stroke none
 Its free ends go round it.
 
 ```anim
-hand: angle +90 about 3,4
+Hand: angle +90 about 3,4
 ```
 
 +++
@@ -402,13 +402,13 @@ hand: angle +90 about 3,4
 An absolute angle turns from as drawn.
 
 ```anim
-hand: angle 210 about hub speed slow
+Hand: angle 210 about Hub speed slow
 ```
 
 +++
 
 ```anim
-hand: angle +360 about hub speed vslow ease linear
+Hand: angle +360 about Hub speed vslow ease linear
 ```
 
 ---
@@ -416,13 +416,13 @@ hand: angle +360 about hub speed vslow ease linear
 ## A shape goes round, and turns with it
 
 ```anim
-box: angle +90 about p
+Box: angle +90 about P
 ```
 
 +++
 
 ```anim
-box: angle +180 about p speed slow
+Box: angle +180 about P speed slow
 ```
 
 +++
@@ -430,7 +430,7 @@ box: angle +180 about p speed slow
 Signed: from its own centre.
 
 ```anim
-box: angle +90 about +0,+1
+Box: angle +90 about +0,+1
 ```
 
 ---
@@ -438,23 +438,23 @@ box: angle +90 about +0,+1
 ## A group turns as one
 
 ```anim
-box: angle 0 about p speed instant
-w1: circle "1" at 11,6 radius 0.4
-w2: circle "2" at 13,6 radius 0.4
-spoke: line from w1 to w2
-car: group [w1 w2 spoke]
+Box: angle 0 about P speed instant
+W1: circle "1" at 11,6 radius 0.4
+W2: circle "2" at 13,6 radius 0.4
+Spoke: line from W1 to W2
+Car: group [W1 W2 Spoke]
 ```
 
 +++
 
 ```anim
-car: angle +180 about 12,6 speed slow
+Car: angle +180 about 12,6 speed slow
 ```
 
 +++
 
 ```anim
-car: angle +90 about p
+Car: angle +90 about P
 ```
 
 </animation>
@@ -464,9 +464,9 @@ car: angle +90 about p
 <animation name="Trail" grid="12x6">
 
 ```anim
-a: circle "a" at 2,2 radius 0.4 fill teal
-b: rect "b" at 2,5
-r: line from 6,1 via 8,4 to 11,2
+A: circle "a" at 2,2 radius 0.4 fill teal
+B: rect "b" at 2,5
+R: line from 6,1 via 8,4 to 11,2
 ```
 
 ---
@@ -476,13 +476,13 @@ r: line from 6,1 via 8,4 to 11,2
 From where it is now.
 
 ```anim
-a: trail
+A: trail
 ```
 
 +++
 
 ```anim
-a: move 6,2
+A: move 6,2
 ```
 
 +++
@@ -490,13 +490,13 @@ a: move 6,2
 Along the real path.
 
 ```anim
-a: move 10,4 via 8,1
+A: move 10,4 via 8,1
 ```
 
 +++
 
 ```anim
-a: travel 10,1 7,4 3,3
+A: travel 10,1 7,4 3,3
 ```
 
 ---
@@ -504,20 +504,20 @@ a: travel 10,1 7,4 3,3
 ## Turned on with a move
 
 ```anim
-b: move 5,5 trail
+B: move 5,5 trail
 ```
 
 +++
 
 ```anim
-b: follow r
-b.trail: stroke pink solid
+B: follow R
+B.trail: stroke pink solid
 ```
 
 +++
 
 ```anim
-b: angle +180 about 8,3.5 speed slow
+B: angle +180 about 8,3.5 speed slow
 ```
 
 ---
@@ -525,14 +525,14 @@ b: angle +180 about 8,3.5 speed slow
 ## Styled
 
 ```anim
-a.trail: stroke teal solid weight 2
-b.trail: dotted opacity 0.5 end arrow
+A.trail: stroke teal solid weight 2
+B.trail: dotted opacity 0.5 end arrow
 ```
 
 +++
 
 ```anim
-a: move 2,2
+A: move 2,2
 ```
 
 ---
@@ -540,13 +540,13 @@ a: move 2,2
 ## trail clear
 
 ```anim
-a: trail clear
+A: trail clear
 ```
 
 +++
 
 ```anim
-b: delete
+B: delete
 ```
 
 ---
@@ -556,22 +556,22 @@ b: delete
 A cell's trail stays with the cell, bow and all.
 
 ```anim
-arr: row [5 3 8 1 6 7] at 2,5
-arr.0: trail
-arr.3: trail
+Arr: row [5 3 8 1 6 7] at 2,5
+Arr.0: trail
+Arr.3: trail
 ```
 
 +++
 
 ```anim
-arr: swap 0 5 speed slow
+Arr: swap 0 5 speed slow
 ```
 
 +++
 
 ```anim
-arr: swap 3 1 speed slow
-arr: swap 5 2 speed slow
+Arr: swap 3 1 speed slow
+Arr: swap 5 2 speed slow
 ```
 
 </animation>
@@ -583,19 +583,19 @@ The copy starts on the original and moves off.
 <animation name="Copy" grid="12x3">
 
 ```anim
-key: icon(key-round) "key" at 2,2 stroke green
+Key: icon(key-round) "key" at 2,2 stroke green
 ```
 
 ---
 
 ```anim
-k2: copy key move 6,2 via 4,1 speed slow
+K2: copy Key move 6,2 via 4,1 speed slow
 ```
 
 +++
 
 ```anim
-k3: copy k2 move 10,2 stroke amber
+K3: copy K2 move 10,2 stroke amber
 ```
 
 </animation>
@@ -605,7 +605,7 @@ k3: copy k2 move 10,2 stroke amber
 <animation name="Attach & Detach" grid="12x5">
 
 ```anim
-msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
+Msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
 ```
 
 ---
@@ -613,7 +613,7 @@ msg: rect "msg" at 2,4 size 1.6x0.8 fill amber
 ## attach right-of msg
 
 ```anim
-lock: icon(lock) attach right-of msg stroke amber pop
+Lock: icon(lock) attach right-of Msg stroke amber pop
 ```
 
 +++
@@ -621,7 +621,7 @@ lock: icon(lock) attach right-of msg stroke amber pop
 It rides along, even round a curve.
 
 ```anim
-msg: move 9,4 via 6,2.5 speed slow
+Msg: move 9,4 via 6,2.5 speed slow
 ```
 
 ---
@@ -629,13 +629,13 @@ msg: move 9,4 via 6,2.5 speed slow
 ## detach
 
 ```anim
-lock: detach
+Lock: detach
 ```
 
 +++
 
 ```anim
-msg: move 3,4 speed slow
+Msg: move 3,4 speed slow
 ```
 
 ---
@@ -645,7 +645,7 @@ msg: move 3,4 speed slow
 On top.
 
 ```anim
-lock: attach msg
+Lock: attach Msg
 ```
 
 </animation>
@@ -655,9 +655,9 @@ lock: attach msg
 <animation name="Group & Ungroup" grid="12x4">
 
 ```anim
-a: rect "a" at 2,2
-b: circle "b" at 5,3
-l: arrow from a to b
+A: rect "a" at 2,2
+B: circle "b" at 5,3
+L: arrow from A to B
 ```
 
 ---
@@ -665,7 +665,7 @@ l: arrow from a to b
 ## group
 
 ```anim
-g: group [a, b, l] highlight outline
+G: group [A, B, L] highlight outline
 ```
 
 +++
@@ -673,13 +673,13 @@ g: group [a, b, l] highlight outline
 Acts as one.
 
 ```anim
-g: move +5,+0 speed slow
+G: move +5,+0 speed slow
 ```
 
 +++
 
 ```anim
-g: pulse
+G: pulse
 ```
 
 ---
@@ -689,13 +689,13 @@ g: pulse
 The members stay where they are.
 
 ```anim
-g: ungroup
+G: ungroup
 ```
 
 +++
 
 ```anim
-a: move 2,2
+A: move 2,2
 ```
 
 ---
@@ -703,13 +703,13 @@ a: move 2,2
 ## Removing a group removes its members
 
 ```anim
-g2: group [a, b]
+G2: group [A, B]
 ```
 
 +++
 
 ```anim
-g2: delete pop
+G2: delete pop
 ```
 
 </animation>
@@ -719,9 +719,9 @@ g2: delete pop
 <animation name="Camera" grid="12x6">
 
 ```anim
-a: rect "a" at 2,2 fill red
-b: circle "b" at 10,5 fill blue
-l: arrow from a to b
+A: rect "a" at 2,2 fill red
+B: circle "b" at 10,5 fill blue
+L: arrow from A to B
 ```
 
 ---
@@ -729,7 +729,7 @@ l: arrow from a to b
 ## at a zoom 3
 
 ```anim
-camera move a zoom 3
+camera move A zoom 3
 ```
 
 ---
@@ -771,22 +771,22 @@ camera reset speed fast
 <animation name="Camera Travel" grid="12x6">
 
 ```anim
-a: circle "a" at 2,2
-b: circle "b" at 10,2
-c: circle "c" at 10,5
-d: circle "d" at 2,5
+A: circle "a" at 2,2
+B: circle "b" at 10,2
+C: circle "c" at 10,5
+D: circle "d" at 2,5
 ```
 
 ---
 
 ```anim
-camera move a zoom 3
+camera move A zoom 3
 ```
 
 +++
 
 ```anim
-camera travel b c d
+camera travel B C D
 ```
 
 +++

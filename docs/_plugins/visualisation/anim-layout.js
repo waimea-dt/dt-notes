@@ -26,7 +26,7 @@
 
     // The same, for one of n things numbered from base
     function numberOf(token, n, base, after = false) {
-      if (token?.kind === 'word' && token.lower === EDIT_WORDS.end) return base + n - (after ? 0 : 1)
+      if (token?.kind === 'word' && token.value === EDIT_WORDS.end) return base + n - (after ? 0 : 1)
       return parseAs('index', token)
     }
 
@@ -41,7 +41,7 @@
     // line from the top (gridLines) and its column, both from 0. Undefined if it isn't one; an error
     // if the grid has no such row or column.
     function gridPlaceOf(grid, token) {
-      const parts = token?.kind === 'word' ? token.lower.split('.') : []
+      const parts = token?.kind === 'word' ? token.value.split('.') : []
       if (parts.length !== 2) return undefined
       const kind = LAYOUTS[grid.layout]
       const base = baseOf(grid.layout)
@@ -122,7 +122,7 @@
       return { x: shape.x - frame.x, y: shape.y - frame.y }
     }
 
-    // "arr: range 0 3 fill red": a change to some of a row's / column's cells, each changed as if on
+    // "Arr: range 0 3 fill red": a change to some of a row's / column's cells, each changed as if on
     // its own line (stagger: in cell order). Only a look, highlights, emphasis and callouts: the cells
     // stay in the row (LINES: range).
     function changeRange(id, row, tokens, meta, warn) {
@@ -143,12 +143,12 @@
       applyStagger(row, cells.map((cell) => [cell.uid]), props, meta, warn)
     }
 
-    // "s: span arr 0 2": a box round some of a row's / column's / code block's places (SHAPES: span),
+    // "S: span Arr 0 2": a box round some of a row's / column's / code block's places (SHAPES: span),
     // as one shape for highlights, a callout and a name. It's a part of the row (it goes when the
     // row does) and stays on its places through swaps, inserts and removes (fitSpans). Spanning an
     // existing span again moves it to the new places, gliding there.
     function makeSpan(id, existing, tokens, meta, warn) {
-      const example = `e.g. "${id}: span arr 0 2"`
+      const example = `e.g. "${id}: span Arr 0 2"`
       const rowId = parseAs('id', tokens[1], shapes)
       const row = rowId && shapes.get(rowId)
       if (!row) throw new Error(`"span" expects ${LAYOUT_NOUNS} and two of its places, ${example}${tokens[1] && !rowId ? `: no shape called "${tokens[1].value}"` : ''}`)
@@ -252,7 +252,7 @@
       if (opacity !== undefined) fadeParts(shape, opacity, props, meta, warn)
     }
 
-    // "arr: opacity 0" (or reset): its name, indices and other tags (PARTS: fades) fade with it,
+    // "Arr: opacity 0" (or reset): its name, indices and other tags (PARTS: fades) fade with it,
     // each given the same opacity, in the line's time
     function fadeParts(owner, opacity, props, meta, warn) {
       for (const part of partsOf(owner).filter((p) => PARTS[p.role]?.fades)) {
@@ -303,7 +303,7 @@
     }
     const TAG_FONT = 1.2 // a name's and a decimal's font
 
-    // A number's value written out (LAYOUTS: decimal), beside it while shown ("b: decimal"): a
+    // A number's value written out (LAYOUTS: decimal), beside it while shown ("B: decimal"): a
     // label following the number, kept up to date (and counting) as links are (fitLinks)
     const decimalTag = (row) => (row.decimal ? { text: LAYOUTS[row.layout].decimal.label(row.id), ...LAYOUTS[row.layout].decimal } : null)
 
@@ -386,7 +386,7 @@
     const gridMarks = (grid, numbering) => Object.entries(LAYOUTS[grid.layout].views)
       .flatMap(([name, view]) => marksFor(grid, grid.views[name], (k) => viewKey(view, k), view[numbering.field], numbering))
 
-    // "arr: row [5 3 8 1] at 2,3": a layout made by its arrangement (ARRANGE)
+    // "Arr: row [5 3 8 1] at 2,3": a layout made by its arrangement (ARRANGE)
     function createLayout(id, layout, tokens, existing, meta, warn) {
       return ARRANGE[LAYOUTS[layout].arrange].create(id, layout, tokens, existing, meta, warn)
     }
@@ -414,7 +414,7 @@
     }
 
     // A layout of lines (LAYOUTS: lines), "c: code "print(x)" lang python at 2,1", or its lines in
-    // [ ]: a column of code lines, c.1, c.2, … (numbered from 1), each as wide as the longest (fitCode).
+    // [ ]: a column of code lines, C.1, C.2, … (numbered from 1), each as wide as the longest (fitCode).
     function createLines(id, layout, tokens, existing, meta, warn) {
       const { noun, item } = LAYOUTS[layout]
       const example = `e.g. "${id}: ${layout} "print(x)" lang python at 2,1", or its ${item}s in [ ]: "${id}: ${layout} ["x = 1" "print(x)"] at 2,1"`
@@ -436,12 +436,12 @@
       makeLayout(id, layout, values, props, existing, meta, warn)
     }
 
-    // A number (LAYOUTS: radix), "b: binary 67 at 2,3 digits 8", or a var's or cell's value
-    // ("b: binary v1"): a row of its digits, lowest first (b.0) and numbered from the right, as many
+    // A number (LAYOUTS: radix), "B: binary 67 at 2,3 digits 8", or a var's or cell's value
+    // ("B: binary V1"): a row of its digits, lowest first (B.0) and numbered from the right, as many
     // as its digits (LAYOUTS: digits)
     function createNumber(id, layout, tokens, existing, meta, warn) {
       const { noun, digits } = LAYOUTS[layout]
-      const example = `e.g. "${id}: ${layout} 67 at 2,3", or a var's value: "${id}: ${layout} v1 at 2,3"`
+      const example = `e.g. "${id}: ${layout} 67 at 2,3", or a var's value: "${id}: ${layout} V1 at 2,3"`
       const source = !valueOf(tokens[1]) && holderRef(tokens[1]) ? holderRef(tokens[1], `make ${article(noun)} ${noun} from`) : undefined
       const value = valueOf(tokens[1]) || (source && valueIn(source))
       if (!value) throw new Error(`a ${noun}'s value goes straight after "${layout}", ${example}`)
@@ -480,8 +480,8 @@
     }
 
     // A grid or table (LAYOUTS: views): its rows of values in [ ], each in [ ] like a row's
-    // ("g: grid [[1 2 3] [4 5 6]]", commas optional), or a number of empty cells across and down
-    // ("g: grid 4x3"). Shorter rows are filled out with empty cells. A table's first row is its
+    // ("G: grid [[1 2 3] [4 5 6]]", commas optional), or a number of empty cells across and down
+    // ("G: grid 4x3"). Shorter rows are filled out with empty cells. A table's first row is its
     // headings.
     function createGrid(id, layout, tokens, existing, meta, warn) {
       const { noun } = LAYOUTS[layout]

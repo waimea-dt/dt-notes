@@ -117,7 +117,7 @@
       ]
     },
     "sum": {
-      "$comment": "a sum in { } (OPERATORS): a number that follows values (x {v1 * 2}), or a value in a label (\"{n * 2}\")",
+      "$comment": "a sum in { } (OPERATORS): a number that follows values (x {V1 * 2}), or a value in a label (\"{N * 2}\")",
       "name": "meta.embedded.expression.anim",
       "begin": "\\{",
       "end": "\\}",
@@ -161,8 +161,8 @@
       }
     },
     "anchor": {
-      "$comment": "a point on a shape's edge (ANCHORS): the shape's id, then its side or corner as a value (a.top-left)",
-      "match": "(?<![\\w#.-])([A-Za-z][\\w.-]*?)(\\.)(top-left|top-right|bottom-left|bottom-right|top|bottom|left|right)(?![\\w.-])",
+      "$comment": "a point on a shape's edge (ANCHORS): the shape's id, then its side or corner as a value (A.top-left)",
+      "match": "(?<![\\w#.-])([A-Z][\\w.-]*?)(\\.)(top-left|top-right|bottom-left|bottom-right|top|bottom|left|right)(?![\\w.-])",
       "captures": {
         "1": {
           "name": "variable.parameter.anim"
@@ -176,8 +176,8 @@
       }
     },
     "line-head": {
-      "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is a line end's mark). line followed by a number is the verb that replaces a script's line (s: line 3 \"...\"): a command",
-      "match": "^\\s*([A-Za-z][\\w.-]*)\\s*(:)(?:\\s*(?:(rect|circle|diamond|polygon|text|line(?!\\s+\\d)|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])|(line)(?=\\s+\\d)))?",
+      "$comment": "id: at the start of a line, and a shape type straight after it (elsewhere arrow is a line end's mark). line followed by a number is the verb that replaces a script's line (S: line 3 \"...\"): a command. Ids start with a capital letter, so a lowercase one isn't coloured as an id",
+      "match": "^\\s*([A-Z][\\w.-]*)\\s*(:)(?:\\s*(?:(rect|circle|diamond|polygon|text|line(?!\\s+\\d)|arrow|curve|row|column|code|grid|table|binary|hex|denary|var|scratch)(?![\\w-])|(line)(?=\\s+\\d)))?",
       "captures": {
         "1": {
           "name": "entity.name.tag.anim"
@@ -516,9 +516,9 @@
       ]
     },
     "shape-ref": {
-      "$comment": "any other word is a shape id used as a value (from a to b, attach right-of msg, travel r1 r2); keep this last",
+      "$comment": "a capitalised word is a shape id used as a value (from A to B, attach right-of Msg, travel R1 R2): keywords are lowercase; keep this last",
       "name": "variable.parameter.anim",
-      "match": "(?<![\\w#.-])[A-Za-z][\\w.-]*(?![\\w-])"
+      "match": "(?<![\\w#.-])[A-Z][\\w.-]*(?![\\w-])"
     }
   }
 }

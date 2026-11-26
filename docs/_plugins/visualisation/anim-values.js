@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { parseProps, ID, RESERVED, KEYWORDS, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
+  const { parseProps, REF, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
     nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, evaluate, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol, tween } = window.Anim
 
   // The numbers whose digits flip (LAYOUTS: flip), for messages: "a binary number"
@@ -19,14 +19,14 @@
     // the other parts' functions, linked once every part is made
     let applyStagger, busiest, cellsBetween, noShape, placeOf, retime, schedule, speedOf, stampOf, stampNow
     // making (in the link functions and holderRef): the id the line being run makes, if it makes one
-    // (applyLook's creating), so a look can follow its own value ("r: binary 0 fill rgb(r 0 0)"),
+    // (applyLook's creating), so a look can follow its own value ("R: binary 0 fill rgb(R 0 0)"),
     // though it isn't there yet: such a link is worked out once it is (fitLinks, after the line)
 
     // A value a var or a row's / column's cell holds: a number, "quoted" text or null (shown muted)
     function valueOf(token) {
       if (token?.kind === 'str') return { label: token.value }
       if (token?.kind === 'word' && NUMBER.test(token.value)) return { label: token.value }
-      if (token?.kind === 'word' && token.lower === 'null') return { label: 'null', nil: true }
+      if (token?.kind === 'word' && token.value === 'null') return { label: 'null', nil: true }
       return undefined
     }
     function setValue(shape, value) {
@@ -41,8 +41,8 @@
     // A shape's value: a var's or cell's, or a number's, from its digits
     const valueIn = (shape) => (inDigits(shape) ? { label: String(wholeOf(shape)), nil: false } : { label: shape.label, nil: shape.nil })
 
-    // A digit of a number (layout: LAYOUTS: radix) holds 0 to radix - 1, given as a number ("h.0: 0xF",
-    // "h.0: 15") and kept as its symbol (0-9, then A-F). The number's own edits give symbols
+    // A digit of a number (layout: LAYOUTS: radix) holds 0 to radix - 1, given as a number ("H.0: 0xF",
+    // "H.0: 15") and kept as its symbol (0-9, then A-F). The number's own edits give symbols
     // (symbols: true); a value given in a line is a number.
     function digitValue(layout, value, symbols = true) {
       const { noun, item, radix } = LAYOUTS[layout]
@@ -52,8 +52,8 @@
     }
     const checkDigit = (layout, value) => { digitValue(layout, value, false) }
 
-    // "v: +1" / "b: -5": a signed value adds to what a var, cell or number holds now (any other
-    // value is as given). A digit adds in its radix ("h.0: +1": 9 to A), checked as it's set.
+    // "V: +1" / "B: -5": a signed value adds to what a var, cell or number holds now (any other
+    // value is as given). A digit adds in its radix ("H.0: +1": 9 to A), checked as it's set.
     function addTo(shape, value) {
       if (value.nil || !/^[+-]/.test(value.label)) return value
       if (shape.digit) {
@@ -89,7 +89,7 @@
       return Array.from({ length: count }, () => { const digit = n % base; n /= base; return digitSymbol(digit) })
     }
 
-    // A number's digits given a value ("b: 67"), each that changes (with `look`, keep-style's) put in
+    // A number's digits given a value ("B: 67"), each that changes (with `look`, keep-style's) put in
     // shapes: returned, to be timed
     function setNumber(row, value, warn, look = {}) {
       const labels = digitsFor(row.layout, value, row.members.length, warn)
@@ -101,12 +101,12 @@
       })
     }
 
-    // "b: flip": each of a number's digits d becomes radix - 1 - d (a bit: 0 <-> 1), crossfading
-    // as when it's given a value; "b: flip 0 3" some of them, "b.2: flip" one
+    // "B: flip": each of a number's digits d becomes radix - 1 - d (a bit: 0 <-> 1), crossfading
+    // as when it's given a value; "B: flip 0 3" some of them, "B.2: flip" one
     function flipDigits(id, shape, tokens, meta, warn) {
       if (!shape) throw noShape(id)
       const row = shape.digit ? null : shape
-      if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or one, e.g. "b.0: flip"), and "${id}" isn't one`)
+      if (!LAYOUTS[row ? row.layout : shape.digit]?.flip) throw new Error(`"flip" flips the digits of ${FLIP_NOUNS} (or one, e.g. "B.0: flip"), and "${id}" isn't one`)
       let cells = row ? digitsOf(row) : [shape]
       let next = 1
       if (row && placeOf(row, tokens[1]) !== undefined) {
@@ -141,12 +141,12 @@
       return changed
     }
 
-    // ---- Expressions (OPERATORS): "v3: v1 + v2", "x {v1 * 2}", "{total / 4}" in a label ----
+    // ---- Expressions (OPERATORS): "V3: V1 + V2", "x {V1 * 2}", "{Total / 4}" in a label ----
 
     // An expression from tokens[i]: operands (a number, a var, cell or number by name, or a sum in
     // ( )) with an operator between each, read until a token that's neither. { terms (each { v },
     // { ref } or { sum }), ops, next }, or null if it's one operand, unless that's a sum in ( ) or it
-    // can be `alone` ("x v1", "{n}"). `use` says what a name is for, in messages.
+    // can be `alone` ("x V1", "{N}"). `use` says what a name is for, in messages.
     function readExpr(tokens, i, { alone = false, use = 'work out', making } = {}) {
       const isParen = (token, value) => token?.kind === 'paren' && token.value === value
       const shown = (token) => token.value ?? token.name ?? token.text
@@ -162,7 +162,7 @@
         }
         return holderRef(token) ? { term: { ref: holderRef(token, use, making).id }, next: j + 1 } : null
       }
-      const operator = (token) => (token?.kind === 'word' && OPERATORS[token.lower] ? token.lower : null)
+      const operator = (token) => (token?.kind === 'word' && OPERATORS[token.value] ? token.value : null)
       if (!alone && !isParen(tokens[i], '(') && !operator(tokens[i + 1])) return null
       const first = operand(i)
       if (!first) return null
@@ -172,7 +172,7 @@
         const after = operand(expr.next + 1)
         const bad = tokens[expr.next + 1]
         if (!after) throw new Error(`"${op.value}" needs a number, var, cell or ( ) after it${bad ? `, not "${shown(bad)}"` : ''} (with spaces round it)`)
-        expr.ops.push(op.lower)
+        expr.ops.push(op.value)
         expr.terms.push(after.term)
         expr.next = after.next
       }
@@ -183,7 +183,7 @@
       const expr = tokens.length ? readExpr(tokens, 0, { alone: true, use, making }) : null
       if (!expr || expr.next !== tokens.length) {
         const bad = tokens[expr ? expr.next : 0]
-        throw new Error(`a sum is numbers, vars and cells with ${Object.keys(OPERATORS).join(' ')} between them (spaces round each)${bad ? `, not "${bad.value ?? bad.name ?? bad.text}"` : ''}, e.g. {v1 * 2}`)
+        throw new Error(`a sum is numbers, vars and cells with ${Object.keys(OPERATORS).join(' ')} between them (spaces round each)${bad ? `, not "${bad.value ?? bad.name ?? bad.text}"` : ''}, e.g. {V1 * 2}`)
       }
       return expr
     }
@@ -200,7 +200,7 @@
         return Number(value.label)
       })
     }
-    // "v3: v1 + v2": the expression a value line starts with (tokens[0], with an operator after its
+    // "V3: V1 + V2": the expression a value line starts with (tokens[0], with an operator after its
     // first operand), worked out once, as code does, as the value it's given; or null
     function exprValue(shape, tokens) {
       const expr = shape.holds ? readExpr(tokens, 0, { use: 'use in a sum' }) : null
@@ -217,9 +217,9 @@
     //            numbers they show on the way (countAlong); otherwise it changes once, to its new value
     // A look given again (or reset) no longer follows them (unlink).
     const LINKS = {
-      colour: { sources: (link) => link.args.filter((arg) => arg.ref !== undefined).map((arg) => arg.ref), fit: fitColour }, // "fill rgb(r g b)"
-      text: { sources: (link) => link.parts.flatMap((part) => (part.expr ? exprRefs(part.expr) : [])), fit: fitText, counts: true }, // "{v1}" in a label
-      number: { sources: (link) => exprRefs(link.expr), fit: fitNumber }, // "x v1", "angle {v1 * 2}"
+      colour: { sources: (link) => link.args.filter((arg) => arg.ref !== undefined).map((arg) => arg.ref), fit: fitColour }, // "fill rgb(R G B)"
+      text: { sources: (link) => link.parts.flatMap((part) => (part.expr ? exprRefs(part.expr) : [])), fit: fitText, counts: true }, // "{V1}" in a label
+      number: { sources: (link) => exprRefs(link.expr), fit: fitNumber }, // "x V1", "angle {V1 * 2}"
     }
     function unlink(shape, key) {
       if (!shape.links?.[key]) return
@@ -287,7 +287,7 @@
       }
     }
 
-    // "x v1", "angle {v1 * 2}" (KEYWORDS: bound): a look's number, or a shape's x or y (in cells),
+    // "x V1", "angle {V1 * 2}" (KEYWORDS: bound): a look's number, or a shape's x or y (in cells),
     // follows an expression
     function linkNumber(shape, key, tokens, warn, making) {
       setLink(shape, key, { kind: 'number', expr: wholeExpr(tokens, `follow with "${wordFor(key)}"`, making) }, warn, making)
@@ -303,7 +303,7 @@
       return true
     }
 
-    // "Total: {v1}" in a label: each { } that's a sum of numbers, vars and cells shows its value, as
+    // "Total: {V1}" in a label: each { } that's a sum of numbers, vars and cells shows its value, as
     // they change. Any other { } shows as written (with a warning when it looks like a sum with a
     // name in it that isn't a var or cell). Not a value (a var's, a cell's), code or a script.
     const TEMPLATE = /\{([^{}]*)\}/g
@@ -358,12 +358,12 @@
       digitsOf(shape).forEach((cell, place) => { schedule(meta, cell.uid, props).count = { from, to, radix, place } })
     }
 
-    // A colour worked out from values ("fill rgb(r g b)", COLOUR_FUNCTIONS): the look follows them
+    // A colour worked out from values ("fill rgb(R G B)", COLOUR_FUNCTIONS): the look follows them
     // (LINKS: colour). Its link: fn; args, each { v } (a number) or { ref } (the id of a var, cell or
     // number); values, the numbers it was last worked out from; and seen, what each argument held then.
     function linkColour(shape, key, { fn, args }, warn, making) {
       const { args: names, max, example: written } = COLOUR_FUNCTIONS[fn]
-      const example = `e.g. "${written}" or "${fn}(${names.map((name) => name[0]).join(' ')})"`
+      const example = `e.g. "${written}" or "${fn}(${names.map((name) => name[0].toUpperCase()).join(' ')})"`
       if (args.length !== names.length) throw new Error(`"${fn}(…)" takes ${names.length} values (${names.join(', ')}): numbers from 0 to ${max}, or vars or cells, ${example}`)
       const read = args.map((token) => {
         if (token.kind === 'word' && NUMBER.test(token.value)) return { v: Number(token.value) }
@@ -411,15 +411,15 @@
       return true
     }
 
-    // A word naming another shape (not a keyword or a value): the var or cell it names, or, with
+    // A word naming another shape (an id or a part's path: REF): the var or cell it names, or, with
     // `use` (what it's for), an error if it isn't one. Without `use`, undefined if it isn't a name.
     function holderRef(token, use, making) {
-      if (token?.kind !== 'word' || !ID.test(token.value) || KEYWORDS[token.lower] || RESERVED.has(token.lower)) return undefined
+      if (token?.kind !== 'word' || !REF.test(token.value)) return undefined
       const shape = shapes.get(token.value)
       if (!use) return token.value
       if (!shape && token.value === making) return { id: making } // the shape this line makes: it isn't there yet
       if (!shape) throw new Error(`unknown word "${token.value}" (and no var or cell has that name to ${use})`)
-      if (!shape.holds) throw new Error(`"${token.value}" doesn't hold a value, so there's nothing to ${use}: use a var or a cell, e.g. v1 or arr.2`)
+      if (!shape.holds) throw new Error(`"${token.value}" doesn't hold a value, so there's nothing to ${use}: use a var or a cell, e.g. V1 or Arr.2`)
       return shape
     }
 
@@ -452,7 +452,7 @@
       fly(meta, source, inDigits(target) ? target : landing[0], hops, props, { arrive })
     }
 
-    // "v1: a.1": a copy of a.1 glides onto v1, which takes its value as it lands
+    // "V1: A.1": a copy of A.1 glides onto V1, which takes its value as it lands
     function assignValue(target, source, tokens, meta, warn) {
       const props = parseProps(tokens, 1, 'assign', shapes)
       if (source.id === target.id) return warn(`"${target.id}" already holds its own value`)

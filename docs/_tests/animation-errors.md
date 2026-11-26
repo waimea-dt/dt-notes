@@ -8,94 +8,95 @@ Bad lines are listed under the animation and skipped; the rest still draws. The 
 
 ```anim
 # shapes the lines below use
-dw: rect at 5,1 draw
-a: rect "A" at 2,2
-b: rect at 9,9
-vv: var 5 at 1,1
-er: row [1 2] at 1,1
-tr: rect at 1,1
-tln3: line from 1,1 to 2,2
+Dw: rect at 5,1 draw
+A: rect "A" at 2,2
+B: rect at 9,9
+Vv: var 5 at 1,1
+Er: row [1 2] at 1,1
+Tr: rect at 1,1
+Tln3: line from 1,1 to 2,2
 
 # lines and ids
-c: blob at 3,3
-a: wibble 3
-e: rect "x" "y" at 4,2
+C: blob at 3,3
+A: wibble 3
+E: rect "x" "y" at 4,2
 remove: rect at 1,1
-null: rect at 1,1
+A.b: rect at 1,1
+A: fill Red
 
 # shapes and lines
-rr: rect at 4,2 radius 0.2
-d: line from a to zz
-f: circle at 5,2 corner 0.2
-g: rect at 6,2 x 3
-h: rect at 7,2
-h: size +1x0
-vl: curve from a to 6,1 via 3,2 bend 1
-cv1: curve from a to 6,1 angle up
-cv2: curve from a to a bend 1
-cv3: curve from a to 6,1 corner 0.2
-cv4: line from a to a angle up
-tr: fill red line
-tln3: end blob
-tln3: arrow
-tln3: arrows
-pg1: polygon at 1,1
-pg2: polygon [0 0 1 1] at 1,1
-pg3: polygon [0 0 1 1 2] at 1,1
-pg4: polygon [0 0 1 x 2 2] at 1,1
-pg5: polygon [0 0 1 0 1 1 at 1,1
+Rr: rect at 4,2 radius 0.2
+D: line from A to Zz
+F: circle at 5,2 corner 0.2
+G: rect at 6,2 x 3
+H: rect at 7,2
+H: size +1x0
+Vl: curve from A to 6,1 via 3,2 bend 1
+Cv1: curve from A to 6,1 angle up
+Cv2: curve from A to A bend 1
+Cv3: curve from A to 6,1 corner 0.2
+Cv4: line from A to A angle up
+Tr: fill red line
+Tln3: end blob
+Tln3: arrow
+Tln3: arrows
+Pg1: polygon at 1,1
+Pg2: polygon [0 0 1 1] at 1,1
+Pg3: polygon [0 0 1 1 2] at 1,1
+Pg4: polygon [0 0 1 x 2 2] at 1,1
+Pg5: polygon [0 0 1 0 1 1 at 1,1
 
 # looks
-st: text "x" at 3,2 stroke red
-fl: line from 1,3 to 3,3 dashed flow
-fl: solid
-a: angle sideways
-cv: rect at 1,1 fill muted-bright
-cv2: rect at 1,1 fill red-vivid
-cf5: rect at 1,1 fill contrast
+St: text "x" at 3,2 stroke red
+Fl: line from 1,3 to 3,3 dashed flow
+Fl: solid
+A: angle sideways
+Cv: rect at 1,1 fill muted-bright
+Cv2: rect at 1,1 fill red-vivid
+Cf5: rect at 1,1 fill contrast
 defaults fill reset
 defaults style reset
 
 # placing and moving, and the camera
-pm: rect move 2,2
-dw: at 2,2
+Pm: rect move 2,2
+Dw: at 2,2
 camera: move 2,2
 camera
-camera move below dw
+camera move below Dw
 camera fill red
 camera reset zoom 2
 camera zoom 0
 camera zoom 1
-at2: circle attach dw gap 1
-cp: copy zz
-vb: rect at 4,1 via 5,2
-a: fill blue via 3,2
-a: move 6,1 via zz
-gb1: group a b
-gb2: group [a, zz]
-gb3: group [a
-gb4: group []
-gb5: group [a] at 2,2
-ga: arrange right
-a: arrange right
-er: arrange right
-ga: group [a b]
-ga: arrange
-ga: arrange sideways
-ga: arrange right fill red
-tr2: rect at 3,1 about 2,2
-tr: about 2,2
-tr: angle +90 about 2,2 move 3,3
-tr: angle +90 about zz
-tln: line from tr to dw
-tln: angle +90 about 2,2
-tln2: line from 1,1 to 2,2 angle 45
-er: angle +90 about 1,1
-tr: trail
-tr: trail
-dw: trail clear
-tln3: trail
-tr.trail: from 1,1
+At2: circle attach Dw gap 1
+Cp: copy Zz
+Vb: rect at 4,1 via 5,2
+A: fill blue via 3,2
+A: move 6,1 via Zz
+Gb1: group A B
+Gb2: group [A, Zz]
+Gb3: group [A
+Gb4: group []
+Gb5: group [A] at 2,2
+Ga: arrange right
+A: arrange right
+Er: arrange right
+Ga: group [A B]
+Ga: arrange
+Ga: arrange sideways
+Ga: arrange right fill red
+Tr2: rect at 3,1 about 2,2
+Tr: about 2,2
+Tr: angle +90 about 2,2 move 3,3
+Tr: angle +90 about Zz
+Tln: line from Tr to Dw
+Tln: angle +90 about 2,2
+Tln2: line from 1,1 to 2,2 angle 45
+Er: angle +90 about 1,1
+Tr: trail
+Tr: trail
+Dw: trail clear
+Tln3: trail
+Tr.trail: from 1,1
 defaults trail
 defaults about 1,1
 
@@ -103,221 +104,220 @@ defaults about 1,1
 pause -1
 auto now
 then -1
-then: rect at 1,1
 defaults: fill red
-sp: rect at 1,2 slow
-sq: rect at 2,2 speed -1
-sl: line from 1,1 to 2,1 slide
+Sp: rect at 1,2 slow
+Sq: rect at 2,2 speed -1
+Sl: line from 1,1 to 2,1 slide
 defaults fill none
 defaults fill none
 defaults via 2,2
-q: rect at 1,1 ease bouncy
-dw: fill red stagger -1
+Q: rect at 1,1 ease bouncy
+Dw: fill red stagger -1
 defaults name "x"
 defaults "x"
 defaults range 0 1
-rp: rect at 1,1
-rp2: rect at 2,1 repeat 2
-rp: fill red repeat 0
-rp: fill red repeat 1.5
-rp: move 3,3 via 2,2 repeat 2
-rp: fill red repeat forever
-rp: angle +90 repeat forever
-rp: angle +30 about +0,+1 repeat 2
-rv: var 1 at 3,1
-rv: +1 repeat 3
+Rp: rect at 1,1
+Rp2: rect at 2,1 repeat 2
+Rp: fill red repeat 0
+Rp: fill red repeat 1.5
+Rp: move 3,3 via 2,2 repeat 2
+Rp: fill red repeat forever
+Rp: angle +90 repeat forever
+Rp: angle +30 about +0,+1 repeat 2
+Rv: var 1 at 3,1
+Rv: +1 repeat 3
 defaults repeat 2
 
 # emphasis and highlights
-hb: rect at 1,1 highlight box
-hln: line from 1,1 to 2,2 highlight outline
-ht: text "t" at 3,3 highlight inside
-hl: rect at 3,1 highlight sparkle
-dw: signal
-hlr: rect at 1,1 highlight line
+Hb: rect at 1,1 highlight box
+Hln: line from 1,1 to 2,2 highlight outline
+Ht: text "t" at 3,3 highlight inside
+Hl: rect at 3,1 highlight sparkle
+Dw: signal
+Hlr: rect at 1,1 highlight line
 
 # data structures
-ar: row at 1,1
-ar2: row 5 3 at 1,1
-ar3: row [5 3 at 1,1
-ar4: row [] at 1,1
-ar5: row [5, 3] "label" at 1,1
-ar6: rect at 1,1 [5]
-ar7: row 2.5 at 1,1
-ar8: column 0 at 1,1
-ar9: row 3 "x" at 1,1
-dw: swap 0 1
-dw: name "x"
-dw: indices
-vv: name clear
-er: remove 5
-er: insert 3 at 9
-er: remove 1 fill red
-er: delete 0
-er: remove 0 into zz
-er: remove 0 into er.0
-er: insert 3 at front
-dw: remove 0
-dw: fill red keep-style
-dw: zoom 2
-dw: clear
-dw: delete fill red
-er2: row [1 2] at 1,3 end arrow
-er3: row [1 2] at 1,4 "x"
-er: swap 0 1 fill red
-er: insert 3 at 0 keep-style
-er: range 0 5 fill red
-dw: range 0 1 fill red
-er: range 0 1 move 2,2
-er: range 0 fill red
-sp1: span er 0 9
-sp2: span dw 0 1
-sp3: span er 0
-sp4: span zz 0 1
-sp5: span er 0 1 at 2,2
-sp6: span er 0 1
-sp6: move 2,2
-sp6: size 2
-eg: grid [[1 2] [3 4 5]] at 1,1
-eg2: grid [1 2] at 1,1
-eg3: grid 4 at 1,1
-eg4: grid [[1 2] [3 at 1,1
-eg5: grid [[]] at 1,1
-eg.1: move 2,2
-eg.col.0: delete
-eg.1: indices
-eg: swap 0 9
-eg: swap col 0 1.1
-eg: insert [1 2 3 4] at 0
-eg: insert col [1] at 5
-eg: remove 0 into er.0
-eg: remove 1.1
-sg4: grid [[1]] at 1,1
-sg4: remove 0
-eg.0: remove 0
-eg6: group [eg.0]
-sg1: span eg 0.0 5.0
-sg2: span eg 0 1
-sg3: span er end 9
+Ar: row at 1,1
+Ar2: row 5 3 at 1,1
+Ar3: row [5 3 at 1,1
+Ar4: row [] at 1,1
+Ar5: row [5, 3] "label" at 1,1
+Ar6: rect at 1,1 [5]
+Ar7: row 2.5 at 1,1
+Ar8: column 0 at 1,1
+Ar9: row 3 "x" at 1,1
+Dw: swap 0 1
+Dw: name "x"
+Dw: indices
+Vv: name clear
+Er: remove 5
+Er: insert 3 at 9
+Er: remove 1 fill red
+Er: delete 0
+Er: remove 0 into Zz
+Er: remove 0 into Er.0
+Er: insert 3 at front
+Dw: remove 0
+Dw: fill red keep-style
+Dw: zoom 2
+Dw: clear
+Dw: delete fill red
+Er2: row [1 2] at 1,3 end arrow
+Er3: row [1 2] at 1,4 "x"
+Er: swap 0 1 fill red
+Er: insert 3 at 0 keep-style
+Er: range 0 5 fill red
+Dw: range 0 1 fill red
+Er: range 0 1 move 2,2
+Er: range 0 fill red
+Sp1: span Er 0 9
+Sp2: span Dw 0 1
+Sp3: span Er 0
+Sp4: span Zz 0 1
+Sp5: span Er 0 1 at 2,2
+Sp6: span Er 0 1
+Sp6: move 2,2
+Sp6: size 2
+Eg: grid [[1 2] [3 4 5]] at 1,1
+Eg2: grid [1 2] at 1,1
+Eg3: grid 4 at 1,1
+Eg4: grid [[1 2] [3 at 1,1
+Eg5: grid [[]] at 1,1
+Eg.1: move 2,2
+Eg.col.0: delete
+Eg.1: indices
+Eg: swap 0 9
+Eg: swap col 0 1.1
+Eg: insert [1 2 3 4] at 0
+Eg: insert col [1] at 5
+Eg: remove 0 into Er.0
+Eg: remove 1.1
+Sg4: grid [[1]] at 1,1
+Sg4: remove 0
+Eg.0: remove 0
+Eg6: group [Eg.0]
+Sg1: span Eg 0.0 5.0
+Sg2: span Eg 0 1
+Sg3: span Er end 9
 
 # values
-dw: 5
-dw: null
-vv: var 5 "x" at 1,1
-vv: 6 "x"
-vv: er.0 fill red
-br: rect at 1,1 bar
-bm: var 5 at 1,1 bar max 0
-rg1: var 5 at 1,1 ring size 2x1
-rg2: var 5 at 1,1 size 2 pie
-rg2: width 3
-rg2: corner 0.2
-rg3: rect at 1,1 ring
-cf1: rect at 1,1 fill rgb(1 2)
-cf2: rect at 1,1 fill rgb(red 0 0)
-cf3: rect at 1,1 fill rgb(er 0 0)
-cf4: rect at 1,1 fill rgb(300 0 0)
-cf6: rect at 1,1 fill hsl(0 50 50)
-ex1: var 4 at 1,1
-ex1: ex1 + zz
-ex1: ex1 / 0
-ex1: ex1 * 
-ex1: er.0 + "x"
-ex2: rect at 1,1
-ex2: x {ex1 +}
-ex2: width {ex1 * speed}
-ex1: (ex1 + 1
-ex1: ()
-ex1: fill red (2)
-ex2: {ex1}
-ex2: angle ex1 about 1,1
-ex2: counter
-camera x ex1
-ex3: text "{zz + 1}" at 1,1
-ex4: rect at 1,1 width ex4
+Dw: 5
+Dw: null
+Vv: var 5 "x" at 1,1
+Vv: 6 "x"
+Vv: Er.0 fill red
+Br: rect at 1,1 bar
+Bm: var 5 at 1,1 bar max 0
+Rg1: var 5 at 1,1 ring size 2x1
+Rg2: var 5 at 1,1 size 2 pie
+Rg2: width 3
+Rg2: corner 0.2
+Rg3: rect at 1,1 ring
+Cf1: rect at 1,1 fill rgb(1 2)
+Cf2: rect at 1,1 fill rgb(red 0 0)
+Cf3: rect at 1,1 fill rgb(Er 0 0)
+Cf4: rect at 1,1 fill rgb(300 0 0)
+Cf6: rect at 1,1 fill hsl(0 50 50)
+Ex1: var 4 at 1,1
+Ex1: Ex1 + Zz
+Ex1: Ex1 / 0
+Ex1: Ex1 * 
+Ex1: Er.0 + "x"
+Ex2: rect at 1,1
+Ex2: x {Ex1 +}
+Ex2: width {Ex1 * speed}
+Ex1: (Ex1 + 1
+Ex1: ()
+Ex1: fill red (2)
+Ex2: {Ex1}
+Ex2: angle Ex1 about 1,1
+Ex2: counter
+camera x Ex1
+Ex3: text "{Zz + 1}" at 1,1
+Ex4: rect at 1,1 width Ex4
 
 # numbers
-eb: binary 5 at 1,1 digits 4
-eb.0: 2
-eb.1: "x"
-eb: -9
-eb: +1.5
-vv: +1
-eb: swap 0 1
-eb: insert 1 at 0
-eb: remove 0
-eb: digits 8
-eb: flip 0 9
-eb: flip fill red
-eb: ink clear
-eb: style
-eb2: binary 1.5 at 1,1
-eb3: binary null at 1,1
-eb4: binary at 1,1
-eb5: binary 5 digits 0 at 1,1
-eb6: binary 5 digits 40 at 1,1
-eb10: binary 5 bits 4 at 1,1
-eh: hex 255 at 1,1
-eh.0: G
-eh.0: F
-eh.0: 16
-eh: flip
-eh.1: flip
-eh2: hex 5 digits 9 at 1,1
-ed: denary 5 at 1,1 decimal
-ed2: denary 5 at 1,1
-ed2.0: A
-ed2.0: -9
-eb7: binary zz at 1,1
-eb8: binary 5 [1 0] at 1,1
-eb9: binary 300 at 1,1
-er: powers
-dw: decimal
-dw: flip
-eb.0: flip 0 1
+Eb: binary 5 at 1,1 digits 4
+Eb.0: 2
+Eb.1: "x"
+Eb: -9
+Eb: +1.5
+Vv: +1
+Eb: swap 0 1
+Eb: insert 1 at 0
+Eb: remove 0
+Eb: digits 8
+Eb: flip 0 9
+Eb: flip fill red
+Eb: ink clear
+Eb: style
+Eb2: binary 1.5 at 1,1
+Eb3: binary null at 1,1
+Eb4: binary at 1,1
+Eb5: binary 5 digits 0 at 1,1
+Eb6: binary 5 digits 40 at 1,1
+Eb10: binary 5 bits 4 at 1,1
+Eh: hex 255 at 1,1
+Eh.0: G
+Eh.0: F
+Eh.0: 16
+Eh: flip
+Eh.1: flip
+Eh2: hex 5 digits 9 at 1,1
+Ed: denary 5 at 1,1 decimal
+Ed2: denary 5 at 1,1
+Ed2.0: Q
+Ed2.0: -9
+Eb7: binary Zz at 1,1
+Eb8: binary 5 [1 0] at 1,1
+Eb9: binary 300 at 1,1
+Er: powers
+Dw: decimal
+Dw: flip
+Eb.0: flip 0 1
 defaults decimal
 
 # code and Scratch
-ec: code ["a" "b"] at 1,1
-ec: remove 0
-ec: insert "x" at 4
-ec: swap 0 1
-ec: "x"
-ec: code 4 at 1,1
-ec2: code ["a" 5] at 1,1
-ec3: code "a" size 2 at 1,1
-ec4: code ["a" at 1,1
-ec5: code [] at 1,1
-ec6: code "a" lang pyhton at 1,1
-ec7: text "a" lang python at 1,1
-ec8: row [1 2] at 1,5 lang python
-es: scratch ["move (10) steps" 5] at 1,1
-es: scratch ["move (10) steps"] "say [Hi]" at 1,1
-es2: scratch ["move (10) steps" at 1,1
-es3: scratch "move (10) steps" at 1,1 fill red
-es3: scratch "move (10) steps" at 1,1 typed
-es3: highlight line
-es5: scratch ["move (10) steps" "turn right (5) degrees"] at 1,1
-es5: highlight line 3
-es5: highlight line 1.5
-hlr2: rect at 1,1 highlight line 1
-es5: line 9 "move (10) steps"
-es5: line x "move (10) steps"
-es5: insert "move (10) steps"
-es5: insert at 1
-es5: swap 1 1
-es5: remove 3
-er: line 1 "move (10) steps"
-es6: scratch ["forever" "move (10) steps" "" "end"] at 1,1
-es6: swap 1 2
-es6: remove 1
-es6: remove 3
-es6: highlight line 4
-es4: rect at 1,1
-es4: ["move (10) steps"]
-ec: highlight line
-er: highlight line
-ec: range 1 2 bar
+Ec: code ["a" "b"] at 1,1
+Ec: remove 0
+Ec: insert "x" at 4
+Ec: swap 0 1
+Ec: "x"
+Ec: code 4 at 1,1
+Ec2: code ["a" 5] at 1,1
+Ec3: code "a" size 2 at 1,1
+Ec4: code ["a" at 1,1
+Ec5: code [] at 1,1
+Ec6: code "a" lang pyhton at 1,1
+Ec7: text "a" lang python at 1,1
+Ec8: row [1 2] at 1,5 lang python
+Es: scratch ["move (10) steps" 5] at 1,1
+Es: scratch ["move (10) steps"] "say [Hi]" at 1,1
+Es2: scratch ["move (10) steps" at 1,1
+Es3: scratch "move (10) steps" at 1,1 fill red
+Es3: scratch "move (10) steps" at 1,1 typed
+Es3: highlight line
+Es5: scratch ["move (10) steps" "turn right (5) degrees"] at 1,1
+Es5: highlight line 3
+Es5: highlight line 1.5
+Hlr2: rect at 1,1 highlight line 1
+Es5: line 9 "move (10) steps"
+Es5: line x "move (10) steps"
+Es5: insert "move (10) steps"
+Es5: insert at 1
+Es5: swap 1 1
+Es5: remove 3
+Er: line 1 "move (10) steps"
+Es6: scratch ["forever" "move (10) steps" "" "end"] at 1,1
+Es6: swap 1 2
+Es6: remove 1
+Es6: remove 3
+Es6: highlight line 4
+Es4: rect at 1,1
+Es4: ["move (10) steps"]
+Ec: highlight line
+Er: highlight line
+Ec: range 1 2 bar
 ```
 
 </animation>

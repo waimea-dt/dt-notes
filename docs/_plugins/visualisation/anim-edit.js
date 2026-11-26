@@ -72,7 +72,7 @@
         }
       }
       // a view's word picks it (col); with none, the one without a word (rows)
-      const word = tokens[1]?.kind === 'word' ? tokens[1].lower : null
+      const word = tokens[1]?.kind === 'word' ? tokens[1].value : null
       const view = Object.values(kind.views).find((v) => v.word && v.word === word) || Object.values(kind.views).find((v) => !v.word)
       const lines = view === kind.views.row // its units are lines, one under another (else columns)
       const units = lines ? matrix.slice(fixed) : transpose(matrix)
@@ -118,8 +118,8 @@
       line: {
         axis: lineAxis, insert: lineInsert, inserts: 'a value', into: true, keepOne: false,
         swaps: (row, base) => `two cell numbers, e.g. "${row.id}: swap ${base} ${base + 3}"`,
-        edits: (row, removing) => (removing ? `"${row.id}: remove 2" or "${row.id}: remove end into v1"`
-          : LAYOUTS[row.layout].lines ? `"${row.id}: insert "x = 1" at 2" or "${row.id}: insert "x = 1" at end"` : `"${row.id}: insert 7 at 3" or "${row.id}: insert v1 at end"`),
+        edits: (row, removing) => (removing ? `"${row.id}: remove 2" or "${row.id}: remove end into V1"`
+          : LAYOUTS[row.layout].lines ? `"${row.id}: insert "x = 1" at 2" or "${row.id}: insert "x = 1" at end"` : `"${row.id}: insert 7 at 3" or "${row.id}: insert V1 at end"`),
       },
       grid: {
         axis: gridAxis, insert: gridInsert, inserts: 'its values', into: false, keepOne: true,
@@ -141,10 +141,10 @@
       if (fixed) throw new Error(`"${word}" doesn't work on a ${noun}: its ${item}s stay in place (give one a value instead, e.g. "${cellId(row.id, baseOf(row.layout))}: 1")`)
     }
 
-    // "arr: swap 0 3": two cells change places, one arcing over and one under (a column's: to the
-    // right and left). Ids go with the places, so afterwards arr.0 is the cell now first; whatever
-    // is attached to arr.0 (a pointer) stays there, and highlights go with the cells. A grid's two
-    // rows, two columns ("g: swap col 1 3") or two cells ("g: swap 1.2 0.0") swap the same way, each
+    // "Arr: swap 0 3": two cells change places, one arcing over and one under (a column's: to the
+    // right and left). Ids go with the places, so afterwards Arr.0 is the cell now first; whatever
+    // is attached to Arr.0 (a pointer) stays there, and highlights go with the cells. A grid's two
+    // rows, two columns ("G: swap col 1 3") or two cells ("G: swap 1.2 0.0") swap the same way, each
     // cell with the one in the same place in the other.
     function swapCells(id, row, tokens, meta, warn, word) {
       if (!row) throw noShape(id)
@@ -193,13 +193,13 @@
     }
     const bowOf = (row, cell, way) => BOWS[LAYOUTS[row.layout].bow](cell, way)
 
-    // "arr: remove 2" / "arr: remove end" / "arr: insert 7 at 3" / "arr: insert 8 at end": a cell
+    // "Arr: remove 2" / "Arr: remove end" / "Arr: insert 7 at 3" / "Arr: insert 8 at end": a cell
     // leaves or arrives, sliding out below a row (left of a column) as it fades, and the cells
     // after it close up or open a space. Ids go with the places, as in a swap: after "remove 2",
-    // arr.2 is the cell that was arr.3, and what's attached to the last place (now gone) is left
-    // where it was. "insert v1 at …" copies a var's or cell's value in; "remove … into v1" moves
+    // Arr.2 is the cell that was Arr.3, and what's attached to the last place (now gone) is left
+    // where it was. "insert V1 at …" copies a var's or cell's value in; "remove … into V1" moves
     // the cell's value out into one. A grid's rows and columns (editAxis) come and go the same way:
-    // "g: insert [1 2 3] at 1", "g: remove col end" (a table's new column: its heading first).
+    // "G: insert [1 2 3] at 1", "G: remove col end" (a table's new column: its heading first).
     function editCells(id, row, tokens, meta, warn, word) {
       if (!row) throw noShape(id)
       if (scriptOf(row)) return editScript(id, row, tokens, meta, warn, word)
@@ -233,7 +233,7 @@
         edit.at = place(tokens[next])
         if (edit.at === undefined) throw new Error(`"remove" expects a ${noun} number or end, e.g. ${example}`)
         next++
-        if (tokens[next]?.kind === 'word' && tokens[next].lower === EDIT_WORDS.into) {
+        if (tokens[next]?.kind === 'word' && tokens[next].value === EDIT_WORDS.into) {
           if (!into) throw new Error(`"into" takes one cell's value, so it doesn't go with a ${kind.noun}'s ${noun}`)
           if (!holderRef(tokens[next + 1])) throw new Error(`"into" expects a var or cell, e.g. ${example}`)
           edit.target = holderRef(tokens[next + 1], 'remove into')
@@ -243,14 +243,14 @@
         const put = insert(row, axis, tokens, next, example)
         Object.assign(edit, { values: put.values, source: put.source })
         next = put.next
-        if (tokens[next]?.lower !== 'at' || place(tokens[next + 1]) === undefined) throw new Error(`"insert" expects ${inserts} and where it goes (a ${noun} number or end), e.g. ${example}`)
+        if (tokens[next]?.value !== 'at' || place(tokens[next + 1]) === undefined) throw new Error(`"insert" expects ${inserts} and where it goes (a ${noun} number or end), e.g. ${example}`)
         edit.at = place(tokens[next + 1])
         next += 2
       }
       edit.props = parseProps(tokens, next, word, shapes)
       const { at, values, source, target, props } = edit
       // keep-style needs a var's or cell's value coming in or going out
-      if (props.keepStyle && !source && !target) throw new Error(`"keep-style" goes with a var's or cell's value, e.g. "${id}: ${removing ? 'remove end into v1' : 'insert v1 at 0'} keep-style"`)
+      if (props.keepStyle && !source && !target) throw new Error(`"keep-style" goes with a var's or cell's value, e.g. "${id}: ${removing ? 'remove end into V1' : 'insert V1 at 0'} keep-style"`)
 
       const { range } = axis
       if (removing && !n) throw new Error(`"${id}" has no ${noun}s left to remove`)
@@ -334,7 +334,7 @@
     // A value moved by an insert or remove. remove into: the removed cell itself drops out and
     // glides onto the target, which takes its value as it lands (the target may be another of this
     // row's cells, which may have moved up a place, so it's found by its uid after the layout).
-    // insert v1: a copy of the var or cell glides to just outside the opening slot (its look
+    // insert V1: a copy of the var or cell glides to just outside the opening slot (its look
     // turning into the row's on the way), then the new cell, solid from the start, slides in.
     function flyEdited(row, axis, { source, target, props }, cell, meta, warn) {
       const out = asideOf(row, axis)(cell)
@@ -351,9 +351,9 @@
     }
 
     // A script's edits (SHAPES: script), made on its lines (from 1, as written in its [ ], counting
-    // end, else, blank lines and comments): "s: line 3 "…"" replaces line 3, "s: insert "…" at 3"
-    // puts lines in before it (or at end), "s: remove 3" takes out the block it starts and
-    // "s: swap 2 4" swaps two (a C block goes with the blocks inside it, to its end). Lines go in
+    // end, else, blank lines and comments): "S: line 3 "…"" replaces line 3, "S: insert "…" at 3"
+    // puts lines in before it (or at end), "S: remove 3" takes out the block it starts and
+    // "S: swap 2 4" swaps two (a C block goes with the blocks inside it, to its end). Lines go in
     // with the indent of where they go. A lit line (highlight line) keeps its light wherever it
     // goes. Its beat's tween gets the edit's map (script: for each block after it, the block it was
     // before, or null for a new one; edits in one beat compose), so its blocks are seen to move.
@@ -419,7 +419,7 @@
     }
     const indentOf = (line) => line.text.match(/^\s*/)[0]
 
-    // "s: line 3 "…"": keeping its indent (its first new line stays the same line, so a light on it
+    // "S: line 3 "…"": keeping its indent (its first new line stays the same line, so a light on it
     // stays)
     function replaceLine(ask) {
       const { lines, tokens } = ask
@@ -430,12 +430,12 @@
       lines.splice(at + 1, 0, ...added.slice(1))
       return next
     }
-    // "s: insert "…" at 3": before line 3 (at end: after the last), at the indent of the line before
+    // "S: insert "…" at 3": before line 3 (at end: after the last), at the indent of the line before
     // it, one deeper after a line that opens or divides a C block (SCRIPTS: syntax)
     function insertLines(ask) {
       const { lines, tokens, example, script } = ask
       const { opens, middle, indent } = script.syntax
-      const end = tokens.findIndex((token, k) => k > 0 && token.kind === 'word' && token.lower === 'at')
+      const end = tokens.findIndex((token, k) => k > 0 && token.kind === 'word' && token.value === 'at')
       if (end < 0) throw new Error(`"insert" expects where the lines go, e.g. ${example}`)
       const at = lineAt(ask, tokens[end + 1], '"insert … at"', true)
       const before = lines[at - 1]
@@ -445,7 +445,7 @@
       lines.splice(at, 0, ...added)
       return end + 2
     }
-    // "s: remove 3": the block line 3 starts (a C block's lines, to its end)
+    // "S: remove 3": the block line 3 starts (a C block's lines, to its end)
     function removeBlock(ask) {
       const { id, lines, tokens } = ask
       const block = blockAt(ask, tokens[1], '"remove"', 'removed')
@@ -453,7 +453,7 @@
       lines.splice(block.at, block.to - block.at + 1)
       return 2
     }
-    // "s: swap 2 4": the blocks two lines start change places, each taking the other's indent
+    // "S: swap 2 4": the blocks two lines start change places, each taking the other's indent
     function swapBlocks(ask) {
       const { id, lines, tokens } = ask
       const [a, b] = [blockAt(ask, tokens[1], '"swap"', 'swapped'), blockAt(ask, tokens[2], '"swap"', 'swapped')].sort((x, y) => x.at - y.at)

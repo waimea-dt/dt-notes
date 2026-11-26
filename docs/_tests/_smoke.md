@@ -262,15 +262,15 @@ A[Smoke] --> B[Test]
 # Smoke!
 
 ```anim
-a: rect "A" at 2 1
-b: circle "B" at 5 1
-l: arrow from a to b
+A: rect "A" at 2 1
+B: circle "B" at 5 1
+L: arrow from A to B
 ```
 
 ---
 
 ```anim
-a: move 3 2
+A: move 3 2
 ```
 
 </animation>

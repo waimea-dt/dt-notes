@@ -15,7 +15,7 @@ This page tests the block itself: steps and beats, the grid and its attributes, 
 Step 1's caption.
 
 ```anim
-a: rect "a" at 2,2
+A: rect "a" at 2,2
 ```
 
 ---
@@ -25,7 +25,7 @@ a: rect "a" at 2,2
 `+++` adds a beat: more caption and scene.
 
 ```anim
-a: move 6,2
+A: move 6,2
 ```
 
 +++
@@ -33,7 +33,7 @@ a: move 6,2
 The second beat.
 
 ```anim
-a: fill green
+A: fill green
 ```
 
 Note:
@@ -56,11 +56,11 @@ A square 12x12 grid: much taller than the 16x9 default, so check it in full scre
 ## Corners and centre
 
 ```anim
-tl: rect "1,1" at 1,1
-tr: rect "12,1" at 12,1
-bl: rect "1,12" at 1,12
-br: rect "12,12" at 12,12
-c: circle "centre" at 6.5,6.5 radius 1.5 fill blue
+Tl: rect "1,1" at 1,1
+Tr: rect "12,1" at 12,1
+Bl: rect "1,12" at 1,12
+Br: rect "12,12" at 12,12
+C: circle "centre" at 6.5,6.5 radius 1.5 fill blue
 ```
 
 ---
@@ -68,8 +68,8 @@ c: circle "centre" at 6.5,6.5 radius 1.5 fill blue
 ## Diagonals
 
 ```anim
-d1: arrow from tl to br draw
-d2: arrow from tr to bl draw
+D1: arrow from Tl to Br draw
+D2: arrow from Tr to Bl draw
 ```
 
 </animation>
@@ -79,9 +79,9 @@ d2: arrow from tr to bl draw
 <animation name="Grid Fit" grid="fit">
 
 ```anim
-a: rect "A" at 3,3
-b: rect "B" at 6,3
-l: arrow from a to b "fit"
+A: rect "A" at 3,3
+B: rect "B" at 6,3
+L: arrow from A to B "fit"
 ```
 
 </animation>
@@ -95,10 +95,10 @@ The same animation twice. Without `crop`, a small margin round the grid leaves r
 # Without crop
 
 ```anim
-bg: rect at 5.5,2.5 size 10x4 fill blue-muted stroke none back
-edge: rect "edge" at 1,1 stroke amber weight 2
-edge: highlight outline
-ball: circle at 5,4 radius 0.4 fill pink
+Bg: rect at 5.5,2.5 size 10x4 fill blue-muted stroke none back
+Edge: rect "edge" at 1,1 stroke amber weight 2
+Edge: highlight outline
+Ball: circle at 5,4 radius 0.4 fill pink
 ```
 
 ---
@@ -106,7 +106,7 @@ ball: circle at 5,4 radius 0.4 fill pink
 ## Off the edge
 
 ```anim
-ball: move 5,5.5 speed slow
+Ball: move 5,5.5 speed slow
 ```
 
 ---
@@ -114,7 +114,7 @@ ball: move 5,5.5 speed slow
 ## Camera in and out
 
 ```anim
-camera move edge zoom 2.5 speed slow
+camera move Edge zoom 2.5 speed slow
 ```
 
 +++
@@ -127,7 +127,7 @@ camera zoom 0.6 speed slow
 
 ```anim
 camera reset
-ball: move 5,4
+Ball: move 5,4
 ```
 
 </animation>
@@ -137,10 +137,10 @@ ball: move 5,4
 # With crop
 
 ```anim
-bg: rect at 5.5,2.5 size 10x4 fill blue-muted stroke none back
-edge: rect "edge" at 1,1 stroke amber weight 2
-edge: highlight outline
-ball: circle at 5,4 radius 0.4 fill pink
+Bg: rect at 5.5,2.5 size 10x4 fill blue-muted stroke none back
+Edge: rect "edge" at 1,1 stroke amber weight 2
+Edge: highlight outline
+Ball: circle at 5,4 radius 0.4 fill pink
 ```
 
 ---
@@ -148,7 +148,7 @@ ball: circle at 5,4 radius 0.4 fill pink
 ## Off the edge
 
 ```anim
-ball: move 5,5.5 speed slow
+Ball: move 5,5.5 speed slow
 ```
 
 ---
@@ -156,7 +156,7 @@ ball: move 5,5.5 speed slow
 ## Camera in and out
 
 ```anim
-camera move edge zoom 2.5 speed slow
+camera move Edge zoom 2.5 speed slow
 ```
 
 +++
@@ -169,7 +169,7 @@ camera zoom 0.6 speed slow
 
 ```anim
 camera reset
-ball: move 5,4
+Ball: move 5,4
 ```
 
 </animation>
@@ -181,10 +181,10 @@ Grid numbers, ids and warnings.
 <animation name="Debug" grid="10x3" debug>
 
 ```anim
-a: rect "a" at 2,2
-b: circle "b" at 5,2
-far: rect "far" at 12,2
-a: fill blue pop
+A: rect "a" at 2,2
+B: circle "b" at 5,2
+Far: rect "far" at 12,2
+A: fill blue pop
 ```
 
 </animation>
@@ -197,9 +197,9 @@ a: fill blue pop
 
 ```anim
 # a whole-line comment
-one: rect "one line" at 3,2 size 3x0.8 font 0.8 fill blue corner 0.2   # a comment after a command
+One: rect "one line" at 3,2 size 3x0.8 font 0.8 fill blue corner 0.2   # a comment after a command
 
-two:
+Two:
     rect "laid out"     # comments still work
     at 9,2
     size 3x0.8
@@ -208,7 +208,7 @@ two:
     fill blue
     corner 0.2
 
-hx: text "C# and #f80" at 6,3 ink #f80    # a hex colour and a "#" in a label are kept
+Hx: text "C# and #f80" at 6,3 ink #f80    # a hex colour and a "#" in a label are kept
 ```
 
 ---
@@ -216,10 +216,10 @@ hx: text "C# and #f80" at 6,3 ink #f80    # a hex colour and a "#" in a label ar
 ## Changes too
 
 ```anim
-two:
+Two:
     move 9,1
     fill green
-one: move 3,1 fill green
+One: move 3,1 fill green
 ```
 
 ---
@@ -229,8 +229,8 @@ one: move 3,1 fill green
 Each line is indented the same, so each is its own command.
 
 ```anim
-    one: fill amber
-    two: fill amber
+    One: fill amber
+    Two: fill amber
 ```
 
 </animation>
@@ -242,9 +242,9 @@ One beat: a still picture, with no buttons or progress bar.
 <animation name="Still" grid="12x3">
 
 ```anim
-a: rect "A" at 3,2
-b: circle "B" at 9,2
-l: arrow from a to b
+A: rect "A" at 3,2
+B: circle "B" at 9,2
+L: arrow from A to B
 ```
 
 </animation>
@@ -256,19 +256,19 @@ l: arrow from a to b
 <animation name="Autoplay & Loop" autoplay loop hold="1" grid="12x3">
 
 ```anim
-dot: circle at 2,2 radius 0.4 fill blue
+Dot: circle at 2,2 radius 0.4 fill blue
 ```
 
 ---
 
 ```anim
-dot: move 6,2
+Dot: move 6,2
 ```
 
 ---
 
 ```anim
-dot: move 10,2 fill green
+Dot: move 10,2 fill green
 ```
 
 </animation>
@@ -280,13 +280,13 @@ dot: move 10,2 fill green
 <animation name="Loop-bounce, No Controls" autoplay loop-bounce hold="0.5" controls="none" grid="12x3">
 
 ```anim
-dot: circle at 2,2 radius 0.4 fill pink
+Dot: circle at 2,2 radius 0.4 fill pink
 ```
 
 ---
 
 ```anim
-dot: move 10,2 speed slow
+Dot: move 10,2 speed slow
 ```
 
 </animation>
@@ -298,14 +298,14 @@ The first beat uses `typed`, `pop` and `delay`, so it plays in when it comes int
 <animation name="Intro" grid="12x3">
 
 ```anim
-prompt: text "$ ping example.com" at 2,1 align left mono typed speed slow
-srv: rect "server" at 10,2 size 2x1 pop delay 2
+Prompt: text "$ ping example.com" at 2,1 align left mono typed speed slow
+Srv: rect "server" at 10,2 size 2x1 pop delay 2
 ```
 
 ---
 
 ```anim
-srv: fill green
+Srv: fill green
 ```
 
 </animation>

@@ -164,18 +164,21 @@
   // ---------------------------------------------------------------------------
 
   // a "quoted" label, a call (image(…), rgb(…)), an unclosed quote, a bracket, a round bracket (in
-  // a sum), an expression in { } ("x {v1 * 2}"), or a word
+  // a sum), an expression in { } ("x {V1 * 2}"), or a word
   const TOKEN = /"((?:[^"\\]|\\.)*)"|([A-Za-z][\w-]*)\(([^)]*)\)|("[^"]*$)|([[\]])|([()])|\{([^{}]*)\}|([^\s,[\](){}]+)/g
   const NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/
   const LITERAL = /^([+-]?)(0x[0-9a-f]+|0b[01]+)$/i // hex and binary numbers
-  const ID = /^[A-Za-z][\w.-]*$/
+  // A new shape's id: a capital letter, then letters, digits, _ and - (keywords are lowercase, so
+  // the two never clash). REF: an id, or a path to one of its parts ("Arr.2", "V1.name")
+  const ID = /^[A-Z][\w-]*$/
+  const REF = /^[A-Z][\w-]*(?:\.[\w-]+)*$/
   const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
 
   function tokenize(text) {
     const tokens = []
     for (const m of text.matchAll(TOKEN)) {
       if (m[1] !== undefined) tokens.push({ kind: 'str', value: m[1].replace(/\\(.)/g, '$1') })
-      else if (m[2] !== undefined) tokens.push({ kind: 'res', name: m[2].toLowerCase(), arg: m[3].trim() })
+      else if (m[2] !== undefined) tokens.push({ kind: 'res', name: m[2], arg: m[3].trim() })
       else if (m[4] !== undefined) throw new Error('a label is missing its closing quote')
       else if (m[5] !== undefined) tokens.push({ kind: 'bracket', value: m[5] }) // a row's / column's [values]
       else if (m[6] !== undefined) tokens.push({ kind: 'paren', value: m[6] }) // "(a + b) * 2", "(-5)": read in a sum (readExpr)
@@ -185,7 +188,7 @@
         const literal = m[8].match(LITERAL)
         const pair = !literal && m[8].match(/^([+-]?(?:\d+\.?\d*|\.\d+))[x×]([+-]?(?:\d+\.?\d*|\.\d+))$/i)
         const words = literal ? [literal[1] + BigInt(literal[2]).toString()] : pair ? [pair[1], pair[2]] : [m[8]]
-        words.forEach((word) => tokens.push({ kind: 'word', value: word, lower: word.toLowerCase() }))
+        words.forEach((word) => tokens.push({ kind: 'word', value: word }))
       }
     }
     return tokens
@@ -194,7 +197,7 @@
   // making: the id of the shape the line makes, which a number can follow (its own value) though it isn't there yet
   function parseAs(type, token, shapes, making) {
     if (type === 'str') return token?.kind === 'str' ? token.value : undefined
-    // a colour worked out from values, "rgb(r g b)" (COLOUR_FUNCTIONS): its arguments as tokens,
+    // a colour worked out from values, "rgb(R G B)" (COLOUR_FUNCTIONS): its arguments as tokens,
     // read when it's applied (linkColour)
     if (type === 'colour' && token?.kind === 'res' && COLOUR_FUNCTIONS[token.name]) return { fn: token.name, args: tokenize(token.arg) }
     // a number that follows values (KEYWORDS: bound): an expression in { }, or a var, cell or
@@ -202,7 +205,7 @@
     if (type === 'bound' && token?.kind === 'expr') return { bind: tokenize(token.text) }
     if (type === 'bound' && token?.kind === 'word' && (shapes.get(token.value)?.holds || token.value === making)) return { bind: [token] }
     if (!token || token.kind !== 'word') return undefined
-    const word = token.lower
+    const word = token.value
     switch (type) {
       case 'highlight': return HIGHLIGHTS.includes(word) ? word : undefined
       case 'valued': return VALUED_HIGHLIGHTS.includes(word) ? word : undefined // a highlight that takes a number
@@ -213,10 +216,10 @@
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined
       case 'index': return /^\d+$/.test(word) ? Number(word) : undefined // a row's / column's cell number
       case 'id': return shapes.has(token.value) ? token.value : undefined
-      // a point on a shape's edge, "a.top-left" (ANCHORS): a shape's id first, if one has this one
+      // a point on a shape's edge, "A.top-left" (ANCHORS): a shape's id first, if one has this one
       case 'anchor': {
         const m = !shapes.has(token.value) && token.value.match(/^(.+)\.([a-z-]+)$/i)
-        return m && shapes.has(m[1]) && ANCHORS[m[2].toLowerCase()] ? { ref: m[1], anchor: m[2].toLowerCase() } : undefined
+        return m && shapes.has(m[1]) && ANCHORS[m[2]] ? { ref: m[1], anchor: m[2] } : undefined
       }
       case 'placement': return PLACEMENTS.includes(word) ? word : undefined
       case 'align': return ALIGNS[word]
@@ -254,7 +257,7 @@
       if (m) return { value: build(m), next: m.next }
     }
     const next = tokens[i]
-    const missing = next?.kind === 'word' && ID.test(next.value) && !RESERVED.has(next.lower) && !COLOURS[next.lower]
+    const missing = next?.kind === 'word' && REF.test(next.value)
       && [...(entry.sigs || []), ...(entry.list || [])].some((sig) => sig.includes('id'))
     throw new Error(`"${word}" expects ${entry.help}${missing ? `: no shape called "${next.value}"` : ''}`)
   }
@@ -281,10 +284,10 @@
       const token = tokens[i]
       if (token.kind === 'str') { allow('label', 'quoted text'); set('label', token.value); i++; continue }
       if (token.kind === 'res') throw new Error(`"${token.name}(…)" must come straight after the id`)
-      if (token.kind === 'expr') throw new Error(`{ } holds a sum for a number to follow, after its word, e.g. "x {v1 * 2}"`)
-      if (token.kind === 'paren') throw new Error('( ) goes round part of a sum, e.g. "v: (a + b) * 2" or "v: (-5)"')
+      if (token.kind === 'expr') throw new Error(`{ } holds a sum for a number to follow, after its word, e.g. "x {V1 * 2}"`)
+      if (token.kind === 'paren') throw new Error('( ) goes round part of a sum, e.g. "V: (A + B) * 2" or "V: (-5)"')
       if (token.kind === 'bracket') throw new Error(`[ ] only holds the values of ${BRACKET_NOUNS}, straight after its type, e.g. "row [5 3 8]"`)
-      const word = token.lower
+      const word = token.value
       const entry = KEYWORDS[word]
       if ((entry?.modes && !entry.modes.includes(kind)) || entry?.notIn?.includes(kind)) throw new Error(`"${word}" only goes ${entry.where}`)
       if (!entry) {
@@ -305,6 +308,6 @@
     return props
   }
 
-  Object.assign(window.Anim, { HEX, ID, NUMBER, findBlocks, parseAs, parseAttrs, parseProps, rewriteBlocks, splitBlock,
+  Object.assign(window.Anim, { HEX, ID, REF, NUMBER, findBlocks, parseAs, parseAttrs, parseProps, rewriteBlocks, splitBlock,
     stripHeadingAnchors, tokenize })
 })()
