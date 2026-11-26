@@ -73,8 +73,8 @@ In your summary, say that you checked, and name any exception you kept.
 | A kind of bar (`bar`, `ring`, `pie`) | `BARS` (`outlines` it fits, `slot`, `round`; its key is its word), then its drawer in `BAR_DRAWS` (`make`, `draw`, `label`, `cover`, `holed`); the shape types it fits need `bar`, `max` and `track` in their `takes` | `anim-core.js`, `anim-render.js` |
 | A mark on a line's end (`arrow`, `dot`, `crow`, `bar`: the values of `start` / `end`) | `END_MARKS` (`blank`), then its drawer in `END_DRAWS` (`d`, `filled`, `back`) | `anim-core.js`, `anim-render.js` |
 | A text mark (`<sup>`, `<sub>`, `<b>`, `<i>`) | `TEXT_MARKS` (`size`, `shift`, `bold`, `italic`); `textRuns` splits a label into runs, `labelWidth` measures them and `markedRuns` draws them | `anim-core.js` |
-| A colour, or a variant of every hue (`-bright`, `-muted`) | `COLOURS` (a theme variable); `COLOUR_VARIANTS` (`chroma` or `keep`, and `fillMix`), which adds `<hue>-<variant>` for each hue not in `UNVARIED`. The grammar's colour pattern and the swatch palette in `vscode/dt-notes-syntax/extension.js` list them too | `anim-core.js` |
-| A colour worked out from values (`rgb(…)`) | `COLOUR_FUNCTIONS` (args, max, css, example); the grammar's colour-function pattern lists them too | `anim-core.js` |
+| A colour, or a variant of every hue (`-bright`, `-muted`) | `COLOURS` (a theme variable); `COLOUR_VARIANTS` (`chroma` or `keep`, and `fillMix`), which adds `<hue>-<variant>` for each hue not in `UNVARIED`. The swatch palette in `vscode/dt-notes-syntax/extension.js` lists them too | `anim-core.js` |
+| A colour worked out from values (`rgb(…)`) | `COLOUR_FUNCTIONS` (args, max, css, example) | `anim-core.js` |
 | A colour picked as it's drawn (`contrast`) | `COLOUR_PICKS` (looks, dark, light, threshold, soft) | `anim-core.js` |
 | A label place (`centre`, `below`, `top` …) | `LABEL_PLACES` (at, over, own, outside), then name it in a `SHAPES` entry's `label` or a `BAR_DRAWS` entry's `label` | `anim-render.js` |
 | What a `repeat` can't go with, and what a forever one takes | `REPEATS` (`refuses`, `refuse`, `forever`: `takes`, `turn`) | `anim-core.js` |
@@ -82,10 +82,9 @@ In your summary, say that you checked, and name any exception you kept.
 
 For every new word:
 
-1. Add it to the VS Code grammar, `vscode/dt-notes-syntax/syntaxes/anim.tmLanguage.json`, in the right role (see Highlighting).
-2. Bump the version in `vscode/dt-notes-syntax/package.json`.
-3. Add it to `ANIMATION_LANG.md`.
-4. Add a test to the test page for its topic, and a line in the error-test block (`animation-errors.md`, in its page's group) for each new error. A test shows one feature (or a tight family) and tests it reasonably exhaustively: the basic forms first, then the variations, then how it works with others, then switching it off. Within a page, basic things come before advanced ones, with like things together. Keep each grid the size its test needs, and lay the shapes out balanced on it. The pages, in the sidebar's order:
+1. Bump the version in `vscode/dt-notes-syntax/package.json` and reinstall: the grammar's word lists are built from the engine's tables when it's packaged (`build-grammar.js`), so a word in a table is highlighted in its role with no grammar edit. Only a new kind of word (a new role, or a table the grammar doesn't read yet) needs the template, `syntaxes/anim.tmLanguage.src.json`, and a list in `build-grammar.js`.
+2. Add it to `ANIMATION_LANG.md`.
+3. Add a test to the test page for its topic, and a line in the error-test block (`animation-errors.md`, in its page's group) for each new error. A test shows one feature (or a tight family) and tests it reasonably exhaustively: the basic forms first, then the variations, then how it works with others, then switching it off. Within a page, basic things come before advanced ones, with like things together. Keep each grid the size its test needs, and lay the shapes out balanced on it. The pages, in the sidebar's order:
    - `animation-examples.md`: whole example animations
    - `animation.md`: the block itself (steps and beats, the grid and its attributes, comments, playback)
    - `animation-shapes.md`: shapes and lines (images and icons too, a backdrop, line ends, `show`)
@@ -218,6 +217,7 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 - **The Markdown preview** (`preview.js`) highlights from the same grammar, mapping scopes to highlight.js classes.
 - **Error marks** (`diagnostics.js`) come from the engine itself, not the grammar. The extension loads every `anim-*.js` part that `docs/index.html` lists, in order, from the repo into a Node sandbox (no DOM), so keep them loadable without a browser (nothing touches the DOM until it's called). It relies on these engine functions: `findBlocks` (blocks with their tag lines), `splitBlock` (steps and beats, with `sceneLines` mapping each scene line to its block line), `parseAttrs`, `viewBoxFor`, and the `issues` that `compile` returns (`{ error, step, beat, line, message }`). A mark goes on the last quoted word in the message that's on the line, so quote the offending word as typed.
 - **The preview pane** (`preview-pane.js`, `preview-kinds.js`, `preview-pane-view.js`) loads `utils.js`, the parts and `animation.js` from the repo into a webview, runs the plugin's Docsify hooks itself (captions through marked, no other plugins) and moves the widget with a `preview-show` event (`{ position: beat, play }`). The widget sends a `preview-position` event (`{ position: beat }`) as each move of the viewer's own stepping sets off (`goTo`'s `announce`), and the pane moves the editor's cursor there. Slides and flash cards take the same two events. Keep the widget buildable from its hooks alone, and keep both events working.
+- **Built from the tables:** `build-grammar.js` fills each `{{NAME}}` in the template with a table's words (KEYWORDS, LINES verbs, SHAPE_TYPES …), run by `vsce package` (`vscode:prepublish`). Never edit the built `anim.tmLanguage.json`.
 - **To install after a grammar change:** run, from `vscode/dt-notes-syntax/`, `npx --yes @vscode/vsce@3 package --allow-missing-repository --out "$TEMP/dt-notes-syntax.vsix"`. Then `code --install-extension "$TEMP/dt-notes-syntax.vsix" --force`, then reload the window.
 
 ## Checking a change

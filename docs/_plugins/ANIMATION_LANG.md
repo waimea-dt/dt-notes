@@ -62,7 +62,7 @@ Markers go alone on their line. Everything in a beat plays at once.
 ## Grid
 
 - Cells from 1, top-left. `at 3,2` = centre of column 3, row 2. Fractions OK.
-- Points `5,4`, sizes `2x1`, all in cells.
+- Points `5,4`, sizes `2x1`, all in cells. A point is x,y (column, row); a place is `[row][column]`, as in code (`G[1][2]`).
 - A point can be a shape (`A`: its centre) or a point on its edge: `A.top` `A.bottom` `A.left` `A.right` `A.top-left` `A.top-right` `A.bottom-left` `A.bottom-right`.
 
 ## Lines
