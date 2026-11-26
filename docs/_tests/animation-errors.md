@@ -59,6 +59,8 @@ defaults fill reset
 defaults style reset
 
 # placing and moving, and the camera
+An1: text "x" at 1,1 anchor middle
+An2: row [1 2] at 1,1 anchor left
 Pm: rect move 2,2
 Dw: at 2,2
 camera: move 2,2

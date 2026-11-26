@@ -46,12 +46,12 @@ Mt[8]: fill purple-muted
 Mt[9]: fill pink-muted
 Mt[10]: fill magenta-muted
 Mt[11]: fill theme-muted
-Lp: text "plain" at 1,1 font 0.45 align right
-Lb: text "-bright" at 1,2 font 0.45 align right
-Lm: text "-muted" at 1,3 font 0.45 align right
-Lrp: text "raw" at 1,4 font 0.45 align right
-Lrb: text "raw -bright" at 1,5 font 0.45 align right
-Lrm: text "raw -muted" at 1,6 font 0.45 align right
+Lp: text "plain" at 1,1 font 0.45 anchor right
+Lb: text "-bright" at 1,2 font 0.45 anchor right
+Lm: text "-muted" at 1,3 font 0.45 anchor right
+Lrp: text "raw" at 1,4 font 0.45 anchor right
+Lrb: text "raw -bright" at 1,5 font 0.45 anchor right
+Lrm: text "raw -muted" at 1,6 font 0.45 anchor right
 Rp0:  line from  2.00,4 to  2.01,4 stroke red weight 15
 Rp1:  line from  3.00,4 to  3.01,4 stroke orange weight 15
 Rp2:  line from  4.00,4 to  4.01,4 stroke amber weight 15
@@ -88,8 +88,8 @@ Rm8:  line from 10.00,6 to 10.01,6 stroke purple-muted weight 15
 Rm9:  line from 11.00,6 to 11.01,6 stroke pink-muted weight 15
 Rm10: line from 12.00,6 to 12.01,6 stroke magenta-muted weight 15
 Rm11: line from 13.00,6 to 13.01,6 stroke theme-muted weight 15
-Lo: text "other" at 1,7 font 0.45 align right
-Lro: text "raw other" at 1,8 font 0.45 align right
+Lo: text "other" at 1,7 font 0.45 anchor right
+Lro: text "raw other" at 1,8 font 0.45 anchor right
 Oth: row ["none" "bg" "bg-shape" "black" "white" "fg" "muted"] at 2.15,7.15 font 0.4 size 0.7 gap 0.3 corner 0.5
 Oth[0]: fill none
 Oth[1]: fill bg
@@ -151,7 +151,7 @@ C2: rect "white" at 5,1.5 fill white
 C3: rect "yellow" at 8,1.5 fill #ff0
 C4: rect "blue" at 11,1.5 fill #00f
 defaults clear
-T: text "on the page" at 1,3.2 align left ink contrast
+T: text "on the page" at 1,3.2 anchor left ink contrast
 H: var 50 at 7,3.2 size 6x1 bar fill #f00 track black ink contrast font 1.4
 V: var 50 at 13,4 size 1x4 bar fill #ff0 track #004 ink contrast
 P: var 40 at 3,5.5 size 2 pie fill #ff0 track #000 ink contrast

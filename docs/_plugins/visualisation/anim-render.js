@@ -20,8 +20,8 @@
   const RIGHT_PAD = 0.3
   // A label below its shape is centred this share of its font size below the shape's bottom edge
   const BELOW_GAP = 0.75
-  // How text is anchored for each alignment (ALIGNS), and which side of its box it's placed by
-  const ANCHORS = { left: { anchor: 'start', side: -1 }, centre: { anchor: 'middle', side: 0 }, right: { anchor: 'end', side: 1 } }
+  // How text is anchored (SVG text-anchor) by the side of its box it's drawn from: -1 left, 0 middle, 1 right
+  const TEXT_ANCHORS = { [-1]: 'start', 0: 'middle', 1: 'end' }
   // The places a label goes (SHAPES: label, BAR_DRAWS: label):
   //   at       where it's drawn ({ x, y, anchor }), from the shape s, its half-sizes and the font
   //            size in px; none: it isn't placed here (along: a line places it halfway along
@@ -32,13 +32,13 @@
   //   outside  it's outside its shape, so an outline round the shape goes round it too, as a box
   const lifted = (font) => -LABEL_LIFT * font // "central" sits text a little low in a shape
   const LABEL_PLACES = {
-    centre: { over: true, at: (s, hw, hh, font) => ({ x: 0, y: lifted(font), anchor: ANCHORS.centre.anchor }) },
+    centre: { over: true, at: (s, hw, hh, font) => ({ x: 0, y: lifted(font), anchor: TEXT_ANCHORS[0] }) },
     // inside the top of the box, or in the middle of one too short for that
-    top: { over: true, at: (s, hw, hh, font) => ({ x: 0, y: Math.min(-hh + TOP_PAD * font, 0) + lifted(font), anchor: ANCHORS.centre.anchor }) },
-    right: { over: true, at: (s, hw, hh, font) => ({ x: hw - RIGHT_PAD * font, y: lifted(font), anchor: ANCHORS.right.anchor }) },
-    code: { over: true, at: (s, hw, hh, font) => ({ x: -hw + kindOf(s).pre.pad * font, y: lifted(font), anchor: ANCHORS.left.anchor }) },
-    content: { own: true, at: (s, hw) => { const { anchor, side } = ANCHORS[s.align] || ANCHORS.centre; return { x: side * hw, y: 0, anchor } } },
-    below: { outside: true, at: (s, hw, hh, font) => ({ x: 0, y: hh + font * BELOW_GAP, anchor: ANCHORS.centre.anchor }) },
+    top: { over: true, at: (s, hw, hh, font) => ({ x: 0, y: Math.min(-hh + TOP_PAD * font, 0) + lifted(font), anchor: TEXT_ANCHORS[0] }) },
+    right: { over: true, at: (s, hw, hh, font) => ({ x: hw - RIGHT_PAD * font, y: lifted(font), anchor: TEXT_ANCHORS[1] }) },
+    code: { over: true, at: (s, hw, hh, font) => ({ x: -hw + kindOf(s).pre.pad * font, y: lifted(font), anchor: TEXT_ANCHORS[-1] }) },
+    content: { own: true, at: (s, hw) => { const side = edgeOf(s)?.x ?? 0; return { x: side * hw, y: 0, anchor: TEXT_ANCHORS[side] } } }, // text: from the side it's placed by
+    below: { outside: true, at: (s, hw, hh, font) => ({ x: 0, y: hh + font * BELOW_GAP, anchor: TEXT_ANCHORS[0] }) },
     along: {},
     script: {},
   }

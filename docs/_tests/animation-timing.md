@@ -146,13 +146,13 @@ Prompt: text "$" at 2,1 mono ink yellow
 +++
 
 ```anim
-T1: text "ls -la" at 3,1 align left mono typed speed slow
+T1: text "ls -la" at 3,1 anchor left mono typed speed slow
 ```
 
 +++
 
 ```anim
-T2: text "Hello, world!" at 2,2 align left bold mono typed speed slow delay 2
+T2: text "Hello, world!" at 2,2 anchor left bold mono typed speed slow delay 2
 ```
 
 ---

@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, ALIGNS, DIRECTIONS, COLOURS, COLOUR_FUNCTIONS, COLOUR_PICKS, SPEEDS, EASES, RESERVED,
+  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, CALLOUT_SIDES, PLACEMENTS, DIRECTIONS, COLOURS, COLOUR_FUNCTIONS, COLOUR_PICKS, SPEEDS, EASES, RESERVED,
     ANCHORS, END_MARKS, KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, LAYOUT_NOUNS, BRACKET_NOUNS, LINE_STARTS, LINES, listProps } = window.Anim
 
   // ---------------------------------------------------------------------------
@@ -226,7 +226,7 @@
         return m && shapes.has(m[1]) && ANCHORS[m[2]] ? { ref: m[1], anchor: m[2] } : undefined
       }
       case 'placement': return PLACEMENTS.includes(word) ? word : undefined
-      case 'align': return ALIGNS[word]
+      case 'edge': return ANCHORS[word] || word === 'centre' ? word : undefined // what a shape is placed by
       // a direction word as an absolute angle, turned to the short way (numberValue: turn)
       case 'direction': return word in DIRECTIONS ? { v: DIRECTIONS[word], rel: false, turn: true } : undefined
       case 'colour': return COLOURS[word] !== undefined || HEX.test(word) ? word : undefined

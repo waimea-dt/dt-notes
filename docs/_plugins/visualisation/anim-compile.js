@@ -39,7 +39,7 @@
   // ---------------------------------------------------------------------------
 
   function baseShape(type) {
-    const shape = { type, label: '', stroke: 'fg', ink: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, opacity: 1, bold: false, linestyle: 'solid', flow: 'none', align: 'centre', layer: 'normal' }
+    const shape = { type, label: '', stroke: 'fg', ink: 'fg', fill: 'none', weight: 1, font: 1, angle: 0, scale: 1, opacity: 1, bold: false, linestyle: 'solid', flow: 'none', layer: 'normal' }
     return Object.assign(shape, SHAPES[type]?.defaults)
   }
 
@@ -698,7 +698,7 @@
       const centre = context.centre // the drawing's centre, when the grid is fixed
       const axis = (n, key, from = camera) => {
         const current = from[key] ?? centre?.[key]
-        if (n.rel && current == null) throw new Error('a relative camera move needs a fixed grid, or an absolute "camera at" first')
+        if (n.rel && current == null) throw new Error('a relative camera move needs a fixed grid, or an absolute "camera move" first')
         return numberValue(n, current, { unit: CELL, coord: true })
       }
       // a shape: the middle of all of it (a group's members), or a point on its edge

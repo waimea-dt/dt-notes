@@ -126,22 +126,22 @@ Trap: highlight inside corner 0
 
 ## Feature: text
 
-`align` says which edge of its cell a text is placed by. The dotted box is column 6: `left` puts the text's left edge on the cell's left edge, `right` its right edge on the cell's right edge, and `centre` (the default) its middle on the cell's middle.
+`anchor` says which edge of its cell a text is placed by, as for any shape. The dotted box is column 6: `left` puts the text's left edge on the cell's left edge, `right` its right edge on the cell's right edge, and the default its middle on the cell's middle.
 
 <animation name="Text" grid="11x5">
 
 ```anim
 Cell: rect at 6,3 size 1x3 dotted stroke muted fill none back
 T1: text "centre" at 6,2
-T2: text "align left" at 6,3 align left
-T3: text "align right" at 6,4 align right
+T2: text "anchor left" at 6,3 anchor left
+T3: text "anchor right" at 6,4 anchor right
 ```
 
 ---
 
 ## Its edge holds as it changes
 
-Longer, then shorter: left-aligned text grows and shrinks to the right, right-aligned to the left, centred both ways.
+Longer, then shorter: text anchored left grows and shrinks to the right, anchored right to the left, centred both ways.
 
 ```anim
 T1: "centred, and longer" ink amber
@@ -161,7 +161,7 @@ T3: "right"
 
 ## Beside a shape
 
-Placed beside a shape, a text is placed by its box, as any shape is: centred under and over `B`, whatever its align.
+Placed beside a shape, a text is placed by its box, as any shape is: centred under and over `B`, whatever its anchor.
 
 ```anim
 T1: delete

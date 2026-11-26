@@ -25,7 +25,7 @@ const LISTS = {
   ANCHORS: keys(A.ANCHORS),
   EASES: keys(A.EASES),
   SPEEDS: keys(A.SPEEDS),
-  ALIGNS: keys(A.ALIGNS),
+  EDGES: [...keys(A.ANCHORS), 'centre'],
   DIRECTIONS: keys(A.DIRECTIONS),
   HIGHLIGHTS: keys(A.HIGHLIGHT_KINDS),
   RESOURCES: A.RESOURCE_TYPES,

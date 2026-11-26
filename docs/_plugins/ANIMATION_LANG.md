@@ -62,6 +62,7 @@ Markers go alone on their line. Everything in a beat plays at once.
 ## Grid
 
 - Cells from 1, top-left. `at 3,2` = centre of column 3, row 2. Fractions OK.
+- `at` puts a shape's centre on the middle of the square, and anything with parts (rows, grids, numbers, code, Scratch) by its top-left. `anchor top-left` (or any side, corner or `centre`) puts that part of a single shape on that part of the square, and it holds as the shape changes size.
 - Points `5,4`, sizes `2x1`, all in cells. A point is x,y (column, row); a place is `[row][column]`, as in code (`G[1][2]`).
 - A point can be a shape (`A`: its centre) or a point on its edge: `A.top` `A.bottom` `A.left` `A.right` `A.top-left` `A.top-right` `A.bottom-left` `A.bottom-right`.
 
@@ -94,7 +95,7 @@ R: row [
 | `circle` | `C: circle "C" at 4,3 radius 0.8` · `E: circle at 4,3 size 3x1.5` (an ellipse) | radius 0.5 |
 | `diamond` | `D: diamond "x > 3?" at 4,3 size 3x1.5` | 1×1 |
 | `polygon` | `P: polygon [0,-1 1,1 -1,1] at 5,4 "P"` (points from `at`, in cells) · `P: [0,-1 1,0 0,1 -1,0]` (new points) | its points' size |
-| `text` | `T: text "Hi" at 7,1 align left` | |
+| `text` | `T: text "Hi" at 7,1 anchor left` | |
 | `line` / `arrow` | `L: arrow from A to 9,3 "label"` · `L: line from A to B start bar end crow` · `L: line from 2,5 via 6,5 via 6,6 to 10,6 corner 0.3` | |
 | `curve` | `C: curve from A to B via 5,1 via 7,3` · `C: curve from A to B bend 0.5` · `C: curve from A to A angle right` (a loop) | loop: up, 1×1 |
 | `image(path)` | `P: image(../_assets/x.svg) "Alt" at 3,4 size 2` | 1×1 |
@@ -125,7 +126,7 @@ R: row [
 | flow | `flow` · `flow-reverse` · `static` (dashed / dotted only) |
 | angle / scale | `angle 45` (clockwise, 0 = right) · `angle up` (`right` `down` `left` `up`) · `scale 1.5` (not lines) |
 | font | `font 1.5` · `bold` · `regular` (not bold) · `mono` |
-| align | `align left` · `centre` · `right` (text) |
+| anchor | `anchor left` · `top-left` · `bottom` · `centre` (single shapes: what goes on the square) |
 | layer | `back` · `normal` · `front` |
 | image fit | `contain` · `cover` (cropped) |
 
@@ -236,7 +237,7 @@ Arr: delete                        # the whole row
 
 - Values in `[ ]`: numbers, `"quoted"` or `null`, commas optional.
 - `size`, `gap` and looks apply to every cell. Cell size is set when it's made.
-- `at` places the first cell by its top-left. `below B` etc. place the whole row.
+- `at` places it by its top-left. `below B` etc. place the whole row.
 - Ids stay with the places: after an edit, `Arr[2]` is whichever cell is now third.
 - Cells hold values like a var: `Arr[2]: 7`.
 - A range `[from..to]` includes both ends, either way round.
@@ -432,7 +433,7 @@ B[4]: flip                         # one bit
 B: powers clear                    # or decimal clear, indices clear
 ```
 
-- `at` places the leftmost digit. `digits` (when made): binary 8 (max 32), hex 2 (max 8), denary 3 (max 10).
+- `digits` (when made): binary 8 (max 32), hex 2 (max 8), denary 3 (max 10).
 - Values are numbers: denary, `0x7B` (hex) or `0b1111011` (binary), any case. One that doesn't fit wraps round.
 - 0s are muted; a digit given an `ink` keeps it until `ink reset`.
 - No swap, insert or remove; no `decimal` on denary. Otherwise like a row.
@@ -456,7 +457,7 @@ C: font 0.8
 C: code [ … ] at 2,3 typed         # lines type in turn
 ```
 
-- Lines count from 1. `at` is the left edge.
+- Lines count from 1.
 - `lang`: `python` `js` `java` `kotlin` `c` `cpp` `csharp` `sql` `css` `markup` `json` `yaml`.
 - Otherwise like a column.
 
@@ -480,7 +481,7 @@ S: remove 3                        # the block on line 3
 S: swap 2 4
 ```
 
-- [scratchblocks](https://scratchblocks.github.io) syntax. `at` is the top-left.
+- [scratchblocks](https://scratchblocks.github.io) syntax.
 - Lines count from 1 as written, including end, else and blank lines.
 - One shape: a line `S[3]` takes only a new line or `highlight line`. No `typed`.
 

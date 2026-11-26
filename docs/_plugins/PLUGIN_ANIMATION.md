@@ -105,7 +105,7 @@ Notes on each area, for finding your way round before a change.
 
 ### Places and attachments
 
-- **Where a shape is:** its `x, y` is the point it's placed by: its centre, the middle of the grid square a layout's first cell starts in (`fromEdge`: its top-left is the square's), or the edge of its cell an aligned shape (`align`) or one with a corner (`SHAPES: anchor`) is placed by. `centreShift` gives its box's centre from there (worked out from its size as it is, so that edge holds still as it grows), `boxCentre` that centre, and `placeFor(shape, p)` the point that puts its centre at `p`. Anything that places a shape by a centre (beside a shape, on it, a route's stops) goes through `placeFor`, never assigning a centre to `x, y`.
+- **Where a shape is:** its `x, y` is the point it's placed by: its centre, the middle of the grid square a layout's first cell starts in (`fromEdge`: its top-left is the square's), or the side or corner of its cell a single shape is placed by (`anchor`, or its type's: `SHAPES: anchor`; `edgeOf`). `centreShift` gives its box's centre from there (worked out from its size as it is, so that edge holds still as it grows), `boxCentre` that centre, and `placeFor(shape, p)` the point that puts its centre at `p`. Anything that places a shape by a centre (beside a shape, on it, a route's stops) goes through `placeFor`, never assigning a centre to `x, y`.
 - **Attachments:** `besideOf` (attach, names) or `offsetFrom` (group members, cells, index labels). Test `attach.kind`, never field presence.
 - **Placing beside:** `placeAlong` places a shape a gap from another at any angle, keeping their upright boxes apart; `placeNextTo` is it for the placement words (`PLACE_DIRECTIONS`). `arrange` places each group member from the one before with it, then moves the group's centre to the middle of its shapes, keeping every offset right (`offsetInGroup`, as a member's own move does: `keepOffset`).
 - **Points on an edge** (`ANCHORS`): `parseAs: anchor` reads `A.top-left` (an id first, if a shape has that one) as `{ ref, anchor }`, a sig in `SPOT` / `POINT`, `attach` and `travel`. `refPoint` gives where any `{ ref, anchor }` is (`anchorPoint`: `edgePoint` the way of the side or corner, turned with the shape); a line end on one (`onShape`) is that point just off the edge and isn't trimmed (`resolveEnds`: `target`).
@@ -186,14 +186,14 @@ Notes on each area, for finding your way round before a change.
 - **Label only what's ambiguous.**
   - A value gets a label when it could belong to more than one prop: numbers (`size 2`, `delay 1`), colours (`fill red`), shape ids (`at B`, `follow L`).
   - A word that can only mean one thing stands alone: `pop`, `dashed`, `front`, `bold`, `mono`, `pulse`, `keep-style`.
-  - Enumerations whose words would be ambiguous alone keep their label. For example, `speed normal` (`normal` is also a layer), `ease in`, `align left`.
+  - Enumerations whose words would be ambiguous alone keep their label. For example, `speed normal` (`normal` is also a layer), `ease in`, `anchor left`.
 - **Don't add verbose forms** (no `by fade`, `family mono`). Keep one form per meaning.
 - **One spelling per word, British only:** `centre`, and text colour is `ink`. No US spellings, and no aliases.
 - **Reversed variants** are `<word>-reverse`: `flow-reverse`, `follow-reverse`, `signal-reverse`, `stagger-reverse`.
 - **Number literals:** `0x7B` and `0b1011` (`LITERAL`) are turned into denary by `tokenize`, so the rest of the engine only sees denary numbers.
 - **Ids and keywords:** an id starts with a capital letter (`ID`; `REF` for an id or a part's path), and keywords are lowercase and case-sensitive, so the two never clash: no reserved-word check, and tokens keep only their `value`.
 - **Places and parts:** a numbered place goes in `[ ]` (`Arr[2]`, `G[1][2]`, `G.col[2]`, `C[3]`), a range of them with `..` (`Arr[0..2]`, `G[0..1][1..2]`, inclusive), a named part after a dot (`V1.name`, `A.trail`, `A.top`). Part ids are stored as written (`cellId`, `viewId`, `markId`), and `tokenize` reads a reference with places as one word, written one way (`canonicalRef`: `G[ 1 ]` is `G[1]`). Actions take plain numbers (`swap 0 3`), and a grid's cell as `[row][column]` alone (`G: swap [1][2] [0][0]`, `gridPlaceOf`).
-- **Placing:** `at` places a shape as it's made, `move` one that's there (`KEYWORDS`: `modes`, `notIn`); both set the `at` prop.
+- **Placing:** `at` places a shape as it's made, `move` one that's there (`KEYWORDS`: `modes`, `notIn`); both set the `at` prop. A single shape is placed by its centre unless it's given an `anchor` (`ANCHORED_PROPS`); anything with parts by its first cell's square (`cx`, `cy`), so not by an anchor.
 - **Signed numbers** are relative on a change (`move +2,0`) and absolute when creating. That includes a value (`V: +1`, `B: -5`: `addTo`), so a signed value given as text is quoted, and an absolute negative one is a sum (`V: (-5)`).
 - **Reset** puts looks back as a shape started: `applyDefaults` records `shape.start` (its `STYLE` looks), and `fill reset` (`resettable` keywords) or `style reset` (`resetLook`) take them from it. `clear` is for taking something away (a highlight, a name); `reset` is for going back.
 - **Angles** are clockwise degrees from as drawn, which faces right (as Scratch sprites do). Direction words (`angle up`, `DIRECTIONS`) are absolute but turn the short way (`numberValue`'s `turn`); numbers turn exactly as written, so `angle +360` spins.
@@ -230,7 +230,7 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 
 Ideas agreed but not yet wanted, roughly in order:
 
-1. **Line up:** a group's shapes level by an edge or centre, nothing else moving (`G: line-up top`, `G: line-up across`). Not `align`: that's text's.
+1. **Line up:** a group's shapes level by an edge or centre, nothing else moving (`G: line-up top`, `G: line-up across`). Not `anchor`: that's how one shape is placed.
 2. **`draw` on any outline:** trace a rect's, circle's or polygon's stroke in (and `delete draw` out), not only a line's.
 3. **Clip to a box:** a viewport onto part of the drawing (a scrolling window, a reveal), beside the whole-animation `crop`.
 4. **Arc / sector:** a plain shape, not only a var's or cell's `ring` / `pie`.

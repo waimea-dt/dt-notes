@@ -56,6 +56,49 @@ On: move +0,+1
 
 </animation>
 
+## Feature: anchor
+
+`at` puts a shape's centre on the middle of its square. `anchor` puts one of its sides or corners on the same side or corner of the square instead, and that edge holds still as it changes size. Things with parts (rows, grids, code, numbers, Scratch) are placed by their top-left.
+
+<animation name="Anchor" grid="16x7">
+
+The dotted squares are the squares each is placed at.
+
+```anim
+A1: rect "centre" at 3,3 size 2x1.4 fill blue-muted
+A2: rect "top-left" at 8,3 size 2x1.4 anchor top-left fill teal-muted
+A3: rect "bottom-right" at 13,3 size 2x1.4 anchor bottom-right fill purple-muted
+T: text "anchor left" at 2,6 anchor left
+Arr: row [1 2 3] at 12,6 name "row"
+defaults fill none stroke amber dotted front
+S1: rect at 3,3
+S2: rect at 8,3
+S3: rect at 13,3
+S4: rect at 2,6
+S5: rect at 12,6
+defaults clear
+```
+
+---
+
+## Growing from its anchor
+
+```anim
+A1: size 3x2
+A2: size 3x2
+A3: size 3x2
+T: "anchor left, and longer"
+```
+
++++
+
+```anim
+A2: anchor bottom-right
+A3: anchor centre
+```
+
+</animation>
+
 ## Feature: arrange
 
 <animation name="Arrange" grid="fit">

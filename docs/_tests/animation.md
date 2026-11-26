@@ -298,7 +298,7 @@ The first beat uses `typed`, `pop` and `delay`, so it plays in when it comes int
 <animation name="Intro" grid="12x3">
 
 ```anim
-Prompt: text "$ ping example.com" at 2,1 align left mono typed speed slow
+Prompt: text "$ ping example.com" at 2,1 anchor left mono typed speed slow
 Srv: rect "server" at 10,2 size 2x1 pop delay 2
 ```
 

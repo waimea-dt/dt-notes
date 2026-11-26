@@ -77,7 +77,6 @@
   // The placement words, each the way it goes from its ref (DIRECTIONS)
   const PLACE_DIRECTIONS = { above: 'up', below: 'down', 'left-of': 'left', 'right-of': 'right' }
   const PLACEMENTS = Object.keys(PLACE_DIRECTIONS)
-  const ALIGNS = { left: 'left', centre: 'centre', right: 'right' }
   // Angles: clockwise degrees from as drawn, which faces right (as sprites do). The direction words
   // for "angle", as degrees; a shape turns to one the short way (numberValue: turn)
   const DIRECTIONS = { right: 0, down: 90, left: 180, up: -90 }
@@ -192,39 +191,40 @@
   //             box at that corner of the cell, and it stays put as its size changes (centreShift)
   const COMMON_PROPS = ['ink', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
+  const ANCHORED_PROPS = [...BOXED_PROPS, 'anchor'] // a single shape, placed by any side or corner
   // a line's angle only turns it about a point ("angle +90 about 5,5"), apart from a loop's
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'start', 'end', 'show', 'angle']
   const CORNERED_LINE_PROPS = [...LINE_PROPS, 'corner'] // a straight line's corners (via) can be rounded
   const LOOP_PROPS = ['angle', 'size', 'width', 'height'] // the way a loop faces, and its size
   const SHAPES = {
     rect: {
-      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow', 'bar', 'max', 'track'],
+      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow', 'bar', 'max', 'track'],
       defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg-shape' }, outline: 'box', label: 'centre', inside: true,
     },
     circle: {
-      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'radius', 'fill', 'stroke', 'linestyle', 'flow'],
+      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'radius', 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, fill: 'bg-shape' }, outline: 'round', label: 'centre', inside: true,
     },
     diamond: {
-      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'fill', 'stroke', 'linestyle', 'flow'],
+      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, fill: 'bg-shape' }, outline: 'diamond', label: 'centre', inside: true,
     },
     polygon: {
       takes: [...BOXED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg-shape' }, outline: 'polygon', label: 'centre', inside: true, points: true,
     },
-    text: { takes: [...BOXED_PROPS, 'align'], defaults: { w: 0, h: 0 }, outline: 'box', label: 'content', band: { pad: 0.2, corner: 0.15 } },
+    text: { takes: ANCHORED_PROPS, defaults: { w: 0, h: 0 }, outline: 'box', label: 'content', band: { pad: 0.2, corner: 0.15 } },
     image: {
-      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'stroke', 'linestyle', 'flow', 'fit'],
+      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'stroke', 'linestyle', 'flow', 'fit'],
       defaults: { w: CELL, h: CELL, stroke: 'none' }, outline: 'box', label: 'below', inside: true, resource: true,
     },
     icon: {
-      takes: [...BOXED_PROPS, 'size', 'width', 'height', 'stroke'],
+      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'stroke'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'below', inside: true, resource: true,
     },
     // a Scratch script (SCRIPTS: scratch), as big as it is (× its font) or fitted in the size given
     scratch: {
-      takes: ['font', 'at', 'x', 'y', 'angle', 'scale', 'size', 'width', 'height', 'opacity'],
+      takes: ['font', 'at', 'x', 'y', 'anchor', 'angle', 'scale', 'size', 'width', 'height', 'opacity'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
     line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: LINE_DEFAULTS },
@@ -243,8 +243,8 @@
     // a line of a code block: mono text, highlighted (lang), left-aligned in a box that a fill or
     // its highlight shows as a band. Its box is sized to the block (fitLines in anim-compile.js).
     codeline: {
-      takes: [...BOXED_PROPS, 'align', 'fill', 'stroke', 'corner', 'linestyle', 'flow', 'lang'],
-      defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', mono: true, align: 'left' }, outline: 'box', label: 'code', inside: true,
+      takes: [...BOXED_PROPS, 'fill', 'stroke', 'corner', 'linestyle', 'flow', 'lang'],
+      defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', mono: true, anchor: 'left' }, outline: 'box', label: 'code', inside: true,
       internal: true, noun: 'code line', fitted: true, band: { pad: 0, corner: null }, pre: { height: 1.4, pad: 0.3 },
     },
     // some of a row's / column's / code block's places as one ("S: span Arr 0 2"): a box round them
@@ -403,7 +403,7 @@
   //               again; digitLooks)
   //   power       where its place values go (NUMBERINGS: powers), as index does
   //   decimal     its value written out, when shown: where it goes (side and gap, in cells, and its
-  //               text's alignment, so it doesn't shift as it changes), and label(id), its text: a
+  //               text's anchor, so it doesn't shift as it changes), and label(id), its text: a
   //               label like any other, so a "{ }" in it follows the number (and counts with it)
   //   fixed       its cells stay as made: no swap, insert or remove (a value changes them)
   //   flip        "flip" turns each digit d to radix - 1 - d (a bit: 0 <-> 1)
@@ -414,7 +414,7 @@
   // What every number (LAYOUTS: radix) shares: a reversed row of fixed digits
   const NUMBER = {
     cell: 'rect', across: true, reverse: true, base: 0, name: 'left-of', spanName: 'above', slide: false, slot: false, arrange: 'line', bow: 'own',
-    index: INDEX_BELOW, power: INDEX_ABOVE, decimal: { side: 'right-of', gap: 0.3, align: 'left', label: (id) => `= {${id}}` }, fixed: true,
+    index: INDEX_BELOW, power: INDEX_ABOVE, decimal: { side: 'right-of', gap: 0.3, anchor: 'left', label: (id) => `= {${id}}` }, fixed: true,
   }
   const NUMBER_DIGITS = { prop: 'digits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { ink: 'muted' } } }
   const GRID_VIEWS = {
@@ -647,7 +647,7 @@
     stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use ink' } },
     ink: { field: 'ink', cell: true, kept: true },
     weight: { field: 'weight', unit: 1, min: 0, cell: true, quiet: ['text'] },
-    align: { field: 'align' },
+    anchor: { field: 'anchor' },
     angle: { field: 'angle', unit: 1 },
     scale: { field: 'scale', unit: 1, min: 0 },
     bold: { field: 'bold', cell: true },
@@ -781,7 +781,7 @@
     font: resettable(bound(number('font', 'a number (a multiple of the normal size)'))),
     angle: bound({ key: 'angle', sigs: [['num'], ['direction']], help: `a number of degrees (clockwise, 0 = facing right, as drawn) or a direction: ${Object.keys(DIRECTIONS).join(', ')}` }),
     scale: bound(number('scale', 'a number (a multiple of the normal size)')),
-    align: { key: 'align', sigs: [['align']], help: 'left, centre or right' },
+    anchor: { key: 'anchor', sigs: [['edge']], help: 'a side, a corner or centre, e.g. top-left' },
     bold: { key: 'bold', sigs: [['reset'], []], build: (v) => v[0] ?? true, help: 'nothing or reset' },
     regular: fixed('bold', false, { what: 'bold' }), // not bold
     mono: { key: 'mono', sigs: [['reset'], []], build: (v) => v[0] ?? true, help: 'nothing or reset' }, // a monospace font
@@ -1189,16 +1189,15 @@
   }
 
   // The sides and corners of a shape's box, each saying which side it's on (-1: left / top, 1:
-  // right / bottom, 0: its middle). They're the edges a shape can be placed by (SHAPES: anchor, a
-  // corner, or for a shape that takes align, a side: ALIGN_EDGES), where each is on that side of its
-  // cell; and the points on a shape's edge a point can name ("from A.right", "at B.top-left":
-  // anchorPoint), turning with it.
+  // right / bottom, 0: its middle). They're the edges a shape can be placed by ("anchor top-left",
+  // or its type's: SHAPES: anchor), where each is on that side of its cell (centre: none); and the
+  // points on a shape's edge a point can name ("from A.right", "at B.top-left": anchorPoint),
+  // turning with it.
   const ANCHORS = {
     top: { x: 0, y: -1 }, bottom: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
     'top-left': { x: -1, y: -1 }, 'top-right': { x: 1, y: -1 }, 'bottom-left': { x: -1, y: 1 }, 'bottom-right': { x: 1, y: 1 },
   }
-  const ALIGN_EDGES = { left: -1, centre: 0, right: 1 }
-  const edgeOf = (shape) => ANCHORS[kindOf(shape).anchor] || (APPLIES.align.includes(shape.type) ? { x: ALIGN_EDGES[shape.align] ?? 0, y: 0 } : null)
+  const edgeOf = (shape) => ANCHORS[shape.anchor ?? kindOf(shape).anchor] || null
 
   // How far a shape's box's centre is from the point it's placed by (its x, y): a row / column is
   // placed by the square its first cell starts in (cx, cy: from there to its middle), and a shape placed by an edge
@@ -1620,7 +1619,7 @@
     })))
   }
 
-  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, ALIGNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, CALLOUT_SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
     PATTERNS, PLACEMENTS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,

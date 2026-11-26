@@ -310,7 +310,7 @@
       const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: newUid(), font: TAG_FONT, layer: owner.layer, part: owner.id, role }
       text.label = tag.text
       linkText(text, warn)
-      if (tag.align) text.align = tag.align
+      if (tag.anchor) text.anchor = tag.anchor
       text.attach = besideOf(owner.id, tag.side, tag.gap * CELL)
       Object.assign(text, attachPos(text, owner, text.attach))
       shapes.set(id, text)
