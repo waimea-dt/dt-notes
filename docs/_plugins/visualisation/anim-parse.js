@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, SIDES, DIRECTIONS, COLOURS, COLOUR_FUNCTIONS, COLOUR_PICKS, SPEEDS, EASES, RESERVED,
+  const { escapeHtml, HIGHLIGHTS, VALUED_HIGHLIGHTS, SIDES, DIRECTIONS, COLOURS, COLOUR_FUNCTIONS, COLOUR_PICKS, SPEEDS, EASES, KNOWN_WORDS,
     ANCHORS, END_MARKS, KEYWORDS, SHAPE_TYPES, LAYOUT_TYPES, BRACKET_NOUNS, LINE_STARTS, LINES, listProps } = window.Anim
 
   // ---------------------------------------------------------------------------
@@ -234,7 +234,7 @@
       case 'ease': return word in EASES ? word : undefined
       case 'mark': return END_MARKS[word] ? word : undefined // what a line has at an end
       // a language (Prism's name, e.g. python, js, cpp, csharp): any word that isn't a keyword
-      case 'lang': return /^[a-z][\w+#-]*$/.test(word) && !RESERVED.has(word) ? word : undefined
+      case 'lang': return /^[a-z][\w+#-]*$/.test(word) && !KNOWN_WORDS.has(word) ? word : undefined
     }
     return undefined
   }

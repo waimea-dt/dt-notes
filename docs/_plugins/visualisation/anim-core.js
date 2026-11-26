@@ -17,7 +17,7 @@
   const CELL = 80                  // px per grid cell in SVG user units (16 x 9 cells = 1280 x 720)
   const STROKE = 3                 // normal stroke thickness
   const FONT = 30                  // normal font size
-  const PLACE_GAP = 0.25 * CELL    // default gap for above / below / left-of / right-of
+  const PLACE_GAP = 0.25 * CELL    // default gap between a group's shapes (arrange)
   const GRID_MARGIN = 0.12 * CELL  // round a fixed grid: room for the strokes and highlight outlines of
                                    // shapes on its edge (none when cropped; the stage's CSS padding frames it)
   const FIT_MARGIN = CELL / 2      // round a fitted drawing's shapes (none when cropped)
@@ -98,8 +98,7 @@
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
   // anim-render.js (glow and spotlight change the shape itself).
   //   off      its value when off (default false); valued: it takes a number ("number 5")
-  //   next     a valued one given no number takes the next (number); bare: with none, it's just on
-  //            (line); with neither, a number is needed
+  //   next     a valued one given no number takes the next (number); without it, a number is needed
   //   applies  applies(shape, n): whether it fits a shape (n: its number, if it has one), with
   //            refuse(shape, n) the message when it doesn't
   //   check    check(shape, n): an error message when a valued one's number doesn't fit the shape
@@ -941,7 +940,9 @@
   // Words inside a row edit: "insert 7 at end", "remove 2 into V1"
   const EDIT_WORDS = { end: 'end', into: 'into' }
 
-  const RESERVED = new Set([
+  // Every word the language knows (no id is one, as ids are capitalised): for a message that tells an
+  // unknown word from a known one in the wrong place, and so a lang name isn't mistaken for one
+  const KNOWN_WORDS = new Set([
     ...SHAPE_TYPES, ...RESOURCE_TYPES, ...LAYOUT_TYPES, ...Object.keys(KEYWORDS), ...Object.keys(SPEEDS), ...LINE_STARTS, ...Object.keys(EDIT_WORDS), ...Object.keys(OPERATORS), 'pause', 'auto', 'then', 'defaults', 'camera',
   ])
 
@@ -1626,11 +1627,11 @@
     })))
   }
 
-  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, beatStates, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, barFits, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES, FLOWS,
+  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
-    LOOKS, NORMAL_MS, NUMBERINGS, PARTS, TIMING, article, wordFor,
-    PATTERNS, PLACE_GAP, PLAIN_FILLS, PLAY_PAUSE, RESERVED, RESOURCE_TYPES, SHAPE_TYPES,
+    LOOKS, NORMAL_MS, NUMBERINGS, PARTS, article, wordFor,
+    PATTERNS, PLACE_GAP, PLAY_PAUSE, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeBeside, placeAlong, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, OUTLINES, ANCHORS, anchorPoint, refPoint, polygonPoints, roundCorners, svgEl, textWidth, labelWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, OUTLINES, ANCHORS, refPoint, polygonPoints, roundCorners, svgEl, textWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

@@ -17,7 +17,7 @@
       layerOf, linkText, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
       takeBareNumber, valueIn, valueOf, warnEffect
 
-    // A cell's number as written after a verb ("swap 0 3", "range 3 end"): a whole number, or end,
+    // A cell's number as written after a verb ("swap 0 3", "insert 7 at end"): a whole number, or end,
     // the last cell (after: the place after it, where an insert goes on the end). Undefined if it's
     // neither.
     function placeOf(row, token, { after = false } = {}) {

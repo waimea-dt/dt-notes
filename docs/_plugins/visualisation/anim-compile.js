@@ -6,7 +6,7 @@
 ;(function () {
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeBeside, placeAlong,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
-    tokenize, bounds, ID, REF, canonicalRef, RESERVED, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
+    tokenize, bounds, ID, REF, canonicalRef, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
@@ -221,8 +221,8 @@
     }
 
     // highlight: each kind (HIGHLIGHT_KINDS) stays until clear. One that takes a number is
-    // { kind: n }: with no number, "number" takes the next (next), "line" is just on (bare); the
-    // others need one.
+    // { kind: n }: with no number, "number" takes the next (next); the others need one. A script's
+    // lit line is { line: n } too (runScriptLine).
     function applyHighlight(shape, items) {
       const none = Object.fromEntries(Object.entries(HIGHLIGHT_KINDS).map(([kind, h]) => [kind, 'off' in h ? h.off : false]))
       const hl = { ...none, ...shape.hl }
@@ -239,7 +239,6 @@
     }
     function valuedHighlight(shape, name, n) {
       const kind = HIGHLIGHT_KINDS[name]
-      if (n === null && kind.bare) return true
       if (n === null && !kind.next) throw new Error(`"highlight ${name}" needs a number, e.g. "${shape.id}: highlight ${name} 2"`)
       if (n === null) n = lastNumber + 1
       const problem = kind.check?.(shape, n)
@@ -823,7 +822,7 @@
 
       if (!existing) {
         const word = first?.kind === 'word' ? first.value : ''
-        const known = !word || KEYWORDS[word] || RESERVED.has(word)
+        const known = !word || KEYWORDS[word] || KNOWN_WORDS.has(word)
         throw new Error(known ? `no shape called "${id}" (to create one, put a type after the colon, e.g. "${id}: rect")` : `unknown shape type "${first.value}"`)
       }
       // "V2: {V1 * 2}": a value that follows a sum (LINKS: value); "V3: V1 + V2": one worked out
@@ -1030,7 +1029,7 @@
     }
 
     // "G: arrange right gap 0.5" (a direction, or degrees): its shapes in a line that way, in the
-    // order they're listed, each placed from the one before as "right-of" would (placeAlong). The
+    // order they're listed, each placed from the one before, the gap from it that way (placeAlong). The
     // first stays put, and lines follow the shapes they join. They stay in the group, at their new
     // places in it (as keepOffset does).
     function arrangeGroup(id, group, tokens, meta, warn) {
