@@ -6,7 +6,7 @@
 
 ;(function () {
   const { parseProps, REF, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
-    nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, evaluate, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol } = window.Anim
+    nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, evaluate, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol, SIG_FIGURES } = window.Anim
 
   // The numbers whose digits flip (LAYOUTS: flip), for messages: "a binary number"
   const FLIP_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => LAYOUTS[layout].flip).map((layout) => LAYOUTS[layout].noun))
@@ -62,7 +62,7 @@
       }
       const now = valueIn(shape)
       if (now.nil || !NUMBER.test(now.label)) throw new Error(`"${shape.id}" holds ${now.nil ? 'null' : `"${now.label}"`}, not a number, so there's nothing to add ${value.label} to`)
-      if (!inDigits(shape)) return { label: String(Number((Number(now.label) + Number(value.label)).toPrecision(12))) }
+      if (!inDigits(shape)) return { label: String(Number((Number(now.label) + Number(value.label)).toPrecision(SIG_FIGURES))) }
       const { noun } = LAYOUTS[shape.layout]
       if (!/^[+-]\d+$/.test(value.label)) throw new Error(`a ${noun} adds whole numbers, not ${value.label}`)
       return { label: String(BigInt(now.label) + BigInt(value.label)) }

@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, drawsBox, LOOKS, VALUE_STYLE, fieldsOf, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    BOX_CORNERS, LERPED_CORNERS, END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, evaluate } = window.Anim
+    BOX_CORNERS, LERPED_CORNERS, END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, evaluate, MAX_DEPTH } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -22,6 +22,41 @@
   const BELOW_GAP = 0.75
   // A frame's line (LOOKS: frame), × the normal stroke: a little heavier than the cell strokes it covers
   const FRAME_WEIGHT = 1.5
+  // A glow (EMPHASES, HIGHLIGHT_KINDS): its halo's blur at full strength, and how much brighter it makes the shape
+  const GLOW = { halo: 0.15 * CELL, bright: 0.35 }
+  // Dash patterns are drawn at least this weight, so a thin line's dashes still show
+  const MIN_DASH_WEIGHT = 0.5
+  // A line end's mark (END_DRAWS): its size, × HEAD, is base plus weight × the line's weight, and at
+  // most `most` of the line's length; drawing in, it shows at showRate × the line drawn, after showLag
+  const MARK_SIZE = { base: 0.6, weight: 0.4, most: 0.6, showRate: 4, showLag: 0.2 }
+  // signal: its tail's length and pieces, and its tail's and head's sizes (each a minimum in px, or
+  // a multiple of the line's stroke)
+  const SIGNAL = { tail: 0.9 * CELL, parts: 5, width: { min: 6, stroke: 2.2 }, head: { min: 10, stroke: 3.2 } }
+  // How the entrances and emphases move (FRAMES, EMPHASIS_FRAMES): a fade's speed-up (× its time),
+  // sizes (bounce: in px; wobble: degrees), and waves (× π over its time)
+  const MOTION = {
+    popFade: 3, typedFade: 6, pulse: 0.25,
+    shake: { reach: 0.15 * CELL, waves: 8 }, wobble: { degrees: 14, waves: 4 }, bounce: { height: 0.6 * CELL, hops: 3, decay: 1.5 },
+  }
+  // The least a shape is scaled to (as it pops in): an SVG scale of 0 can't be drawn
+  const TINY_SCALE = 0.001
+  // A slot smaller than this share of its size is hidden
+  const SLOT_MIN = 0.01
+  // The highlights: inside's gap from the shape's stroke, and the corner of an outline round a box
+  // (a group, or a shape with its name or indices)
+  const INSIDE_GAP = 0.04 * CELL
+  const BOXED_CORNER = 0.12 * CELL
+  // highlight arrow: its length, head and widths, how far it slides in, and how far in from the
+  // corner its tip is (× PAD)
+  const ARROW = { length: 0.9 * CELL, head: 0.5 * CELL, headWidth: 0.33 * CELL, shaft: 0.17 * CELL, slide: 0.4 * CELL, inset: 0.75 }
+  // highlight number: its disc, its font (× FONT; longFont once it has more than longAt digits), and
+  // its scale as it pops in (start, growing by grow)
+  const BADGE = { radius: 0.28 * CELL, font: 0.88, longFont: 0.62, longAt: 2, start: 0.6, grow: 0.4 }
+  // A callout's bubble: its font (× FONT), line height and padding (× its font), its tail's length
+  // and width, the gap from the shape to the tip, its corner, and its margin inside the drawing (px)
+  const BUBBLE = { font: 0.75, line: 1.25, padW: 1.4, padH: 0.75, tail: 0.3 * CELL, tailWidth: 10, tip: 4, corner: 10, margin: 4 }
+  // The debug grid's numbers, in from its top and left edges (px)
+  const DEBUG_LABELS = { top: 14, left: 6 }
   // How text is anchored (SVG text-anchor) by the side of its box it's drawn from: -1 left, 0 middle, 1 right
   const TEXT_ANCHORS = { [-1]: 'start', 0: 'middle', 1: 'end' }
   // The places a label goes (SHAPES: label, BAR_DRAWS: label):
@@ -547,7 +582,7 @@
       const strokeWidth = STROKE * s.weight
       // Dash patterns use round caps, so each drawn dash is shortened (and gap lengthened) by the
       // stroke width to keep the visible lengths; a dash of 0 is a round dot. Scales with the weight.
-      const k = STROKE * Math.max(s.weight, 0.5) // the line's thickness in px (w)
+      const k = STROKE * Math.max(s.weight, MIN_DASH_WEIGHT) // the line's thickness in px (w)
       const dashFor = (style) => {
         if (style === 'solid' || !PATTERNS[style]) return { dash: 'none', cap: '', dashLen: 0, gapLen: 0, plain: true }
         const dashLen = Math.max(0, PATTERNS[style].d * k - strokeWidth)
@@ -622,10 +657,10 @@
       // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
       // (the highlight colour if it has none); highlight glow (v.hlGlow) the highlight colour.
       const glowColour = LABEL_PLACES[kindOf(s).label]?.own ? colours.ink : colours.stroke // text glows its own ink
-      const halo = (k, colour) => `drop-shadow(0 0 ${0.15 * CELL * k}px ${colour})`
+      const halo = (k, colour) => `drop-shadow(0 0 ${GLOW.halo * k}px ${colour})`
       const filters = []
       const bright = Math.max(v.glow || 0, v.hlGlow || 0)
-      if (bright) filters.push(`brightness(${1 + 0.35 * bright})`)
+      if (bright) filters.push(`brightness(${1 + GLOW.bright * bright})`)
       if (v.glow) filters.push(halo(v.glow, glowColour === 'none' ? 'var(--color-important)' : glowColour))
       if (v.hlGlow) filters.push(halo(v.hlGlow, 'var(--color-important)'))
       g.style.filter = filters.join(' ')
@@ -661,7 +696,7 @@
         // erasing, the start's rides on the erased edge. tip: how far along its end's point is;
         // way: +1 out along the line (the end's), -1 back (the start's). A line shown in part (LOOKS:
         // show) has its end's mark on the tip of the part shown, as while it's drawn in.
-        const size = Math.min(HEAD * (0.6 + 0.4 * s.weight), wholeLen * 0.6)
+        const size = Math.min(HEAD * (MARK_SIZE.base + MARK_SIZE.weight * s.weight), wholeLen * MARK_SIZE.most)
         const marks = v.marks || noMarks
         const tips = { to: { tip: v.erase ? total : total * v.draw, way: 1 }, from: { tip: v.erase ? total * (1 - v.draw) : 0, way: -1 } }
         const frameAt = ({ tip, way }) => {
@@ -672,7 +707,7 @@
           const u = dl > 1e-6 ? { x: (p.x - behind.x) / dl, y: (p.y - behind.y) / dl } : { x: Math.sign(p.x - near.x), y: Math.sign(p.y - near.y) }
           return { p, u, n: { x: -u.y, y: u.x } }
         }
-        const shown = clamp01(v.draw * 4 - 0.2)
+        const shown = clamp01(v.draw * MARK_SIZE.showRate - MARK_SIZE.showLag)
         for (const end of Object.keys(LINE_ENDS)) {
           const els = node.marks[end]
           for (const kind of Object.keys(marks[end])) els[kind] ||= g.insertBefore(svgEl('path', { 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }), node.label)
@@ -1111,21 +1146,20 @@
 
     // signal: a glowing blip running along a line once (signal: { t: 0-1, reverse }), its tail
     // fading behind it. It runs on until the tail has gone past the end.
-    const TAIL_PARTS = 5
-    function drawSignal(node, signal, path, strokeWidth) {
+      function drawSignal(node, signal, path, strokeWidth) {
       if (!signal) {
         if (node.blip) node.blip.style.display = 'none'
         return
       }
       if (!node.blip) {
         node.blip = node.g.appendChild(svgEl('g', { class: 'anim-signal' }))
-        node.blipTail = Array.from({ length: TAIL_PARTS }, () => node.blip.appendChild(svgEl('path', { fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })))
+        node.blipTail = Array.from({ length: SIGNAL.parts }, () => node.blip.appendChild(svgEl('path', { fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })))
         node.blipHead = node.blip.appendChild(svgEl('circle'))
       }
       node.blip.style.display = ''
       const total = path[path.length - 1].at
       const at = (d) => pointAt(path, d)
-      const tail = Math.min(0.9 * CELL, total / 2)
+      const tail = Math.min(SIGNAL.tail, total / 2)
       const d = clamp01(signal.t) * (total + tail) // how far the tip has gone
       // a stretch of the line between two distances from the start, flipped for signal-reverse
       const stretch = (d0, d1) => {
@@ -1137,12 +1171,12 @@
       }
       // the tail: overlapping pieces, so it's brightest at the tip
       node.blipTail.forEach((part, i) => {
-        attr(part, 'd', stretch(d - (tail * (i + 1)) / TAIL_PARTS, d) || null)
-        part.style.strokeWidth = Math.max(6, 2.2 * strokeWidth)
+        attr(part, 'd', stretch(d - (tail * (i + 1)) / SIGNAL.parts, d) || null)
+        part.style.strokeWidth = Math.max(SIGNAL.width.min, SIGNAL.width.stroke * strokeWidth)
       })
       const tip = at(signal.reverse ? total - d : d)
       attr(node.blipHead, 'cx', tip.x); attr(node.blipHead, 'cy', tip.y)
-      attr(node.blipHead, 'r', Math.max(10, 3.2 * strokeWidth))
+      attr(node.blipHead, 'r', Math.max(SIGNAL.head.min, SIGNAL.head.stroke * strokeWidth))
       node.blipHead.style.opacity = d <= total ? 1 : 0
     }
 
@@ -1177,11 +1211,11 @@
     // (t: 0 -> 1) or disappears (t: 1 -> 0); `raw` is the same without easing.
     const FRAMES = {
       fade: (v, t) => { v.opacity = t },
-      pop: (v, t) => { v.scale = Math.max(0.001, t); v.opacity = clamp01(t * 3) },
+      pop: (v, t) => { v.scale = Math.max(TINY_SCALE, t); v.opacity = clamp01(t * MOTION.popFade) },
       draw: (v, t) => { v.draw = t },
       // the shape fades in quickly and its text types out at an even pace, one character at a time
       // (and un-types on the way out)
-      typed: (v, t, raw) => { v.opacity = clamp01(raw * 6); v.typed = raw },
+      typed: (v, t, raw) => { v.opacity = clamp01(raw * MOTION.typedFade); v.typed = raw },
       // in from (out to) the nearest edge of the view
       slide: (v, t, raw, shape) => {
         const off = offscreenOffset(shape)
@@ -1198,12 +1232,12 @@
 
     // Each one-off emphasis (EMPHASES in anim-core.js), over its time (raw: 0 -> 1, un-eased)
     const EMPHASIS_FRAMES = {
-      pulse: (v, raw) => { v.scale = 1 + 0.25 * Math.sin(Math.PI * raw) },
-      shake: (v, raw) => { v.dx = 0.15 * CELL * Math.sin(8 * Math.PI * raw) * (1 - raw) },
+      pulse: (v, raw) => { v.scale = 1 + MOTION.pulse * Math.sin(Math.PI * raw) },
+      shake: (v, raw) => { v.dx = MOTION.shake.reach * Math.sin(MOTION.shake.waves * Math.PI * raw) * (1 - raw) },
       // turns left and right twice, easing in and out
-      wobble: (v, raw) => { v.rot = 14 * Math.sin(4 * Math.PI * raw) * Math.sin(Math.PI * raw) },
+      wobble: (v, raw) => { v.rot = MOTION.wobble.degrees * Math.sin(MOTION.wobble.waves * Math.PI * raw) * Math.sin(Math.PI * raw) },
       // three hops up, like a dropped ball, each lower than the last
-      bounce: (v, raw) => { v.dy = -0.6 * CELL * Math.abs(Math.sin(3 * Math.PI * raw)) * Math.pow(1 - raw, 1.5) },
+      bounce: (v, raw) => { v.dy = -MOTION.bounce.height * Math.abs(Math.sin(MOTION.bounce.hops * Math.PI * raw)) * Math.pow(1 - raw, MOTION.bounce.decay) },
       // brightens and glows, then fades back
       glow: (v, raw) => { v.glow = Math.sin(Math.PI * raw) },
       // a blip along the line at an even pace
@@ -1259,7 +1293,7 @@
       if (![...state.values()].some((s) => s.hl?.spotlight)) return null
       const lit = new Set()
       const isLit = (shape, depth = 0) => {
-        if (!shape || depth > 8) return false
+        if (!shape || depth > MAX_DEPTH) return false
         if (shape.hl?.spotlight) return true
         if (shape.attach?.kind === 'offset') return isLit(state.get(shape.attach.ref), depth + 1) // a group member
         if (shape.part) return isLit(state.get(shape.part), depth + 1) // a name / index goes with its owner
@@ -1594,7 +1628,7 @@
         const cy = row.y + (slot.across ? slot.dy : along)
         attr(el, 'transform', `translate(${cx} ${cy})`)
         attr(el, 'd', rectPath(Math.max(0, w / 2), Math.max(0, h / 2), slot.corners))
-        paint(el, 'opacity', String(size > 0.01 ? opacity : 0))
+        paint(el, 'opacity', String(size > SLOT_MIN ? opacity : 0))
       }
       for (const [uid, el] of slotNodes) {
         if (!live.has(uid)) { el.remove(); slotNodes.delete(uid) }
@@ -1621,7 +1655,7 @@
     const HL_LINE = 3 // the highlight's line (anim-highlight-outline / -inside in animation.css)
     const insetOf = (s) => {
       const stroke = BODIES[s.type]?.edge === false || s.stroke === 'none' ? 0 : STROKE * (s.weight ?? 1) * (s.scale ?? 1)
-      return stroke / 2 + 0.04 * CELL + HL_LINE / 2
+      return stroke / 2 + INSIDE_GAP + HL_LINE / 2
     }
 
     // A highlight path following a shape's outline, grown by `offset` (shrunk if negative): a rounded
@@ -1657,7 +1691,7 @@
       if (boxed) {
         const hw = (b.x1 - b.x0) / 2 + offset
         const hh = (b.y1 - b.y0) / 2 + offset
-        return { d: rectPath(hw, hh, 0.12 * CELL), transform: `translate(${(b.x0 + b.x1) / 2} ${(b.y0 + b.y1) / 2})` }
+        return { d: rectPath(hw, hh, BOXED_CORNER), transform: `translate(${(b.x0 + b.x1) / 2} ${(b.y0 + b.y1) / 2})` }
       }
       const c = boxCentre(s)
       const transform = `translate(${c.x + (v.dx || 0)} ${c.y + (v.dy || 0)}) rotate(${(s.angle || 0) + (v.rot || 0)})`
@@ -1706,13 +1740,13 @@
         make: () => {
           const el = highlightLayer.appendChild(svgEl('polygon', { class: 'anim-highlight-arrow', 'stroke-linejoin': 'round' }))
           // pointing along +x with its tip at 0,0 (rotated to point down-left below)
-          const L = 0.9 * CELL, H = 0.50 * CELL, HW = 0.33 * CELL, SW = 0.17 * CELL
+          const { length: L, head: H, headWidth: HW, shaft: SW } = ARROW
           attr(el, 'points', `0,0 ${-H},${-HW} ${-H},${-SW} ${-L},${-SW} ${-L},${SW} ${-H},${SW} ${-H},${HW}`)
           return { el }
         },
         draw: (o, { b, fade }) => {
-          const back = (1 - fade) * 0.4 * CELL // slides by its fade, not the dimming
-          const tip = { x: b.x1 - 0.75 * PAD + back, y: b.y0 + 0.75 * PAD - back }
+          const back = (1 - fade) * ARROW.slide // slides by its fade, not the dimming
+          const tip = { x: b.x1 - ARROW.inset * PAD + back, y: b.y0 + ARROW.inset * PAD - back }
           attr(o.el, 'transform', `translate(${tip.x} ${tip.y}) rotate(135)`)
         },
       },
@@ -1721,17 +1755,17 @@
         has: (s) => s.hl?.number != null,
         make: () => {
           const el = highlightLayer.appendChild(svgEl('g', { class: 'anim-highlight-number' }))
-          el.appendChild(svgEl('circle', { r: 0.28 * CELL }))
+          el.appendChild(svgEl('circle', { r: BADGE.radius }))
           return { el, text: el.appendChild(svgEl('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central' })) }
         },
         draw: (o, { item, b, fade }) => {
           const n = shownValue(item, (s) => s.hl?.number)
           const label = n == null ? '' : String(n)
           setText(o.text, label)
-          const size = FONT * (label.length > 2 ? 0.62 : 0.88)
+          const size = FONT * (label.length > BADGE.longAt ? BADGE.longFont : BADGE.font)
           o.text.style.fontSize = `${size}px`
           attr(o.text, 'y', -LABEL_LIFT * size) // "central" sits text a little low
-          attr(o.el, 'transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(0.001, 0.6 + 0.4 * fade)})`)
+          attr(o.el, 'transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(TINY_SCALE, BADGE.start + BADGE.grow * fade)})`)
         },
       },
       // a speech bubble beside the shape (drawBubble)
@@ -1771,13 +1805,12 @@
 
     // A speech bubble (o: the callout overlay's elements) beside bounds `b`, with a tail pointing at it.
     function drawBubble(o, callout, b) {
-      const size = FONT * 0.75
-      const lineH = size * 1.25
+      const size = FONT * BUBBLE.font
+      const lineH = size * BUBBLE.line
       const lines = wrapText(callout.text, size, CALLOUT_CH * textWidth('0', size))
-      const w = Math.max(CELL, ...lines.map((line) => textWidth(line, size))) + size * 1.4
-      const h = lines.length * lineH + size * 0.75
-      const tail = 0.3 * CELL
-      const m = 4
+      const w = Math.max(CELL, ...lines.map((line) => textWidth(line, size))) + size * BUBBLE.padW
+      const h = lines.length * lineH + size * BUBBLE.padH
+      const { tail, margin: m, tip: gap } = BUBBLE
       // A side with no room for the bubble (a shape at the drawing's edge) flips to the opposite
       // side, then tries the other two; with no room anywhere it keeps its side.
       const room = {
@@ -1792,14 +1825,14 @@
       const cx0 = (b.x0 + b.x1) / 2
       const cy0 = (b.y0 + b.y1) / 2
       let cx = cx0, cy = cy0, tip
-      if (side === 'bottom') { tip = { x: cx0, y: b.y1 + 4 }; cy = b.y1 + tail + h / 2 }
-      else if (side === 'left') { tip = { x: b.x0 - 4, y: cy0 }; cx = b.x0 - tail - w / 2 }
-      else if (side === 'right') { tip = { x: b.x1 + 4, y: cy0 }; cx = b.x1 + tail + w / 2 }
-      else { tip = { x: cx0, y: b.y0 - 4 }; cy = b.y0 - tail - h / 2 }
+      if (side === 'bottom') { tip = { x: cx0, y: b.y1 + gap }; cy = b.y1 + tail + h / 2 }
+      else if (side === 'left') { tip = { x: b.x0 - gap, y: cy0 }; cx = b.x0 - tail - w / 2 }
+      else if (side === 'right') { tip = { x: b.x1 + gap, y: cy0 }; cx = b.x1 + tail + w / 2 }
+      else { tip = { x: cx0, y: b.y0 - gap }; cy = b.y0 - tail - h / 2 }
       // Keep the bubble inside the drawing (the tail still points at the shape)
       cx = Math.min(viewBox.x + viewBox.w - w / 2 - m, Math.max(viewBox.x + w / 2 + m, cx))
       cy = Math.min(viewBox.y + viewBox.h - h / 2 - m, Math.max(viewBox.y + h / 2 + m, cy))
-      attr(o.path, 'd', bubblePath(cx, cy, w, h, Math.min(10, h / 3), side, tip))
+      attr(o.path, 'd', bubblePath(cx, cy, w, h, Math.min(BUBBLE.corner, h / 3), side, tip))
       o.text.style.fontSize = `${size}px`
       if (o.key !== callout.text) {
         o.key = callout.text
@@ -1831,7 +1864,7 @@
     // A rounded rectangle with a tail on the side facing the shape.
     function bubblePath(cx, cy, w, h, r, side, tip) {
       const x0 = cx - w / 2, x1 = cx + w / 2, y0 = cy - h / 2, y1 = cy + h / 2
-      const half = Math.min(10, w / 4, h / 3)
+      const half = Math.min(BUBBLE.tailWidth, w / 4, h / 3)
       const tx = Math.min(x1 - r - half, Math.max(x0 + r + half, tip.x))
       const ty = Math.min(y1 - r - half, Math.max(y0 + r + half, tip.y))
       let d = `M ${x0 + r} ${y0}`
@@ -1859,11 +1892,11 @@
     for (let c = c0; c <= c1; c++) g.appendChild(svgEl('line', { x1: c * CELL, y1: vb.y, x2: c * CELL, y2: vb.y + vb.h }))
     for (let r = r0; r <= r1; r++) g.appendChild(svgEl('line', { x1: vb.x, y1: r * CELL, x2: vb.x + vb.w, y2: r * CELL }))
     for (let c = c0; c < c1; c++) {
-      const label = g.appendChild(svgEl('text', { x: (c + 0.5) * CELL, y: vb.y + 14, 'text-anchor': 'middle' }))
+      const label = g.appendChild(svgEl('text', { x: (c + 0.5) * CELL, y: vb.y + DEBUG_LABELS.top, 'text-anchor': 'middle' }))
       label.textContent = c + 1
     }
     for (let r = r0; r < r1; r++) {
-      const label = g.appendChild(svgEl('text', { x: vb.x + 6, y: (r + 0.5) * CELL, 'dominant-baseline': 'central' }))
+      const label = g.appendChild(svgEl('text', { x: vb.x + DEBUG_LABELS.left, y: (r + 0.5) * CELL, 'dominant-baseline': 'central' }))
       label.textContent = r + 1
     }
   }

@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { boxCentre, isLine, STYLE, pick, baseShape, trailId, rotateAbout, arcOffset, pointOnHops, pointOnPath,
+  const { boxCentre, isLine, MAX_DEPTH, STYLE, pick, baseShape, trailId, rotateAbout, arcOffset, pointOnHops, pointOnPath,
     easeFn, lerp } = window.Anim
 
   // How finely a trail follows a move: points per hop of a travel, along a route (via, follow), and
@@ -45,7 +45,7 @@
     // path, or a swap's bow) or else to have changed at all (record: its timing)
     function moverOf(shape, meta) {
       let first = null
-      for (let s = shape, depth = 0; s && depth < 16; s = s.attach && shapes.get(s.attach.ref), depth++) {
+      for (let s = shape, depth = 0; s && depth < MAX_DEPTH; s = s.attach && shapes.get(s.attach.ref), depth++) {
         const record = meta.tweens.get(s.uid)
         if (record?.turn || record?.path || record?.arc) return { shape: s, record }
         first ||= record?.dur ? { shape: s, record } : null

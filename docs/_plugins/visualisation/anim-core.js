@@ -25,6 +25,8 @@
   const HEAD = 0.2 * CELL          // arrowhead length at normal weight
   const CAPTION_MS = 500           // caption transition (kept snappy, whatever the shapes' speed)
   const PLAY_PAUSE = 1500          // pause between beats while playing
+  const SIG_FIGURES = 12           // a sum's value is rounded to this many significant figures
+  const MAX_DEPTH = 16             // how far a chain of attachments or groups is followed (a guard against loops)
 
   // speed <word | seconds>: how long a line's change takes
   const SPEEDS = { instant: 0, vfast: 250, fast: 500, normal: 1000, slow: 2000, vslow: 4000 }
@@ -169,7 +171,7 @@
     'signal-reverse': { along: true },
   }
   const CALLOUT_CH = 24 // callout text wraps at about this many characters
-  const FLOW_SPEED = 2 * 80 // px per second (two cells)
+  const FLOW_SPEED = 2 * CELL // px per second (two cells)
   // Every shape type, in one place:
   //   takes     the props it takes (APPLIES, prop -> types, is worked out from these)
   //   defaults  its own starting values, on top of every shape's (baseShape)
@@ -593,7 +595,7 @@
   }
   const RANKS = [...new Set(Object.values(OPERATORS).map((op) => op.rank))].sort((a, b) => b - a)
   // A sum's value from its operands' numbers and its operators (OPERATORS: highest rank first, then
-  // left to right), to 12 significant figures. Throws why when it can't be worked out.
+  // left to right), to SIG_FIGURES significant figures. Throws why when it can't be worked out.
   function applyOps(operands, ops) {
     const numbers = [...operands]
     const left = [...ops]
@@ -607,7 +609,7 @@
         left.splice(k, 1)
       }
     }
-    return Number(numbers[0].toPrecision(12))
+    return Number(numbers[0].toPrecision(SIG_FIGURES))
   }
   // A sum's value (applyOps), each operand's number from number(term); a sum in ( ) (a term's
   // `sum`) is worked out first
@@ -1059,6 +1061,7 @@
   // scaled, so text whose size is changing is measured once.
   const MONO_FONT = 'var(--font-family-mono)'
   const MEASURE_SIZE = 100 // px: the size widths are measured and cached at
+  const TEXT_ESTIMATE = 0.55 // a character's width (× its font size) when text can't be measured
   const textWidths = new Map() // font|text -> width at MEASURE_SIZE
   const FONT_VARIANTS = [[false, false], [true, false], [false, true], [true, true]] // [bold, mono]
   const fontKey = (bold, mono) => `${bold ? 'b' : ''}|${mono ? 'm' : ''}`
@@ -1089,14 +1092,14 @@
       }
     }
     const shown = pre ? text : text.replace(/\s+/g, ' ').trim()
-    if (!measurer) return 0.55 * size * shown.length
+    if (!measurer) return TEXT_ESTIMATE * size * shown.length
     const font = fontFor(bold, mono)
     const key = `${font}|${shown}`
     if (!textWidths.has(key)) {
       measurer.ctx.font = font
       textWidths.set(key, measurer.ctx.measureText(shown).width)
     }
-    return (textWidths.get(key) * size) / MEASURE_SIZE || 0.55 * size * shown.length
+    return (textWidths.get(key) * size) / MEASURE_SIZE || TEXT_ESTIMATE * size * shown.length
   }
   window.addEventListener?.('docsify-theme-change', () => fonts.clear())
 
@@ -1175,11 +1178,13 @@
   // Half-width and half-height of a shape's box, with its outline (SHAPES: outline; a box when it
   // has none: a group, a point) and a polygon's points, for the edge maths (OUTLINES). A shape whose
   // label is its content (text) is as big as the text, measured.
+  // A text shape's box: at least minHalf of its font size each side of its middle, and halfHeight above and below
+  const TEXT_BOX = { minHalf: 0.3, halfHeight: 0.6 }
   function extents(shape) {
     const kind = kindOf(shape)
     if (kind.label === 'content') {
       const size = FONT * shape.font
-      return { hw: Math.max(0.3 * size, labelWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: 0.6 * size, outline: kind.outline }
+      return { hw: Math.max(TEXT_BOX.minHalf * size, labelWidth(shape.label, size, shape.bold, shape.mono) / 2), hh: TEXT_BOX.halfHeight * size, outline: kind.outline }
     }
     return { hw: shape.w / 2, hh: shape.h / 2, outline: kind.outline, points: shape.points }
   }
@@ -1296,8 +1301,9 @@
     return { x: p.x - shift.x, y: p.y - shift.y }
   }
 
-  // Extra height taken up by a label below its shape (an image or icon).
-  const labelBelow = (shape) => (kindOf(shape).label === 'below' && shape.label ? FONT * shape.font * 1.3 * (shape.scale ?? 1) : 0)
+  // Extra height taken up by a label below its shape (an image or icon): BELOW_HEIGHT × its font size
+  const BELOW_HEIGHT = 1.3
+  const labelBelow = (shape) => (kindOf(shape).label === 'below' && shape.label ? FONT * shape.font * BELOW_HEIGHT * (shape.scale ?? 1) : 0)
 
   // Where self goes to be gap from other, the way angle goes from other's centre (clockwise
   // degrees, 0 = right). Their upright boxes (outline) are kept gap apart across or down, whichever
@@ -1351,7 +1357,7 @@
   function resolveAttachments(byId, specOf = (shape) => shape.attach, place = (shape, pos) => Object.assign(shape, pos)) {
     const done = new Set()
     const visit = (shape, depth) => {
-      if (!shape || done.has(shape.id) || depth > 16) return
+      if (!shape || done.has(shape.id) || depth > MAX_DEPTH) return
       done.add(shape.id)
       const spec = specOf(shape)
       const ref = spec && byId.get(spec.ref)
@@ -1650,7 +1656,7 @@
       const ys = pts.map((p) => p.y)
       return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) }
     }
-    if (isGroup(shape) && depth < 8) {
+    if (isGroup(shape) && depth < MAX_DEPTH) {
       const members = (shape.members || []).map((id) => byId.get(id)).filter(Boolean)
       if (members.length) return unionBounds(members, byId, depth + 1)
     }
@@ -1708,5 +1714,5 @@
     PATTERNS, PLACE_GAP, PLAY_PAUSE, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeBeside, placeAlong, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, PLACING, ROUTES, anyOf, SIZE_PROPS, TIMING, OUTLINES, ANCHORS, refPoint, polygonPoints, roundCorners, svgEl, textWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, SIG_FIGURES, MAX_DEPTH, PLACING, ROUTES, anyOf, SIZE_PROPS, TIMING, OUTLINES, ANCHORS, refPoint, polygonPoints, roundCorners, svgEl, textWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

@@ -8,7 +8,7 @@
   const { CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
     markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, CELL_STYLE, OWN_STYLE, VALUE_STYLE, digitSymbol, EDIT_WORDS, REF,
-    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, KEYWORDS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS, SIZE_PROPS } = window.Anim
+    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, KEYWORDS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS, SIZE_PROPS, MAX_DEPTH } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid, tween } = cx
@@ -105,7 +105,7 @@
         const out = new Map()
         let dx = 0
         let dy = 0
-        for (let s = start, depth = 0; s && depth < 16; depth++) {
+        for (let s = start, depth = 0; s && depth < MAX_DEPTH; depth++) {
           out.set(s.id, { dx, dy })
           if (s.attach?.kind !== 'offset') break
           dx += s.attach.dx
@@ -481,7 +481,7 @@
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
         // cell slides in or out of it; at the back, so a sliding cell passes over it
         const text = old || { ...baseShape('text'), id, uid: newUid(), label: mark.label, ...MARK_LOOK, layer: 'back', part: row.id, role: numbering.part }
-        if (numbers) text.font = 0.88 * mark.of.font // line numbers keep to the code's size
+        if (numbers) text.font = MARK_LOOK.font * mark.of.font // line numbers keep to the code's size
         const place = { ...mark.of, ...offsetIn(mark.of, row) }
         place.x += row.x
         place.y += row.y
