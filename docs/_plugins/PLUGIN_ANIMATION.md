@@ -230,8 +230,10 @@ The grammar colours three roles, so a reader sees a line's structure at a glance
 
 ## Checking a change
 
-- **Compare before and after:** compile and render every animation on the test pages (`docs/_tests/animation*.md`) with the working engine and the committed one, and compare. Load every part `docs/index.html` lists into a Node `vm` context with a small fake DOM: elements recording attributes, style and children, `getComputedStyle` returning a fake `rgb()` per colour, and a stub `lucide`. Render each transition (intro, forwards, backwards) at several moments. Hash the serialised SVG and the compiled `beats` / `errors` / `warnings`, per animation. A refactor should leave every hash the same, and a feature should change only its own animations.
-- **Shared shapes:** load the parts in strict mode with each taken shape deep-frozen (swap `TAKEN.add(shape)` for a deep freeze in the loaded text) and compile and render every test animation: a change that skips `own` throws, with its stack.
+The checks are Node scripts in `tools/anim/` (no dependencies), run from the repo root. They load every part `docs/index.html` lists into a `vm` context with a small fake DOM (`engine.js`).
+
+- **Compare before and after:** `node tools/anim/compare.js [commit]` (default HEAD) compiles and draws every animation on the test pages with that commit's engine and the working one, and lists those that differ (compiled beats, errors and warnings, or the drawn SVG, intro, forwards and backwards at several moments). A refactor should change nothing, and a feature only its own animations.
+- **Shared shapes:** `node tools/anim/finder.js` compiles and draws every test animation in strict mode with each beat's snapshot deep-frozen, and lists any place that changes a shape a past beat shares (one that skips `own`), with its stack. Run it after any compiler change; it only finds what the test pages reach.
 - **Lint:** run ESLint on copies of the files (no project config), with `no-undef` and `no-unused-vars`.
 - **Browser runs:** the user's laptop struggles with headless browsers, so keep those to one small run and leave visual checks to the user.
 
