@@ -38,7 +38,7 @@ This site uses Docsify plugins to turn Markdown conventions, fenced code blocks,
 
 ## Visualisations
 
-- `<animation grid="16x9">...</animation>`: step-by-step animated SVG explanation. `---` starts a step, `+++` a beat, `Note:` teacher notes; each step's heading and text are its caption, and ```` ```anim ```` fences hold `Id: type "label" props` lines, ids capitalised (e.g. `A: rect "A" at 2,3 size 2x1`, `A: move +1,0 speed slow`, `L: arrow from A to B draw`, `C: curve from A to B via 5,1 arrow`, `T: text "$ ls" at 2,1 mono typed`, `Arr: row [5 3 8 1] at 2,3` then `Arr: swap 0 3`, `L: signal`, `A: move 9,3 ease spring`). Syntax cheat-sheet: `docs/_plugins/ANIMATION_LANG.md`; engine notes and how to extend it: `PLUGIN_ANIMATION.md` beside it.
+- `<animation grid="16x9">...</animation>`: step-by-step animated SVG explanation. `---` starts a step, `+++` a beat, `Note:` teacher notes; each step's heading and text are its caption, and ```` ```anim ```` fences hold `Id: type "label" props` lines, ids capitalised (e.g. `A: rect "A" at 2,3 size 2x1`, `A: move +1,0 speed slow`, `L: arrow from A to B draw`, `C: curve from A to B via 5,1 arrow`, `T: text "$ ls" at 2,1 mono typed`, `Arr: row [5 3 8 1] at 2,3` then `Arr: swap 0 3`, `L: signal`, `A: move 9,3 ease spring`). Syntax cheat-sheet: `dev/animation/language.md`; engine notes and how to extend it: `dev/animation/engine.md`.
 - `<computer type="...">...</computer>`: puts Markdown content inside a computer mockup (desktop, laptop, tablet, mobile, vintage, and related styles).
 - `<filetree>...</filetree>`: nested Markdown list rendered as a file/folder tree.
 - `<hierarchy>...</hierarchy>` and `<structure>...</structure>`: nested lists rendered as tree / organization diagrams.

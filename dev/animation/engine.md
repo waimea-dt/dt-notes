@@ -1,6 +1,6 @@
 # Animation Engine: Notes for Claude
 
-How the `<animation>` plugin is built, the rules its scene language follows, and where to add things. The author-facing syntax is in `ANIMATION_LANG.md`: a minimal reference for humans. Syntax and short examples only, with a `#` comment where a line needs one; no internals, design reasons or timing details.
+How the `<animation>` plugin is built, the rules its scene language follows, and where to add things. The author-facing syntax is in `language.md`, beside this: a minimal reference for humans. Syntax and short examples only, with a `#` comment where a line needs one; no internals, design reasons or timing details.
 
 ## Parts
 
@@ -83,7 +83,7 @@ In your summary, say that you checked, and name any exception you kept.
 For every new word:
 
 1. Bump the version in `vscode/dt-notes-syntax/package.json` and reinstall: the grammar's word lists are built from the engine's tables when it's packaged (`build-grammar.js`), so a word in a table is highlighted in its role with no grammar edit. Only a new kind of word (a new role, or a table the grammar doesn't read yet) needs the template, `syntaxes/anim.tmLanguage.src.json`, and a list in `build-grammar.js`.
-2. Add it to `ANIMATION_LANG.md`.
+2. Add it to `language.md`.
 3. Add a test to the test page for its topic, and a line in the error-test block (`animation-errors.md`, in its page's group) for each new error. A test shows one feature (or a tight family) and tests it reasonably exhaustively: the basic forms first, then the variations, then how it works with others, then switching it off. Within a page, basic things come before advanced ones, with like things together. Keep each grid the size its test needs, and lay the shapes out balanced on it. The pages, in the sidebar's order:
    - `animation-examples.md`: whole example animations
    - `animation.md`: the block itself (steps and beats, the grid and its attributes, comments, playback)

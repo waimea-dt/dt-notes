@@ -162,7 +162,7 @@ The template is the **same as Kaplay** (full details are in `../kaplay/CLAUDE.md
 
 ## 7. Site tooling for this course
 
-Plugin syntax is in `docs/_plugins/PLUGIN_REFERENCE.md`. Example pages are in `docs/_tests/` (`sql.md`, `erd.md`).
+Plugin syntax is in `dev/plugin-markup.md`. Example pages are in `docs/_tests/` (`sql.md`, `erd.md`).
 
 - **SQL runner** (`docs/_plugins/database/sql-runner.js`, Codapi `sqlite` sandbox):
   - ` ```sql run ` gives an editable, runnable block.

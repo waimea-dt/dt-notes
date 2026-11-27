@@ -21,7 +21,7 @@ Flash cards show in written order (`shuffle` is ignored) so they match the file.
 
 In ```` ```anim ```` fences and `.anim` files:
 
-- **Highlighting** of scene lines, also in VS Code's Markdown preview (see `docs/_plugins/ANIMATION_LANG.md` for the language).
+- **Highlighting** of scene lines, also in VS Code's Markdown preview (see `dev/animation/language.md` for the language).
 - **Error marks:** each animation is compiled by the site's engine as you type, so the squiggles (and the Problems panel) show exactly the errors the page would list, plus its warnings.
 - **Colour swatches** beside named colours (`fill red`). Picking a colour in the swatch writes a hex code.
 - `#` comments with **Ctrl+/**.

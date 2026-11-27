@@ -1,7 +1,7 @@
 /**
  * finder.js - Shared-shape check for the animation engine: compiles and draws every animation on
  * the test pages with the engine in strict mode and each beat's snapshot deep-frozen, so any change
- * to a shape a past beat shares (one that skips own(): PLUGIN_ANIMATION.md, "Snapshots share
+ * to a shape a past beat shares (one that skips own(): dev/animation/engine.md, "Snapshots share
  * shapes") throws. Lists each place found, with its stack and an animation that reaches it.
  *
  *   node tools/anim/finder.js

@@ -2,8 +2,8 @@
  * animation.js - Renders <animation>...</animation> blocks as step-by-step animated SVG
  * explanations: a drawing that changes between steps, with a Markdown caption for each step.
  *
- * Syntax cheat-sheet: docs/_plugins/ANIMATION_LANG.md
- * Engine notes (the tables, the language rules, how to extend it): docs/_plugins/PLUGIN_ANIMATION.md
+ * Syntax cheat-sheet: dev/animation/language.md
+ * Engine notes (the tables, the language rules, how to extend it): dev/animation/engine.md
  *
  * Usage in markdown (markers must be alone on their line; ignored inside code fences):
  *   <animation grid="16x9" debug>

@@ -1,6 +1,6 @@
 # Animation
 
-Step-by-step animated explanations from `<animation>` blocks. Full syntax: `docs/_plugins/ANIMATION_LANG.md`.
+Step-by-step animated explanations from `<animation>` blocks. Full syntax: `dev/animation/language.md`.
 
 Click an animation to give it focus, then use ← / → to step and `F` for full screen. While focused, scrolling steps too (the page scrolls again at either end). On touch, swipe left / right to step. Double click / tap plays or pauses, and doesn't select text.
 

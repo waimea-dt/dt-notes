@@ -18,8 +18,8 @@ Serve `docs/` from inside the puppeteer script (Node's `http` module, closed in 
 
 `<animation>` blocks with scene language in ```` ```anim ```` fences.
 
-- `docs/_plugins/ANIMATION_LANG.md` - syntax cheat-sheet. Keep it terse: one example per line with `#` comments, no design history.
-- `docs/_plugins/PLUGIN_ANIMATION.md` - engine guide: how it's built, language rules, where to add things. Read before changing the plugin.
+- `dev/animation/language.md` - syntax cheat-sheet. Keep it terse: one example per line with `#` comments, no design history.
+- `dev/animation/engine.md` - engine guide: how it's built, language rules, where to add things. Read before changing the plugin.
 - Code: `docs/_plugins/visualisation/` (`anim-core.js`, `anim-parse.js`, `anim-compile.js`, `anim-render.js`, `animation.js`). CSS: `docs/_css/visualisation/animation.css`.
 - Tests: `docs/_tests/animation*.md` (menu page `animation.md`). Step every animation on the changed test pages.
 - Checks: `node tools/anim/compare.js` (before / after against HEAD), `node tools/anim/finder.js` (changes to shapes past beats share) and `node tools/anim/lint.js`. Run all three after an engine change.

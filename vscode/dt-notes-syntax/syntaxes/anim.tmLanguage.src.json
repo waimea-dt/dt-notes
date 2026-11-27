@@ -1,5 +1,5 @@
 {
-  "$comment": "Scene lines for <animation> blocks: see docs/_plugins/ANIMATION_LANG.md. Three roles: commands (keyword, and a shape type straight after id:), params (support.type.property-name: named ones like speed, and standalone ones like bold, pop, dashed) and their values (support.constant.property-value, numbers, colours, strings, ids). See docs/_plugins/PLUGIN_ANIMATION.md.",
+  "$comment": "Scene lines for <animation> blocks: see dev/animation/language.md. Three roles: commands (keyword, and a shape type straight after id:), params (support.type.property-name: named ones like speed, and standalone ones like bold, pop, dashed) and their values (support.constant.property-value, numbers, colours, strings, ids). See dev/animation/engine.md.",
   "name": "Anim",
   "scopeName": "source.anim",
   "patterns": [

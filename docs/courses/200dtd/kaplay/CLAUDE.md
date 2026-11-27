@@ -47,7 +47,7 @@ project-*.md               project pages (intro, design, dev, testing, teach)
 
 Each week ships as a zip with this layout (`kaplay/…`), CRLF line endings. **Steve merges the sidebar and README entries himself**; propose the text, don't assume it's merged.
 
-Docsify plugin syntax is documented in `PLUGIN_REFERENCE.md` in the DT-Notes repo. Read it. The ones used heavily: `<primm>` (rarely), `<response>`, `<check>`, `<quiz>`, `<drag-drop mode="code">`, `<web-playground>`, `js trace`, `<slides>`, `<github>`, `> [!NOTE|TIP|IMPORTANT|WARNING]` callouts, and inline code followed by `(js)`.
+Docsify plugin syntax is documented in `dev/plugin-markup.md` in the DT-Notes repo. Read it. The ones used heavily: `<primm>` (rarely), `<response>`, `<check>`, `<quiz>`, `<drag-drop mode="code">`, `<web-playground>`, `js trace`, `<slides>`, `<github>`, `> [!NOTE|TIP|IMPORTANT|WARNING]` callouts, and inline code followed by `(js)`.
 
 ## 4. The lesson template
 
