@@ -8,14 +8,14 @@
   const { CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
     markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, OWN_STYLE, VALUE_STYLE, digitSymbol, EDIT_WORDS, REF,
-    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, lookValue } = window.Anim
+    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, followedValue, followValue, holderRef, inTurn,
       layerOf, linkText, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
-      takeBareNumber, valueIn, valueOf, warnEffect
+      stampNow, stampOf, takeBareNumber, valueIn, valueOf, warnEffect
 
     // A cell's number as written after a verb ("swap 0 3", "insert 7 at end"): a whole number, or end,
     // the last cell (after: the place after it, where an insert goes on the end). Undefined if it's
@@ -219,6 +219,75 @@
           retime(meta, span.uid, busiest(meta, shapes.get(span.span.of).members.map((cell) => shapes.get(cell)).filter(Boolean)))
         }
       }
+    }
+
+    // After every line (settle): each layout's cells' corners, then the corners of what goes round
+    // them. With no gap between them, a layout's cells are rounded only at its outer corners
+    // (cornerMask), unless they keep their own (LAYOUTS: ownCorners). A frame round a layout, a view
+    // or a span, and a span's box, are rounded at each corner as the cell there is drawn (cellCorners:
+    // its corner where its mask shows it). Each changes in the time its cells take.
+    // Only what could have changed is worked out again (cornersStale), as a group's box is.
+    function fitCorners(meta) {
+      const fits = [] // what has corners to fit: { shape, owner (its layout), cells }
+      for (const shape of shapes.values()) {
+        if (!shape.layout && !shape.span) continue
+        const owner = shapes.get(shape.part) || shape // a view's or span's layout
+        const cells = (shape.covers || shape.members).map((id) => shapes.get(id)).filter(Boolean)
+        if (cells.length && cornersStale(shape, owner, cells, meta)) fits.push({ shape, owner, cells })
+      }
+      // every layout's cells' masks first, so what goes round them sees them
+      for (const { shape, owner } of fits) if (shape === owner) fitMasks(owner, meta)
+      for (const { shape, owner, cells } of fits) {
+        const places = cellPlaces(owner)
+        const block = blockOf(cells.map((cell) => places.get(cell.id)))
+        const radii = BOX_CORNERS.map((corner, i) => drawnCorner(cells.find((cell) => atCorner(places.get(cell.id), block, corner)), i))
+        setCorners(shape, 'cellCorners', radii, meta, cells)
+        fittedFrom.set(shape, { ids: idsOf(owner, cells), at: stampNow() })
+      }
+    }
+
+    // A layout's cells' masks (cornerMask): with no gap, each shows its corner only where it's one
+    // of the layout's outer corners
+    function fitMasks(row, meta) {
+      const cells = row.members.map((id) => shapes.get(id)).filter(Boolean)
+      const places = cellPlaces(row)
+      const block = blockOf([...places.values()])
+      const joined = !row.gap && !LAYOUTS[row.layout].ownCorners
+      for (const cell of cells) setCorners(cell, 'cornerMask', joined && BOX_CORNERS.map((corner) => (atCorner(places.get(cell.id), block, corner) ? 1 : 0)), meta, cells)
+    }
+
+    // A cell's corner (BOX_CORNERS, i) as it's drawn: its own where its mask shows it (0: no cell)
+    const drawnCorner = (cell, i) => (cell ? Math.min(cell.corner || 0, cell.w / 2, cell.h / 2) * (cell.cornerMask?.[i] ?? LERPED_CORNERS.cornerMask) : 0)
+
+    // Whether a shape's corners need working out again: its layout's cells or its own aren't the
+    // ones they were worked out from (fittedFrom), or it, its layout or one of its cells has changed
+    // since (every change goes through a tween record: stampOf)
+    const fittedFrom = new WeakMap() // shape -> { ids, at: when }
+    const idsOf = (owner, cells) => `${owner.members.join(' ')}|${cells.map((cell) => cell.id).join(' ')}`
+    function cornersStale(shape, owner, cells, meta) {
+      const done = fittedFrom.get(shape)
+      if (!meta || done?.ids !== idsOf(owner, cells)) return true
+      return [shape, owner, ...cells].some((s) => stampOf(meta, s.uid) > done.at)
+    }
+
+    // A layout's cells' places (ARRANGE: places), by id
+    const cellPlaces = (row) => new Map(arranged(row).places(row).map((place, k) => [row.members[k], place]))
+    // The block some places cover: its first and last lines (r0, r1) and columns (c0, c1)
+    function blockOf(places) {
+      const [rs, cs] = [places.map((p) => p.r), places.map((p) => p.c)]
+      return { r0: Math.min(...rs), r1: Math.max(...rs), c0: Math.min(...cs), c1: Math.max(...cs) }
+    }
+    // Whether a place is at a corner (BOX_CORNERS) of a block
+    const atCorner = (p, block, corner) => p.c === (ANCHORS[corner].x < 0 ? block.c0 : block.c1) && p.r === (ANCHORS[corner].y < 0 ? block.r0 : block.r1)
+
+    // Sets a shape's per-corner numbers (LERPED_CORNERS: key), left off when they're all as a
+    // shape with none is; timed as its cells change
+    function setCorners(shape, key, list, meta, cells) {
+      const kept = list && list.some((n) => n !== LERPED_CORNERS[key]) ? list : undefined
+      if (String(kept) === String(shape[key])) return
+      if (kept) shape[key] = kept
+      else delete shape[key]
+      if (meta) retime(meta, shape.uid, busiest(meta, cells))
     }
 
     // "bar" on a row's / column's cells with no max (given, or a default): a full bar is its biggest
@@ -664,22 +733,38 @@
     //   between(row, tokens, word, example)  two places written after a verb, lowest first
     //   cells(row, places)  the ids at some places
     //   marks(row, numbering)  what its numbers go beside (indexMarks)
+    //   places(row)  each cell's place in it (by member), as a line and column from the top-left: { r, c }
     //   axes  how many [ ] groups a range of its places has (rangeOf): a line's [from..to], a grid's
     //         [rows][columns]
     //   corners(ends)  a range's two ends (each group's [from, to]; a grid with one group: whole rows)
     //                  as the tokens between reads
     //   rangeExample(id)  a range written out, for messages
     const wordToken = (value) => ({ kind: 'word', value })
+    // A line's cells' places: across, all in line 0; down, all in column 0. Reversed (LAYOUTS:
+    // reverse), its first cell is last along.
+    function linePlaces(row) {
+      const { across, reverse } = LAYOUTS[row.layout]
+      const n = row.members.length
+      return row.members.map((_, k) => {
+        const along = reverse ? n - 1 - k : k
+        return across ? { r: 0, c: along } : { r: along, c: 0 }
+      })
+    }
+    // A grid's cells' places: its members, line by line
+    function gridPlaces(grid) {
+      const across = grid.members.length / gridLines(grid).length
+      return grid.members.map((_, k) => ({ r: Math.floor(k / across), c: k % across }))
+    }
     const ARRANGE = {
       line: {
         create: createLine, ids: lineIds, lay: (frame, cells) => layoutCells(frame, cells), relay: layoutCells, sync: () => {},
-        between: lineBetween, cells: lineCells, marks: lineMarks,
+        between: lineBetween, cells: lineCells, marks: lineMarks, places: linePlaces,
         axes: 1, corners: ([[a, b]]) => [wordToken(a), wordToken(b)], rangeExample: (id) => `${id}[0..2]`,
       },
       grid: {
         create: createGrid, ids: gridIds, lay: (frame, cells, values) => layoutGrid(frame, chunk(cells, values[0].length)), sync: syncViews,
         relay: (grid, cells) => layoutGrid(grid, chunk(cells, cells.length / gridLines(grid).length)),
-        between: gridBetween, cells: gridCells, marks: gridMarks,
+        between: gridBetween, cells: gridCells, marks: gridMarks, places: gridPlaces,
         axes: 2, corners: ([rows, cols = [0, EDIT_WORDS.end]]) => [0, 1].map((k) => wordToken(`[${rows[k]}][${cols[k]}]`)), rangeExample: (id) => `${id}[0..1][1..2]`,
       },
     }
@@ -848,14 +933,14 @@
     }
 
     return {
-      functions: { arranged, cellsBetween, changeRange, checkParts, chunk, createLayout, fitCode, fitLines, fitNumbers, fitSpans, gridLines,
+      functions: { arranged, cellsBetween, changeRange, checkParts, chunk, createLayout, drawnCorner, fitCode, fitCorners, fitLines, fitMasks, fitNumbers, fitSpans, gridLines,
         gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, relayLayout, setRules, syncIndices, transpose,
         rangeOf, typeInTurn, updateParts, withRowMax },
       verbs: { span: makeSpan },
       link: () => {
         ({ applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, followedValue, followValue, holderRef,
           inTurn, layerOf, linkText, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue,
-          speedOf, takeBareNumber, valueIn, valueOf, warnEffect } = cx)
+          speedOf, stampNow, stampOf, takeBareNumber, valueIn, valueOf, warnEffect } = cx)
       },
     }
   })

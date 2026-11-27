@@ -113,6 +113,9 @@
   const LINE_DEFAULTS = { start: 'none', end: 'none', show: 1 }
   // The sides of a shape (ANCHORS without the corners): where a callout, a name or a row's numbers go
   const SIDES = ['top', 'bottom', 'left', 'right']
+  // The corners of a box (ANCHORS), clockwise from the top-left as a box's outline is drawn: the
+  // order of a shape's per-corner numbers (cornerMask, cellCorners)
+  const BOX_CORNERS = ['top-left', 'top-right', 'bottom-right', 'bottom-left']
   // The highlights (highlight <kind>), each on until "highlight clear". Drawn by OVERLAYS in
   // anim-render.js (glow and spotlight change the shape itself).
   //   off      its value when off (default false); valued: it takes a number ("number 5")
@@ -206,6 +209,8 @@
   //             box at that corner of the cell, and it stays put as its size changes (centreShift)
   //   frameInset  its frame (LOOKS: frame) goes this far inside its box (in cells): a span's box is
   //             bigger than its cells, and its frame goes on their edges
+  //   cellCorners  its corners are its own corner plus those of the cells at its corners
+  //             (cellCorners: fitCorners), so it stays round them
   const COMMON_PROPS = ['ink', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const ANCHORED_PROPS = [...BOXED_PROPS, 'anchor'] // a single shape, placed by any side or corner
@@ -271,7 +276,7 @@
       takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight', 'opacity'],
       defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', corner: 0.15 * CELL, layer: 'back' }, outline: 'box', label: 'centre',
       internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again, e.g. "S: span Arr 2 4"',
-      frameInset: CHOREOGRAPHY.spanPad,
+      frameInset: CHOREOGRAPHY.spanPad, cellCorners: true,
     },
   }
   const typesWhere = (test) => Object.keys(SHAPES).filter((type) => test(SHAPES[type]))
@@ -399,6 +404,8 @@
   //               'none' (straight to its place, as a script's blocks go)
   //   numbers     its indices keep to its cells' font size
   //   panel       a background behind it (and its indices): pad and corner, in cells
+  //   ownCorners  its cells keep their own corners with no gap between them (otherwise only the
+  //               layout's outer corners are rounded: fitCorners)
   //   spanName    the side a span's name goes (beside its places, away from the indices)
   //   arrange     how its cells are arranged: 'line', one line of them, each place a number; or
   //               'grid', lines of them (see views), each place "[row][column]". Laid out and read
@@ -449,7 +456,7 @@
     column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'top', spanName: 'right', slide: 'beside', slot: true, arrange: 'line', bow: 'own', index: INDEX_LEFT },
     code: {
       noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'top', spanName: 'right', lines: true, fit: true, typeInTurn: true,
-      arrange: 'line', slide: 'right', pace: 'inTurn', slot: false, bow: 'none', numbers: true, panel: { pad: 0.12, corner: 0.1 }, index: INDEX_LEFT,
+      arrange: 'line', slide: 'right', pace: 'inTurn', slot: false, bow: 'none', numbers: true, panel: { pad: 0.12, corner: 0.1 }, ownCorners: true, index: INDEX_LEFT,
     },
     grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'top', spanName: 'top', arrange: 'grid', slide: 'beside', slot: true, bow: 'own', views: GRID_VIEWS },
     table: {
@@ -712,6 +719,11 @@
   // The shape fields that blend between beats: its place, and every number in its look
   const fieldsOf = (look) => look.fields || [look.field]
   const LERPED = ['x', 'y', ...new Set(Object.values(LOOKS).filter((look) => look.unit).flatMap(fieldsOf))]
+  // The per-corner numbers (BOX_CORNERS) that blend between beats, each with what a corner is when
+  // the shape has none: cornerMask, how much of its corner a layout's cell shows at each (fitCorners:
+  // with no gap, only the layout's outer corners); cellCorners, a frame's or a span's radius at
+  // each, as its corner cell is drawn (fitCorners)
+  const LERPED_CORNERS = { cornerMask: 1, cellCorners: 0 }
 
   // "a" or "an" before a word (a rect, an image)
   const article = (word) => (/^[aeiou]/i.test(word) ? 'an' : 'a')
@@ -1681,7 +1693,7 @@
   }
 
   Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, VALUE_STYLE, CHOREOGRAPHY, EDIT_PACES, SLIDES, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES,
-    LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, drawsBox, OWN_STYLE, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    BOX_CORNERS, LERPED_CORNERS, LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, drawsBox, OWN_STYLE, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, article, wordFor,
     PATTERNS, PLACE_GAP, PLAY_PAUSE, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,

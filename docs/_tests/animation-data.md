@@ -564,6 +564,68 @@ S: frame none
 
 </animation>
 
+## Feature: corners with no gap
+
+With no `gap`, a layout's cells are rounded only at its outer corners, so it reads as one box. A frame round a layout, a view or a span is rounded as the cells at its corners are. A code block's lines keep their own corners.
+
+<animation name="Corners" grid="16x9">
+
+```anim
+Arr: row [5 3 8 1] at 2,2 corner 0.3 fill teal
+Gap: row [5 3 8 1] at 2,4 gap 0.2 corner 0.3 fill teal     # with a gap: every corner
+Col: column ["A" "B" "C"] at 14,2 corner 0.3 fill amber
+G: grid [[1 2 3] [4 5 6] [7 8 9]] at 8,2 corner 0.3 fill purple
+```
+
+---
+
+## A frame, a view, a span and a highlight
+
+```anim
+Arr: frame fg
+G[0]: frame red
+S: span G[1..2][1..2] frame blue
+Col[2]: highlight outline
+```
+
+---
+
+## Edits move the corners
+
+```anim
+Arr: insert 7 at end
+Col: remove 0
+G: swap [0][0] [1][1]
+```
+
++++
+
+```anim
+Arr: swap 0 4
+Col: insert "D" at end
+```
+
+---
+
+## A table and a code block
+
+```anim
+T: table [["a" "b"] [1 2]] at 2,6 corner 0.3
+C: code ["x = 1" "y = 2"] at 8,7 corner 0.3
+```
+
+---
+
+## Switching off
+
+```anim
+Arr: corner 0
+G: corner 0
+T: corner 0
+```
+
+</animation>
+
 ## Feature: name and indices
 
 <animation name="Names & Indices" grid="14x7">

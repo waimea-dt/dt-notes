@@ -9,7 +9,7 @@
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
     entranceFor, XML_NS, LAYOUTS, drawsBox, LOOKS, VALUE_STYLE, fieldsOf, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
-    END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, evaluate } = window.Anim
+    BOX_CORNERS, LERPED_CORNERS, END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, evaluate } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
   // "central" baseline sits it a little low
@@ -99,8 +99,19 @@
   // How round a box is drawn (v.round, 0-1): round while it shows a round bar (BARS: round), blending
   // as one turns on or off
   const roundness = (shape) => (roundBar(shape) ? 1 : 0)
-  // A box's corner as drawn: its own, or all the way round as it's round (v.round)
-  const cornerOf = (s, v, hw, hh) => Math.max(0, lerp(Math.min(s.corner || 0, hw, hh), Math.min(hw, hh), v.round || 0))
+  // A box's corners as drawn (BOX_CORNERS): its own where it shows them (cornerMask), or its own
+  // plus its corner cells' (SHAPES: cellCorners), or all the way round as it's round (v.round)
+  const cornersOf = (s, v, hw, hh) => {
+    const own = Math.min(s.corner || 0, hw, hh)
+    const corner = (i) => (kindOf(s).cellCorners ? own + (s.cellCorners?.[i] ?? LERPED_CORNERS.cellCorners) : own * (s.cornerMask?.[i] ?? LERPED_CORNERS.cornerMask))
+    return BOX_CORNERS.map((_, i) => Math.max(0, lerp(corner(i), Math.min(hw, hh), v.round || 0)))
+  }
+  // A box about its middle, hw x hh, its corners rounded by r: one for all, or one each (BOX_CORNERS)
+  function rectPath(hw, hh, r) {
+    const [tl, tr, br, bl] = BOX_CORNERS.map((_, i) => Math.max(0, Math.min(Array.isArray(r) ? r[i] : r, hw, hh)))
+    return `M ${-hw + tl} ${-hh} H ${hw - tr} A ${tr} ${tr} 0 0 1 ${hw} ${-hh + tr} V ${hh - br} A ${br} ${br} 0 0 1 ${hw - br} ${hh}`
+      + ` H ${-hw + bl} A ${bl} ${bl} 0 0 1 ${-hw} ${hh - bl} V ${-hh + tl} A ${tl} ${tl} 0 0 1 ${-hw + tl} ${-hh} Z`
+  }
 
   // A value part-way (t) through counting ("counter", tween: count): a whole number steps through
   // each one between; any other shows as many decimal places as either end has. A digit (radix,
@@ -336,12 +347,8 @@
     // edge round it (an icon), so an inside highlight needn't clear it.
     const setBox = (el, hw, hh) => { attr(el, 'x', -hw); attr(el, 'y', -hh); attr(el, 'width', 2 * hw); attr(el, 'height', 2 * hh) }
     const rectBody = {
-      make: (node) => { node.body = node.g.appendChild(svgEl('rect')) },
-      size: (node, s, hw, hh, colours, v) => {
-        setBox(node.body, hw, hh)
-        const corner = cornerOf(s, v, hw, hh)
-        attr(node.body, 'rx', corner); attr(node.body, 'ry', corner)
-      },
+      make: (node) => { node.body = node.g.appendChild(svgEl('path')) },
+      size: (node, s, hw, hh, colours, v) => attr(node.body, 'd', rectPath(hw, hh, cornersOf(s, v, hw, hh))),
     }
     // An image's URL, with its fit. Browsers (Chrome) ignore an <image>'s preserveAspectRatio for an
     // SVG with its own viewBox, using the SVG's instead, so an SVG is given its fit in its URL too
@@ -506,12 +513,12 @@
     // and out from none.
     function drawFrame(node, s, v, colour) {
       if (!node.frame && colour === 'none') return
-      node.frame ||= frameLayer.appendChild(svgEl('rect', { class: 'anim-frame', fill: 'none' }))
+      node.frame ||= frameLayer.appendChild(svgEl('path', { class: 'anim-frame', fill: 'none' }))
       const c = boxCentre(s)
       const inset = (kindOf(s).frameInset || 0) * CELL
-      const [w, h] = [Math.max(0, s.w - 2 * inset), Math.max(0, s.h - 2 * inset)]
-      attr(node.frame, 'x', c.x - w / 2); attr(node.frame, 'y', c.y - h / 2)
-      attr(node.frame, 'width', w); attr(node.frame, 'height', h)
+      const [hw, hh] = [Math.max(0, s.w / 2 - inset), Math.max(0, s.h / 2 - inset)]
+      attr(node.frame, 'transform', `translate(${c.x} ${c.y})`)
+      attr(node.frame, 'd', rectPath(hw, hh, s.cellCorners || LERPED_CORNERS.cellCorners))
       paint(node.frame, 'stroke', colour)
       paint(node.frame, 'strokeWidth', String(STROKE * FRAME_WEIGHT))
       paint(node.frame, 'opacity', String(v.opacity))
@@ -982,11 +989,11 @@
       // the right), as on a bar chart. The bar is its fill colour as it is (stronger than a tinted
       // fill), over the tinted track.
       bar: {
-        make: (node) => [under(node, 'rect'), under(node, 'rect')],
+        make: (node) => [under(node, 'path'), under(node, 'path')],
         label: (s, hw, hh) => (hasTrack(s) ? 'centre' : tall(hw, hh) ? 'top' : 'right'),
         draw: ([track, fill], s, share, hw, hh, colours, v) => {
-          const corner = cornerOf(s, v, hw, hh)
-          for (const el of [track, fill]) { setBox(el, hw, hh); attr(el, 'rx', corner); attr(el, 'ry', corner) }
+          const d = rectPath(hw, hh, cornersOf(s, v, hw, hh))
+          for (const el of [track, fill]) attr(el, 'd', d)
           paint(track, 'fill', colours.track)
           paint(fill, 'fill', colours.raw)
           const cut = `${(100 * (1 - share)).toFixed(2)}%`
@@ -1232,6 +1239,10 @@
       if (a.points && b.points && a.points !== b.points) {
         s.points = a.points.length === b.points.length ? b.points.map((p, i) => ({ u: lerp(a.points[i].u, p.u, t), v: lerp(a.points[i].v, p.v, t) }))
           : t < 0.5 ? a.points : b.points
+      }
+      // Per-corner numbers blend corner by corner, from what a shape with none has
+      for (const [key, none] of Object.entries(LERPED_CORNERS)) {
+        if (a[key] !== b[key]) s[key] = BOX_CORNERS.map((_, i) => lerp(a[key]?.[i] ?? none, b[key]?.[i] ?? none, t))
       }
       // A line style change cross-fades from the old style to the new (see syncGhost)
       if (a.linestyle !== b.linestyle && t < 1) {
@@ -1573,7 +1584,7 @@
           opacity = size * (1 - clamp01((raw - (1 - CHOREOGRAPHY.slotFade)) / CHOREOGRAPHY.slotFade))
         }
         let el = slotNodes.get(slot.uid)
-        if (!el) slotNodes.set(slot.uid, (el = slotLayer.appendChild(svgEl('rect', { class: 'anim-slot' }))))
+        if (!el) slotNodes.set(slot.uid, (el = slotLayer.appendChild(svgEl('path', { class: 'anim-slot' }))))
         // its near side stays put; it grows / shrinks along the row
         const length = slot.across ? slot.w : slot.h
         const along = (slot.across ? slot.dx : slot.dy) - length / 2 + (length * size) / 2
@@ -1581,11 +1592,8 @@
         const h = slot.across ? slot.h : slot.h * size
         const cx = row.x + (slot.across ? along : slot.dx)
         const cy = row.y + (slot.across ? slot.dy : along)
-        attr(el, 'x', cx - w / 2)
-        attr(el, 'y', cy - h / 2)
-        attr(el, 'width', Math.max(0, w))
-        attr(el, 'height', Math.max(0, h))
-        attr(el, 'rx', Math.min(slot.corner, w / 2, h / 2))
+        attr(el, 'transform', `translate(${cx} ${cy})`)
+        attr(el, 'd', rectPath(Math.max(0, w / 2), Math.max(0, h / 2), slot.corners))
         paint(el, 'opacity', String(size > 0.01 ? opacity : 0))
       }
       for (const [uid, el] of slotNodes) {
@@ -1620,11 +1628,6 @@
     // rect for rects and text, a circle, a diamond. Groups, images and icons (outline), and shapes
     // with a name or indices (`boxed`), get a rounded box round their bounds `b`, which includes an
     // image's or icon's label.
-    const rectPath = (hw, hh, r) => {
-      r = Math.max(0, Math.min(r, hw, hh))
-      return `M ${-hw + r} ${-hh} H ${hw - r} A ${r} ${r} 0 0 1 ${hw} ${-hh + r} V ${hh - r} A ${r} ${r} 0 0 1 ${hw - r} ${hh}`
-        + ` H ${-hw + r} A ${r} ${r} 0 0 1 ${-hw} ${hh - r} V ${-hh + r} A ${r} ${r} 0 0 1 ${-hw + r} ${-hh} Z`
-    }
     // Each kind of outline's highlight path (OUTLINES in anim-core.js), about the shape's middle in
     // its own frame, grown by `offset` (shrunk if negative): o is { s, v, hw, hh (its half-sizes),
     // k (its scale), w, h (its scaled half-sizes grown by offset), offset }
@@ -1632,8 +1635,7 @@
       // its corners (if it has them) grown or shrunk with it, or rounded on the way out
       box: ({ s, v, hw, hh, k, w, h, offset }) => {
         const cornered = APPLIES.corner.includes(s.type)
-        const corner = cornered ? cornerOf(s, v, hw, hh) * k : 0
-        return rectPath(w, h, cornered ? corner + offset : offset > 0 ? offset : 0)
+        return rectPath(w, h, cornered ? cornersOf(s, v, hw, hh).map((r) => r * k + offset) : offset > 0 ? offset : 0)
       },
       round: ({ w, h }) => `M ${-w} 0 A ${w} ${h} 0 1 1 ${w} 0 A ${w} ${h} 0 1 1 ${-w} 0 Z`,
       // each side moves out by `offset`: the same diamond, scaled by (d + offset) / d, where d is the

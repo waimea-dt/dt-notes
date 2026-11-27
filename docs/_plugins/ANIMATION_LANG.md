@@ -314,6 +314,7 @@ Mem: row 8 at 2,6                  # 8 empty cells
 
 - Values in `[ ]`: numbers, `"quoted"` or `null`, commas optional.
 - `size`, `gap` and looks apply to every cell. Cell size is set when it's made.
+- With no `gap`, `corner` rounds only the outer corners (rows, columns, grids, tables, numbers; not code).
 
 ### Grids and tables
 
@@ -421,6 +422,7 @@ Sorted: delete
 
 - For rows, columns, code blocks, grids and tables. Invisible unless given a `fill` or `stroke`.
 - Takes highlights, a callout and a `name`.
+- Its `corner` (0.15) adds to those of the cells at its corners.
 
 ### Frame
 
@@ -434,6 +436,7 @@ Arr: frame none
 ```
 
 - For rows, columns, numbers, code blocks, grids, tables, a grid's rows and columns, and spans.
+- Its corners are rounded as the cells at its corners are.
 - On the cells' outer edges, in front of every shape (a span's `fill` and `stroke` are behind its cells).
 
 ## Variables

@@ -6,7 +6,7 @@
 
 ;(function () {
   const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, EDIT_PACES, SLIDES, LAYOUTS, BARS, cellId, baseOf, cellRange,
-    tween, baseShape, LAYOUT_TYPES, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine } = window.Anim
+    tween, baseShape, LAYOUT_TYPES, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine, ANCHORS, BOX_CORNERS } = window.Anim
 
   // The layouts that can be edited (not LAYOUTS: fixed), for messages
   const EDITABLE_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => !LAYOUTS[layout].fixed).map((layout) => LAYOUTS[layout].noun))
@@ -14,7 +14,7 @@
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, newUid } = cx
     // the other parts' functions, linked once every part is made
-    let applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
+    let applyProps, arranged, chunk, drawnCorner, fitLines, fitMasks, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
       holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, partsOf, pointOf, readLines, readList, refuseView,
       schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf
 
@@ -488,10 +488,14 @@
     // beat): left where a unit goes out, closing as the ones after it close up; or opening as they
     // move aside, for the new one to land in. Round the unit's cells' places (a removed unit's from
     // before, a new one's from after the layout), for both moves, start to end (LAYOUTS: slot; none
-    // for bars, BARS: slot).
+    // for bars, BARS: slot). Its corners are its unit's end cells', as they're drawn there (a new
+    // unit's masks are worked out first; a removed one's are as they were).
     function addSlot(row, axis, unit, closing, props, meta) {
       const [cell] = unit
       if (!LAYOUTS[row.layout].slot || BARS[cell.bar]?.slot === false) return
+      if (!closing) fitMasks(row, meta)
+      // a unit's cells go along it, the first at its start (top, or left when units go side by side)
+      const endOf = (corner) => ((axis.across ? ANCHORS[corner].y : ANCHORS[corner].x) < 0 ? cell : unit[unit.length - 1])
       const xs = unit.map((c) => c.attach.dx)
       const ys = unit.map((c) => c.attach.dy)
       // it opens as the room's made, or closes as it closes up (movesOf), in the time both moves take
@@ -501,7 +505,7 @@
         dx: (Math.min(...xs) + Math.max(...xs)) / 2, dy: (Math.min(...ys) + Math.max(...ys)) / 2,
         w: Math.max(...xs) - Math.min(...xs) + Math.max(...unit.map((c) => c.w)),
         h: Math.max(...ys) - Math.min(...ys) + Math.max(...unit.map((c) => c.h)),
-        corner: cell.corner || 0,
+        corners: BOX_CORNERS.map((corner, i) => drawnCorner(endOf(corner), i)),
       }
       schedule(meta, slot.uid, props, { dur: whole })
       meta.slots = [...(meta.slots || []), slot]
@@ -511,7 +515,7 @@
       functions: { editScript },
       verbs: { swap: swapCells, insert: editCells, remove: editCells },
       link: () => {
-        ({ applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines,
+        ({ applyProps, arranged, chunk, drawnCorner, fitLines, fitMasks, fly, flyValue, freezeEndsAttachedTo, gridLines,
           gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, partsOf, pointOf, readLines,
           readList, refuseView, schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf } = cx)
       },
