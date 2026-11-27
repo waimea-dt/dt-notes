@@ -208,8 +208,9 @@
   }
 
   // A shape's look (`field`): a digit's from its value (`label`, the one shown: it swaps halfway
-  // through a crossfade) while it still takes it (LAYOUTS: digits.looks, shape.auto), or its own
-  const lookOf = (s, field, label = s.label) => (s.auto?.includes(field) ? LAYOUTS[s.digit].digits.looks[label]?.[field] : undefined) ?? s[field]
+  // through a crossfade) while it still takes it (its number's rules: rules, setRules; shape.auto),
+  // or its own
+  const lookOf = (s, field, label = s.label) => (s.auto?.includes(field) ? s.rules?.[label]?.[field] : undefined) ?? s[field]
 
   function colourCss(name, role) {
     if (!name) return 'none'
@@ -1498,10 +1499,10 @@
         const t = item.a && item.b ? clamp01(item.tOnce ?? item.t) : 1 // a repeated change's colours change in its first round
         // a null value is muted (colour none still hides it); a digit, its value's colour
         const ink = (s) => (s.nil && s.ink !== 'none' ? 'muted' : lookOf(s, 'ink'))
-        const [fillA, fillB] = [colourCss(from.fill, 'fill'), colourCss(to.fill, 'fill')]
+        const [fillA, fillB] = [colourCss(lookOf(from, 'fill'), 'fill'), colourCss(lookOf(to, 'fill'), 'fill')]
         const colours = {
           fill: mixCss(fillA, fillB, t),
-          stroke: mixCss(colourCss(from.stroke, 'stroke'), colourCss(to.stroke, 'stroke'), t),
+          stroke: mixCss(colourCss(lookOf(from, 'stroke'), 'stroke'), colourCss(lookOf(to, 'stroke'), 'stroke'), t),
           frame: mixCss(colourCss(from.frame, 'stroke'), colourCss(to.frame, 'stroke'), t),
         }
         // a bar's track: none on a shape without a bar, so it fades in and out as the bar turns on and off

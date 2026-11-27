@@ -163,6 +163,81 @@ D: H                              # h's value glides over: 65535 wraps round to 
 
 </animation>
 
+## Feature: digits by value
+
+`match` picks a number's digits by the value they hold (one value, or a range), and gives them looks while they hold it: `fill`, `stroke`, `ink` and `bold`. The rules follow the values as they change. A look on the whole number goes under them; a digit's own look goes over them. A number starts with one rule: 0s are muted.
+
+<animation name="Digits by Value" grid="14x7">
+
+```anim
+B: binary 123 at 3,2 name "b"
+H: hex 0xA53C at 3,4 digits 4 name "h"
+D: denary 205 at 3,6 name "d"
+```
+
+---
+
+## One value, then ranges
+
+```anim
+B: match 1 ink green fill green-muted bold
+```
+
++++
+
+```anim
+H: match 0xA..0xF fill amber bold
+```
+
++++
+
+```anim
+D: match 1..9 ink red
+```
+
+---
+
+## The rules follow the values
+
+```anim
+B: 200
+H: 0x0F3C
+D: 90
+```
+
+---
+
+## The number's look goes under its rules, a digit's own over them
+
+```anim
+B: ink yellow fill blue-muted     # the 1s stay green, the 0s muted
+B[0]: ink white                   # this digit's own ink
+```
+
++++
+
+```anim
+B: 77                             # B[0]'s ink stays white, whatever it holds
+```
+
+---
+
+## Back as it started, or none
+
+```anim
+B: match 1 reset                   # 1s as they started: the number's look
+D: match 0 clear                   # 0s no longer muted
+```
+
++++
+
+```anim
+H: match reset                     # every rule as it started: 0s muted
+D: match clear                     # no rules at all
+```
+
+</animation>
+
 ## Feature: hex over binary
 
 <animation name="Hex over Binary" grid="20x7">

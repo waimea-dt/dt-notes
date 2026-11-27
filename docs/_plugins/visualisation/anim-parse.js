@@ -198,6 +198,13 @@
     return tokens
   }
 
+  // A whole number of 0 or more, as written ("12", or a literal: "0xC", "0b1100"), or undefined
+  const wholeOf = (word) => {
+    const literal = word.match(LITERAL)
+    if (literal && !literal[1]) return Number(BigInt(literal[2]))
+    return /^\d+$/.test(word) ? Number(word) : undefined
+  }
+
   // making: the id of the shape the line makes, which a number can follow (its own value) though it isn't there yet
   function parseAs(type, token, shapes, making) {
     if (type === 'str') return token?.kind === 'str' ? token.value : undefined
@@ -219,6 +226,13 @@
       case 'reset': return word === 'reset' ? word : undefined
       case 'num': return NUMBER.test(word) ? { v: parseFloat(word), rel: /^[+-]/.test(word) } : undefined
       case 'index': return /^\d+$/.test(word) ? Number(word) : undefined // a row's / column's cell number
+      // a digit's value, or a range of them, whole numbers written in any base ("1", "1..9", "0xA..0xF"),
+      // lowest first: { from, to }
+      case 'values': {
+        const ends = word.split('..').map(wholeOf)
+        if (ends.length > 2 || ends.some((n) => n === undefined)) return undefined
+        return { from: Math.min(...ends), to: Math.max(...ends) }
+      }
       case 'id': return shapes.has(token.value) ? token.value : undefined
       // a point on a shape's edge, "A.top-left" (ANCHORS): a shape's id first, if one has this one
       case 'anchor': {

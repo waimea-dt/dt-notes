@@ -7,8 +7,8 @@
 ;(function () {
   const { CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
-    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, OWN_STYLE, digitLooks, EDIT_WORDS, REF,
-    LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor, PARTS } = window.Anim
+    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, OWN_STYLE, VALUE_STYLE, digitSymbol, EDIT_WORDS, REF,
+    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
@@ -346,6 +346,41 @@
       }
     }
 
+    // "B: match 1 ink green": a number's digits that hold a value (or any in a range, "match 1..9")
+    // take these looks (VALUE_STYLE) while they do, over the number's own look; "match 1 reset" /
+    // "match 1 clear" leave that value's rule as the number started (LAYOUTS: digits.looks) or with
+    // none (RULES_OFF), and "match reset" / "match clear" every value's. Each digit holds its number's
+    // rules (rules: read by the renderer's lookOf by the value it shows), so they follow the digits'
+    // values as they change, and blends to the new ones. Takes the rule's looks out of props.
+    const RULES_OFF = { reset: (start, symbol) => start[symbol], clear: () => undefined }
+    function setRules(row, props, meta) {
+      const { values, off } = props.match
+      const word = wordFor('match')
+      const { radix, noun, digits } = LAYOUTS[row.layout]
+      const look = pick(props, VALUE_STYLE)
+      const given = Object.keys(look)
+      given.forEach((key) => delete props[key])
+      const other = Object.keys(props).find((key) => LOOKS[key] && !VALUE_STYLE.includes(key))
+      if (other) throw new Error(`"${wordFor(other, props[other])}" can't go with "${word}": a digit takes ${orList(VALUE_STYLE.map((key) => wordFor(key)))} from its value`)
+      if (off && given.length) throw new Error(`"${word} … ${off}" takes no looks: give them on a line of their own`)
+      if (!off && !given.length) throw new Error(`"${word}" needs the looks those digits take, e.g. "${row.id}: ${word} 1 ink green"`)
+      if (values && values.to >= radix) throw new Error(`a ${noun}'s digits go from 0 to ${radix - 1}, so "${word}" can't pick ${values.to}`)
+      const { from, to } = values || { from: 0, to: radix - 1 }
+      const rules = structuredClone(shapes.get(row.members[0]).rules)
+      for (let value = from; value <= to; value++) {
+        const symbol = digitSymbol(value)
+        const rule = off ? RULES_OFF[off](digits.looks, symbol) : { ...rules[symbol], ...look }
+        if (rule) rules[symbol] = structuredClone(rule)
+        else delete rules[symbol]
+      }
+      for (const id of row.members) {
+        const digit = structuredClone(shapes.get(id))
+        digit.rules = structuredClone(rules)
+        shapes.set(id, digit)
+        schedule(meta, digit.uid, props)
+      }
+    }
+
     // How a numbering's marks look (unless lit: fitNumbers)
     const MARK_LOOK = { font: 0.88, ink: 'muted' }
 
@@ -670,8 +705,10 @@
         const cell = { ...baseShape(kind.cell), id: ids[k], uid: newUid(), holds: true, ...(kind.radix && { digit: layout }), x: 0, y: 0 }
         applyDefaults(cell)
         // a digit's own looks come after the defaults, so only its line's override them
-        if (kind.radix) Object.assign(cell, kind.digits.look, { start: { ...cell.start, ...kind.digits.look }, auto: digitLooks(layout) })
+        if (kind.radix) Object.assign(cell, kind.digits.look, { start: { ...cell.start, ...kind.digits.look } })
         applyProps(cell, look, id, warn, meta) // made with its layout: its looks can follow the layout's value
+        // a digit takes looks from its value (its number's rules: setRules) over the number's look
+        if (kind.radix) Object.assign(cell, { rules: structuredClone(kind.digits.looks), auto: VALUE_STYLE })
         setValue(cell, value)
         cell.layer = layerOf(props)
         return cell
@@ -805,7 +842,7 @@
 
     return {
       functions: { arranged, cellsBetween, changeRange, checkParts, chunk, createLayout, fitCode, fitLines, fitNumbers, fitSpans, gridLines,
-        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, relayLayout, syncIndices, transpose,
+        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, relayLayout, setRules, syncIndices, transpose,
         rangeOf, typeInTurn, updateParts, withRowMax },
       verbs: { span: makeSpan },
       link: () => {

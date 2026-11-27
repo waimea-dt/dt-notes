@@ -285,6 +285,14 @@ Dw: decimal
 Dw: flip
 Eb[0][0..1]: flip
 defaults decimal
+Eb: match 2 ink red
+Eb: match 1 font 2
+Eb: match 1 reset ink red
+Eb: match 1
+Eb: match
+Eb11: binary 5 at 1,1 match 1 ink red
+Er: match 1 ink red
+Eh: match 0x10 fill red
 
 # code and Scratch
 Ec: code ["a" "b"] at 1,1

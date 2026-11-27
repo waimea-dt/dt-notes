@@ -7,7 +7,7 @@
   const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeBeside, placeAlong,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, REF, canonicalRef, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
-    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
+    entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, VALUE_STYLE, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, drawsBox, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
     NUMBERINGS, DIRECTIONS, orList, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES, REPEATS, LERPED } = window.Anim
@@ -449,7 +449,7 @@
     function resetLook(shape, key) {
       unlink(shape, key)
       shape[key] = (shape.start || baseShape(shape.type))[key]
-      if (shape.auto) shape.auto = digitLooks(shape.digit).filter((field) => field === key || shape.auto.includes(field))
+      if (shape.auto) shape.auto = VALUE_STYLE.filter((field) => field === key || shape.auto.includes(field))
     }
 
     // Gives a new shape the default look (defaults …) that applies to its type, as if written on
@@ -859,6 +859,7 @@
         return runLine(`${existing.members[0]}: ${match[2]}`, meta, warn)
       }
       checkParts(existing, props)
+      if (props.match) setRules(existing, props, meta) // "B: match 1 ink green": takes the rule's looks out of props
       if (props.repeat) checkRepeat(props, newValue)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
       const order = isGroup(existing) ? staggerOrder(existing) : null
@@ -1107,6 +1108,9 @@
         Object.keys(own).forEach((key) => used.add(key))
         const changed = structuredClone(member)
         applyProps(changed, own, false, warn, meta)
+        // a number's look is under its digits' rules (setRules): a digit keeps taking from its value
+        // what it did (a reset can give it back more), though only its own look takes them away
+        if (member.auto) changed.auto = VALUE_STYLE.filter((field) => member.auto.includes(field) || changed.auto.includes(field))
         resized ||= changed.w !== member.w || changed.h !== member.h
         shapes.set(changed.id, changed)
         schedule(meta, changed.uid, props)
@@ -1159,7 +1163,7 @@
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, changeRange, rangeOf, editScript, numberOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
-      readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
+      readLines, refuseView, relayLayout, setNumber, setRules, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect, stampOf, stampNow }
@@ -1167,7 +1171,7 @@
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
       ({ addTo, assignValue, changeRange, rangeOf, editScript, numberOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
-        readLines, refuseView, relayLayout, setNumber, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
+        readLines, refuseView, relayLayout, setNumber, setRules, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 

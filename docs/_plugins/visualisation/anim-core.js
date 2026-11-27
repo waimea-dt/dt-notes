@@ -418,9 +418,10 @@
   //               from 0 to radix - 1, written as its symbol (digitSymbol: 0-9, then A-F; B[0] the
   //               lowest). digits: how many cells it has unless given (default), the most it can
   //               (max), and the prop that gives it when it's made (prop: "digits 4"). look: the look its
-  //               digits start with (after the defaults); looks: each digit's own look while it holds
-  //               that value, a look at a time until the digit is given that look ("ink reset":
-  //               again; digitLooks)
+  //               digits start with (after the defaults); looks: the rules it starts with, by value
+  //               (changed by "match": setRules), each a look its digits take while they hold that value,
+  //               over the number's own look, a look at a time until the digit itself is given that
+  //               look ("ink reset": again; VALUE_STYLE)
   //   power       where its place values go (NUMBERINGS: powers), as index does
   //   decimal     its value written out, when shown: where it goes (side and gap, in cells, and its
   //               text's anchor, so it doesn't shift as it changes), and label(id), its text: a
@@ -457,11 +458,11 @@
     },
     binary: {
       noun: 'binary number', item: 'bit',
-      ...NUMBER, radix: 2, digits: { ...NUMBER_DIGITS, default: 8, max: 32 }, flip: true, props: ['digits', 'powers', 'decimal'],
+      ...NUMBER, radix: 2, digits: { ...NUMBER_DIGITS, default: 8, max: 32 }, flip: true, props: ['digits', 'match', 'powers', 'decimal'],
     },
-    hex: { noun: 'hex number', item: 'digit', ...NUMBER, radix: 16, digits: { ...NUMBER_DIGITS, default: 2, max: 8 }, props: ['digits', 'powers', 'decimal'] },
+    hex: { noun: 'hex number', item: 'digit', ...NUMBER, radix: 16, digits: { ...NUMBER_DIGITS, default: 2, max: 8 }, props: ['digits', 'match', 'powers', 'decimal'] },
     // its value is already written out, so no decimal
-    denary: { noun: 'denary number', item: 'digit', ...NUMBER, radix: 10, digits: { ...NUMBER_DIGITS, default: 3, max: 10 }, props: ['digits', 'powers'] },
+    denary: { noun: 'denary number', item: 'digit', ...NUMBER, radix: 10, digits: { ...NUMBER_DIGITS, default: 3, max: 10 }, props: ['digits', 'match', 'powers'] },
   }
   const LAYOUT_TYPES = Object.keys(LAYOUTS)
   // A digit's symbol (LAYOUTS: radix): 0-9, then A-F
@@ -471,8 +472,6 @@
   // Whether a group draws something from its box (its layout's panel, LAYOUTS: panel; a frame,
   // LOOKS: frame), so its box blends between beats and grows in the time its cells take
   const drawsBox = (shape) => Boolean(LAYOUTS[shape.layout]?.panel || shape.frame)
-  // The looks a layout's digits take from their values (LAYOUTS: digits.looks), e.g. ['ink']
-  const digitLooks = (layout) => Object.keys(Object.assign({}, ...Object.values(LAYOUTS[layout]?.digits?.looks || {})))
 
   // ease <name>: how a change speeds up and slows down (t: 0-1 of its time -> 0-1 of the way).
   // spring overshoots, then settles exactly on 1.
@@ -628,6 +627,7 @@
   //   cell   part of a row's / column's look, given to its cells
   //   own    a layout's own look, not given to its cells (a span takes it too; not a default)
   //   kept   taken along by a value on the move with keep-style
+  //   byValue  a number's digit can take it from its value (VALUE_STYLE: "match 1 ink green")
   //   check  check(value, shape): a warning when the value can't be shown as asked (null if it can);
   //          shape is left out on a defaults line
   //   default  its value on a shape that hasn't been given one (read where it's used)
@@ -670,14 +670,14 @@
     radius: { fields: ['w', 'h'], unit: 2 * CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
     corner: { field: 'corner', unit: CELL, min: 0, cell: true, check: cornerCheck },
     bend: { field: 'bend', unit: CELL }, // how far a curve bows out halfway along (+ to its left, - right)
-    fill: { field: 'fill', cell: true, kept: true },
-    stroke: { field: 'stroke', cell: true, kept: true, hints: { text: '"stroke" doesn\'t apply to text: use ink' } },
-    ink: { field: 'ink', cell: true, kept: true },
+    fill: { field: 'fill', cell: true, kept: true, byValue: true },
+    stroke: { field: 'stroke', cell: true, kept: true, byValue: true, hints: { text: '"stroke" doesn\'t apply to text: use ink' } },
+    ink: { field: 'ink', cell: true, kept: true, byValue: true },
     weight: { field: 'weight', unit: 1, min: 0, cell: true, quiet: ['text'] },
     anchor: { field: 'anchor', map: { clear: null } }, // a side, corner or centre (ANCHORS); clear: placed as its type is
     angle: { field: 'angle', unit: 1 },
     scale: { field: 'scale', unit: 1, min: 0 },
-    bold: { field: 'bold', cell: true },
+    bold: { field: 'bold', cell: true, byValue: true },
     mono: { field: 'mono', cell: true },
     lang: { field: 'lang', cell: true, check: langWarning }, // a code block's language (Prism's name for it)
     start: { field: 'start' }, // what a line has at its start (END_MARKS)
@@ -707,6 +707,8 @@
   const STYLE = ['fill', 'stroke', 'ink', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner', 'opacity']
   // What a value on the move takes with it (keep-style): not its size, or highlights
   const KEPT_STYLE = looksWith('kept')
+  // What a number's digits can take from their values (LAYOUTS: digits.looks, "match": setRules)
+  const VALUE_STYLE = looksWith('byValue')
   // The shape fields that blend between beats: its place, and every number in its look
   const fieldsOf = (look) => look.fields || [look.field]
   const LERPED = ['x', 'y', ...new Set(Object.values(LOOKS).filter((look) => look.unit).flatMap(fieldsOf))]
@@ -870,6 +872,14 @@
     powers: { key: 'powers', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show them) or clear' },
     decimal: { key: 'decimal', sigs: [['clear'], []], build: (v) => !v.length, help: 'nothing (show it) or clear' },
     digits: { ...number('digits', 'a whole number of digits'), modes: ['layout'], where: 'when a number is made, e.g. "B: binary 67 digits 4"' },
+    // a number's digits that hold a value (or any in a range), and the looks they take while they do
+    // (setRules); reset: back as the number started, clear: none. values null: every value
+    match: {
+      key: 'match', sigs: [['values', 'reset'], ['values', 'clear'], ['values'], ['reset'], ['clear']],
+      build: (v, sig) => ({ values: sig[0] === 'values' ? v[0] : null, off: sig.find((type) => type !== 'values') || null }),
+      modes: ['change'], where: 'on a number that\'s there, then its looks, e.g. "B: match 1 ink green"',
+      help: 'a digit\'s value or a range (e.g. 1, 1..9 or 0xA..0xF), then looks, reset or clear; or reset or clear alone',
+    },
     // a new value for a var, cell or number counts its way there, showing each value in between
     counter: fixed('count', true),
     // a change done again, a number of times in a row or forever (REPEATS)
@@ -1670,7 +1680,7 @@
     })))
   }
 
-  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, EDIT_PACES, SLIDES, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES,
+  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, VALUE_STYLE, CHOREOGRAPHY, EDIT_PACES, SLIDES, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, drawsBox, OWN_STYLE, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, article, wordFor,
     PATTERNS, PLACE_GAP, PLAY_PAUSE, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES,
