@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { boxCentre, isLine, MAX_DEPTH, STYLE, pick, baseShape, trailId, rotateAbout, arcOffset, pointOnHops, pointOnPath,
+  const { copyOf, boxCentre, isLine, MAX_DEPTH, STYLE, pick, baseShape, trailId, rotateAbout, arcOffset, pointOnHops, pointOnPath,
     easeFn, lerp } = window.Anim
 
   // How finely a trail follows a move: points per hop of a travel, along a route (via, follow), and
@@ -94,7 +94,7 @@
         added[added.length - 1] = end
         const kept = pointsOf(trail)
         const points = [...kept, ...added]
-        const grown = { ...structuredClone(trail), from: points[0], to: points[points.length - 1], via: points.slice(1, -1) }
+        const grown = { ...copyOf(trail), from: points[0], to: points[points.length - 1], via: points.slice(1, -1) }
         shapes.set(trail.id, grown)
         const record = tween(meta, grown.uid)
         const { dur = 0, delay = 0, ease } = mover.record || schedule(meta, grown.uid, {})

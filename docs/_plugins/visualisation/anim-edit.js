@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, EDIT_PACES, SLIDES, LAYOUTS, BARS, cellId, baseOf, cellRange,
+  const { copyOf, CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, EDIT_PACES, SLIDES, LAYOUTS, BARS, cellId, baseOf, cellRange,
     baseShape, LAYOUT_TYPES, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine, ANCHORS, BOX_CORNERS } = window.Anim
 
   // The layouts that can be edited (not LAYOUTS: fixed), for messages
@@ -89,7 +89,7 @@
 
     // What an insert puts into a line: one value, or a var's or cell's (source), at tokens[next]
     function lineInsert(row, axis, tokens, next, example) {
-      const source = holderRef(tokens[next]) && !valueOf(tokens[next]) ? structuredClone(holderRef(tokens[next], 'insert')) : undefined
+      const source = holderRef(tokens[next]) && !valueOf(tokens[next]) ? copyOf(holderRef(tokens[next], 'insert')) : undefined
       const value = valueOf(tokens[next]) || (source && valueIn(source))
       if (!value) throw new Error(`"insert" expects a value (a number, "quoted" text or null) or a var, e.g. ${example}`)
       return { values: [value], source, next: next + 1 }
@@ -171,7 +171,7 @@
       const most = C.swapLift[axis.steps(i, j) > 1 ? 'far' : 'near'] * Math.max(...[...a, ...b].map((cell) => bowOf(row, cell, way)))
       const lift = Math.min(length / 2, most) // round: a semicircle, flatter for long swaps
       const moves = [[a, b, 1], [b, a, -1]].flatMap(([unit, other, sign]) => unit.map((cell, k) => {
-        const moved = structuredClone(cell)
+        const moved = copyOf(cell)
         moved.id = other[k].id
         moved.attach = offsetFrom(id, other[k].attach.dx, other[k].attach.dy)
         const record = tween(meta, moved.uid)
@@ -294,7 +294,7 @@
       const moves = movesOf(row, props, removing)
       const timing = (uid, move) => schedule(meta, uid, props, move)
       const aside = asideOf(row, axis)
-      const list = units.map((unit) => unit.map((cell) => structuredClone(cell)))
+      const list = units.map((unit) => unit.map((cell) => copyOf(cell)))
       let slotUnit
       if (removing) {
         units[units.length - 1].forEach((cell) => freezeEndsAttachedTo(cell.id)) // the last place goes
@@ -309,7 +309,7 @@
       } else {
         const blank = row.cell || { ...baseShape('rect') }
         const fresh = values.map((value, k) => {
-          const cell = { ...structuredClone(blank), ...(source ? keptStyle(props, source) : {}), uid: newUid(), holds: true, hl: null, callout: null }
+          const cell = { ...copyOf(blank), ...(source ? keptStyle(props, source) : {}), uid: newUid(), holds: true, hl: null, callout: null }
           if (axis.headed(k)) applyProps(cell, kind.head.look, false, warn, meta) // a table's new heading
           setValue(cell, value)
           return cell
@@ -389,7 +389,7 @@
       const { example, edit } = SCRIPT_EDITS[word]
       const next = edit({ id, script, tokens, lines, warn, place, example: example(id) })
       const props = parseProps(tokens, next, word, shapes)
-      const changed = structuredClone(shape)
+      const changed = copyOf(shape)
       const record = tween(meta, changed.uid)
       const earlier = record.script // undefined: no change to it yet this beat; null: a new script
       applyProps(changed, { label: lines.map((line) => line.text).join('\n') }, false, warn, meta)

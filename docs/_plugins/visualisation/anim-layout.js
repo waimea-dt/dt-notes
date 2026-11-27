@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
+  const { copyOf, CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
     markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, CELL_STYLE, OWN_STYLE, VALUE_STYLE, digitSymbol, EDIT_WORDS, REF,
     LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, KEYWORDS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS, SIZE_PROPS, MAX_DEPTH } = window.Anim
@@ -151,7 +151,7 @@
       withRowMax(row, own)
       if (takeBareNumber(own)) numberEach(cells, own, meta, warn)
       for (const cell of cells) {
-        const changed = structuredClone(cell)
+        const changed = copyOf(cell)
         applyProps(changed, own, false, warn, meta)
         shapes.set(changed.id, changed)
         schedule(meta, changed.uid, props)
@@ -178,7 +178,7 @@
         replaced(id, warn)
         removeShape(existing, props, meta, warn)
       }
-      const shape = respan ? structuredClone(existing) : { ...baseShape('span'), id, uid: newUid() }
+      const shape = respan ? copyOf(existing) : { ...baseShape('span'), id, uid: newUid() }
       shape.span = { of: rowId, from, to }
       Object.assign(shape, { part: rowId, role: 'span' })
       checkParts(shape, props)
@@ -345,7 +345,7 @@
     // each given the same opacity, in the line's time
     function fadeParts(owner, opacity, props, meta, warn) {
       for (const part of partsOf(owner).filter((p) => PARTS[p.role]?.fades)) {
-        const changed = structuredClone(part)
+        const changed = copyOf(part)
         applyProps(changed, { opacity }, false, warn, meta)
         shapes.set(changed.id, changed)
         schedule(meta, changed.uid, props)
@@ -380,7 +380,7 @@
         schedule(meta, old.uid, props)
         return
       }
-      const text = old ? structuredClone(old) : { ...baseShape('text'), id, uid: newUid(), font: TAG_FONT, layer: owner.layer, part: owner.id, role }
+      const text = old ? copyOf(old) : { ...baseShape('text'), id, uid: newUid(), font: TAG_FONT, layer: owner.layer, part: owner.id, role }
       text.label = tag.text
       linkText(text, warn)
       if (tag.anchor) text.anchor = tag.anchor
@@ -443,16 +443,16 @@
       const first = shapes.get(row.members[0])
       const ruleOf = (rule) => Object.fromEntries(given.map((key) => [key, LOOKS[key].unit ? lookValue(LOOKS[key], look[key], rule?.[key] ?? first[LOOKS[key].field]) : look[key]]))
       const { from, to } = values || { from: 0, to: radix - 1 }
-      const rules = structuredClone(first.rules)
+      const rules = copyOf(first.rules)
       for (let value = from; value <= to; value++) {
         const symbol = digitSymbol(value)
         const rule = off ? RULES_OFF[off](digits.looks, symbol) : { ...rules[symbol], ...ruleOf(rules[symbol]) }
-        if (rule) rules[symbol] = structuredClone(rule)
+        if (rule) rules[symbol] = copyOf(rule)
         else delete rules[symbol]
       }
       for (const id of row.members) {
-        const digit = structuredClone(shapes.get(id))
-        digit.rules = structuredClone(rules)
+        const digit = copyOf(shapes.get(id))
+        digit.rules = copyOf(rules)
         shapes.set(id, digit)
         schedule(meta, digit.uid, props)
       }
@@ -698,7 +698,7 @@
         const cells = members.map((cell) => shapes.get(cell))
         const first = cells[0]
         const b = unionBounds(cells, shapes)
-        const view = old ? structuredClone(old) : { ...baseShape(GROUP), id, uid: newUid(), layout, part: grid.id, role: 'view' }
+        const view = old ? copyOf(old) : { ...baseShape(GROUP), id, uid: newUid(), layout, part: grid.id, role: 'view' }
         Object.assign(view, {
           members, covers: members, attach: offsetFrom(grid.id, first.attach.dx, first.attach.dy), x: first.x, y: first.y,
           w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - first.x, cy: (b.y0 + b.y1) / 2 - first.y,
@@ -801,13 +801,13 @@
         if (kind.radix) Object.assign(cell, kind.digits.look, { start: { ...cell.start, ...kind.digits.look } })
         applyProps(cell, look, id, warn, meta) // made with its layout: its looks can follow the layout's value
         // a digit takes looks from its value (its number's rules: setRules) over the number's look
-        if (kind.radix) Object.assign(cell, { rules: structuredClone(kind.digits.looks), auto: VALUE_STYLE })
+        if (kind.radix) Object.assign(cell, { rules: copyOf(kind.digits.looks), auto: VALUE_STYLE })
         setValue(cell, value)
         cell.layer = layerOf(props)
         return cell
       })
       // a blank cell in the row's look, for cells added later (insert)
-      const blank = { ...structuredClone(cells[0]), label: '', nil: false }
+      const blank = { ...copyOf(cells[0]), label: '', nil: false }
       delete blank.id
       delete blank.uid
       // a table's headings start with their own look (LAYOUTS: head)

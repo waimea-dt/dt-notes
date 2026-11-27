@@ -932,10 +932,13 @@
   // for a one-word prop given its value (dashed, pop, …), otherwise the keyword that sets it.
   // (kind: a line kind, LINES: the word for the key that can go on it, as "move" for a camera's at)
   const goesIn = (word, kind) => !kind || ((!KEYWORDS[word].modes || KEYWORDS[word].modes.includes(kind)) && !KEYWORDS[word].notIn?.includes(kind))
+  // The words that set each prop, in KEYWORDS' order (worked out once: wordFor is asked for every look)
+  const WORDS_OF = {}
+  for (const [word, entry] of Object.entries(KEYWORDS)) if (entry.key) (WORDS_OF[entry.key] ||= []).push(word)
   function wordFor(key, value, kind) {
     if (key === 'label') return 'quoted text'
     if (typeof value === 'string' && KEYWORDS[value]?.key === key) return value
-    const words = Object.keys(KEYWORDS).filter((word) => KEYWORDS[word].key === key)
+    const words = WORDS_OF[key] || []
     const own = KEYWORDS[key]?.key === key ? [key] : []
     return [...own, ...words].find((word) => goesIn(word, kind)) || own[0] || words[0] || key
   }
@@ -1033,6 +1036,15 @@
     return el
   }
   const lerp = (a, b, t) => a + (b - a) * t
+  // A copy of a shape (or any plain data: objects, arrays and values), all the way down. Much
+  // quicker than structuredClone for the many small objects compiling copies.
+  function copyOf(value) {
+    if (Array.isArray(value)) return value.map(copyOf)
+    if (!value || typeof value !== 'object') return value
+    const copy = {}
+    for (const key in value) copy[key] = copyOf(value[key]) // plain data: no inherited keys
+    return copy
+  }
   const clamp01 = (t) => Math.min(1, Math.max(0, t))
   const ease = EASES['in-out'] // the default
   const easeFn = (name) => EASES[name] || ease
@@ -1714,5 +1726,5 @@
     PATTERNS, PLACE_GAP, PLAY_PAUSE, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeBeside, placeAlong, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, SIG_FIGURES, MAX_DEPTH, PLACING, ROUTES, anyOf, SIZE_PROPS, TIMING, OUTLINES, ANCHORS, refPoint, polygonPoints, roundCorners, svgEl, textWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, SIG_FIGURES, MAX_DEPTH, PLACING, ROUTES, anyOf, SIZE_PROPS, TIMING, OUTLINES, ANCHORS, refPoint, polygonPoints, roundCorners, svgEl, textWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, copyOf, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

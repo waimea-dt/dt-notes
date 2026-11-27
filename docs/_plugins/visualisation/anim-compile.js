@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { CELL, cellToPx, APPLIES, isLine, resolveEnds, boxCentre, PLACE_GAP, placeBeside, placeAlong,
+  const { copyOf, CELL, cellToPx, APPLIES, isLine, resolveEnds, boxCentre, PLACE_GAP, placeBeside, placeAlong,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, REF, canonicalRef, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, VALUE_STYLE, rotateAbout,
@@ -38,6 +38,8 @@
   const MOVES = [...PLACING, ...ROUTES]
   // What a camera line does, beside its timing
   const CAMERA_MOVES = LINES.camera.takes.filter((key) => !TIMING.includes(key))
+  // The looks applied before size (LOOKS: early), and after it, each in LOOKS' order
+  const LOOKS_BY_TURN = { true: Object.entries(LOOKS).filter(([, look]) => look.early), false: Object.entries(LOOKS).filter(([, look]) => !look.early) }
   // Every highlight as it is when off (HIGHLIGHT_KINDS: off)
   const HIGHLIGHTS_OFF = Object.fromEntries(Object.entries(HIGHLIGHT_KINDS).map(([kind, h]) => [kind, 'off' in h ? h.off : false]))
 
@@ -124,9 +126,9 @@
       const now = (value) => (creating ? undefined : value)
       const cells = (n, current) => numberValue(n, now(current), { unit: CELL })
       const setLooks = (early) => {
-        for (const [key, look] of Object.entries(LOOKS)) {
+        for (const [key, look] of LOOKS_BY_TURN[early]) {
           const value = props[key]
-          if (value === undefined || Boolean(look.early) !== early) continue
+          if (value === undefined) continue
           const word = wordFor(key, value)
           check(shape, key, word)
           if (look.quiet?.includes(shape.type)) warn(`"${word}" has no effect on ${shape.type}`)
@@ -244,7 +246,7 @@
       for (const id of shape.members) {
         const member = shapes.get(id)
         if (!member) continue
-        const changed = structuredClone(member)
+        const changed = copyOf(member)
         turnAbout(changed, { by, pivot }, props, meta, true, round)
         shapes.set(id, changed)
         schedule(meta, changed.uid, props)
@@ -600,8 +602,9 @@
     // own (all at once, as two swapped cells trade ids). An owner replaced (a new uid) is found by
     // the id instead, and followed from then on.
     function followOwners() {
-      const byUid = new Map([...shapes.values()].map((shape) => [shape.uid, shape]))
       const followers = [...shapes.values()].filter((shape) => PARTS[shape.role]?.follows)
+      if (!followers.length) return
+      const byUid = new Map([...shapes.values()].map((shape) => [shape.uid, shape]))
       for (const part of followers) if (!byUid.has(part.owner) && shapes.has(part.part)) part.owner = shapes.get(part.part).uid
       const moving = followers.filter((part) => byUid.has(part.owner) && byUid.get(part.owner).id !== part.part)
       for (const part of moving) shapes.delete(part.id)
@@ -907,7 +910,7 @@
       if (order && takeBareNumber(props)) numberEach(existing.members.map((m) => shapes.get(m)), props, meta, warn)
       const { opacity } = props // its tags fade with it, a group's too (updateParts)
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
-      const shape = structuredClone(existing)
+      const shape = copyOf(existing)
       if (newValue && !existing.layout) setValue(shape, newValue)
       if (newValue) followValue(shape, followed, warn) // a value given stops it following one
       const beforeRounds = props.repeat && lerpedNow()
@@ -977,7 +980,7 @@
       const n = numberOf(token, script.label.split('\n').length, 1) // from 1, or end
       if (n === undefined) throw new Error(`"${script.id}[${place}]": a script's line is a number from 1, or end`)
       const highlight = props.highlight.map((item) => (item === 'line' ? { line: n } : item))
-      const changed = structuredClone(shapes.get(script.id))
+      const changed = copyOf(shapes.get(script.id))
       applyProps(changed, { highlight }, false, warn, meta)
       shapes.set(changed.id, changed)
       schedule(meta, changed.uid, props)
@@ -1020,8 +1023,8 @@
       const props = parseProps(tokens, 2, 'copy', shapes)
       noStagger(props, warn)
       const fresh = { attach: null, hl: null, callout: null }
-      const shape = { ...structuredClone(src), ...fresh, id, uid: newUid() }
-      tween(meta, shape.uid).from = { ...structuredClone(src), ...fresh, uid: shape.uid }
+      const shape = { ...copyOf(src), ...fresh, id, uid: newUid() }
+      tween(meta, shape.uid).from = { ...copyOf(src), ...fresh, uid: shape.uid }
       const path = applyProps(shape, props, false, warn, meta)
       if (path) setRoute(meta, shape.uid, path)
       if (existing) {
@@ -1090,7 +1093,7 @@
       if (!way) throw new Error(`"arrange" needs a way to go, a number of degrees (clockwise, 0 = right) or ${orList(Object.keys(DIRECTIONS))}, e.g. "${id}: arrange right gap 0.5"`)
       const props = parseProps(tokens, 2, 'arrange', shapes)
       const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
-      const placed = group.members.map((m) => shapes.get(m)).filter((m) => m && !isLine(m)).map((m) => structuredClone(m))
+      const placed = group.members.map((m) => shapes.get(m)).filter((m) => m && !isLine(m)).map((m) => copyOf(m))
       placed.forEach((m, k) => {
         if (k) Object.assign(m, placeAlong(m, placed[k - 1], way.v, gap))
         offsetInGroup(m)
@@ -1102,7 +1105,7 @@
       // follow it first), so its box fits them: a group in a group is placed by its box
       resolveAttachments(shapes)
       const b = unionBounds(placed, shapes)
-      const moved = { ...structuredClone(group), x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }
+      const moved = { ...copyOf(group), x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }
       shapes.set(id, moved)
       for (const m of placed) offsetInGroup(m)
       if (moved.attach?.kind === 'offset') offsetInGroup(moved) // in a group itself
@@ -1146,7 +1149,7 @@
         const own = pick(look, Object.keys(look).filter((key) => !APPLIES[key] || APPLIES[key].includes(member.type)))
         if (!Object.keys(own).length) continue
         Object.keys(own).forEach((key) => used.add(key))
-        const changed = structuredClone(member)
+        const changed = copyOf(member)
         applyProps(changed, own, false, warn, meta)
         // a number's look is under its digits' rules (setRules): a digit keeps taking from its value
         // what it did (a reset can give it back more), though only its own look takes them away
@@ -1296,7 +1299,7 @@
     // the same, with where each is (step, beat, and line in the beat's scene), for an editor
     const issues = []
 
-    const snapshot = () => new Map([...compiler.shapes].map(([id, shape]) => [id, structuredClone(shape)]))
+    const snapshot = () => new Map([...compiler.shapes].map(([id, shape]) => [id, copyOf(shape)]))
     steps.forEach((step, si) => {
       step.beats.forEach((beat, bi) => {
         // lead: how long it waits before it starts (then n)

@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { parseProps, REF, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
+  const { copyOf, parseProps, REF, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
     nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, evaluate, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol, SIG_FIGURES } = window.Anim
 
   // The numbers whose digits flip (LAYOUTS: flip), for messages: "a binary number"
@@ -110,7 +110,7 @@
       const cells = range ? range.cells : row ? digitsOf(row) : [shape]
       const props = parseProps(tokens, 1, 'flip', shapes)
       for (const cell of cells) {
-        const changed = structuredClone(cell)
+        const changed = copyOf(cell)
         const { radix } = LAYOUTS[cell.digit]
         setValue(changed, { label: digitSymbol(radix - 1 - symbolDigit(cell.label, radix)) })
         shapes.set(changed.id, changed)
@@ -123,7 +123,7 @@
     // for a number, a box round it (in its cells' look) holding its value
     function standIn(shape) {
       if (!inDigits(shape)) return shape
-      return { ...structuredClone(shape.cell), ...boxCentre(shape), w: shape.w, h: shape.h, ...valueIn(shape), auto: null }
+      return { ...copyOf(shape.cell), ...boxCentre(shape), w: shape.w, h: shape.h, ...valueIn(shape), auto: null }
     }
     // Where a value on the move leaves or arrives
     const pointOf = (shape) => { const at = standIn(shape); return { x: at.x, y: at.y } }
@@ -131,7 +131,7 @@
     const keptStyle = (props, shape) => ((props.keepStyle ?? defaults.keepStyle) ? pick(shape, KEPT_STYLE) : {})
     // A copy of a shape given the look a value came with (keep-style), which no longer follows values
     function restyled(shape, look) {
-      const changed = { ...structuredClone(shape), ...look }
+      const changed = { ...copyOf(shape), ...look }
       for (const key of Object.keys(look)) unlink(changed, key)
       return changed
     }
@@ -451,7 +451,7 @@
     function fly(meta, from, to, hops, props, { arrive, linger = true }) {
       const n = newUid()
       const move = linger ? C.flyMove : 1
-      const look = (shape) => ({ ...structuredClone(standIn(shape)), id: `~flyer${n}`, uid: n, attach: null, hl: null, callout: null, layer: 'front' })
+      const look = (shape) => ({ ...copyOf(standIn(shape)), id: `~flyer${n}`, uid: n, attach: null, hl: null, callout: null, layer: 'front' })
       meta.flyers = [...(meta.flyers || []), { uid: n, from: look(from), to: look(to), hops, move }]
       schedule(meta, n, props, { dur: arrive / move })
     }

@@ -175,7 +175,7 @@ Notes on each area, for finding your way round before a change.
 
 ### Performance
 
-- **Compiling:** `settle` runs after every line, so it only redoes what could have changed. Every change goes through a tween record (`tween`, which stamps it: `stampOf`, `stampNow`), so a group's box (`boxStale`) and a link (`fitLinks`) are only worked out again when a shape they depend on has changed since they last were. A new per-line pass should do the same.
+- **Compiling:** `settle` runs after every line, so it only redoes what could have changed. Every change goes through a tween record (`tween`, which stamps it: `stampOf`, `stampNow`), so a group's box (`boxStale`) and a link (`fitLinks`) are only worked out again when a shape they depend on has changed since they last were. A new per-line pass should do the same. Copy a shape with `copyOf` (anim-core.js), not `structuredClone`: compiling copies many small objects, and `copyOf` is several times quicker.
 - **Drawing:** every shape is drawn every frame, so per-frame work stays cheap: `attr` and `paint` remember what they set (a style property set by `paint` is only ever set by it), a colour that isn't changing isn't mixed again (`mixCss`), and what a beat's state gives (uid maps, passed ids, spotlit and glowing shapes) is worked out once per state.
 - **Reading styles** restyles the whole page (the site's `:has()` rules make that slow), so the engine reads computed styles in one batch, once: the label fonts (`fontFor`, from a holder that isn't displayed, so there's no layout) and the named colours (`resolveColours`).
 
