@@ -202,6 +202,11 @@ Eg6: group [Eg[0]]
 Sg1: span Eg[0..5][0]
 Sg2: span Eg[0..1][0..1][0]
 Sg3: span Er[end..9]
+Er[0..1]: frame red
+Dw: frame red
+Fr: rect at 1,1 frame red
+defaults frame red
+Er: frame blob
 
 # values
 Dw: 5

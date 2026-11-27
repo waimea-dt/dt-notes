@@ -7,7 +7,7 @@
 ;(function () {
   const { CELL, placeBeside, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
-    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, digitLooks, EDIT_WORDS, REF,
+    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, OWN_STYLE, digitLooks, EDIT_WORDS, REF,
     LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor, PARTS } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
@@ -238,6 +238,9 @@
     // one comes as a slot opens on the end and goes as one closes.
     function checkParts(shape, props) {
       if (props.name && !shape.var && !shape.layout && !shape.span) throw new Error(`"name" is for ${nounList(['var', ...LAYOUT_NAMES, 'span'])}`)
+      // a layout's own look (LOOKS: own)
+      const own = OWN_STYLE.find((key) => props[key] !== undefined)
+      if (own && !shape.layout && !shape.span) throw new Error(`"${wordFor(own)}" is for ${nounList([...LAYOUT_NAMES, 'span'])} (a grid's rows and columns too)`)
       if (props.indices !== undefined && !shape.layout) throw new Error(`"indices" is for ${LAYOUT_NOUNS}`)
       if (props.indices !== undefined && bound(shape)) throw new Error(`a grid's indices number all its rows and columns, so they go on the whole grid: "${shape.part}: indices"`)
       // props only some layouts take (LAYOUTS: props)
@@ -689,7 +692,8 @@
         w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2,
       }
       Object.assign(row, pick(frame, ['views', 'heading'])) // a grid's
-      applyProps(row, pick(props, ['at', 'x', 'y', 'highlight', 'callout']), id, warn, meta)
+      Object.assign(row, kind.look) // its own look as made (a number's frame), before its line's
+      applyProps(row, pick(props, ['at', 'x', 'y', 'highlight', 'callout', ...OWN_STYLE]), id, warn, meta)
       shapes.set(id, row)
       schedule(meta, row.uid, props).enter = 'fade'
       for (const cell of cells) {

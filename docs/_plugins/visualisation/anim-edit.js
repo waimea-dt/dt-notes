@@ -15,7 +15,7 @@
     const { shapes, newUid } = cx
     // the other parts' functions, linked once every part is made
     let applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
-      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, pointOf, readLines, readList, refuseView,
+      holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, partsOf, pointOf, readLines, readList, refuseView,
       schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf
 
     // What a swap, insert or remove moves as one (a unit), read from the line at tokens[1] by its
@@ -311,6 +311,9 @@
         }
         slotUnit = fresh
       }
+      // its box (a panel or frame: drawsBox), and its views', opens with the space a new unit lands
+      // in, or closes up with the space one leaves, as its slot does (not as the unit comes or goes)
+      for (const group of [row, ...partsOf(row, 'view')]) timing(group.uid, removing ? then : 0)
       for (const cell of units.flat()) shapes.delete(cell.id)
       if (kind.fit && list.length) {
         // the block widens for a longer line as the others move aside, or narrows once the
@@ -496,7 +499,7 @@
       verbs: { swap: swapCells, insert: editCells, remove: editCells },
       link: () => {
         ({ applyProps, arranged, chunk, fitLines, fly, flyValue, freezeEndsAttachedTo, gridLines,
-          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, pointOf, readLines,
+          gridPlaceOf, holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, partsOf, pointOf, readLines,
           readList, refuseView, schedule, setValue, speedOf, syncIndices, transpose, valueIn, valueOf } = cx)
       },
     }

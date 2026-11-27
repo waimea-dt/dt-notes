@@ -8,7 +8,7 @@
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
-    entranceFor, XML_NS, LAYOUTS, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
+    entranceFor, XML_NS, LAYOUTS, drawsBox, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
     END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, evaluate } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
@@ -20,6 +20,8 @@
   const RIGHT_PAD = 0.3
   // A label below its shape is centred this share of its font size below the shape's bottom edge
   const BELOW_GAP = 0.75
+  // A frame's line (LOOKS: frame), × the normal stroke: a little heavier than the cell strokes it covers
+  const FRAME_WEIGHT = 1.5
   // How text is anchored (SVG text-anchor) by the side of its box it's drawn from: -1 left, 0 middle, 1 right
   const TEXT_ANCHORS = { [-1]: 'start', 0: 'middle', 1: 'end' }
   // The places a label goes (SHAPES: label, BAR_DRAWS: label):
@@ -257,6 +259,7 @@
     const panelLayer = svg.insertBefore(svgEl('g', { class: 'anim-panels' }), layers[0]) // under every shape
     const slotLayer = svg.insertBefore(svgEl('g', { class: 'anim-slots' }), layers[1]) // under the cells
     const slotNodes = new Map() // slot uid -> rect
+    const frameLayer = svg.appendChild(svgEl('g', { class: 'anim-frames' })) // over every shape, under the highlights
     const highlightLayer = svg.appendChild(svgEl('g', { class: 'anim-highlights' }))
     const calloutLayer = svg.appendChild(svgEl('g', { class: 'anim-callouts' }))
     const nodes = new Map() // uid -> node
@@ -493,9 +496,26 @@
       else el.textContent = text
     }
 
+    // A frame (LOOKS: frame): a line round the box of a layout's cells (a span's, frameInset inside its
+    // own), on their outer edges and over their strokes. Made as it's first shown; its colour fades in
+    // and out from none.
+    function drawFrame(node, s, v, colour) {
+      if (!node.frame && colour === 'none') return
+      node.frame ||= frameLayer.appendChild(svgEl('rect', { class: 'anim-frame', fill: 'none' }))
+      const c = boxCentre(s)
+      const inset = (kindOf(s).frameInset || 0) * CELL
+      const [w, h] = [Math.max(0, s.w - 2 * inset), Math.max(0, s.h - 2 * inset)]
+      attr(node.frame, 'x', c.x - w / 2); attr(node.frame, 'y', c.y - h / 2)
+      attr(node.frame, 'width', w); attr(node.frame, 'height', h)
+      paint(node.frame, 'stroke', colour)
+      paint(node.frame, 'strokeWidth', String(STROKE * FRAME_WEIGHT))
+      paint(node.frame, 'opacity', String(v.opacity))
+    }
+
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
     function drawNode(node, s, v, colours, byId) {
       const { g } = node
+      drawFrame(node, s, v, colours.frame)
       if (isGroup(node)) {
         // A group is invisible (its highlight box is drawn in drawOverlays), but a layout with a
         // panel (LAYOUTS: a code block) has a background behind its box, which takes in its indices
@@ -1194,9 +1214,9 @@
     // (roundsOf)
     function interpolate(a, b, t, { once = [], tOnce = t } = {}) {
       const s = { ...b }
-      // a layout with a panel (LAYOUTS) blends its box's offset too, so the panel follows its cells,
-      // as a polygon given new points (SHAPES: points) does, its box round them
-      const keys = LAYOUTS[b.layout]?.panel || kindOf(b).points ? [...LERPED, 'cx', 'cy'] : LERPED
+      // a layout drawing from its box (a panel or frame: drawsBox) blends its box's offset too, so
+      // they follow its cells, as a polygon given new points (SHAPES: points) does, its box round them
+      const keys = drawsBox(a) || drawsBox(b) || kindOf(b).points ? [...LERPED, 'cx', 'cy'] : LERPED
       const across = fitted(b) ? fitPhase(a, b, t) : t
       for (const key of keys) {
         const k = once.includes(key) ? tOnce : key === 'w' || key === 'cx' ? across : t
@@ -1447,6 +1467,7 @@
         if (!uids.has(uid)) {
           node.g.remove()
           node.panel?.remove()
+          node.frame?.remove()
           for (const o of Object.values(node.overlays || {})) o.el.remove()
           nodes.delete(uid)
         }
@@ -1481,6 +1502,7 @@
         const colours = {
           fill: mixCss(fillA, fillB, t),
           stroke: mixCss(colourCss(from.stroke, 'stroke'), colourCss(to.stroke, 'stroke'), t),
+          frame: mixCss(colourCss(from.frame, 'stroke'), colourCss(to.frame, 'stroke'), t),
         }
         // a bar's track: none on a shape without a bar, so it fades in and out as the bar turns on and off
         let track = null

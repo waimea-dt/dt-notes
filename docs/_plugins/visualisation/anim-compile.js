@@ -8,7 +8,7 @@
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, REF, canonicalRef, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, digitLooks, rotateAbout,
-    LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, nounOf, PARTS, isGroup,
+    LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, drawsBox, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
     NUMBERINGS, DIRECTIONS, orList, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES, REPEATS, LERPED } = window.Anim
 
@@ -617,8 +617,8 @@
           // a row / column is placed by its first cell: its box is its cells' (cx, cy: to its middle)
           const before = [group.w, group.h, group.cx, group.cy].join()
           Object.assign(group, { w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - group.x, cy: (b.y0 + b.y1) / 2 - group.y })
-          // its panel grows and shrinks with it, in the time its cells take
-          if (panel && meta && [group.w, group.h, group.cx, group.cy].join() !== before) retime(meta, group.uid, busiest(meta, members))
+          // its panel or frame grows and shrinks with it, in the time its cells take
+          if (drawsBox(group) && meta && [group.w, group.h, group.cx, group.cy].join() !== before) retime(meta, group.uid, busiest(meta, members))
         } else {
           group.w = 2 * Math.max(group.x - b.x0, b.x1 - group.x)
           group.h = 2 * Math.max(group.y - b.y0, b.y1 - group.y)

@@ -373,7 +373,7 @@
     "property": {
       "$comment": "params: every keyword (KEYWORDS) but the commands, named (at, speed, fill) or standalone (bold, pop, dashed), and a row edit's into",
       "name": "support.type.property-name.anim",
-      "match": "(?<![\\w-])(stagger-reverse|follow-reverse|signal-reverse|flow-reverse|keep-style|highlight|callout|contain|counter|decimal|indices|opacity|regular|stagger|anchor|attach|bounce|corner|dashed|digits|dotted|follow|height|normal|powers|radius|repeat|signal|static|stroke|travel|weight|wobble|about|angle|cover|delay|front|pulse|scale|shake|slide|solid|speed|start|style|track|trail|typed|width|back|bend|bold|draw|ease|fade|fill|flow|font|from|glow|into|lang|mono|move|name|ring|show|size|zoom|bar|gap|ink|max|pie|pop|via|at|to|x|y)(?![\\w-])"
+      "match": "(?<![\\w-])(stagger-reverse|follow-reverse|signal-reverse|flow-reverse|keep-style|highlight|callout|contain|counter|decimal|indices|opacity|regular|stagger|anchor|attach|bounce|corner|dashed|digits|dotted|follow|height|normal|powers|radius|repeat|signal|static|stroke|travel|weight|wobble|about|angle|cover|delay|frame|front|pulse|scale|shake|slide|solid|speed|start|style|track|trail|typed|width|back|bend|bold|draw|ease|fade|fill|flow|font|from|glow|into|lang|mono|move|name|ring|show|size|zoom|bar|gap|ink|max|pie|pop|via|at|to|x|y)(?![\\w-])"
     },
     "value": {
       "$comment": "value words, after a param (highlight, speed, anchor and ease values have their own rules)",
@@ -421,7 +421,7 @@
         {
           "name": "support.constant.color.anim",
           "$comment": "the named colours, the hues' variants (COLOURS, with COLOUR_VARIANTS) and colours picked as they're drawn (COLOUR_PICKS)",
-          "match": "(?<![\\w-])(magenta-bright|magenta-muted|orange-bright|purple-bright|yellow-bright|amber-bright|green-bright|orange-muted|purple-muted|theme-bright|yellow-muted|amber-muted|blue-bright|cyan-bright|green-muted|pink-bright|teal-bright|theme-muted|blue-muted|cyan-muted|pink-muted|red-bright|teal-muted|red-muted|bg-shape|contrast|magenta|orange|purple|yellow|amber|black|green|muted|theme|white|blue|cyan|none|pink|teal|red|bg|fg)(?![\\w-])"
+          "match": "(?<![\\w-])(magenta-bright|magenta-muted|orange-bright|purple-bright|yellow-bright|amber-bright|green-bright|orange-muted|purple-muted|theme-bright|yellow-muted|amber-muted|blue-bright|cyan-bright|green-muted|pink-bright|teal-bright|theme-muted|blue-muted|cyan-muted|pink-muted|red-bright|teal-muted|red-muted|bg-shape|contrast|magenta|orange|purple|yellow|amber|black|faint|green|muted|theme|white|blue|cyan|none|pink|teal|red|bg|fg)(?![\\w-])"
         }
       ]
     },

@@ -274,6 +274,7 @@
     const allow = (key, word) => {
       const refused = (line.takes && !line.takes.includes(key)) || line.refuses?.includes(key)
       if (!refused) return
+      if (line.hints?.[key]) throw new Error(line.hints[key](word))
       if (line.refuse) throw new Error(line.refuse(word))
       throw new Error(line.takes.length ? `${name} only takes ${listProps(line.takes, kind)}, not "${word}"` : `${name} takes nothing after it`)
     }

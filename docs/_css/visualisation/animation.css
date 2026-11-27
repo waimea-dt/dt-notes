@@ -9,6 +9,7 @@
 
     --anim-accent:      var(--theme-color);
     --anim-muted:       var(--color-mono-5);
+    --anim-faint:       color-mix(in srgb, var(--anim-muted) 30%, var(--anim-bg)); /* muted, further towards the backdrop */
 
     --anim-line:        var(--border-color);
     --anim-shape:       color-mix(in srgb, var(--anim-bg), var(--color-min) 25%);

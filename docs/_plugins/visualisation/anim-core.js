@@ -186,6 +186,8 @@
   //   lines     its label can be given as "quoted" lines in [ ], where the label would go
   //   anchor    it's placed by a corner (ANCHORS), not its centre: at x,y puts that corner of its
   //             box at that corner of the cell, and it stays put as its size changes (centreShift)
+  //   frameInset  its frame (LOOKS: frame) goes this far inside its box (in cells): a span's box is
+  //             bigger than its cells, and its frame goes on their edges
   const COMMON_PROPS = ['ink', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const ANCHORED_PROPS = [...BOXED_PROPS, 'anchor'] // a single shape, placed by any side or corner
@@ -251,6 +253,7 @@
       takes: ['fill', 'stroke', 'linestyle', 'flow', 'corner', 'weight', 'opacity'],
       defaults: { w: 0, h: 0, fill: 'none', stroke: 'none', corner: 0.15 * CELL, layer: 'back' }, outline: 'box', label: 'centre',
       internal: true, hug: true, owned: 'it goes round its cells, so to cover others, span it again, e.g. "S: span Arr 2 4"',
+      frameInset: CHOREOGRAPHY.spanPad,
     },
   }
   const typesWhere = (test) => Object.keys(SHAPES).filter((type) => test(SHAPES[type]))
@@ -405,6 +408,7 @@
   //   fixed       its cells stay as made: no swap, insert or remove (a value changes them)
   //   flip        "flip" turns each digit d to radix - 1 - d (a bit: 0 <-> 1)
   //   props       props only it (and other layouts listing them) takes (LAYOUT_PROPS)
+  //   look        its own look as it's made (LOOKS: own), before its line's: a number's frame
   const INDEX_BOTTOM = { side: 'bottom', gap: 0.1 }
   const INDEX_TOP = { side: 'top', gap: 0.1 }
   const INDEX_LEFT = { side: 'left', gap: 0.2 }
@@ -412,8 +416,9 @@
   const NUMBER = {
     cell: 'rect', across: true, reverse: true, base: 0, name: 'left', spanName: 'top', slide: false, slot: false, arrange: 'line', bow: 'own',
     index: INDEX_BOTTOM, power: INDEX_TOP, decimal: { side: 'right', gap: 0.3, anchor: 'left', label: (id) => `= {${id}}` }, fixed: true,
+    look: { frame: 'fg' }, // a border round the whole number, its digits' strokes faint (NUMBER_DIGITS)
   }
-  const NUMBER_DIGITS = { prop: 'digits', look: { font: 1.5, stroke: 'muted' }, looks: { 0: { ink: 'muted' } } }
+  const NUMBER_DIGITS = { prop: 'digits', look: { font: 1.5, stroke: 'faint' }, looks: { 0: { ink: 'muted' } } }
   const GRID_VIEWS = {
     row: { layout: 'row', index: INDEX_LEFT }, // numbered down the left, as a column's cells are
     col: { layout: 'column', word: 'col', index: INDEX_BOTTOM }, // numbered along the bottom, as a row's cells are
@@ -443,6 +448,9 @@
   const digitSymbol = (d) => d.toString(36).toUpperCase()
   // The props only some layouts take (LAYOUTS: props)
   const LAYOUT_PROPS = [...new Set(LAYOUT_TYPES.flatMap((layout) => LAYOUTS[layout].props || []))]
+  // Whether a group draws something from its box (its layout's panel, LAYOUTS: panel; a frame,
+  // LOOKS: frame), so its box blends between beats and grows in the time its cells take
+  const drawsBox = (shape) => Boolean(LAYOUTS[shape.layout]?.panel || shape.frame)
   // The looks a layout's digits take from their values (LAYOUTS: digits.looks), e.g. ['ink']
   const digitLooks = (layout) => Object.keys(Object.assign({}, ...Object.values(LAYOUTS[layout]?.digits?.looks || {})))
 
@@ -492,6 +500,7 @@
     bg:      'var(--anim-bg)',
     theme:   'var(--anim-accent)',
     muted:   'var(--anim-muted)',
+    faint:   'var(--anim-faint)', // muted, further towards the backdrop
 
     'bg-shape': 'var(--anim-shape)', // a shape's default fill: a little darker than the backdrop (bg)
   }
@@ -512,7 +521,7 @@
     bright: { chroma: 1.4, fillMix: 70 },
     muted: { keep: 55, fillMix: 45 },
   }
-  const UNVARIED = [...PLAIN_FILLS, 'muted']
+  const UNVARIED = [...PLAIN_FILLS, 'muted', 'faint']
   const RELATIVE_COLOURS = Boolean(window.CSS?.supports?.('color', 'oklch(from red l c h)'))
   // A colour mixed towards the background, keeping `keep` % of it (a muted variant, and every tinted
   // fill: colourCss in anim-render.js). A hue as a variant: that, or its saturation scaled.
@@ -597,6 +606,7 @@
   //   hints  a message for a type it doesn't apply to, pointing at the prop that does
   //   quiet  types it has no effect on (a warning, not an error)
   //   cell   part of a row's / column's look, given to its cells
+  //   own    a layout's own look, not given to its cells (a span takes it too; not a default)
   //   kept   taken along by a value on the move with keep-style
   //   check  check(value, shape): a warning when the value can't be shown as asked (null if it can);
   //          shape is left out on a defaults line
@@ -663,10 +673,15 @@
     // a full bar's value (a row's or column's: its biggest when its bar is turned on, unless given)
     max: { field: 'max', unit: 1, min: 0, cell: true, check: maxCheck, default: 100 },
     track: { field: 'track', cell: true },
+    // a line round a layout's cells (or a grid's row or column, or a span's), on their outer edges and
+    // over their strokes (drawFrame in anim-render.js); none: no frame (null)
+    frame: { field: 'frame', map: { none: null }, own: true },
   }
   const looksWith = (flag) => Object.keys(LOOKS).filter((key) => LOOKS[key][flag])
   // A row's or column's look, given to each of its cells (when made, and on a change to it)
   const CELL_STYLE = looksWith('cell')
+  // A layout's own look, kept on it rather than given to its cells
+  const OWN_STYLE = looksWith('own')
   // A shape's style: the looks "style reset" puts back as they started (and "fill reset" and the
   // like, one at a time)
   const STYLE = ['fill', 'stroke', 'ink', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner', 'opacity']
@@ -790,6 +805,7 @@
     max: number('max', 'a number (the value of a full bar)'),
     show: bound(number('show', 'a share of the line, from its start: 0 (none of it) to 1 (all of it)')),
     track: colour('track'),
+    frame: colour('frame'), // round a layout, a grid's row or column, or a span (LOOKS: frame)
     opacity: resettable(bound(number('opacity', 'a number from 0 (hidden) to 1 (solid)'))),
     // what a line has at each end (END_MARKS)
     ...Object.fromEntries(['start', 'end'].map((key) => [key, { key, sigs: [['mark']], help: `${orList(Object.keys(END_MARKS))}, e.g. "${key} arrow"` }])),
@@ -897,6 +913,7 @@
   //   takesOut a row edit that takes cells out (remove), rather than putting them in (insert)
   //   takes    the props it takes (left out: any), with `what` naming it in the message
   //   refuses  props it doesn't take, with `refuse(word)` the message
+  //   hints    for some props it doesn't take: hints[key](word), a message pointing at what does
   //   spaces   it takes a gap of its own: the space between the things it lays out
   const LINES = {
     create: { refuses: ['repeat'], refuse: () => '"repeat" repeats a change to a shape that\'s already there, e.g. "A: angle +30 repeat 3"' }, // "A: rect …"
@@ -915,8 +932,8 @@
     remove: { verb: true, takesOut: true, takes: [...TIMING, 'keepStyle'] }, // a cell out of one
     assign: { takes: [...TIMING, 'keepStyle'], what: 'copying a value' }, // "V1: A[1]"
     span: { // "S: span Arr 0 2": a box round some of a row's / column's / code block's places
-      verb: true, takes: [...SHAPES.span.takes, 'layer', 'highlight', 'callout', 'name', 'effect', ...TIMING],
-      refuse: (word) => `"${word}" doesn't apply to a span: it's a box round its cells, for a fill, stroke, highlight, callout or name`,
+      verb: true, takes: [...SHAPES.span.takes, ...OWN_STYLE, 'layer', 'highlight', 'callout', 'name', 'effect', ...TIMING],
+      refuse: (word) => `"${word}" doesn't apply to a span: it's a box round its cells, for a fill, stroke, frame, highlight, callout or name`,
     },
     // "S[3]: "…"", "S[3]: highlight line": a script's line, replaced or lit (runScriptLine)
     scriptLine: { takes: ['label', 'highlight', ...TIMING], what: 'a script\'s line' },
@@ -924,15 +941,17 @@
     range: { // some of a row's / column's cells, "Arr[0..3]: fill red": how they look, not where they are
       takes: [...CELL_STYLE, 'style', 'highlight', 'emphasis', 'callout', ...TIMING, 'stagger'],
       refuse: (word) => `a range of cells changes how they look, so it doesn't go with "${word}"`,
+      // a frame goes round one thing: a span is some places as one
+      hints: { frame: (word) => `"${word}" goes round a whole layout, a grid's row or column, or a span: to frame some cells, span them, e.g. "S: span Arr[2..3] ${word} pink"` },
     },
     layout: { // "Arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
       spaces: true,
-      takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices', ...LAYOUT_PROPS],
+      takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, ...OWN_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices', ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" doesn't apply to ${LAYOUT_NOUNS}`,
     },
     camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
-      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'trail', 'repeat', 'name', 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
+      refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'trail', 'repeat', 'name', ...OWN_STYLE, 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" can't be a default`,
     },
   }
@@ -1632,7 +1651,7 @@
   }
 
   Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES,
-    LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, drawsBox, OWN_STYLE, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, article, wordFor,
     PATTERNS, PLACE_GAP, PLAY_PAUSE, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,

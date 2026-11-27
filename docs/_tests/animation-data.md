@@ -518,6 +518,52 @@ T: insert [7 8 9] at end
 
 </animation>
 
+## Feature: frame
+
+`frame` draws a line round a whole layout, on its cells' outer edges and over their strokes: a number with `stroke none` keeps a border. A grid's row or column takes one too, and a span frames some of a row's cells.
+
+<animation name="Frame" grid="16x9">
+
+```anim
+B: binary 67 at 2,2 stroke none frame red
+Arr: row [5 3 8 1] at 2,5 frame blue
+G: grid [[1 2 3] [4 5 6]] at 11,2
+C: code ["x = 1" "y = x + 1"] at 9,6 lang python frame purple
+```
+
+---
+
+## A grid's rows and columns, and a span
+
+```anim
+G[0]: frame amber
+G.col[2]: frame teal
+S: span Arr[1..2] frame pink
+```
+
+---
+
+## It follows its cells
+
+```anim
+Arr: insert 9 at end
+G: move +1,+0
+C: insert "print(y)" at end
+```
+
+---
+
+## Changing and switching off
+
+```anim
+B: frame green
+Arr: frame none
+G[0]: frame none
+S: frame none
+```
+
+</animation>
+
 ## Feature: name and indices
 
 <animation name="Names & Indices" grid="14x7">

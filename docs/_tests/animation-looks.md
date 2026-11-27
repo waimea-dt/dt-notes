@@ -90,7 +90,7 @@ Rm10: line from 12.00,6 to 12.01,6 stroke magenta-muted weight 15
 Rm11: line from 13.00,6 to 13.01,6 stroke theme-muted weight 15
 Lo: text "other" at 1,7 font 0.45 anchor right
 Lro: text "raw other" at 1,8 font 0.45 anchor right
-Oth: row ["none" "bg" "bg-shape" "black" "white" "fg" "muted"] at 2.15,7.15 font 0.4 size 0.7 gap 0.3 corner 0.5
+Oth: row ["none" "bg" "bg-shape" "black" "white" "fg" "muted" "faint"] at 2.15,7.15 font 0.4 size 0.7 gap 0.3 corner 0.5
 Oth[0]: fill none
 Oth[1]: fill bg
 Oth[2]: fill bg-shape
@@ -98,6 +98,7 @@ Oth[3]: fill black ink white
 Oth[4]: fill white ink black
 Oth[5]: fill fg ink bg
 Oth[6]: fill muted
+Oth[7]: fill faint
 Ro0: line from 2.00,8 to 2.01,8 stroke none weight 15
 Ro1: line from 3.00,8 to 3.01,8 stroke bg weight 15
 Ro2: line from 4.00,8 to 4.01,8 stroke bg-shape weight 15
@@ -105,6 +106,7 @@ Ro3: line from 5.00,8 to 5.01,8 stroke black weight 15
 Ro4: line from 6.00,8 to 6.01,8 stroke white weight 15
 Ro5: line from 7.00,8 to 7.01,8 stroke fg weight 15
 Ro6: line from 8.00,8 to 8.01,8 stroke muted weight 15
+Ro7: line from 9.00,8 to 9.01,8 stroke faint weight 15
 St: rect "stroke" at 3,9.5 size 2x0.8 stroke red weight 2
 Cl: rect "ink" at 6,9.5 size 2x0.8 ink amber
 Hx: text "#f80" at 9,9.5 ink #f80

@@ -132,6 +132,7 @@ Numbers in base 16 and base 10: like binary, with digits 0-9, then A-F.
 ```anim
 H: hex 123 at 3,2 digits 4 name "h" powers decimal  # 007B = 123
 D: denary 123 at 3,5 name "d" indices powers         # 3 digits by default
+P: denary 45 at 11,5 frame none stroke muted         # no frame, muted digit strokes
 
 ```
 

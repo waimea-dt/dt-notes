@@ -98,7 +98,7 @@ A: angle +90         # a further quarter turn
 
 ## Colours
 
-<code style="background:#e64848;color:#000">red</code> <code style="background:#de8269;color:#000">orange</code> <code style="background:#e2ae47;color:#000">amber</code> <code style="background:#d8dd47;color:#000">yellow</code> <code style="background:#6eb26d;color:#000">green</code> <code style="background:#24b6a1;color:#000">teal</code> <code style="background:#1bb0ce;color:#000">cyan</code> <code style="background:#64a2e7;color:#000">blue</code> <code style="background:#9b92e5;color:#000">purple</code> <code style="background:#da7d9b;color:#000">pink</code> <code style="background:#c384c9;color:#000">magenta</code> <code style="background:#000;color:#fff">black</code> <code style="background:#fff;color:#000">white</code> <code style="background:#68bef8;color:#000">theme</code> <code style="background:#8a8d90;color:#000">muted</code> <code style="background:#fff;color:#000">fg</code> <code style="background:#1f2428;color:#fff">bg</code> <code style="background:#171b1e;color:#fff">bg-shape</code> <code style="border:1px dashed #8a8d90">none</code> · `#hex`
+<code style="background:#e64848;color:#000">red</code> <code style="background:#de8269;color:#000">orange</code> <code style="background:#e2ae47;color:#000">amber</code> <code style="background:#d8dd47;color:#000">yellow</code> <code style="background:#6eb26d;color:#000">green</code> <code style="background:#24b6a1;color:#000">teal</code> <code style="background:#1bb0ce;color:#000">cyan</code> <code style="background:#64a2e7;color:#000">blue</code> <code style="background:#9b92e5;color:#000">purple</code> <code style="background:#da7d9b;color:#000">pink</code> <code style="background:#c384c9;color:#000">magenta</code> <code style="background:#000;color:#fff">black</code> <code style="background:#fff;color:#000">white</code> <code style="background:#68bef8;color:#000">theme</code> <code style="background:#8a8d90;color:#000">muted</code> <code style="background:#3f4447;color:#fff">faint</code> <code style="background:#fff;color:#000">fg</code> <code style="background:#1f2428;color:#fff">bg</code> <code style="background:#171b1e;color:#fff">bg-shape</code> <code style="border:1px dashed #8a8d90">none</code> · `#hex`
 
 (As in the dark theme; they follow the site's theme.)
 
@@ -354,7 +354,7 @@ Arr: delete                        # the whole row
 
 - A range `[from..to]` includes both ends, either way round.
 - A grid's range is `G[rows][columns]` (`G[0..1]`: whole rows). Each is a number or `end` (a table's row can be `head`).
-- A grid's row or column takes looks, highlights, emphasis, callouts, `stagger`, ranges, `span` and a `name`.
+- A grid's row or column takes looks, highlights, emphasis, callouts, `stagger`, ranges, `span`, a `frame` and a `name`.
 
 ### Names and indices
 
@@ -421,6 +421,20 @@ Sorted: delete
 
 - For rows, columns, code blocks, grids and tables. Invisible unless given a `fill` or `stroke`.
 - Takes highlights, a callout and a `name`.
+
+### Frame
+
+```anim
+B: binary 67 at 2,2 stroke none frame red  # a border round the whole number, none between digits
+Arr: frame blue                    # round the row, over its cells' strokes
+G[0]: frame amber                  # a grid's row
+G.col[2]: frame teal               # or column
+S: span Arr[1..2] frame pink       # some cells: span them
+Arr: frame none
+```
+
+- For rows, columns, numbers, code blocks, grids, tables, a grid's rows and columns, and spans.
+- On the cells' outer edges, in front of every shape (a span's `fill` and `stroke` are behind its cells).
 
 ## Variables
 
@@ -549,6 +563,7 @@ B: powers clear                    # or decimal clear, indices clear
 - `digits` (when made): binary 8 (max 32), hex 2 (max 8), denary 3 (max 10).
 - Values are numbers: denary, `0x7B` (hex) or `0b1111011` (binary), any case. One that doesn't fit wraps round.
 - 0s are muted; a digit given an `ink` keeps it until `ink reset`.
+- Made with `faint` digit strokes and an `fg` frame round the whole number (`frame none`: off).
 - No swap, insert or remove; no `decimal` on denary. Otherwise like a row.
 
 ## Code
