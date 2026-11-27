@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, LAYOUTS, BARS, cellId, baseOf, cellRange,
+  const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, EDIT_PACES, SLIDES, LAYOUTS, BARS, cellId, baseOf, cellRange,
     tween, baseShape, LAYOUT_TYPES, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine } = window.Anim
 
   // The layouts that can be edited (not LAYOUTS: fixed), for messages
@@ -186,10 +186,12 @@
     }
 
     // How far a swapped cell bows out from its row or column, before the lift (LAYOUTS: bow): its
-    // size across the way it goes, or a grid cell (a code line, whose box is as wide as the block)
+    // size across the way it goes, a grid cell, or not at all: straight to its new place, as a
+    // script's blocks go (moveBlocks)
     const BOWS = {
       own: (cell, way) => (Math.abs(way.x) >= Math.abs(way.y) ? cell.h : cell.w),
       cell: () => CELL,
+      none: () => 0,
     }
     const bowOf = (row, cell, way) => BOWS[LAYOUTS[row.layout].bow](cell, way)
 
@@ -266,22 +268,31 @@
       return edit
     }
 
-    // An edit's two moves in turn (insert / remove): the second (closing up, or sliding in) starts
-    // `then` ms in, when the leaving cell is mostly gone or the arriving one's slot has mostly opened
-    const thenOf = (props) => C.then * speedOf(props)
+    // An edit's two moves (insert / remove), timed by its layout's pace (EDIT_PACES), in ms: room,
+    // the space opening or closing up; unit, the unit coming or going. Each { after, dur }; whole,
+    // the time both take.
+    const DEFAULT_PACE = Object.values(EDIT_PACES).find((pace) => pace.default)
+    function movesOf(row, props, removing) {
+      const pace = EDIT_PACES[LAYOUTS[row.layout].pace] || DEFAULT_PACE
+      const speed = speedOf(props)
+      const [first, second] = removing ? ['unit', 'room'] : ['room', 'unit']
+      const moves = { [first]: { after: 0, dur: pace[first] * speed } }
+      moves[second] = { after: pace.then === null ? moves[first].dur : pace.then * speed, dur: pace[second] * speed }
+      moves.whole = Math.max(...[first, second].map((move) => moves[move].after + moves[move].dur))
+      return moves
+    }
 
-    // Where a cell comes from or goes to: beside the row (LAYOUTS: slide), or its own place
-    const asideOf = (row, axis) => (cell) => (!LAYOUTS[row.layout].slide ? { x: 0, y: 0 }
-      : axis.across ? { x: 0, y: C.aside * cell.h } : { x: -C.aside * cell.w, y: 0 })
+    // Where a cell comes from or goes to (LAYOUTS: slide, SLIDES), or its own place
+    const asideOf = (row, axis) => (cell) => SLIDES[LAYOUTS[row.layout].slide]?.(cell, axis.across) || { x: 0, y: 0 }
 
     // The units move: the leaving one goes and the rest close up, or the rest open up and the new
-    // one comes in; then the layout is laid out again (ids go with the places), with its views and
-    // indices. Returns the unit that left or arrived, which its slot marks.
+    // one comes in (movesOf); then the layout is laid out again (ids go with the places), with its
+    // views and indices. Returns the unit that left or arrived, which its slot marks.
     function moveUnits(row, axis, { at, values, source, target, props }, removing, meta, warn) {
       const kind = LAYOUTS[row.layout]
       const { units } = axis
-      const then = thenOf(props)
-      const timing = (uid, after) => schedule(meta, uid, props, { after })
+      const moves = movesOf(row, props, removing)
+      const timing = (uid, move) => schedule(meta, uid, props, move)
       const aside = asideOf(row, axis)
       const list = units.map((unit) => unit.map((cell) => structuredClone(cell)))
       let slotUnit
@@ -291,9 +302,9 @@
         for (const cell of gone) {
           if (target) tween(meta, cell.uid).exit = 'vanish' // it flies to the target instead (flyEdited)
           else Object.assign(tween(meta, cell.uid), { exit: 'fade', offset: aside(cell) })
-          timing(cell.uid, 0)
+          timing(cell.uid, moves.unit)
         }
-        list.slice(at).flat().forEach((cell) => timing(cell.uid, then))
+        list.slice(at).flat().forEach((cell) => timing(cell.uid, moves.room))
         slotUnit = gone
       } else {
         const blank = row.cell || { ...baseShape('rect') }
@@ -304,16 +315,16 @@
           return cell
         })
         list.splice(at, 0, fresh)
-        list.slice(at + 1).flat().forEach((other) => timing(other.uid, 0))
+        list.slice(at + 1).flat().forEach((other) => timing(other.uid, moves.room))
         for (const cell of fresh) {
           Object.assign(tween(meta, cell.uid), { enter: 'fade', offset: aside(cell) })
-          timing(cell.uid, then) // when a flyer brings a var's value (flyEdited), as it arrives
+          timing(cell.uid, moves.unit) // when a flyer brings a var's value (flyEdited), as it arrives
         }
         slotUnit = fresh
       }
       // its box (a panel or frame: drawsBox), and its views', opens with the space a new unit lands
       // in, or closes up with the space one leaves, as its slot does (not as the unit comes or goes)
-      for (const group of [row, ...partsOf(row, 'view')]) timing(group.uid, removing ? then : 0)
+      for (const group of [row, ...partsOf(row, 'view')]) timing(group.uid, moves.room)
       for (const cell of units.flat()) shapes.delete(cell.id)
       if (kind.fit && list.length) {
         // the block widens for a longer line as the others move aside, or narrows once the
@@ -321,7 +332,7 @@
         const cells = list.flat()
         const widths = new Map(cells.map((cell) => [cell.uid, cell.w]))
         fitLines(cells)
-        cells.filter((cell) => widths.get(cell.uid) !== cell.w && !slotUnit.includes(cell)).forEach((cell) => timing(cell.uid, removing ? then : 0))
+        cells.filter((cell) => widths.get(cell.uid) !== cell.w && !slotUnit.includes(cell)).forEach((cell) => timing(cell.uid, moves.room))
       }
       axis.relay(list)
       for (const cell of list.flat()) {
@@ -330,7 +341,7 @@
       }
       arranged(row).sync(row, props, meta, warn)
       // the last index comes with the slot, or goes as it closes
-      if (numbered(row)) syncIndices(row, props, meta, { add: 0, remove: then })
+      if (numbered(row)) syncIndices(row, props, meta, { add: moves.room, remove: moves.room })
       return slotUnit
     }
 
@@ -349,7 +360,7 @@
       if (source) {
         tween(meta, cell.uid).enter = 'appear' // there from the start: the flyer is on it
         const place = { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }
-        fly(meta, source, cell, [pointOf(source), { x: place.x + out.x, y: place.y + out.y }], props, { arrive: thenOf(props), linger: false })
+        fly(meta, source, cell, [pointOf(source), { x: place.x + out.x, y: place.y + out.y }], props, { arrive: movesOf(row, props, false).unit.after, linger: false })
       }
     }
 
@@ -483,14 +494,16 @@
       if (!LAYOUTS[row.layout].slot || BARS[cell.bar]?.slot === false) return
       const xs = unit.map((c) => c.attach.dx)
       const ys = unit.map((c) => c.attach.dy)
+      // it opens as the room's made, or closes as it closes up (movesOf), in the time both moves take
+      const { room, whole } = movesOf(row, props, closing)
       const slot = {
-        uid: newUid(), ref: row.id, across: axis.across, closing, then: C.then / (1 + C.then),
+        uid: newUid(), ref: row.id, across: axis.across, closing, then: closing ? room.after / whole : 1 - (room.after + room.dur) / whole,
         dx: (Math.min(...xs) + Math.max(...xs)) / 2, dy: (Math.min(...ys) + Math.max(...ys)) / 2,
         w: Math.max(...xs) - Math.min(...xs) + Math.max(...unit.map((c) => c.w)),
         h: Math.max(...ys) - Math.min(...ys) + Math.max(...unit.map((c) => c.h)),
         corner: cell.corner || 0,
       }
-      schedule(meta, slot.uid, props, { dur: speedOf(props) + thenOf(props) })
+      schedule(meta, slot.uid, props, { dur: whole })
       meta.slots = [...(meta.slots || []), slot]
     }
 

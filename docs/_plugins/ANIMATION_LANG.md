@@ -613,6 +613,7 @@ C: font 0.8
 ```
 
 - Lines count from 1. Scratch counts as written, including end, else and blank lines.
+- Both play edits alike: room is made, then a new line slides in from the right; a gone line slides out, then they close up; a swap goes straight.
 
 ## Timing and effects
 

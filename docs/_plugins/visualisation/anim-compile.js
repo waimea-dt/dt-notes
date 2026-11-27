@@ -661,10 +661,13 @@
 
     // The one place a change's timing is set: it takes `dur` ms (the line's speed unless given),
     // starting `after` ms after the line's delay, with the line's ease. A shape changed more than
-    // once in a beat takes the longest time and the latest start, and the last ease.
+    // once in a beat has one timing for them all: the latest start and the latest end, so it never
+    // finishes later than one of its changes asked (a change that starts sooner is held back and
+    // squeezed into it), and the last ease. `hold` isn't a change of its own: it holds the shape's
+    // change back that many ms (a stagger), keeping its length.
     // A repeated line (repeat) takes its speed for each round, and records them (tween: rounds; forever:
     // one round, looped by the widget)
-    function schedule(meta, uid, props, { dur = speedOf(props), after = 0 } = {}) {
+    function schedule(meta, uid, props, { dur = speedOf(props), after = 0, hold } = {}) {
       const record = tween(meta, uid)
       const easing = props.ease ?? defaults.ease
       if (easing) record.ease = easing
@@ -672,8 +675,14 @@
         record.rounds = { n: props.repeat }
         if (Number.isFinite(props.repeat)) dur *= props.repeat
       }
-      record.dur = Math.max(record.dur, dur)
-      record.delay = Math.max(record.delay, delayOf(props) + after)
+      if (hold !== undefined) {
+        record.delay = Math.max(record.delay, delayOf(props) + hold)
+        return record
+      }
+      const start = delayOf(props) + after
+      const end = Math.max(record.delay + record.dur, start + dur)
+      record.delay = Math.max(record.delay, start)
+      record.dur = end - record.delay
       return record
     }
 
@@ -1128,7 +1137,7 @@
         warn(`${GROUPS} moves as one, so its move isn't staggered`)
       }
       const list = stagger.reverse ? [...order].reverse() : order
-      list.forEach((uids, k) => uids.forEach((uid) => schedule(meta, uid, props, { dur: 0, after: k * stagger.gap * 1000 })))
+      list.forEach((uids, k) => uids.forEach((uid) => schedule(meta, uid, props, { hold: k * stagger.gap * 1000 })))
     }
 
     // The timing of the busiest of some shapes this beat: the longest change, from the earliest

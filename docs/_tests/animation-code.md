@@ -47,42 +47,13 @@ C[1]: fill teal
 
 ---
 
-## Changing lines
-
-A longer line widens the block.
-
-```anim
-C[1]: fill none
-Note: delete
-C: insert "print(total)  # 16" at end
-```
-
-+++
-
-```anim
-C[1]: "total = 100" speed slow
-```
-
-+++
-
-```anim
-C: swap 1 2
-```
-
-+++
-
-```anim
-C: remove 1
-C: font 0.8
-```
-
----
-
 ## One line, typed
 
 A single line goes in quotes. Typed, a block's lines type out one after another.
 
 ```anim
+C[1]: fill none
+Note: delete
 S: code "console.log(\"Hello, world!\")" lang js at 2,6 typed
 ```
 
@@ -106,6 +77,95 @@ P: code [
 ```anim
 P: delete typed
 C: delete
+```
+
+</animation>
+
+## Feature: code edits
+
+Edits play as a Scratch script's do: room is made, then a new line slides in from the right; a gone line slides out to the right, then the rest close up; swapped lines go straight to their places. The block holds its place by its first line's square as it widens and narrows.
+
+<animation name="Code Edits" grid="16x8">
+
+```anim
+C: code [
+    "a = 1",
+    "b = 2",
+    "c = a + b"
+] at 2,2 lang python name "calc.py" indices
+```
+
+---
+
+## Insert: at the start, in the middle, at the end
+
+```anim
+C: insert "# add two numbers" at 1
+then
+C: insert "print(a, b)" at 4
+then
+C: insert "print(c)" at end
+```
+
+---
+
+## Replace: shorter, then longer (the block widens)
+
+```anim
+C[2]: "a = 10"
+then
+C[6]: "print(f\"c is {c}\")  # a longer line"
+```
+
+---
+
+## Move: swap neighbours, a lit line, far apart
+
+```anim
+C: swap 4 5
+```
+
++++
+
+The light goes with its line.
+
+```anim
+C[2]: highlight line
+C: swap 2 3
+then
+C: swap 1 6
+then
+C: swap 6 1
+```
+
+---
+
+## Remove: the start, the middle, the end (the block narrows)
+
+```anim
+C[3]: highlight clear
+C: remove 1
+then
+C: remove 3
+then
+C: remove end
+```
+
+---
+
+## Together, slowly, and a new font
+
+```anim
+C: insert "import math" at 1 speed slow
+C: insert "print(math.pi)" at end speed slow
+```
+
++++
+
+```anim
+C: font 1.5
+then
+C: font 2
 ```
 
 </animation>

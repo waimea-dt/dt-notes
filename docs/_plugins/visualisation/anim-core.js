@@ -48,6 +48,24 @@
     scriptAside: 1,   // a new script block slides in from this far to its right as it fades in, and a gone one slides out as far (in cells)
     scriptReshape: 0, // a C block whose inside grows or shrinks and can't morph (blockMorph) swaps to its new shape halfway through making room, crossfading over this share of it (0: at once)
   }
+  // How a layout's insert or remove times its two moves (LAYOUTS: pace): the space opening or
+  // closing up (room) and the unit coming or going (unit), each a share of the line's speed. An
+  // insert makes room first, a remove takes the unit out first; the second move starts `then` of the
+  // speed in, or as the first ends (null).
+  //   overlap  each move takes the whole speed, overlapping (default: rows, columns, grids)
+  //   inTurn   one after the other within the speed, as a script's blocks are (moveBlocks)
+  const EDIT_PACES = {
+    overlap: { room: 1, unit: 1, then: CHOREOGRAPHY.then, default: true },
+    inTurn: { room: CHOREOGRAPHY.scriptRoom, unit: 1 - CHOREOGRAPHY.scriptRoom, then: null },
+  }
+  // Where a layout's inserted or removed unit comes from or goes to as it fades (LAYOUTS: slide;
+  // none: in its place), from its cell and whether the layout runs across
+  //   beside  below a row, left of a column, CHOREOGRAPHY.aside of the cell's size
+  //   right   to its right, CHOREOGRAPHY.scriptAside cells, as a script's blocks (moveBlocks)
+  const SLIDES = {
+    beside: (cell, across) => (across ? { x: 0, y: CHOREOGRAPHY.aside * cell.h } : { x: -CHOREOGRAPHY.aside * cell.w, y: 0 }),
+    right: () => ({ x: CHOREOGRAPHY.scriptAside * CELL, y: 0 }),
+  }
   // How a shape comes in or goes (the effect words; rendered by FRAMES in anim-render.js):
   //   applies  whether it works on a shape; when it doesn't, the shape fades, with the warning
   //            unless(noun) gives (noun: the shape's name, nounOf)
@@ -374,9 +392,11 @@
   //   fit         every cell takes the size of the biggest, refitted as they change (fitCode); its
   //               box is fitted like its cells' (SHAPES: fitted)
   //   typeInTurn  typed (and delete typed) types its cells one after another
-  //   slide       insert / remove slide a cell in and out from beside it (or it fades in place)
+  //   slide       where insert / remove slide a cell in from and out to (SLIDES; none: it fades in place)
+  //   pace        how insert / remove time their moves (EDIT_PACES; none: the default)
   //   slot        a muted outline marks the space a cell leaves or lands in
-  //   bow         how far a swapped cell bows out: 'own' (its size across) or 'cell' (a grid cell)
+  //   bow         how far a swapped cell bows out: 'own' (its size across), 'cell' (a grid cell) or
+  //               'none' (straight to its place, as a script's blocks go)
   //   numbers     its indices keep to its cells' font size
   //   panel       a background behind it (and its indices): pad and corner, in cells
   //   spanName    the side a span's name goes (beside its places, away from the indices)
@@ -414,7 +434,7 @@
   const INDEX_LEFT = { side: 'left', gap: 0.2 }
   // What every number (LAYOUTS: radix) shares: a reversed row of fixed digits
   const NUMBER = {
-    cell: 'rect', across: true, reverse: true, base: 0, name: 'left', spanName: 'top', slide: false, slot: false, arrange: 'line', bow: 'own',
+    cell: 'rect', across: true, reverse: true, base: 0, name: 'left', spanName: 'top', slot: false, arrange: 'line', bow: 'own',
     index: INDEX_BOTTOM, power: INDEX_TOP, decimal: { side: 'right', gap: 0.3, anchor: 'left', label: (id) => `= {${id}}` }, fixed: true,
     look: { frame: 'fg' }, // a border round the whole number, its digits' strokes faint (NUMBER_DIGITS)
   }
@@ -424,15 +444,15 @@
     col: { layout: 'column', word: 'col', index: INDEX_BOTTOM }, // numbered along the bottom, as a row's cells are
   }
   const LAYOUTS = {
-    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left', spanName: 'top', slide: true, slot: true, arrange: 'line', bow: 'own', index: INDEX_BOTTOM },
-    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'top', spanName: 'right', slide: true, slot: true, arrange: 'line', bow: 'own', index: INDEX_LEFT },
+    row: { noun: 'row', item: 'cell', cell: 'rect', across: true, base: 0, name: 'left', spanName: 'top', slide: 'beside', slot: true, arrange: 'line', bow: 'own', index: INDEX_BOTTOM },
+    column: { noun: 'column', item: 'cell', cell: 'rect', across: false, base: 0, name: 'top', spanName: 'right', slide: 'beside', slot: true, arrange: 'line', bow: 'own', index: INDEX_LEFT },
     code: {
       noun: 'code block', item: 'line', cell: 'codeline', across: false, base: 1, name: 'top', spanName: 'right', lines: true, fit: true, typeInTurn: true,
-      arrange: 'line', slide: false, slot: false, bow: 'cell', numbers: true, panel: { pad: 0.12, corner: 0.1 }, index: INDEX_LEFT,
+      arrange: 'line', slide: 'right', pace: 'inTurn', slot: false, bow: 'none', numbers: true, panel: { pad: 0.12, corner: 0.1 }, index: INDEX_LEFT,
     },
-    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'top', spanName: 'top', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS },
+    grid: { noun: 'grid', item: 'cell', cell: 'rect', base: 0, name: 'top', spanName: 'top', arrange: 'grid', slide: 'beside', slot: true, bow: 'own', views: GRID_VIEWS },
     table: {
-      noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'top', spanName: 'top', arrange: 'grid', slide: true, slot: true, bow: 'own', views: GRID_VIEWS,
+      noun: 'table', item: 'cell', cell: 'rect', base: 0, name: 'top', spanName: 'top', arrange: 'grid', slide: 'beside', slot: true, bow: 'own', views: GRID_VIEWS,
       head: { word: 'head', look: { bold: true } },
     },
     binary: {
@@ -1650,7 +1670,7 @@
     })))
   }
 
-  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES,
+  Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, digitLooks, CHOREOGRAPHY, EDIT_PACES, SLIDES, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES,
     LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, drawsBox, OWN_STYLE, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, article, wordFor,
     PATTERNS, PLACE_GAP, PLAY_PAUSE, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES,

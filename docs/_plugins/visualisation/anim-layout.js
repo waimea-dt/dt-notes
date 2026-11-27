@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { CELL, placeBeside, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
+  const { CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
     markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, OWN_STYLE, digitLooks, EDIT_WORDS, REF,
     LAYOUT_NOUNS, nounList, LAYOUT_NAMES, GROUP, wordFor, PARTS } = window.Anim
@@ -353,11 +353,12 @@
     const numbered = (row) => Object.keys(NUMBERINGS).some((key) => row[key])
 
     // Adds or removes a layout's numbers (each of NUMBERINGS it shows: indices …) so it has one per
-    // cell (none of one it doesn't show), new ones fading in `add` ms in and old ones out `remove` ms in.
+    // cell (none of one it doesn't show), new ones fading in as `add` and old ones out as `remove`
+    // ({ after, dur } in ms, as schedule takes: an edit's room, movesOf in anim-edit.js)
     function syncIndices(row, props, meta, timing = {}) {
       for (const [key, numbering] of Object.entries(NUMBERINGS)) syncNumbering(row, key, numbering, props, meta, timing)
     }
-    function syncNumbering(row, key, numbering, props, meta, { add = 0, remove = 0 }) {
+    function syncNumbering(row, key, numbering, props, meta, { add = {}, remove = {} }) {
       const marks = row[key] ? indexMarks(row, numbering) : []
       const { numbers } = LAYOUTS[row.layout]
       const kept = new Set()
@@ -378,13 +379,13 @@
         if (old) continue
         shapes.set(id, text)
         tween(meta, text.uid).enter = 'fade'
-        schedule(meta, text.uid, props, { after: add })
+        schedule(meta, text.uid, props, add)
       }
       // the ones with nothing left to number (or all of them, with indices clear)
       for (const old of partsOf(row, numbering.part).filter((s) => !kept.has(s.id))) {
         shapes.delete(old.id)
         tween(meta, old.uid).exit = 'fade'
-        schedule(meta, old.uid, props, { after: remove })
+        schedule(meta, old.uid, props, remove)
       }
     }
 
@@ -740,7 +741,9 @@
       cells.forEach((cell, k) => {
         const along = reverse ? offset - offsets[k] : offsets[k]
         cell.id = cellId(row.id, k + baseOf(row.layout))
-        cell.attach = offsetFrom(row.id, (across ? along : 0) + fromEdge(lead.w), (across ? 0 : along) + fromEdge(lead.h))
+        // its centre there, from the point it's placed by (placeFor: a code line by its left edge)
+        const at = placeFor(cell, { x: (across ? along : 0) + fromEdge(lead.w), y: (across ? 0 : along) + fromEdge(lead.h) })
+        cell.attach = offsetFrom(row.id, at.x, at.y)
       })
       row.members = cells.map((cell) => cell.id)
     }
