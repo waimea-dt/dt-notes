@@ -15,7 +15,7 @@
   const symbolDigit = (symbol, radix) => (/^[0-9A-Z]$/.test(symbol) && parseInt(symbol, 36) < radix ? parseInt(symbol, 36) : NaN)
 
   window.Anim.COMPILER_PARTS.push((cx) => {
-    const { shapes, defaults, newUid, tween } = cx
+    const { shapes, defaults, newUid, tween, own } = cx
     // the other parts' functions, linked once every part is made
     let applyStagger, busiest, noShape, retime, schedule, speedOf, stampOf, stampNow
     // making (in the link functions and holderRef): the id the line being run makes, if it makes one
@@ -258,20 +258,23 @@
     // last was (stampOf: every change goes through a tween record), or one has gone
     const checkedAt = new WeakMap() // link -> when its sources were last looked at
     function fitLinks(meta, warn) {
-      for (const shape of shapes.values()) {
-        for (const key of Object.keys(shape.links || {})) {
-          const link = shape.links[key]
+      for (const id of [...shapes.keys()]) {
+        for (const key of Object.keys(shapes.get(id)?.links || {})) {
+          const seen = shapes.get(id)
+          const link = seen.links?.[key]
+          if (!link) continue
           const ids = LINKS[link.kind].sources(link)
           const sources = ids.map((id) => shapes.get(id)).filter(Boolean)
           const at = checkedAt.get(link)
           const unchanged = at !== undefined && sources.length === ids.length && !sources.flatMap(changing).some((source) => stampOf(meta, source.uid) > at)
           if (unchanged) continue
-          checkedAt.set(link, stampNow())
+          const shape = own(seen) // its link and look may change
+          checkedAt.set(shape.links[key], stampNow())
           const changed = fitLink(shape, key, warn) // true, or the shapes that changed (a number's digits)
           if (!changed) continue
           const busy = busiest(meta, sources.flatMap(changing))
           for (const uid of Array.isArray(changed) ? changed.map((cell) => cell.uid) : [shape.uid]) retime(meta, uid, busy)
-          if (LINKS[link.kind].counts) countAlong(shape, link, sources, meta)
+          if (LINKS[link.kind].counts) countAlong(shape, shape.links?.[key] || link, sources, meta)
         }
       }
     }

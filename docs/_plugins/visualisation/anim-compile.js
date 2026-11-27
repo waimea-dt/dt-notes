@@ -79,12 +79,34 @@
   // A number look's value (LOOKS: unit, min, max), from a number as written, relative to `current`
   const lookValue = (look, n, current) => Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(n, current, { unit: look.unit })))
 
+  // The shapes in a beat's snapshot (compile), which later beats share: never changed again, only
+  // copied (own). Every change to a shape that's there must go through own (or a copy) first.
+  const TAKEN = new WeakSet()
   function createCompiler(context) {
     const shapes = new Map() // id -> current shape
     const defaults = {} // changed in place: the compiler's parts share it
     let camera = { x: null, y: null, zoom: 1 } // centre in px (null: the drawing's centre)
     let uid = 0
     const newUid = () => ++uid
+    // A shape this line can change: itself, or if it's taken (in a past beat's snapshot: compile)
+    // a copy put in its place. Given an older reference to a shape this line has already copied, it
+    // gives that copy.
+    function own(shape) {
+      const current = shapes.get(shape.id)
+      const live = current?.uid === shape.uid ? current : shape
+      if (!TAKEN.has(live)) return live
+      const copy = copyOf(live)
+      if (live === current) shapes.set(copy.id, copy) // one that's gone (being removed) stays gone
+      return copy
+    }
+    // Gives a shape some values, copying it first (own) only if any differ: the shape that has them
+    // now, or null if they were all as given
+    function changeOwned(shape, values) {
+      if (Object.keys(values).every((key) => shape[key] === values[key])) return null
+      return Object.assign(own(shape), values)
+    }
+    // resolveAttachments' place, for the shapes in `shapes`: a shape that moves is copied first
+    const placeOwned = (shape, pos) => changeOwned(shape, { x: pos.x, y: pos.y })
     // One record per shape per beat: how its change animates (duration and delay in ms, the route
     // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect, and
     // `offset`: how far it slides as it enters or leaves, as a row's cell does). Set only where used:
@@ -516,7 +538,7 @@
     function numberEach(members, props, meta, warn) {
       for (const member of members) {
         if (!member || isLine(member)) continue
-        applyProps(member, { highlight: [{ number: null }] }, false, warn, meta)
+        applyProps(own(member), { highlight: [{ number: null }] }, false, warn, meta)
         schedule(meta, member.uid, props)
       }
     }
@@ -605,8 +627,9 @@
       const followers = [...shapes.values()].filter((shape) => PARTS[shape.role]?.follows)
       if (!followers.length) return
       const byUid = new Map([...shapes.values()].map((shape) => [shape.uid, shape]))
-      for (const part of followers) if (!byUid.has(part.owner) && shapes.has(part.part)) part.owner = shapes.get(part.part).uid
-      const moving = followers.filter((part) => byUid.has(part.owner) && byUid.get(part.owner).id !== part.part)
+      for (const part of followers) if (!byUid.has(part.owner) && shapes.has(part.part)) own(part).owner = shapes.get(part.part).uid
+      const moving = followers.map((part) => shapes.get(part.id)).filter((part) => byUid.has(part.owner) && byUid.get(part.owner).id !== part.part)
+        .map((part) => (TAKEN.has(part) ? copyOf(part) : part))
       for (const part of moving) shapes.delete(part.id)
       for (const part of moving) {
         const owner = byUid.get(part.owner)
@@ -625,8 +648,8 @@
     function leaveGroup(shape) {
       if (shape.attach?.kind !== 'offset') return
       const parent = shapes.get(shape.attach.ref)
-      if (parent?.members) parent.members = parent.members.filter((id) => id !== shape.id)
-      shape.attach = null
+      if (parent?.members) own(parent).members = parent.members.filter((id) => id !== shape.id)
+      if (!TAKEN.has(shape)) shape.attach = null // a taken shape going (removeShape) is left as it was
     }
 
     // After every line: colours worked out from values follow them, put attached shapes and group
@@ -639,29 +662,26 @@
       fitCorners(meta)
       fitNumbers(meta)
       fitLinks(meta, warn)
-      for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) shape.attach = null
-      resolveAttachments(shapes)
-      for (const group of shapes.values()) {
-        if (!isGroup(group)) continue
+      for (const shape of shapes.values()) if (shape.attach && !shapes.has(shape.attach.ref)) own(shape).attach = null
+      resolveAttachments(shapes, undefined, placeOwned)
+      for (const shown of shapes.values()) {
+        if (!isGroup(shown)) continue
         // a row / column emptied by remove: nothing, at its first cell's place
-        if (!group.members.length) { if (group.layout) Object.assign(group, { w: 0, h: 0, cx: 0, cy: 0 }); continue }
+        if (!shown.members.length) { if (shown.layout) changeOwned(shown, { w: 0, h: 0, cx: 0, cy: 0 }); continue }
+        const group = shown
         const members = group.members.map((id) => shapes.get(id)).filter(Boolean)
         // a layout with a panel (LAYOUTS) takes its indices in too: the panel goes behind them
         const panel = LAYOUTS[group.layout]?.panel
         const indices = panel ? partsOf(group, 'index') : []
         if (!boxStale(group, [...members, ...indices], meta)) continue
         const b = unionBounds([...members, ...indices], shapes)
-        if (group.layout) {
-          // a row / column is placed by its first cell: its box is its cells' (cx, cy: to its middle)
-          const before = [group.w, group.h, group.cx, group.cy].join()
-          Object.assign(group, { w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - group.x, cy: (b.y0 + b.y1) / 2 - group.y })
-          // its panel or frame grows and shrinks with it, in the time its cells take
-          if (drawsBox(group) && meta && [group.w, group.h, group.cx, group.cy].join() !== before) retime(meta, group.uid, busiest(meta, members))
-        } else {
-          group.w = 2 * Math.max(group.x - b.x0, b.x1 - group.x)
-          group.h = 2 * Math.max(group.y - b.y0, b.y1 - group.y)
-        }
-        boxedFrom.set(group, { ids: group.members.join(' '), at: stampNow() })
+        // a row / column is placed by its first cell: its box is its cells' (cx, cy: to its middle)
+        const box = group.layout ? { w: b.x1 - b.x0, h: b.y1 - b.y0, cx: (b.x0 + b.x1) / 2 - group.x, cy: (b.y0 + b.y1) / 2 - group.y }
+          : { w: 2 * Math.max(group.x - b.x0, b.x1 - group.x), h: 2 * Math.max(group.y - b.y0, b.y1 - group.y) }
+        const boxed = changeOwned(group, box)
+        // a layout's panel or frame grows and shrinks with it, in the time its cells take
+        if (boxed && group.layout && drawsBox(group) && meta) retime(meta, group.uid, busiest(meta, members))
+        boxedFrom.set(boxed || group, { ids: group.members.join(' '), at: stampNow() })
       }
     }
 
@@ -685,9 +705,10 @@
         if (!isLine(shape)) continue
         if (shape.from.ref !== id && shape.to.ref !== id && !shape.via?.some((p) => p.ref === id)) continue
         const ends = resolveEnds(shape, shapes)
-        if (shape.from.ref === id) shape.from = ends.from
-        if (shape.to.ref === id) shape.to = ends.to
-        if (shape.via) shape.via = shape.via.map((p, i) => (p.ref === id ? ends.vias[i] : p))
+        const line = own(shape)
+        if (line.from.ref === id) line.from = ends.from
+        if (line.to.ref === id) line.to = ends.to
+        if (line.via) line.via = line.via.map((p, i) => (p.ref === id ? ends.vias[i] : p))
       }
     }
 
@@ -910,7 +931,7 @@
       if (order && takeBareNumber(props)) numberEach(existing.members.map((m) => shapes.get(m)), props, meta, warn)
       const { opacity } = props // its tags fade with it, a group's too (updateParts)
       if (order) restyleMembers(existing, props, meta, warn) // takes the members' look out of props
-      const shape = copyOf(existing)
+      const shape = copyOf(shapes.get(id)) // as the lines above left it (restyleMembers, respace)
       if (newValue && !existing.layout) setValue(shape, newValue)
       if (newValue) followValue(shape, followed, warn) // a value given stops it following one
       const beforeRounds = props.repeat && lerpedNow()
@@ -1061,10 +1082,11 @@
       const group = { ...baseShape(GROUP), id, uid: newUid(), members, x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0 }
       for (const m of list) {
         if (isLine(m)) continue // follows the shapes its ends are attached to
-        leaveGroup(m)
-        m.attach = offsetFrom(id, m.x - group.x, m.y - group.y)
+        const member = own(m)
+        leaveGroup(member)
+        member.attach = offsetFrom(id, m.x - group.x, m.y - group.y)
       }
-      if (takeBareNumber(props)) numberEach(list, props, meta, warn)
+      if (takeBareNumber(props)) numberEach(members.map((m) => shapes.get(m)), props, meta, warn)
       applyProps(group, props, false, warn, meta)
       shapes.set(id, group)
       schedule(meta, group.uid, props).enter = 'fade'
@@ -1076,7 +1098,7 @@
       if (!existing) throw noShape(id)
       if (!isGroup(existing) || bound(existing)) throw new Error(`"${id}" isn't a group`)
       parseProps(tokens, 1, 'ungroup', shapes)
-      for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) member.attach = null }
+      for (const m of existing.members) { const member = shapes.get(m); if (member?.attach?.ref === id) own(member).attach = null }
       shapes.delete(id)
       tween(meta, existing.uid).exit = 'fade'
     }
@@ -1103,7 +1125,7 @@
       })
       // its centre moves to the middle of its shapes as they now are (a group in a group's members
       // follow it first), so its box fits them: a group in a group is placed by its box
-      resolveAttachments(shapes)
+      resolveAttachments(shapes, undefined, placeOwned)
       const b = unionBounds(placed, shapes)
       const moved = { ...copyOf(group), x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }
       shapes.set(id, moved)
@@ -1141,7 +1163,7 @@
       for (const key of Object.keys(look)) delete props[key]
       if (group.layout) withRowMax(group, look)
       // cells added to a row / column later take its look as it is now
-      if (group.cell) applyProps(group.cell, pick(look, memberLook.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
+      if (group.cell) applyProps(own(group).cell, pick(look, memberLook.filter((key) => !APPLIES[key] || APPLIES[key].includes(group.cell.type))), false, () => {}, meta)
       const used = new Set()
       let resized = false
       for (const member of groupMembers(group)) {
@@ -1207,7 +1229,7 @@
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, changeRange, rangeOf, editScript, numberOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitCorners, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
       readLines, refuseView, relayLayout, respace, setNumber, setRules, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
-    const cx = { shapes, defaults, newUid, tween, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
+    const cx = { shapes, defaults, newUid, tween, own, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect, stampOf, stampNow }
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
@@ -1299,7 +1321,12 @@
     // the same, with where each is (step, beat, and line in the beat's scene), for an editor
     const issues = []
 
-    const snapshot = () => new Map([...compiler.shapes].map(([id, shape]) => [id, copyOf(shape)]))
+    // A beat's shapes, shared with the compiler and later beats: each is marked as taken, and
+    // copied (own) before a later line changes it, so only what changes is ever copied
+    const snapshot = () => {
+      for (const shape of compiler.shapes.values()) TAKEN.add(shape)
+      return new Map(compiler.shapes)
+    }
     steps.forEach((step, si) => {
       step.beats.forEach((beat, bi) => {
         // lead: how long it waits before it starts (then n)

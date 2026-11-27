@@ -11,7 +11,7 @@
     LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, KEYWORDS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS, SIZE_PROPS, MAX_DEPTH } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
-    const { shapes, defaults, newUid, tween } = cx
+    const { shapes, defaults, newUid, tween, own } = cx
     // the other parts' functions, linked once every part is made
     let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, followedValue, followValue, holderRef, inTurn,
       layerOf, linkText, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
@@ -146,13 +146,13 @@
     // stay in the row (LINES: range).
     function changeRange({ row, cells }, tokens, meta, warn) {
       const props = parseProps(tokens, 0, 'range', shapes)
-      const own = { ...props }
-      delete own.stagger
-      withRowMax(row, own)
-      if (takeBareNumber(own)) numberEach(cells, own, meta, warn)
+      const change = { ...props }
+      delete change.stagger
+      withRowMax(row, change)
+      if (takeBareNumber(change)) numberEach(cells, change, meta, warn)
       for (const cell of cells) {
-        const changed = copyOf(cell)
-        applyProps(changed, own, false, warn, meta)
+        const changed = copyOf(shapes.get(cell.id)) // as numberEach left it
+        applyProps(changed, change, false, warn, meta)
         shapes.set(changed.id, changed)
         schedule(meta, changed.uid, props)
       }
@@ -211,12 +211,17 @@
 
     // After every line: each span refitted to its places, as its row's cells move (in the time its
     // busiest cell takes this beat)
+    const SPAN_FIT = ['covers', 'w', 'h', 'attach', 'x', 'y'] // what fitSpan sets
     function fitSpans(meta) {
       for (const span of shapes.values()) {
         if (!span.span || !shapes.has(span.span.of)) continue
-        const before = [span.w, span.h, span.attach.dx, span.attach.dy].join()
-        fitSpan(span)
-        if (meta && [span.w, span.h, span.attach.dx, span.attach.dy].join() !== before) {
+        // fitted on a draft, so it's only copied (own) when it changes
+        const draft = { ...span }
+        fitSpan(draft)
+        const fitted = pick(draft, SPAN_FIT)
+        if (JSON.stringify(fitted) === JSON.stringify(pick(span, SPAN_FIT))) continue
+        Object.assign(own(span), fitted)
+        if (meta && [span.w, span.h, span.attach.dx, span.attach.dy].join() !== [draft.w, draft.h, draft.attach.dx, draft.attach.dy].join()) {
           retime(meta, span.uid, busiest(meta, shapes.get(span.span.of).members.map((cell) => shapes.get(cell)).filter(Boolean)))
         }
       }
@@ -243,7 +248,7 @@
         const block = blockOf(cells.map((cell) => places.get(cell.id)))
         const radii = BOX_CORNERS.map((corner, i) => drawnCorner(cells.find((cell) => atCorner(places.get(cell.id), block, corner)), i))
         setCorners(shape, 'cellCorners', radii, meta, cells)
-        fittedFrom.set(shape, { ids: idsOf(owner, cells), at: stampNow() })
+        fittedFrom.set(shapes.get(shape.id), { ids: idsOf(owner, cells), at: stampNow() }) // as setCorners left it
       }
     }
 
@@ -286,8 +291,9 @@
     function setCorners(shape, key, list, meta, cells) {
       const kept = list && list.some((n) => n !== LERPED_CORNERS[key]) ? list : undefined
       if (String(kept) === String(shape[key])) return
-      if (kept) shape[key] = kept
-      else delete shape[key]
+      const owned = own(shape)
+      if (kept) owned[key] = kept
+      else delete owned[key]
       if (meta) retime(meta, shape.uid, busiest(meta, cells))
     }
 
@@ -409,7 +415,7 @@
             if (!mark) return
             const look = digit.label === '0' ? pick(MARK_LOOK, Object.keys(numbering.lit)) : numbering.lit
             if (Object.entries(look).every(([key, value]) => mark[key] === value)) return
-            Object.assign(mark, look)
+            Object.assign(own(mark), look)
             retime(meta, mark.uid, busiest(meta, [digit]))
           })
         }
@@ -470,6 +476,7 @@
     function syncIndices(row, props, meta, timing = {}) {
       for (const [key, numbering] of Object.entries(NUMBERINGS)) syncNumbering(row, key, numbering, props, meta, timing)
     }
+    const MARK_FIT = ['font', 'attach', 'x', 'y'] // what syncNumbering sets on a mark that's there
     function syncNumbering(row, key, numbering, props, meta, { add = {}, remove = {} }) {
       const marks = row[key] ? indexMarks(row, numbering) : []
       const { numbers } = LAYOUTS[row.layout]
@@ -480,7 +487,7 @@
         const old = shapes.get(id)
         // Fixed in the row beside its place (not on the cell), so it stays with the place while a
         // cell slides in or out of it; at the back, so a sliding cell passes over it
-        const text = old || { ...baseShape('text'), id, uid: newUid(), label: mark.label, ...MARK_LOOK, layer: 'back', part: row.id, role: numbering.part }
+        const text = old ? { ...old } : { ...baseShape('text'), id, uid: newUid(), label: mark.label, ...MARK_LOOK, layer: 'back', part: row.id, role: numbering.part }
         if (numbers) text.font = MARK_LOOK.font * mark.of.font // line numbers keep to the code's size
         const place = { ...mark.of, ...offsetIn(mark.of, row) }
         place.x += row.x
@@ -488,7 +495,12 @@
         const p = placeBeside(text, place, mark.index.side, mark.index.gap * CELL)
         text.attach = offsetFrom(row.id, p.x - row.x, p.y - row.y)
         Object.assign(text, p)
-        if (old) continue
+        if (old) {
+          // worked out on a draft, so it's only copied (own) when it moves or resizes
+          const fit = pick(text, MARK_FIT)
+          if (JSON.stringify(fit) !== JSON.stringify(pick(old, MARK_FIT))) Object.assign(own(old), fit)
+          continue
+        }
         shapes.set(id, text)
         tween(meta, text.uid).enter = 'fade'
         schedule(meta, text.uid, props, add)
@@ -846,17 +858,19 @@
       delete props.gap
       refuseView(row, wordFor('gap', gap))
       if (gap.none) throw new Error(KEYWORDS.gap.spacing)
-      row.gap = Math.max(0, gap.v * CELL + (gap.rel ? row.gap : 0))
+      own(row).gap = Math.max(0, gap.v * CELL + (gap.rel ? row.gap : 0))
       relayLayout(row, props, meta, warn)
     }
 
     // A layout's cells laid out again where their sizes or the gap between them have changed (a round
     // bar squares them), each moving to its new place with the line (ARRANGE: relay)
-    function relayLayout(row, props, meta, warn) {
-      const cells = row.members.map((id) => shapes.get(id)).filter(Boolean)
-      const before = cells.map((cell) => [cell.attach.dx, cell.attach.dy].join())
+    function relayLayout(shown, props, meta, warn) {
+      const row = own(shown)
+      const placeOf = (cell) => [cell.attach.dx, cell.attach.dy].join()
+      const before = row.members.map((id) => shapes.get(id)).filter(Boolean).map(placeOf)
+      const cells = row.members.map((id) => shapes.get(id)).filter(Boolean).map(own)
       arranged(row).relay(row, cells)
-      const moved = cells.filter((cell, k) => [cell.attach.dx, cell.attach.dy].join() !== before[k])
+      const moved = cells.filter((cell, k) => placeOf(cell) !== before[k])
       if (!moved.length) return
       moved.forEach((cell) => schedule(meta, cell.uid, props))
       cells.forEach((cell) => Object.assign(cell, { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }))
@@ -908,16 +922,21 @@
     function fitCode(meta) {
       for (const row of shapes.values()) {
         if (!LAYOUTS[row.layout]?.fit || !row.members.length) continue
+        // fitted and laid out on drafts, so only the lines that change are copied (own)
         const cells = row.members.map((id) => shapes.get(id)).filter(Boolean)
-        const before = cells.map((cell) => [cell.w, cell.h, cell.attach.dx, cell.attach.dy].join())
-        fitLines(cells)
-        layoutCells(row, cells)
-        const changed = cells.filter((cell, k) => [cell.w, cell.h, cell.attach.dx, cell.attach.dy].join() !== before[k])
+        const drafts = cells.map((cell) => ({ ...cell }))
+        const draftRow = { ...row }
+        fitLines(drafts)
+        layoutCells(draftRow, drafts)
+        const fitOf = (cell) => [cell.w, cell.h, cell.attach.dx, cell.attach.dy].join()
+        const changed = []
+        cells.forEach((cell, k) => { if (fitOf(cell) !== fitOf(drafts[k])) changed.push(Object.assign(own(cell), pick(drafts[k], ['w', 'h', 'attach']))) })
+        if (String(draftRow.members) !== String(row.members)) own(row).members = draftRow.members
         if (!changed.length) continue
         const timing = busiest(meta, cells)
         changed.forEach((cell) => retime(meta, cell.uid, timing))
         if (numbered(row)) {
-          syncIndices(row, {}, meta)
+          syncIndices(shapes.get(row.id), {}, meta)
           for (let k = 0; k < cells.length; k++) {
             const index = shapes.get(indexId(row.id, k + baseOf(row.layout)))
             if (index) retime(meta, index.uid, timing)

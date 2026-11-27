@@ -12,7 +12,7 @@
   const EDITABLE_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => !LAYOUTS[layout].fixed).map((layout) => LAYOUTS[layout].noun))
 
   window.Anim.COMPILER_PARTS.push((cx) => {
-    const { shapes, newUid, tween } = cx
+    const { shapes, newUid, tween, own } = cx
     // the other parts' functions, linked once every part is made
     let applyProps, arranged, chunk, drawnCorner, fitLines, fitMasks, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
       holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, partsOf, pointOf, readLines, readList, refuseView,
@@ -83,7 +83,7 @@
         place: (token, after) => unitOf(token, units.length, base, after),
         missing: (k) => `"${grid.id}" has no ${noun} ${k} (its ${noun}s are ${range})`,
         steps: (i, j) => Math.abs(i - j), headed: (k) => !lines && k < fixed,
-        relay: (list) => layoutGrid(grid, lines ? [...matrix.slice(0, fixed), ...list] : transpose(list)),
+        relay: (list) => layoutGrid(grid, lines ? [...matrix.slice(0, fixed).map((line) => line.map(own)), ...list] : transpose(list)), // a heading stays, laid out again
       }
     }
 
@@ -209,6 +209,7 @@
       if (!row.layout) throw new Error(`"${word}" ${removing ? 'takes a cell out of' : 'puts a cell into'} ${EDITABLE_NOUNS}, and "${id}" isn't one${removing ? ` (to delete it: "${id}: delete")` : ''}`)
       refuseView(row, word)
       refuseFixed(row, word)
+      row = own(row) // laid out again (moveUnits)
       const axis = editAxis(row, tokens)
       const edit = readEdit(row, axis, tokens, removing, word, warn)
       const slotUnit = moveUnits(row, axis, edit, removing, meta, warn)

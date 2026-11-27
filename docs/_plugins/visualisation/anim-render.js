@@ -1585,7 +1585,7 @@
         }
         // highlight glow fades in / out like the box; a shape glows too when one covering it does
         // (a span's cells: covers)
-        item.v.hlGlow = blend(item, (s) => s.hl?.glow || (s === item.a ? glowA : glowB).has(s.id))
+        item.v.hlGlow = blend(item, (s, inB) => s.hl?.glow || (inB ? glowB : glowA).has(s.id))
         // highlight line: with no number, a band behind its text (a script's: scriptStep)
         item.v.hlLine = blend(item, (s) => s.hl?.line === true)
         if (kindOf(item.shape).script) item.v.script = scriptStep(item, meta.tweens.get(item.uid))
@@ -1637,7 +1637,8 @@
     }
 
     // How much of a two-state feature shows: from A's value to B's over the shape's progress,
-    // times the shape's own visibility (entering / leaving).
+    // times the shape's own visibility (entering / leaving). has(s, inB): whether the shape shows it
+    // in A's state or B's (told, not found by the object: an unchanged shape is the same in both)
     // A script shape between A and B, for drawScript: their scripts, lit lines (highlight line N)
     // and boxes, how far (t), and an edit's map of its blocks (tween: script). Coming or going, it's
     // the one it has.
@@ -1649,7 +1650,7 @@
         litA: lit(from), litB: lit(to), boxA: { w: from.w, h: from.h }, boxB: { w: to.w, h: to.h },
       }
     }
-    const blend = (item, has) => lerp(item.a && has(item.a) ? 1 : 0, item.b && has(item.b) ? 1 : 0, item.a && item.b ? item.t : 1) * (item.a && item.b ? 1 : item.v.opacity)
+    const blend = (item, has) => lerp(item.a && has(item.a, false) ? 1 : 0, item.b && has(item.b, true) ? 1 : 0, item.a && item.b ? item.t : 1) * (item.a && item.b ? 1 : item.v.opacity)
 
     // How far inside the shape's edge the inside highlight's centre line sits: past the shape's own
     // stroke (half of it is inside the edge), a small gap, and half the highlight's own line.
