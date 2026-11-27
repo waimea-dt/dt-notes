@@ -6,7 +6,7 @@
 
 ;(function () {
   const { parseProps, REF, NUMBER, CHOREOGRAPHY: C, KEPT_STYLE, pick, LAYOUTS, LAYOUT_TYPES,
-    nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, evaluate, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol, tween } = window.Anim
+    nounList, boxCentre, COLOUR_FUNCTIONS, OPERATORS, evaluate, LOOKS, CELL, fieldsOf, numberValue, tokenize, kindOf, wordFor, digitSymbol } = window.Anim
 
   // The numbers whose digits flip (LAYOUTS: flip), for messages: "a binary number"
   const FLIP_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => LAYOUTS[layout].flip).map((layout) => LAYOUTS[layout].noun))
@@ -15,7 +15,7 @@
   const symbolDigit = (symbol, radix) => (/^[0-9A-Z]$/.test(symbol) && parseInt(symbol, 36) < radix ? parseInt(symbol, 36) : NaN)
 
   window.Anim.COMPILER_PARTS.push((cx) => {
-    const { shapes, defaults, newUid } = cx
+    const { shapes, defaults, newUid, tween } = cx
     // the other parts' functions, linked once every part is made
     let applyStagger, busiest, noShape, retime, schedule, speedOf, stampOf, stampNow
     // making (in the link functions and holderRef): the id the line being run makes, if it makes one

@@ -6,13 +6,13 @@
 
 ;(function () {
   const { CELL, parseProps, offsetFrom, CHOREOGRAPHY: C, EDIT_PACES, SLIDES, LAYOUTS, BARS, cellId, baseOf, cellRange,
-    tween, baseShape, LAYOUT_TYPES, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine, ANCHORS, BOX_CORNERS } = window.Anim
+    baseShape, LAYOUT_TYPES, LINES, EDIT_WORDS, SHAPES, nounOf, nounList, scriptOf, scriptBlocksIn, blockOnLine, ANCHORS, BOX_CORNERS } = window.Anim
 
   // The layouts that can be edited (not LAYOUTS: fixed), for messages
   const EDITABLE_NOUNS = nounList(LAYOUT_TYPES.filter((layout) => !LAYOUTS[layout].fixed).map((layout) => LAYOUTS[layout].noun))
 
   window.Anim.COMPILER_PARTS.push((cx) => {
-    const { shapes, newUid } = cx
+    const { shapes, newUid, tween } = cx
     // the other parts' functions, linked once every part is made
     let applyProps, arranged, chunk, drawnCorner, fitLines, fitMasks, fly, flyValue, freezeEndsAttachedTo, gridLines, gridPlaceOf,
       holderRef, keptStyle, layoutCells, layoutGrid, noShape, numbered, numberOf, partsOf, pointOf, readLines, readList, refuseView,

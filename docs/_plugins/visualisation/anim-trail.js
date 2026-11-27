@@ -5,7 +5,7 @@
  */
 
 ;(function () {
-  const { boxCentre, LINE_TYPES, STYLE, pick, baseShape, tween, trailId, rotateAbout, arcOffset, pointOnHops, pointOnPath,
+  const { boxCentre, isLine, STYLE, pick, baseShape, trailId, rotateAbout, arcOffset, pointOnHops, pointOnPath,
     easeFn, lerp } = window.Anim
 
   // How finely a trail follows a move: points per hop of a travel, along a route (via, follow), and
@@ -13,13 +13,13 @@
   const TRAIL_STEPS = { hop: 16, route: 48, degrees: 5 }
 
   window.Anim.COMPILER_PARTS.push((cx) => {
-    const { shapes, newUid } = cx
+    const { shapes, newUid, tween } = cx
     let schedule // linked once every part is made
 
     // "A: trail" / "A: trail clear". `before` is the shape as it was before this line, so a trail
     // turned on with a move ("A: move 9,3 trail") starts where the move does.
     function setTrail(before, shape, props, meta, warn) {
-      if (LINE_TYPES.includes(shape.type)) throw new Error('a line has no single position, so it can\'t leave a trail (a shape on its end can)')
+      if (isLine(shape)) throw new Error('a line has no single position, so it can\'t leave a trail (a shape on its end can)')
       const id = trailId(shape.id)
       const old = shapes.get(id)
       if (!props.trail) {

@@ -7,11 +7,11 @@
 ;(function () {
   const { CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
-    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, OWN_STYLE, VALUE_STYLE, digitSymbol, EDIT_WORDS, REF,
-    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, KEYWORDS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS } = window.Anim
+    markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, CELL_STYLE, OWN_STYLE, VALUE_STYLE, digitSymbol, EDIT_WORDS, REF,
+    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, KEYWORDS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS, SIZE_PROPS } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
-    const { shapes, defaults, newUid } = cx
+    const { shapes, defaults, newUid, tween } = cx
     // the other parts' functions, linked once every part is made
     let applyDefaults, applyProps, applyStagger, bound, busiest, delayOf, digitsFor, effectOf, followedValue, followValue, holderRef, inTurn,
       layerOf, linkText, numberEach, partsOf, removeShape, replaced, retime, schedule, setValue, speedOf,
@@ -128,8 +128,9 @@
     // cells and places between the ends, as cellsBetween gives them. A group with no .. is one place.
     // Undefined if no layout is named.
     function rangeOf(ref, use) {
-      const groups = ref.match(/(?:\[[^\][]*\])*$/)[0].match(/[^\][]+(?=\])/g) || []
-      let id = ref.slice(0, ref.length - ref.match(/(?:\[[^\][]*\])*$/)[0].length)
+      const places = ref.match(/(?:\[[^\][]*\])*$/)[0] // the [ ] groups it ends with
+      const groups = places.match(/[^\][]+(?=\])/g) || []
+      let id = ref.slice(0, ref.length - places.length)
       while (!shapes.get(id)?.layout && groups.length) id += `[${groups.shift()}]`
       const row = shapes.get(id)
       if (!row?.layout) return undefined
@@ -562,7 +563,7 @@
       }
       const props = parseProps(tokens, j, 'layout', shapes, id)
       if (props.label !== undefined) throw new Error(`a ${noun} takes one "quoted" ${item}, or its ${item}s in [ ], ${example}`)
-      const sized = ['size', 'width', 'height'].find((key) => props[key])
+      const sized = SIZE_PROPS.find((key) => props[key])
       if (sized) throw new Error(`a ${noun} is as big as its ${item}s, so it takes no "${sized}" (use font to make it bigger or smaller)`)
       makeLayout(id, layout, values, props, existing, meta, warn)
     }
@@ -790,7 +791,7 @@
 
       // The cells, laid out from the first one (at 0,0 for now)
       const gap = props.gap ? props.gap.v * CELL : 0
-      const look = pick(props, ['size', 'width', 'height', ...CELL_STYLE])
+      const look = pick(props, [...SIZE_PROPS, ...CELL_STYLE])
       withRowMax(null, look, flat)
       const cells = flat.map((value, k) => {
         // a number's cells are its digits (LAYOUTS: radix)

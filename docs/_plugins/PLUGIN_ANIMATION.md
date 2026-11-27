@@ -65,7 +65,7 @@ In your summary, say that you checked, and name any exception you kept.
 | A layout (`row`, `column`, `code`, `grid`, `table`, `binary`) | `LAYOUTS` (cell type, across, reverse, base, name side, lines, fit, typeInTurn, slide, pace, slot, bow, numbers, panel, ownCorners, index, arrange, views, head, radix, power, decimal, fixed, props, look) | `anim-core.js` |
 | A way of numbering a layout's places (beside `indices`) | `NUMBERINGS` (part, field, label), its word in `KEYWORDS`, and its field (where it goes) in the `LAYOUTS` that take it | `anim-core.js` |
 | A new arrangement of a layout's cells (beside `line` and `grid`) | `ARRANGE` (create, ids, lay, sync, between, cells, marks, places, axes, corners, rangeExample) and `EDITS` (axis, insert, into, keepOne, messages) | `anim-layout.js`, `anim-edit.js` |
-| A look prop (`fill`, `weight` …) | `LOOKS` (field or fields, unit, min, map, hints, quiet, check, default, cell, own), its word in `KEYWORDS`, and the types in `SHAPES` that take it (a layout's own look, `own`: `OWN_STYLE`, checked by `checkParts`) | `anim-core.js` |
+| A look prop (`fill`, `weight` …) | `LOOKS` (field or fields, unit, min, map, hints, quiet, check, default, cell, own, style), its word in `KEYWORDS`, and the types in `SHAPES` that take it (a layout's own look, `own`: `OWN_STYLE`, checked by `checkParts`) | `anim-core.js` |
 | A verb (`delete`, `swap` …) | `LINES` (`verb: true`, `on`, `takes` / `refuses`), then a function in `VERBS` | `anim-core.js`, `anim-compile.js` |
 | An entrance or exit (`pop` …) | `ENTRANCES` (`applies`, `unless`, `quiet`), then its frame in `FRAMES` | `anim-core.js`, `anim-render.js` |
 | An emphasis (`pulse` …) | `EMPHASES` (`along`), then its frame in `EMPHASIS_FRAMES` | `anim-core.js`, `anim-render.js` |

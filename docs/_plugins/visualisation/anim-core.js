@@ -108,6 +108,11 @@
   const LINE_ENDS = { from: 'start', to: 'end' }
   // The props for each way a shape's place goes
   const AXES = ['x', 'y']
+  // The props that place a shape, and those that give it a route there
+  const PLACING = ['at', ...AXES]
+  const ROUTES = ['via', 'travel', 'follow']
+  // Whether props give any of these keys
+  const anyOf = (props, keys) => keys.some((key) => props[key])
   // What every line starts with: nothing on either end (a line type can set its own: arrow), and
   // all of it shown (LOOKS: show)
   const LINE_DEFAULTS = { start: 'none', end: 'none', show: 1 }
@@ -130,7 +135,7 @@
       refuse: (shape) => {
         const types = Object.keys(SHAPES).filter((type) => SHAPES[type].inside && !SHAPES[type].internal)
         const what = isGroup(shape) ? shape.layout || GROUP : shape.type
-        return `"highlight inside" needs a shape with an inside (${types.slice(0, -1).join(', ')} or ${types[types.length - 1]}), not ${article(what)} ${what}`
+        return `"highlight inside" needs a shape with an inside (${orList(types)}), not ${article(what)} ${what}`
       },
     },
     // a band behind a shape's text, in the highlight colour (shapes with a band: SHAPES); or a
@@ -211,42 +216,43 @@
   //             bigger than its cells, and its frame goes on their edges
   //   cellCorners  its corners are its own corner plus those of the cells at its corners
   //             (cellCorners: fitCorners), so it stays round them
+  const SIZE_PROPS = ['size', 'width', 'height'] // a box's size, or one side of it
   const COMMON_PROPS = ['ink', 'weight', 'font', 'bold', 'mono', 'opacity']
   const BOXED_PROPS = [...COMMON_PROPS, 'at', 'x', 'y', 'angle', 'scale']
   const ANCHORED_PROPS = [...BOXED_PROPS, 'anchor'] // a single shape, placed by any side or corner
   // a line's angle only turns it about a point ("angle +90 about 5,5"), apart from a loop's
   const LINE_PROPS = [...COMMON_PROPS, 'from', 'to', 'stroke', 'linestyle', 'flow', 'start', 'end', 'show', 'angle']
   const CORNERED_LINE_PROPS = [...LINE_PROPS, 'corner'] // a straight line's corners (via) can be rounded
-  const LOOP_PROPS = ['angle', 'size', 'width', 'height'] // the way a loop faces, and its size
+  const LOOP_PROPS = ['angle', ...SIZE_PROPS] // the way a loop faces, and its size
   const SHAPES = {
     rect: {
-      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow', 'bar', 'max', 'track'],
+      takes: [...ANCHORED_PROPS, ...SIZE_PROPS, 'corner', 'fill', 'stroke', 'linestyle', 'flow', 'bar', 'max', 'track'],
       defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg-shape' }, outline: 'box', label: 'centre', inside: true,
     },
     circle: {
-      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'radius', 'fill', 'stroke', 'linestyle', 'flow'],
+      takes: [...ANCHORED_PROPS, ...SIZE_PROPS, 'radius', 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, fill: 'bg-shape' }, outline: 'round', label: 'centre', inside: true,
     },
     diamond: {
-      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'fill', 'stroke', 'linestyle', 'flow'],
+      takes: [...ANCHORED_PROPS, ...SIZE_PROPS, 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, fill: 'bg-shape' }, outline: 'diamond', label: 'centre', inside: true,
     },
     polygon: {
-      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'corner', 'fill', 'stroke', 'linestyle', 'flow'],
+      takes: [...ANCHORED_PROPS, ...SIZE_PROPS, 'corner', 'fill', 'stroke', 'linestyle', 'flow'],
       defaults: { w: CELL, h: CELL, corner: 0, fill: 'bg-shape' }, outline: 'polygon', label: 'centre', inside: true, points: true,
     },
     text: { takes: ANCHORED_PROPS, defaults: { w: 0, h: 0 }, outline: 'box', label: 'content', band: { pad: 0.2, corner: 0.15 } },
     image: {
-      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'stroke', 'linestyle', 'flow', 'fit'],
+      takes: [...ANCHORED_PROPS, ...SIZE_PROPS, 'stroke', 'linestyle', 'flow', 'fit'],
       defaults: { w: CELL, h: CELL, stroke: 'none' }, outline: 'box', label: 'below', inside: true, resource: true,
     },
     icon: {
-      takes: [...ANCHORED_PROPS, 'size', 'width', 'height', 'stroke'],
+      takes: [...ANCHORED_PROPS, ...SIZE_PROPS, 'stroke'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'below', inside: true, resource: true,
     },
     // a Scratch script (SCRIPTS: scratch), as big as it is (× its font) or fitted in the size given
     scratch: {
-      takes: ['font', 'at', 'x', 'y', 'anchor', 'angle', 'scale', 'size', 'width', 'height', 'opacity'],
+      takes: ['font', 'at', 'x', 'y', 'anchor', 'angle', 'scale', ...SIZE_PROPS, 'opacity'],
       defaults: { w: CELL, h: CELL }, outline: 'box', label: 'script', noun: 'scratch script', script: 'scratch', lines: true, anchor: 'top-left',
     },
     line: { takes: CORNERED_LINE_PROPS, label: 'along', line: true, defaults: LINE_DEFAULTS },
@@ -282,7 +288,6 @@
   const typesWhere = (test) => Object.keys(SHAPES).filter((type) => test(SHAPES[type]))
   const SHAPE_TYPES = typesWhere((kind) => !kind.resource && !kind.internal) // written as a word after "id:"
   const RESOURCE_TYPES = typesWhere((kind) => kind.resource)
-  const LINE_TYPES = typesWhere((kind) => kind.line)
   // A shape's name in messages: its noun, or its type
   const nounOf = (shape) => SHAPES[shape.type]?.noun || shape.type
 
@@ -634,6 +639,7 @@
   //   cell   part of a row's / column's look, given to its cells
   //   own    a layout's own look, not given to its cells (a span takes it too; not a default)
   //   kept   taken along by a value on the move with keep-style
+  //   style  part of a shape's style, which "style reset" puts back as it started (STYLE)
   //   byValue  a number's digit can take it from its value (VALUE_STYLE: "match 1 ink green")
   //   check  check(value, shape): a warning when the value can't be shown as asked (null if it can);
   //          shape is left out on a defaults line
@@ -671,28 +677,28 @@
   const cornerCheck = (value, shape) => (shape && roundBar(shape) ? `${article(roundBar(shape))} ${roundBar(shape)} is always round, so its corner doesn't show` : null)
   const maxCheck = (value) => (!value.rel && value.v <= 0 ? '"max" must be more than 0, so the bar stays empty' : null)
   const LOOKS = {
-    font: { field: 'font', unit: 1, min: 0.1, cell: true, byValue: true },
+    font: { field: 'font', style: true, unit: 1, min: 0.1, cell: true, byValue: true },
     width: { field: 'w', unit: CELL, min: 0, side: true },
     height: { field: 'h', unit: CELL, min: 0, side: true },
     radius: { fields: ['w', 'h'], unit: 2 * CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
-    corner: { field: 'corner', unit: CELL, min: 0, cell: true, check: cornerCheck },
+    corner: { field: 'corner', style: true, unit: CELL, min: 0, cell: true, check: cornerCheck },
     bend: { field: 'bend', unit: CELL }, // how far a curve bows out halfway along (+ to its left, - right)
-    fill: { field: 'fill', cell: true, kept: true, byValue: true },
-    stroke: { field: 'stroke', cell: true, kept: true, byValue: true, hints: { text: '"stroke" doesn\'t apply to text: use ink' } },
-    ink: { field: 'ink', cell: true, kept: true, byValue: true },
-    weight: { field: 'weight', unit: 1, min: 0, cell: true, byValue: true, quiet: ['text'] },
+    fill: { field: 'fill', style: true, cell: true, kept: true, byValue: true },
+    stroke: { field: 'stroke', style: true, cell: true, kept: true, byValue: true, hints: { text: '"stroke" doesn\'t apply to text: use ink' } },
+    ink: { field: 'ink', style: true, cell: true, kept: true, byValue: true },
+    weight: { field: 'weight', style: true, unit: 1, min: 0, cell: true, byValue: true, quiet: ['text'] },
     anchor: { field: 'anchor', map: { clear: null } }, // a side, corner or centre (ANCHORS); clear: placed as its type is
     angle: { field: 'angle', unit: 1 },
     scale: { field: 'scale', unit: 1, min: 0 },
-    bold: { field: 'bold', cell: true, byValue: true },
-    mono: { field: 'mono', cell: true },
+    bold: { field: 'bold', style: true, cell: true, byValue: true },
+    mono: { field: 'mono', style: true, cell: true },
     lang: { field: 'lang', cell: true, check: langWarning }, // a code block's language (Prism's name for it)
     start: { field: 'start' }, // what a line has at its start (END_MARKS)
     end: { field: 'end' }, // and at its end
     show: { field: 'show', unit: 1, min: 0, max: 1 }, // how much of a line shows, from its start (0-1)
-    opacity: { field: 'opacity', unit: 1, min: 0, max: 1, cell: true },
-    linestyle: { field: 'linestyle', cell: true },
-    flow: { field: 'flow', map: FLOWS, cell: true },
+    opacity: { field: 'opacity', style: true, unit: 1, min: 0, max: 1, cell: true },
+    linestyle: { field: 'linestyle', style: true, cell: true },
+    flow: { field: 'flow', style: true, map: FLOWS, cell: true },
     layer: { field: 'layer', default: 'normal' },
     fit: { field: 'fit', default: 'contain' }, // an image's fit in its box (IMAGE_FITS)
     // a var's or cell's value as a bar, ring or pie (BARS; "bar clear": back to a plain box)
@@ -711,7 +717,7 @@
   const OWN_STYLE = looksWith('own')
   // A shape's style: the looks "style reset" puts back as they started (and "fill reset" and the
   // like, one at a time)
-  const STYLE = ['fill', 'stroke', 'ink', 'weight', 'font', 'bold', 'mono', 'linestyle', 'flow', 'corner', 'opacity']
+  const STYLE = looksWith('style')
   // What a value on the move takes with it (keep-style): not its size, or highlights
   const KEPT_STYLE = looksWith('kept')
   // What a number's digits can take from their values (LAYOUTS: digits.looks, "match": setRules)
@@ -932,14 +938,14 @@
     return [...own, ...words].find((word) => goesIn(word, kind)) || own[0] || words[0] || key
   }
 
-  // A list of props for a message: "a speed, a delay and an ease"
-  const ARTICLES = { speed: 'a speed', delay: 'a delay', ease: 'an ease', effect: 'an effect', stagger: 'a stagger' }
+  const TIMING = ['speed', 'delay', 'ease']
+  // A list of props for a message: "a speed, a delay and an ease". How a line plays (TIMING, its
+  // effect and stagger) is named by its key, with "a" or "an"; anything else by its word.
+  const NAMED_BY_KEY = [...TIMING, 'effect', 'stagger']
   function listProps(keys, kind) {
-    const words = keys.map((key) => ARTICLES[key] || wordFor(key, undefined, kind))
+    const words = keys.map((key) => (NAMED_BY_KEY.includes(key) ? `${article(key)} ${key}` : wordFor(key, undefined, kind)))
     return words.length > 1 ? `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}` : words[0] || 'nothing'
   }
-
-  const TIMING = ['speed', 'delay', 'ease']
 
   // "repeat N": a change done N times in a row, each round taking the line's speed (relative
   // changes add up; an absolute one is done in the first round), while the beat's other lines carry
@@ -948,7 +954,7 @@
   //   forever  what a forever repeat takes (takes), and a turn's angle must be a whole number of
   //            turns (turn, in degrees), so it ends where it started
   const REPEATS = {
-    refuses: ['via', 'travel', 'follow', 'attach', 'detach', 'trail'],
+    refuses: [...ROUTES, 'attach', 'detach', 'trail'],
     refuse: (word) => `"repeat" goes round the same change, so it can't go with "${word}" (give the whole move instead)`,
     forever: { takes: ['angle', 'about', 'emphasis', 'speed', 'delay', 'ease', 'repeat'], turn: FULL_TURN },
   }
@@ -992,10 +998,10 @@
     },
     layout: { // "Arr: row [5 3 8] …" (a label is taken so its own message can say where values go)
       spaces: true,
-      takes: ['label', 'at', 'x', 'y', 'gap', 'size', 'width', 'height', ...CELL_STYLE, ...OWN_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices', ...LAYOUT_PROPS],
+      takes: ['label', 'at', 'x', 'y', 'gap', ...SIZE_PROPS, ...CELL_STYLE, ...OWN_STYLE, 'layer', ...TIMING, 'stagger', 'effect', 'highlight', 'callout', 'name', 'indices', ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" doesn't apply to ${LAYOUT_NOUNS}`,
     },
-    camera: { takes: ['at', 'x', 'y', 'travel', 'zoom', 'reset', ...TIMING] },
+    camera: { takes: [...PLACING, 'travel', 'zoom', 'reset', ...TIMING] },
     defaults: {
       refuses: ['label', 'at', 'x', 'y', 'from', 'to', 'gap', 'delay', 'via', 'about', 'trail', 'repeat', 'name', ...OWN_STYLE, 'style', ...Object.keys(NUMBERINGS), ...LAYOUT_PROPS],
       refuse: (word) => `"${word}" can't be a default`,
@@ -1608,7 +1614,6 @@
     return { x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k) }
   }
 
-  // A point turned `degrees` clockwise about a pivot (or, with no pivot, a vector turned)
   // A swapped cell's way round as an offset from its straight move, a fraction t of the way
   // (tween: arc): half an ellipse, its sideways radius `side` and the move along it `along`
   function arcOffset(arc, t) {
@@ -1617,6 +1622,7 @@
     return { x: arc.side.x * k + arc.along.x * lag, y: arc.side.y * k + arc.along.y * lag }
   }
 
+  // A point turned `degrees` clockwise about a pivot (or, with no pivot, a vector turned)
   function rotateAbout(p, pivot, degrees) {
     const r = (degrees * Math.PI) / 180
     const [cos, sin] = [Math.cos(r), Math.sin(r)]
@@ -1638,7 +1644,7 @@
   // compiling and on every frame: `ends` gives a line's ends mid-blend, `dx` / `dy` a shake or
   // bounce offset.
   function bounds(shape, byId, { ends, dx = 0, dy = 0 } = {}, depth = 0) {
-    if (LINE_TYPES.includes(shape.type)) {
+    if (isLine(shape)) {
       const pts = linePoints(ends || resolveEnds(shape, byId))
       const xs = pts.map((p) => p.x)
       const ys = pts.map((p) => p.y)
@@ -1687,7 +1693,7 @@
     const reported = new Set()
     beats.forEach((b) => beatStates(b).forEach((state) => state.forEach((shape) => {
       const { step, beat } = b
-      if (LINE_TYPES.includes(shape.type) || reported.has(shape.uid)) return
+      if (isLine(shape) || reported.has(shape.uid)) return
       if (shape.x < 0 || shape.y < 0 || shape.x > viewBox.cols * CELL || shape.y > viewBox.rows * CELL) {
         reported.add(shape.uid)
         const multi = beats.some((b) => b.step === step && b.beat > 0)
@@ -1697,10 +1703,10 @@
   }
 
   Object.assign(window.Anim, { REPEATS, SHAPES, kindOf, SCRIPTS, OPERATORS, evaluate, digitSymbol, SCRIPT_TEXT, scriptOf, scriptBlocksIn, blockOnLine, scriptSize, scriptTextSize, scriptLibraries, BRACKET_NOUNS, DIRECTIONS, FULL_TURN, APPLIES, BARS, hasBar, roundBar, CALLOUT_CH, SIDES, CAPTION_MS, CELL, CELL_STYLE, STYLE, VALUE_STYLE, CHOREOGRAPHY, EDIT_PACES, SLIDES, COLOURS, COLOUR_VARIANTS, COLOUR_FUNCTIONS, COLOUR_PICKS, FILL_MIXES, towardsBg, EASES,
-    BOX_CORNERS, LERPED_CORNERS, LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, drawsBox, OWN_STYLE, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, LINE_TYPES, listProps,
+    BOX_CORNERS, LERPED_CORNERS, LAYOUTS, LAYOUT_NAMES, LAYOUT_PROPS, LAYOUT_NOUNS, drawsBox, OWN_STYLE, nounList, orList, GROUP, isGroup, DEFAULT_EFFECT, EDIT_WORDS, nounOf, XML_NS, FLOW_SPEED, FONT, HEAD, HIGHLIGHTS, HIGHLIGHT_KINDS, VALUED_HIGHLIGHTS, KEPT_STYLE, KEYWORDS, IMAGE_FITS, LAYERS, LAYOUT_TYPES, LERPED, LINES, LINE_STARTS, isLine, listProps,
     LOOKS, NORMAL_MS, NUMBERINGS, PARTS, article, wordFor,
     PATTERNS, PLACE_GAP, PLAY_PAUSE, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES,
     EMPHASES, ENTRANCES, entranceFor, SPEEDS, STROKE, attachPos, besideOf, bounds, boxCentre, placeFor, edgeOf, offsetFrom, buildPath, buildPolyline, cellToPx, clamp01, ease, easeFn,
     escapeHtml, extents, fieldsOf, lerp, linePoints, lucideIcon, measure, mergeBoxes, MONO_FONT, placeBeside, placeAlong, pointAt, pointOnHops, pointOnPath, reducedMotion,
-    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, OUTLINES, ANCHORS, refPoint, polygonPoints, roundCorners, svgEl, textWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
+    resolveAttachments, resolveEnds, isLoop, LINE_ENDS, AXES, PLACING, ROUTES, anyOf, SIZE_PROPS, TIMING, OUTLINES, ANCHORS, refPoint, polygonPoints, roundCorners, svgEl, textWidth, textRuns, TEXT_MARKS, END_MARKS, rotateAbout, arcOffset, unionBounds, viewBoxFor, warnOutsideGrid })
 })()

@@ -4,13 +4,14 @@
  */
 
 ;(function () {
-  const { CELL, cellToPx, APPLIES, LINE_TYPES, resolveEnds, boxCentre, PLACE_GAP, placeBeside, placeAlong,
+  const { CELL, cellToPx, APPLIES, isLine, resolveEnds, boxCentre, PLACE_GAP, placeBeside, placeAlong,
     attachPos, buildPolyline, buildPath, resolveAttachments, unionBounds, NORMAL_MS, parseProps,
     tokenize, bounds, ID, REF, canonicalRef, KNOWN_WORDS, RESOURCE_TYPES, SHAPE_TYPES, LAYOUT_TYPES, EMPHASES, ENTRANCES,
     entranceFor, parseAs, lucideIcon, KEYWORDS, NUMBER, linePoints, besideOf, offsetFrom, CELL_STYLE, STYLE, VALUE_STYLE, rotateAbout,
     LINES, wordFor, LOOKS, article, SHAPES, kindOf, HIGHLIGHT_KINDS, LAYOUTS, drawsBox, nounOf, PARTS, isGroup,
     DEFAULT_EFFECT, nounList, LAYOUT_NAMES, GROUP, LAYOUT_NOUNS, EDIT_WORDS, FULL_TURN, scriptSize, placeFor, isLoop,
-    NUMBERINGS, DIRECTIONS, orList, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES, REPEATS, LERPED } = window.Anim
+    NUMBERINGS, DIRECTIONS, orList, roundBar, COLOUR_FUNCTIONS, fieldsOf, refPoint, LINE_ENDS, AXES, REPEATS, LERPED,
+    PLACING, ROUTES, anyOf, SIZE_PROPS, TIMING, listProps } = window.Anim
 
   // The ids of the shapes that go with a var, row or column: numbered places in [ ], named parts
   // after a dot. A row's / column's cells (id[0], id[1], …; a code block's lines from id[1]), their
@@ -33,6 +34,12 @@
   const cellRange = (row, n) => (n ? `${cellId(row.id, baseOf(row.layout))} to ${cellId(row.id, baseOf(row.layout) + n - 1)}` : 'none')
 
   const pick = (props, keys) => Object.fromEntries(Object.entries(props).filter(([key]) => keys.includes(key)))
+  // The props that move a shape: a place, or a route there
+  const MOVES = [...PLACING, ...ROUTES]
+  // What a camera line does, beside its timing
+  const CAMERA_MOVES = LINES.camera.takes.filter((key) => !TIMING.includes(key))
+  // Every highlight as it is when off (HIGHLIGHT_KINDS: off)
+  const HIGHLIGHTS_OFF = Object.fromEntries(Object.entries(HIGHLIGHT_KINDS).map(([kind, h]) => [kind, 'off' in h ? h.off : false]))
 
   // ---------------------------------------------------------------------------
   // Compiling scenes into one state per beat
@@ -76,6 +83,28 @@
     let camera = { x: null, y: null, zoom: 1 } // centre in px (null: the drawing's centre)
     let uid = 0
     const newUid = () => ++uid
+    // One record per shape per beat: how its change animates (duration and delay in ms, the route
+    // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect, and
+    // `offset`: how far it slides as it enters or leaves, as a row's cell does). Set only where used:
+    // `lands`, its new value arrives on a flyer, so it's taken halfway through (as it lands), not
+    // blended; `arc`, how far it bows out on the way (a swap); `raise`, it's drawn on top of its layer
+    // while it moves (the unit a swap passes in front); `turn`, it turns about a point (pivot, by
+    // degrees; carried: as a member of a group that turns), going round it in an arc; `grow`, a
+    // trail's new points are drawn as its shape moves (anim-trail.js); `count`, its value counts its
+    // way there (counter); `counting`, its label's sums count along with values that do (anim-values.js);
+    // `rounds`, it's repeated (repeat: n, and once and from: roundsOf).
+    function tween(meta, uid) {
+      let record = meta.tweens.get(uid)
+      if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))
+      stamps.set(record, ++changes)
+      return record
+    }
+    // When each record was last handed out to change (a count of changes): a group's box is only
+    // worked out again when a shape in it has changed since it was (boxStale)
+    let changes = 0
+    const stamps = new WeakMap() // record -> changes, when it was last handed out
+    const stampOf = (meta, uid) => stamps.get(meta.tweens.get(uid)) || 0
+    const stampNow = () => changes
     let lastNumber = 0 // "highlight number": the last number given, so a bare one takes the next
 
     // A prop that doesn't apply to this shape's type is an error (with a hint where there's a
@@ -146,7 +175,7 @@
     function applyProps(shape, props, creating, warn, meta, round = 0) {
       for (const ref of [props.at?.ref, props.from?.ref, props.to?.ref, props.attach?.ref, props.about?.ref, ...(props.via || []).map((v) => v.ref),
         ...(props.travel || []).map((v) => v.ref)]) {
-        if (ref && LINE_TYPES.includes(shapes.get(ref).type)) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
+        if (ref && isLine(shapes.get(ref))) throw new Error(`"${ref}" is a line, so it can't be used as a position`)
       }
       if (props.label !== undefined) {
         if (shape.digit) checkDigit(shape.digit, { label: props.label })
@@ -164,7 +193,7 @@
       if (props.highlight) applyHighlight(shape, props.highlight)
       if (props.emphasis) applyEmphasis(shape, props, creating, warn, meta)
       if (props.callout) shape.callout = props.callout.none ? null : { text: props.callout.text, side: props.callout.side }
-      const route = LINE_TYPES.includes(shape.type) ? placeLine(shape, props, creating, warn) : placeShape(shape, props, creating, warn)
+      const route = isLine(shape) ? placeLine(shape, props, creating, warn) : placeShape(shape, props, creating, warn)
       if (turn) turnAbout(shape, turn, props, meta, false, round)
       return route
     }
@@ -179,12 +208,12 @@
       if (props.angle.bind) throw new Error(`"about" turns by a number of degrees, not one that follows values, ${example}`)
       const layout = LAYOUTS[shape.layout]
       if (layout) throw new Error(`${article(layout.noun)} ${layout.noun} can't be turned`)
-      if (props.at || props.x || props.y || props.via || props.travel || props.follow || props.attach || props.from || props.to) {
+      if (anyOf(props, [...MOVES, 'attach', 'from', 'to'])) {
         throw new Error('"about" sets the route, so it can\'t go with at / move / x / y / via / travel / follow / attach / from / to')
       }
       const by = numberValue(props.angle, shape.angle) - shape.angle
       const { about } = props
-      const own = LINE_TYPES.includes(shape.type) ? resolveEnds(shape, shapes).from : boxCentre(shape)
+      const own = isLine(shape) ? resolveEnds(shape, shapes).from : boxCentre(shape)
       const pivot = about.kind === 'ref' ? refPoint(about, shapes) : { x: coord(about.x, own.x), y: coord(about.y, own.y) }
       return { by, pivot }
     }
@@ -195,7 +224,7 @@
     // so it plays as an arc, not a straight move; a repeated line's later rounds (round) add to it.
     function turnAbout(shape, { by, pivot }, props, meta, carried = false, round = 0) {
       const turned = (p) => rotateAbout(p, pivot, by)
-      if (LINE_TYPES.includes(shape.type)) {
+      if (isLine(shape)) {
         const free = [shape.from, shape.to, ...(shape.via || [])].some((p) => !p.ref)
         if (!free && !carried) throw new Error(`"${shape.id}" has its ends on shapes, so it turns with them: turn the shapes`)
         for (const key of Object.keys(LINE_ENDS)) if (!shape[key].ref) shape[key] = turned(shape[key])
@@ -226,14 +255,13 @@
     // { kind: n }: with no number, "number" takes the next (next); the others need one. A script's
     // lit line is { line: n } too (runScriptLine).
     function applyHighlight(shape, items) {
-      const none = Object.fromEntries(Object.entries(HIGHLIGHT_KINDS).map(([kind, h]) => [kind, 'off' in h ? h.off : false]))
-      const hl = { ...none, ...shape.hl }
+      const hl = { ...HIGHLIGHTS_OFF, ...shape.hl }
       for (const item of items) {
         const name = typeof item === 'object' ? Object.keys(item)[0] : item
         const n = typeof item === 'object' ? item[name] : null
         const kind = HIGHLIGHT_KINDS[name]
         if (kind?.applies && !kind.applies(shape, n)) throw new Error(kind.refuse(shape, n))
-        if (item === 'clear') Object.assign(hl, none)
+        if (item === 'clear') Object.assign(hl, HIGHLIGHTS_OFF)
         else if (typeof item === 'object') hl[name] = valuedHighlight(shape, name, n)
         else hl[item] = true
       }
@@ -254,10 +282,10 @@
     // along a line (a group's lines).
     function applyEmphasis(shape, props, creating, warn, meta) {
       const signal = EMPHASES[props.emphasis].along
-      if (signal && !LINE_TYPES.includes(shape.type) && !isGroup(shape)) throw new Error(`"${props.emphasis}" travels along a line, arrow or curve`)
+      if (signal && !isLine(shape) && !isGroup(shape)) throw new Error(`"${props.emphasis}" travels along a line, arrow or curve`)
       const covered = (shape.covers || []).map((id) => shapes.get(id)).filter(Boolean)
       // a grid's row or column covers its members too, so each is taken once
-      const targets = [...new Set([shape, ...groupMembers(shape), ...covered])].filter((target) => !signal || LINE_TYPES.includes(target.type))
+      const targets = [...new Set([shape, ...groupMembers(shape), ...covered])].filter((target) => !signal || isLine(target))
       if (creating) warn(`"${props.emphasis}" plays on a shape that already exists, so it does nothing here`)
       else if (!targets.length) warn(`"${shape.id}" has no lines in it, so "${props.emphasis}" does nothing`)
       else {
@@ -337,11 +365,11 @@
 
     // The ways a shape is moved that can't go together, or can't be used on it
     function checkMove(shape, props, creating) {
-      const positioned = props.at || props.x || props.y
+      const positioned = anyOf(props, PLACING)
       // a shape placed by what it belongs to (SHAPES: owned), or a grid's row or column (a view),
       // laid out in its grid, can't be moved on its own
       const owned = kindOf(shape).owned
-      if ((owned || bound(shape)) && (positioned || props.via || props.travel || props.follow || props.attach || props.detach || props.about)) {
+      if ((owned || bound(shape)) && anyOf(props, [...MOVES, 'attach', 'detach', 'about'])) {
         throw new Error(bound(shape) ? `"${shape.id}" is laid out in "${shape.part}", so it can't be moved on its own: move "${shape.part}"`
           : `${article(nounOf(shape))} ${nounOf(shape)} can't be moved: ${owned}`)
       }
@@ -414,7 +442,7 @@
       }
       if (props.follow) {
         const line = shapes.get(props.follow.ref)
-        if (!LINE_TYPES.includes(line.type)) throw new Error(`"${props.follow.ref}" isn't a line or arrow, so it can't be followed`)
+        if (!isLine(line)) throw new Error(`"${props.follow.ref}" isn't a line or arrow, so it can't be followed`)
         // along the line (a curve's whole path), from the end it starts at
         const along = linePoints(resolveEnds(line, shapes)).map(onto)
         if (props.follow.reverse) along.reverse()
@@ -438,7 +466,7 @@
     // Moving an attached shape releases it; moving a group member keeps it in the group (at its
     // new place in it)
     function keepOffset(shape, props) {
-      const moved = props.at || props.x || props.y || props.via || props.travel || props.follow || props.about
+      const moved = anyOf(props, [...MOVES, 'about'])
       if (!moved || !shape.attach || props.attach) return
       if (shape.attach.kind !== 'offset') { shape.attach = null; return }
       offsetInGroup(shape)
@@ -485,7 +513,7 @@
     // order. Changed in place: past beats are snapshots.
     function numberEach(members, props, meta, warn) {
       for (const member of members) {
-        if (!member || LINE_TYPES.includes(member.type)) continue
+        if (!member || isLine(member)) continue
         applyProps(member, { highlight: [{ number: null }] }, false, warn, meta)
         schedule(meta, member.uid, props)
       }
@@ -507,7 +535,7 @@
     // A script shape (SHAPES: script) is as big as its script, unless it's been given a size (then
     // its script is fitted in that). Before placing it, so a placement beside it fits round it.
     function fitScript(shape, props) {
-      if (props.size || props.width || props.height) shape.sized = true
+      if (anyOf(props, SIZE_PROPS)) shape.sized = true
       if (!shape.sized) Object.assign(shape, scriptSize(shape))
     }
 
@@ -645,13 +673,13 @@
       const changed = (shape) => stampOf(meta, shape.uid) > done.at
       const endsOf = (line) => [line.from, line.to, ...(line.via || [])].map((p) => p?.ref && shapes.get(p.ref)).filter(Boolean)
       return [group, ...inside.flatMap((m) => [m, ...groupMembers(m)])]
-        .some((shape) => changed(shape) || (LINE_TYPES.includes(shape.type) && endsOf(shape).some(changed)))
+        .some((shape) => changed(shape) || (isLine(shape) && endsOf(shape).some(changed)))
     }
 
     // Line ends attached to a shape that is being removed stay where they were.
     function freezeEndsAttachedTo(id) {
       for (const shape of shapes.values()) {
-        if (!LINE_TYPES.includes(shape.type)) continue
+        if (!isLine(shape)) continue
         if (shape.from.ref !== id && shape.to.ref !== id && !shape.via?.some((p) => p.ref === id)) continue
         const ends = resolveEnds(shape, shapes)
         if (shape.from.ref === id) shape.from = ends.from
@@ -696,6 +724,11 @@
     function speedOf(props) {
       return props.speed ?? defaults.speed ?? NORMAL_MS
     }
+    // A move's time: the line's speed, or for a travel, its speed for each hop
+    const moveTime = (props) => ({ dur: speedOf(props) * (props.travel?.length || 1) })
+    // The way a shape moves this beat: along a route (path), or straight there (null). A later
+    // move wins, over a route or a turn (a turn sets its own: turnAbout)
+    const setRoute = (meta, uid, path = null) => Object.assign(tween(meta, uid), { path, turn: null })
 
     function delayOf(props) {
       if (!props.delay) return 0
@@ -710,9 +743,9 @@
       if (colon) throw new Error('"camera" takes no colon, e.g. "camera move 4,3 zoom 2"')
       const props = parseProps(tokenize(rest), 0, 'camera', shapes)
       if (props.x?.bind || props.y?.bind) throw new Error('the camera goes to a number, not one that follows values, e.g. "camera x 4"')
-      if (!Object.keys(props).some((key) => ['at', 'x', 'y', 'travel', 'zoom', 'reset'].includes(key))) throw new Error('"camera" expects move, travel, zoom or reset, e.g. "camera move 4,3 zoom 2"')
-      if (props.reset && (props.at || props.x || props.y || props.travel || props.zoom)) throw new Error('"camera reset" takes only a speed, a delay and an ease')
-      if (props.travel && (props.at || props.x || props.y)) throw new Error('"camera travel" sets the route, so it can\'t go with at / x / y')
+      if (!anyOf(props, CAMERA_MOVES)) throw new Error('"camera" expects move, travel, zoom or reset, e.g. "camera move 4,3 zoom 2"')
+      if (props.reset && anyOf(props, CAMERA_MOVES.filter((key) => key !== 'reset'))) throw new Error(`"camera reset" takes only ${listProps(TIMING)}`)
+      if (props.travel && anyOf(props, PLACING)) throw new Error('"camera travel" sets the route, so it can\'t go with at / x / y')
 
       const before = JSON.stringify(camera)
       const next = props.reset ? { x: null, y: null, zoom: 1 } : { ...camera }
@@ -807,13 +840,13 @@
       // "L: arrow" on a line that already exists, with no new ends, isn't a new line: its ends'
       // marks are changed with start / end
       const newEnds = tokens.some((t) => t.kind === 'word' && LINE_ENDS[t.value])
-      if (type && SHAPES[type].line && existing && LINE_TYPES.includes(existing.type) && !newEnds) {
+      if (type && SHAPES[type].line && existing && isLine(existing) && !newEnds) {
         throw new Error(`"${id}" is already a line: to change what's on its ends, e.g. "${id}: end arrow" or "${id}: start dot"`)
       }
       if (type) {
         const props = propsOf(type, tokens, varValue ? 2 : 1, 'create', id)
         if (isVar && props.label !== undefined) throw new Error(`a var's value goes straight after "var", e.g. "${id}: var 67" or "${id}: var "Dog""`)
-        if (props.stagger) warn(`"stagger" works on a change to ${GROUPS} (or making ${LAYOUT_NOUNS})`)
+        noStagger(props, warn)
         const shape = { ...baseShape(type), id, uid: newUid() }
         if (isVar) Object.assign(shape, { var: true, holds: true })
         checkParts(shape, props)
@@ -882,10 +915,9 @@
       const firstRound = props.repeat && lerpedNow(shape)
       for (let round = 1; round < (Number.isFinite(props.repeat) ? props.repeat : 1); round++) applyProps(shape, props, false, warn, meta, round)
       // a later move wins: a route, or a straight move (a turn sets its own: turnAbout)
-      if (path) Object.assign(tween(meta, shape.uid), { path, turn: null })
-      else if (props.at || props.x || props.y) Object.assign(tween(meta, shape.uid), { path: null, turn: null })
+      if (path || anyOf(props, PLACING)) setRoute(meta, shape.uid, path)
       shapes.set(id, shape)
-      schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }) // travel: speed per hop
+      schedule(meta, shape.uid, props, moveTime(props))
       if (newValue && (props.count ?? defaults.count)) countUp(shape, before, props, meta, warn)
       if (props.repeat) roundsOf(meta, beforeRounds, firstRound)
       updateParts(shape, props, meta, warn, opacity)
@@ -991,13 +1023,13 @@
       const shape = { ...structuredClone(src), ...fresh, id, uid: newUid() }
       tween(meta, shape.uid).from = { ...structuredClone(src), ...fresh, uid: shape.uid }
       const path = applyProps(shape, props, false, warn, meta)
-      if (path) Object.assign(tween(meta, shape.uid), { path, turn: null })
+      if (path) setRoute(meta, shape.uid, path)
       if (existing) {
         replaced(id, warn)
         schedule(meta, existing.uid, props).exit = 'fade'
       }
       shapes.set(id, shape)
-      schedule(meta, shape.uid, props, { dur: speedOf(props) * (props.travel?.length || 1) }).enter = 'copy' // travel: speed per hop
+      schedule(meta, shape.uid, props, moveTime(props)).enter = 'copy'
       if (props.trail !== undefined) setTrail(src, shape, props, meta, warn) // from the original, where the copy starts
     }
 
@@ -1020,12 +1052,12 @@
       const list = members.map((m) => shapes.get(m))
       for (const m of list) {
         if (bound(m)) throw new Error(`"${m.id}" is laid out in "${m.part}", so it can't go in a group: group "${m.part}"`)
-        if (LINE_TYPES.includes(m.type) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
+        if (isLine(m) && (!m.from.ref || !m.to.ref)) throw new Error(`"${m.id}" is a line with a free end: group the shapes it joins instead, and it follows them`)
       }
       const b = unionBounds(list, shapes)
       const group = { ...baseShape(GROUP), id, uid: newUid(), members, x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0 }
       for (const m of list) {
-        if (LINE_TYPES.includes(m.type)) continue // follows the shapes its ends are attached to
+        if (isLine(m)) continue // follows the shapes its ends are attached to
         leaveGroup(m)
         m.attach = offsetFrom(id, m.x - group.x, m.y - group.y)
       }
@@ -1058,12 +1090,12 @@
       if (!way) throw new Error(`"arrange" needs a way to go, a number of degrees (clockwise, 0 = right) or ${orList(Object.keys(DIRECTIONS))}, e.g. "${id}: arrange right gap 0.5"`)
       const props = parseProps(tokens, 2, 'arrange', shapes)
       const gap = props.gap ? props.gap.v * CELL : PLACE_GAP
-      const placed = group.members.map((m) => shapes.get(m)).filter((m) => m && !LINE_TYPES.includes(m.type)).map((m) => structuredClone(m))
+      const placed = group.members.map((m) => shapes.get(m)).filter((m) => m && !isLine(m)).map((m) => structuredClone(m))
       placed.forEach((m, k) => {
         if (k) Object.assign(m, placeAlong(m, placed[k - 1], way.v, gap))
         offsetInGroup(m)
         shapes.set(m.id, m)
-        Object.assign(tween(meta, m.uid), { path: null, turn: null })
+        setRoute(meta, m.uid)
         schedule(meta, m.uid, props)
       })
       // its centre moves to the middle of its shapes as they now are (a group in a group's members
@@ -1095,7 +1127,7 @@
     // it. With a stagger, a highlight does too (one each, in turn, rather than one round them all).
     function restyleMembers(group, props, meta, warn) {
       if (group.layout) {
-        for (const key of ['size', 'width', 'height']) {
+        for (const key of SIZE_PROPS) {
           if (props[key]) throw new Error(`a ${group.layout}'s cell size is set when it's made`)
         }
       }
@@ -1145,7 +1177,7 @@
         if (props.stagger) warn(`"stagger" works on ${GROUPS}, and "${group.id}" isn't one`)
         return
       }
-      if (props.stagger && (props.at || props.x || props.y || props.via || props.travel || props.follow)) {
+      if (props.stagger && anyOf(props, MOVES)) {
         warn(`${GROUPS} moves as one, so its move isn't staggered`)
       }
       const list = stagger.reverse ? [...order].reverse() : order
@@ -1172,7 +1204,7 @@
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, changeRange, rangeOf, editScript, numberOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitCorners, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
       readLines, refuseView, relayLayout, respace, setNumber, setRules, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
-    const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
+    const cx = { shapes, defaults, newUid, tween, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect, stampOf, stampNow }
     const parts = window.Anim.COMPILER_PARTS.map((part) => part(cx))
@@ -1223,28 +1255,6 @@
     return out
   }
 
-  // One record per shape per beat: how its change animates (duration and delay in ms, the route
-  // it follows, its entrance / exit effect, the shape a copy starts from, a one-off effect, and
-  // `offset`: how far it slides as it enters or leaves, as a row's cell does). Set only where used:
-  // `lands`, its new value arrives on a flyer, so it's taken halfway through (as it lands), not
-  // blended; `arc`, how far it bows out on the way (a swap); `raise`, it's drawn on top of its layer
-  // while it moves (the unit a swap passes in front); `turn`, it turns about a point (pivot, by
-  // degrees; carried: as a member of a group that turns), going round it in an arc; `grow`, a
-  // trail's new points are drawn as its shape moves (anim-trail.js); `count`, its value counts its
-  // way there (counter); `counting`, its label's sums count along with values that do (anim-values.js);
-  // `rounds`, it's repeated (repeat: n, and once and from: roundsOf).
-  function tween(meta, uid) {
-    let record = meta.tweens.get(uid)
-    if (!record) meta.tweens.set(uid, (record = { dur: 0, delay: 0, path: null, enter: null, exit: null, from: null, effect: null }))
-    stamps.set(record, ++changes)
-    return record
-  }
-  // When each record was last handed out to change (a count of changes): a group's box is only
-  // worked out again when a shape in it has changed since it was (boxStale)
-  let changes = 0
-  const stamps = new WeakMap() // record -> changes, when it was last handed out
-  const stampOf = (meta, uid) => stamps.get(meta.tweens.get(uid)) || 0
-  const stampNow = () => changes
 
   // `then` (no id): the lines after it start once everything before it in the beat has finished,
   // `then n` n seconds after that. The beat's parts are compiled one after another (compile: each
@@ -1316,7 +1326,7 @@
             compiler.runLine(text, meta, warn)
             compiler.settle(meta, warn)
           } catch (error) {
-            errors.push(`${where(li)}: ${error.message} — "${text}"`)
+            errors.push(`${where(li)}: ${error.message} - "${text}"`)
             issues.push({ error: true, step: si, beat: bi, line: li, message: error.message })
           }
         })
@@ -1329,5 +1339,5 @@
     return { beats, errors, warnings, issues }
   }
 
-  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, trailId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, lookValue, tween })
+  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, trailId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, lookValue })
 })()

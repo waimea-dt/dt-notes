@@ -4,7 +4,7 @@
  */
 
 ;(function () {
-  const { PARTS, HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, LINE_TYPES, lucideIcon, lerp, STROKE,
+  const { PARTS, HEX, COLOURS, FILL_MIXES, towardsBg, svgEl, isLine, lucideIcon, lerp, STROKE,
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
@@ -285,7 +285,7 @@
     function makeNode(shape) {
       const g = svgEl('g', { class: `anim-shape anim-${shape.type}` })
       const node = { g, type: shape.type, uid: shape.uid }
-      if (LINE_TYPES.includes(shape.type)) {
+      if (isLine(shape)) {
         // one path for lines, arrows and curves; the marks on its ends are added as they're first shown
         node.body = g.appendChild(svgEl('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' }))
         node.marks = endsOf(() => ({})) // end -> mark -> its path
@@ -639,7 +639,7 @@
       if (kindOf(node).pre) paint(node.label, 'color', colours.ink) // for tokens code.css doesn't colour
       setLabel(node, kindOf(node).script ? '' : v.label, v.typed, v.erase, s.lang) // a script is drawn by drawScript
 
-      if (LINE_TYPES.includes(node.type)) {
+      if (isLine(node)) {
         const ends = v.ends || resolveEnds(s, byId)
         // dashBase: a line from a shape starts its pattern at the shape's centre, not its edge, so
         // the dashes stay put while the edge point slides round the shape as the other end moves
@@ -1273,7 +1273,7 @@
         if (LAYOUTS[shape.layout]?.panel && shape.members.some((id) => lit.has(id))) lit.add(shape.id)
       }
       for (const shape of state.values()) {
-        if (LINE_TYPES.includes(shape.type) && shape.from.ref && shape.to.ref && lit.has(shape.from.ref) && lit.has(shape.to.ref)) lit.add(shape.id)
+        if (isLine(shape) && shape.from.ref && shape.to.ref && lit.has(shape.from.ref) && lit.has(shape.to.ref)) lit.add(shape.id)
       }
       return lit
     }
@@ -1362,7 +1362,7 @@
           if (!extra.forward) shape.flow = a.flow // flow switches to where we're going (A, going back)
           if (tw?.path) Object.assign(shape, tw.path.hops ? pointOnHops(tw.path.hops, raw, easing) : pointOnPath(tw.path, t))
           // a turn about a point goes round it (a group's members ride round on it: carried)
-          if (tw?.turn && !tw.turn.carried && !LINE_TYPES.includes(shape.type)) Object.assign(shape, placeFor(shape, rotateAbout(boxCentre(a), tw.turn.pivot, tw.turn.by * t)))
+          if (tw?.turn && !tw.turn.carried && !isLine(shape)) Object.assign(shape, placeFor(shape, rotateAbout(boxCentre(a), tw.turn.pivot, tw.turn.by * t)))
           v = { opacity: 1, scale: 1, draw: 1, dx: 0, dy: 0 }
           const swap = a.label !== b.label
           // code text changes while its box is at its wider (see fitPhase)
@@ -1401,12 +1401,12 @@
         if (v.barKind) v.bar = !(a && b) ? barShare(shape) : tw?.lands ? barShare(t < 0.5 ? a : b) : lerp(barShare(a), barShare(b), t)
         v.round = a && b ? lerp(roundness(a), roundness(b), t) : roundness(shape)
         // a mark on an end fades in or out as it's added to, taken off or changed on a line
-        if (LINE_TYPES.includes(shape.type)) v.marks = a && b ? blendMarks(marksOf(a), marksOf(b), t) : marksOf(shape)
+        if (isLine(shape)) v.marks = a && b ? blendMarks(marksOf(a), marksOf(b), t) : marksOf(shape)
         v.label ??= shape.label
         v.labelOpacity ??= 1
         const node = nodes.get(uid) || makeNode(shape)
         items.push({ uid, shape, v, node, a, b, t, tOnce })
-        if (!LINE_TYPES.includes(shape.type) && (!now.has(shape.id) || b)) now.set(shape.id, { ...shape, x: shape.x + v.dx, y: shape.y + v.dy })
+        if (!isLine(shape) && (!now.has(shape.id) || b)) now.set(shape.id, { ...shape, x: shape.x + v.dx, y: shape.y + v.dy })
       }
 
       // Attached shapes and group members follow their ref's current (interpolated) place, so they
@@ -1417,7 +1417,7 @@
       for (const item of items) if (item.b || !byItem.has(item.shape.id)) byItem.set(item.shape.id, item)
       resolveAttachments(now, (shape) => {
         const item = byItem.get(shape.id)
-        const spec = item && !LINE_TYPES.includes(item.shape.type) && (item.b || item.a).attach
+        const spec = item && !isLine(item.shape) && (item.b || item.a).attach
         if (!spec || passed.has(spec.ref)) return null
         const before = item.a?.attach
         if (item.a && item.b && !(before && before.kind === spec.kind && before.ref === spec.ref && before.anchor === spec.anchor && before.gap === spec.gap)) return null
@@ -1437,7 +1437,7 @@
       // An end on an id that passes to another shape goes from its place in A to its place in B.
       const at = (state) => (passed.size ? { get: (id) => (passed.has(id) ? state.get(id) : now.get(id)) } : now)
       for (const item of items) {
-        if (!LINE_TYPES.includes(item.shape.type)) continue
+        if (!isLine(item.shape)) continue
         const tw = meta.tweens.get(item.uid)
         // a trail is drawn as far as its shape has got along its new points
         if (tw?.grow && item.b) { item.v.ends = grownEnds(item.b, tw, progress(item.uid)); continue }
