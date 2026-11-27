@@ -191,6 +191,9 @@
 
     const widget = document.createElement('div')
     widget.className = 'animation'
+    // its listeners on the window and document, removed when it's retired (retireWidgets)
+    const life = new AbortController()
+    const { signal } = life
     setFlag(widget, 'untouched', true) // until the first interaction (see CSS)
     widget.tabIndex = 0
     widget.setAttribute('role', 'region')
@@ -586,8 +589,9 @@
       intro = playParts({ state: empty, camera: firstParts[0].camera }, 0, true, 0)
       return intro.finally(() => { intro = null })
     }
+    let introObserver = null
     if (introPending) {
-      const introObserver = new IntersectionObserver(([entry]) => {
+      introObserver = new IntersectionObserver(([entry]) => {
         if (!entry.isIntersecting) return
         introObserver.disconnect()
         if (introPending) playIntro()
@@ -665,11 +669,7 @@
     let onScreen = false
     let suspendedWaiting = false
     function updateAutoplay() {
-      if (!widget.isConnected) {
-        observer?.disconnect()
-        document.removeEventListener('visibilitychange', updateAutoplay)
-        return
-      }
+      if (!widget.isConnected) return
       const visible = onScreen && !document.hidden
       if (visible && autoplayWanted && !playing) startPlaying({ waiting: suspendedWaiting, holdFirst: !suspendedWaiting })
       else if (!visible && playing && autoplayWanted) {
@@ -683,7 +683,7 @@
     if (autoplayWanted) {
       if (observer) observer.observe(widget)
       else onScreen = true
-      document.addEventListener('visibilitychange', updateAutoplay)
+      document.addEventListener('visibilitychange', updateAutoplay, { signal })
     }
 
     // User actions turn autoplay off; Next at a `pause` carries on playing instead.
@@ -774,22 +774,69 @@
     })
 
     // A theme change redraws, with the colours (theme variables) re-resolved (anim-render.js)
-    const onThemeChange = () => {
-      if (!widget.isConnected) return window.removeEventListener('docsify-theme-change', onThemeChange)
-      if (!running) showStatic(introPending ? -1 : current)
-    }
-    window.addEventListener('docsify-theme-change', onThemeChange)
+    window.addEventListener('docsify-theme-change', () => { if (!running) showStatic(introPending ? -1 : current) }, { signal })
+
+    live.set(widget, () => {
+      life.abort()
+      introObserver?.disconnect()
+      observer?.disconnect()
+      stopPlaying()
+      stopLoop()
+    })
 
     showStatic(introPending ? -1 : 0) // -1: nothing, until the intro plays
     showCaption(0, 0, false)
     updateControls()
   }
 
+  // Widgets near the screen are built at once; the rest one at a time while the browser is idle,
+  // or as soon as one comes near (scrolling, a link to further down the page), so a page with many
+  // animations shows its first ones without waiting for them all
+  const NEAR = '100% 0px' // within a screen's height above or below the view
+  const IDLE_WAIT = 200 // ms an idle build waits at most, on a page that's never idle
+  const waiting = new Set() // sources still to build
+  let nearObserver = null
+  let idleCall = 0
+  const idle = window.requestIdleCallback ? (fn) => requestIdleCallback(fn, { timeout: IDLE_WAIT }) : (fn) => setTimeout(fn, 0)
+  function build(source) {
+    waiting.delete(source)
+    nearObserver?.unobserve(source)
+    if (!source.isConnected) return // its page has gone
+    source.setAttribute('data-anim-built', 'true')
+    guardBuild(source, () => prepareWidget(source))
+  }
+  function buildNext() {
+    idleCall = 0
+    const [source] = waiting
+    if (!source) return
+    build(source)
+    idleCall = idle(buildNext)
+  }
+  const isNear = (el) => {
+    const { top, bottom } = el.getBoundingClientRect()
+    return bottom > -window.innerHeight && top < 2 * window.innerHeight
+  }
   function buildAll() {
-    document.querySelectorAll('.markdown-section .anim-source:not([data-anim-built])').forEach((source) => {
-      source.setAttribute('data-anim-built', 'true')
-      guardBuild(source, () => prepareWidget(source))
-    })
+    retireWidgets()
+    nearObserver ??= 'IntersectionObserver' in window
+      ? new IntersectionObserver((entries) => entries.forEach((entry) => entry.isIntersecting && build(entry.target)), { rootMargin: NEAR })
+      : null
+    const sources = [...document.querySelectorAll('.markdown-section .anim-source:not([data-anim-built])')]
+    for (const source of sources) {
+      if (waiting.has(source)) continue
+      if (!nearObserver || isNear(source)) { build(source); continue }
+      waiting.add(source)
+      nearObserver.observe(source)
+    }
+    if (waiting.size && !idleCall) idleCall = idle(buildNext)
+  }
+
+  // Each built widget's retire(): stops it and lets go of its listeners and observers. Widgets left
+  // off the page (Docsify has moved on) are retired as the next page's are built.
+  const live = new Map() // widget -> retire
+  function retireWidgets() {
+    for (const [widget, retire] of live) if (!widget.isConnected) { retire(); live.delete(widget) }
+    for (const source of waiting) if (!source.isConnected) { waiting.delete(source); nearObserver?.unobserve(source) }
   }
 
   // Builds a widget, showing an error box in its place if that fails
