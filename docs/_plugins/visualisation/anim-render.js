@@ -559,6 +559,77 @@
       paint(node.frame, 'opacity', String(v.opacity))
     }
 
+    // A line style's dash pattern for a weight. Dash patterns use round caps, so each drawn dash is
+    // shortened (and gap lengthened) by the stroke width to keep the visible lengths; a dash of 0 is
+    // a round dot. Scales with the weight.
+    function dashFor(style, weight) {
+      if (style === 'solid' || !PATTERNS[style]) return SOLID
+      const strokeWidth = STROKE * weight
+      const k = STROKE * Math.max(weight, MIN_DASH_WEIGHT) // the line's thickness in px (w)
+      const dashLen = Math.max(0, PATTERNS[style].d * k - strokeWidth)
+      const gapLen = PATTERNS[style].g * k + strokeWidth
+      return { dash: `${dashLen} ${gapLen}`, cap: 'round', dashLen, gapLen, plain: false }
+    }
+    const SOLID = { dash: 'none', cap: '', dashLen: 0, gapLen: 0, plain: true }
+    const halo = (k, colour) => `drop-shadow(0 0 ${GLOW.halo * k}px ${colour})`
+
+    // A style change cross-fades (fading): a copy of the stroke in the old style (the ghost) fades
+    // out on top while the new style fades in. The ghost mirrors the stroke's geometry and colour.
+    const GHOST_ATTRS = ['x', 'y', 'width', 'height', 'rx', 'ry', 'r', 'd', 'points']
+    function syncGhost(node, body, s, v, fading, base = 0) {
+      if (!fading) {
+        if (node.ghost) { flowState.get(node.ghost)?.anim?.cancel(); node.ghost.remove() }
+        node.ghost = null
+        paint(body, 'strokeOpacity', '')
+        return
+      }
+      if (!node.ghost) {
+        node.ghost = body.cloneNode(false)
+        node.ghost.style.cssText = '' // painted from here on
+        // the old pattern carries on from where the stroke's flow had got to
+        flowState.set(node.ghost, { key: '', shift: flowState.get(body)?.shift || 0 })
+      }
+      const ghost = node.ghost
+      for (const name of GHOST_ATTRS) attr(ghost, name, body.getAttribute(name))
+      if (ghost.previousSibling !== body) body.after(ghost)
+      const old = dashFor(s.fromStyle, s.weight)
+      const look = { fill: 'none', stroke: body.style.stroke, strokeWidth: body.style.strokeWidth, strokeDasharray: old.dash, strokeLinecap: old.cap, strokeOpacity: String(1 - s.styleT) }
+      for (const [prop, value] of Object.entries(look)) paint(ghost, prop, value)
+      setFlow(ghost, s, v, old, base)
+      paint(body, 'strokeOpacity', String(s.styleT))
+    }
+    // Flow: a looping Web Animation adds a steady march to the dash offset, one pattern period
+    // per loop (seamless); reverse runs it backwards. It never eases. The offset underneath it
+    // (inline) is `base` (see dashBase) plus `shift`, how far the march had got when it last
+    // stopped or changed, so a new pattern, a change of direction or stopping carries on from
+    // where the dashes are instead of jumping.
+    function setFlow(el, s, v, pat, base = 0) {
+      const on = s.flow !== 'none' && !pat.plain && v.draw >= 1 && !reducedMotion()
+      const period = pat.dashLen + pat.gapLen
+      const key = on ? `${period.toFixed(3)}|${s.flow}` : ''
+      let state = flowState.get(el)
+      if (!state) flowState.set(el, (state = { key: '', shift: 0 }))
+      if (state.key !== key) {
+        if (state.anim) {
+          const { duration, iterations } = state.anim.effect.getTiming()
+          const frac = iterations && duration ? ((state.anim.currentTime ?? 0) % duration) / duration : 0
+          state.shift -= state.period * (state.reverse ? 1 - frac : frac)
+          state.anim.cancel()
+          state.anim = null
+        }
+        if (on && period) state.shift %= period // whole periods don't show
+        state.key = key
+        if (on && el.animate && period) {
+          state.period = period
+          state.reverse = s.flow === 'reverse'
+          state.anim = el.animate([{ strokeDashoffset: '0px' }, { strokeDashoffset: `${-period}px` }], {
+            duration: (period / FLOW_SPEED) * 1000, iterations: Infinity, direction: state.reverse ? 'reverse' : 'normal', composite: 'add',
+          })
+        }
+      }
+      paint(el, 'strokeDashoffset', `${base + state.shift}px`)
+    }
+
     // Draws one shape: `s` is its (interpolated) geometry, `v` its visibility and effect values.
     function drawNode(node, s, v, colours, byId) {
       const { g } = node
@@ -574,102 +645,32 @@
           attr(node.panel, 'x', c.x - s.w / 2 - pad); attr(node.panel, 'y', c.y - s.h / 2 - pad)
           attr(node.panel, 'width', Math.max(0, s.w + 2 * pad)); attr(node.panel, 'height', Math.max(0, s.h + 2 * pad))
           attr(node.panel, 'rx', panel.corner * CELL)
-          node.panel.style.opacity = v.opacity
+          paint(node.panel, 'opacity', v.opacity)
         }
         if (node.debugId) { attr(node.debugId, 'x', s.x); attr(node.debugId, 'y', s.y); setText(node.debugId, s.id) }
         return
       }
       const strokeWidth = STROKE * s.weight
-      // Dash patterns use round caps, so each drawn dash is shortened (and gap lengthened) by the
-      // stroke width to keep the visible lengths; a dash of 0 is a round dot. Scales with the weight.
-      const k = STROKE * Math.max(s.weight, MIN_DASH_WEIGHT) // the line's thickness in px (w)
-      const dashFor = (style) => {
-        if (style === 'solid' || !PATTERNS[style]) return { dash: 'none', cap: '', dashLen: 0, gapLen: 0, plain: true }
-        const dashLen = Math.max(0, PATTERNS[style].d * k - strokeWidth)
-        const gapLen = PATTERNS[style].g * k + strokeWidth
-        return { dash: `${dashLen} ${gapLen}`, cap: 'round', dashLen, gapLen, plain: false }
-      }
-      const pattern = dashFor(s.linestyle)
+      const pattern = dashFor(s.linestyle, s.weight)
       const { dash, cap } = pattern
-
-      // A style change cross-fades: a copy of the stroke in the old style (the ghost) fades out on
-      // top while the new style fades in. The ghost mirrors the stroke's geometry and colour.
-      const fading = s.fromStyle && s.fromStyle !== s.linestyle && v.draw >= 1
-      const syncGhost = (body, base = 0) => {
-        if (!fading) {
-          if (node.ghost) { flowState.get(node.ghost)?.anim?.cancel(); node.ghost.remove() }
-          node.ghost = null
-          body.style.strokeOpacity = ''
-          return
-        }
-        if (!node.ghost) {
-          node.ghost = body.cloneNode(false)
-          // the old pattern carries on from where the stroke's flow had got to
-          flowState.set(node.ghost, { key: '', shift: flowState.get(body)?.shift || 0 })
-        }
-        const ghost = node.ghost
-        for (const name of ['x', 'y', 'width', 'height', 'rx', 'ry', 'r', 'd', 'points']) {
-          const value = body.getAttribute(name)
-          attr(ghost, name, value)
-        }
-        if (ghost.previousSibling !== body) body.after(ghost)
-        const old = dashFor(s.fromStyle)
-        ghost.style.cssText = ''
-        Object.assign(ghost.style, {
-          fill: 'none', stroke: body.style.stroke, strokeWidth: body.style.strokeWidth,
-          strokeDasharray: old.dash, strokeLinecap: old.cap, strokeOpacity: String(1 - s.styleT),
-        })
-        setFlow(ghost, old, base)
-        body.style.strokeOpacity = String(s.styleT)
-      }
-      // Flow: a looping Web Animation adds a steady march to the dash offset, one pattern period
-      // per loop (seamless); reverse runs it backwards. It never eases. The offset underneath it
-      // (inline) is `base` (see dashBase) plus `shift`, how far the march had got when it last
-      // stopped or changed, so a new pattern, a change of direction or stopping carries on from
-      // where the dashes are instead of jumping.
-      const setFlow = (el, pat = pattern, base = 0) => {
-        const on = s.flow !== 'none' && !pat.plain && v.draw >= 1 && !reducedMotion()
-        const period = pat.dashLen + pat.gapLen
-        const key = on ? `${period.toFixed(3)}|${s.flow}` : ''
-        let state = flowState.get(el)
-        if (!state) flowState.set(el, (state = { key: '', shift: 0 }))
-        if (state.key !== key) {
-          if (state.anim) {
-            const { duration, iterations } = state.anim.effect.getTiming()
-            const frac = iterations && duration ? ((state.anim.currentTime ?? 0) % duration) / duration : 0
-            state.shift -= state.period * (state.reverse ? 1 - frac : frac)
-            state.anim.cancel()
-            state.anim = null
-          }
-          if (on && period) state.shift %= period // whole periods don't show
-          state.key = key
-          if (on && el.animate && period) {
-            state.period = period
-            state.reverse = s.flow === 'reverse'
-            state.anim = el.animate([{ strokeDashoffset: '0px' }, { strokeDashoffset: `${-period}px` }], {
-              duration: (period / FLOW_SPEED) * 1000, iterations: Infinity, direction: state.reverse ? 'reverse' : 'normal', composite: 'add',
-            })
-          }
-        }
-        el.style.strokeDashoffset = `${base + state.shift}px`
-      }
-      g.style.opacity = v.opacity * (s.opacity ?? 1)
+      // a line style changing crossfades from the old to the new (syncGhost)
+      const fading = Boolean(s.fromStyle && s.fromStyle !== s.linestyle && v.draw >= 1)
+      paint(g, 'opacity', v.opacity * (s.opacity ?? 1))
       // glow: brighter, with a soft halo. The one-off glow (v.glow) uses the shape's own colour
       // (the highlight colour if it has none); highlight glow (v.hlGlow) the highlight colour.
       const glowColour = LABEL_PLACES[kindOf(s).label]?.own ? colours.ink : colours.stroke // text glows its own ink
-      const halo = (k, colour) => `drop-shadow(0 0 ${GLOW.halo * k}px ${colour})`
       const filters = []
       const bright = Math.max(v.glow || 0, v.hlGlow || 0)
       if (bright) filters.push(`brightness(${1 + GLOW.bright * bright})`)
       if (v.glow) filters.push(halo(v.glow, glowColour === 'none' ? 'var(--color-important)' : glowColour))
       if (v.hlGlow) filters.push(halo(v.hlGlow, 'var(--color-important)'))
-      g.style.filter = filters.join(' ')
+      paint(g, 'filter', filters.join(' '))
       const fontSize = FONT * s.font
-      node.label.style.fontSize = `${fontSize}px`
-      node.label.style.fontWeight = lookOf(s, 'bold', v.label) ? '700' : ''
+      paint(node.label, 'fontSize', `${fontSize}px`)
+      paint(node.label, 'fontWeight', lookOf(s, 'bold', v.label) ? '700' : '')
       paint(node.label, 'fontFamily', s.mono ? MONO_FONT : '')
       paint(node.label, 'fontStyle', (v.nil ?? s.nil) ? 'italic' : '') // a null value
-      node.label.style.opacity = v.labelOpacity
+      paint(node.label, 'opacity', v.labelOpacity)
       paint(node.label, 'fill', colours.ink) // a text shape's ink, or any shape's label
       if (kindOf(node).pre) paint(node.label, 'color', colours.ink) // for tokens code.css doesn't colour
       setLabel(node, kindOf(node).script ? '' : v.label, v.typed, v.erase, s.lang) // a script is drawn by drawScript
@@ -715,10 +716,10 @@
           const frame = kinds.length ? frameAt(tips[end]) : null
           for (const [kind, el] of Object.entries(els)) {
             const k = (marks[end][kind] || 0) * shown
-            el.style.opacity = k
+            paint(el, 'opacity', k)
             if (!k) continue
             attr(el, 'd', END_DRAWS[kind].d(frame.p, frame.u, frame.n, size))
-            el.style.strokeWidth = strokeWidth
+            paint(el, 'strokeWidth', strokeWidth)
             paint(el, 'fill', END_DRAWS[kind].filled ? colours.stroke : 'none')
             paint(el, 'stroke', colours.stroke)
           }
@@ -727,20 +728,20 @@
         const bodyStart = backOf('from')
         const bodyLen = total - backOf('to')
         attr(node.body, 'd', `M ${(bodyStart ? pathBetween(bodyStart, bodyLen) : pathTo(bodyLen)).map((p) => `${p.x} ${p.y}`).join(' L ')}`)
-        node.body.style.strokeWidth = strokeWidth
+        paint(node.body, 'strokeWidth', strokeWidth)
         if (v.draw < 1) {
-          setFlow(node.body) // off while drawing in
-          syncGhost(node.body)
+          setFlow(node.body, s, v, pattern) // off while drawing in
+          syncGhost(node, node.body, s, v, fading)
           attr(node.body, 'pathLength', '1')
-          node.body.style.strokeDasharray = '1 1'
+          paint(node.body, 'strokeDasharray', '1 1')
           // the drawn part: from the start to `draw` along, or (erasing) from `1 - draw` to the end
-          node.body.style.strokeDashoffset = String(v.erase ? 1 + v.draw : 1 - v.draw)
+          paint(node.body, 'strokeDashoffset', String(v.erase ? 1 + v.draw : 1 - v.draw))
         } else {
           attr(node.body, 'pathLength', null)
-          node.body.style.strokeDasharray = dash
-          node.body.style.strokeLinecap = cap
-          setFlow(node.body, pattern, dashBase + bodyStart) // the pattern keeps its place along the line
-          syncGhost(node.body, dashBase + bodyStart)
+          paint(node.body, 'strokeDasharray', dash)
+          paint(node.body, 'strokeLinecap', cap)
+          setFlow(node.body, s, v, pattern, dashBase + bodyStart) // the pattern keeps its place along the line
+          syncGhost(node, node.body, s, v, fading, dashBase + bodyStart)
         }
         paint(node.body, 'stroke', colours.stroke)
         drawSignal(node, v.signal, path, strokeWidth)
@@ -765,7 +766,7 @@
         setBox(node.band, hw + band.pad * fontSize, hh)
         const corner = band.corner === null ? Math.min(s.corner || 0, hw, hh) : band.corner * fontSize
         attr(node.band, 'rx', corner); attr(node.band, 'ry', corner)
-        node.band.style.opacity = v.hlLine
+        paint(node.band, 'opacity', v.hlLine)
       }
       if (node.body) {
         if (APPLIES.fill.includes(node.type)) {
@@ -775,11 +776,11 @@
         }
         drawBars(node, s, v, hw, hh, colours)
         paint(node.body, 'stroke', s.weight ? colours.stroke : 'none')
-        node.body.style.strokeWidth = strokeWidth
-        node.body.style.strokeDasharray = dash
-        node.body.style.strokeLinecap = cap
-        setFlow(node.body)
-        syncGhost(node.body)
+        paint(node.body, 'strokeWidth', strokeWidth)
+        paint(node.body, 'strokeDasharray', dash)
+        paint(node.body, 'strokeLinecap', cap)
+        setFlow(node.body, s, v, pattern)
+        syncGhost(node, node.body, s, v, fading)
       }
       if (node.title) setText(node.title, s.label ?? '')
 
@@ -787,7 +788,7 @@
       // (labelPlace); a script is drawn by drawScript
       if (kindOf(s).script) drawScript(node, s, v.script, colours)
       const { place, fade } = labelPlace(s, v, hw, hh)
-      if (fade !== 1) node.label.style.opacity = v.labelOpacity * fade
+      if (fade !== 1) paint(node.label, 'opacity', v.labelOpacity * fade)
       const at = LABEL_PLACES[place].at?.(s, hw, hh, fontSize)
       if (at) {
         attr(node.label, 'x', at.x)
@@ -1148,7 +1149,7 @@
     // fading behind it. It runs on until the tail has gone past the end.
       function drawSignal(node, signal, path, strokeWidth) {
       if (!signal) {
-        if (node.blip) node.blip.style.display = 'none'
+        if (node.blip) paint(node.blip, 'display', 'none')
         return
       }
       if (!node.blip) {
@@ -1156,7 +1157,7 @@
         node.blipTail = Array.from({ length: SIGNAL.parts }, () => node.blip.appendChild(svgEl('path', { fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })))
         node.blipHead = node.blip.appendChild(svgEl('circle'))
       }
-      node.blip.style.display = ''
+      paint(node.blip, 'display', '')
       const total = path[path.length - 1].at
       const at = (d) => pointAt(path, d)
       const tail = Math.min(SIGNAL.tail, total / 2)
@@ -1172,12 +1173,12 @@
       // the tail: overlapping pieces, so it's brightest at the tip
       node.blipTail.forEach((part, i) => {
         attr(part, 'd', stretch(d - (tail * (i + 1)) / SIGNAL.parts, d) || null)
-        part.style.strokeWidth = Math.max(SIGNAL.width.min, SIGNAL.width.stroke * strokeWidth)
+        paint(part, 'strokeWidth', Math.max(SIGNAL.width.min, SIGNAL.width.stroke * strokeWidth))
       })
       const tip = at(signal.reverse ? total - d : d)
       attr(node.blipHead, 'cx', tip.x); attr(node.blipHead, 'cy', tip.y)
       attr(node.blipHead, 'r', Math.max(SIGNAL.head.min, SIGNAL.head.stroke * strokeWidth))
-      node.blipHead.style.opacity = d <= total ? 1 : 0
+      paint(node.blipHead, 'opacity', d <= total ? 1 : 0)
     }
 
     // Puts each node in its layer, in creation order, with any raised while it moves (a swap's
@@ -1716,12 +1717,23 @@
     //   draw(o, f)  places them each frame; f gives the shape's bounds b, its fade (0-1, before
     //               dimming), the item, and `now` (every shape where it is this frame)
     const PAD = 0.15 * CELL // an outline's gap round the shape
+    // The parts an outline goes round too (PARTS: outline), by their owner's id, where they are this
+    // frame (now): found once a frame, for every outlined shape
+    const outlinedCache = new WeakMap() // now -> owner id -> parts
+    function outlinedParts(now) {
+      if (!outlinedCache.has(now)) {
+        const byOwner = new Map()
+        for (const shape of now.values()) if (shape.part && PARTS[shape.role]?.outline) byOwner.set(shape.part, [...(byOwner.get(shape.part) || []), shape])
+        outlinedCache.set(now, byOwner)
+      }
+      return outlinedCache.get(now)
+    }
     const highlightPathOf = (key, offsetOf) => ({
       make: () => ({ el: highlightLayer.appendChild(svgEl('path', { class: `anim-highlight-${key}` })) }),
       draw: (o, { item, b, now }) => {
         // an outline is round the whole thing: a var's / row's / column's name and indices too (not
         // a shape that hugs its own edge, SHAPES: hug)
-        const parts = key === 'outline' && !kindOf(item.shape).hug ? [...now.values()].filter((s) => s.part === item.shape.id && PARTS[s.role]?.outline) : []
+        const parts = key === 'outline' && !kindOf(item.shape).hug ? outlinedParts(now).get(item.shape.id) || [] : []
         const outer = parts.length > 0
         const box = outer ? mergeBoxes([b, ...parts.map((part) => bounds(part, now))]) : b
         const { d, transform } = highlightPath(item.shape, item.v, offsetOf(item.shape), box, outer)
@@ -1763,7 +1775,7 @@
           const label = n == null ? '' : String(n)
           setText(o.text, label)
           const size = FONT * (label.length > BADGE.longAt ? BADGE.longFont : BADGE.font)
-          o.text.style.fontSize = `${size}px`
+          paint(o.text, 'fontSize', `${size}px`)
           attr(o.text, 'y', -LABEL_LIFT * size) // "central" sits text a little low
           attr(o.el, 'transform', `translate(${b.x0} ${b.y0}) scale(${Math.max(TINY_SCALE, BADGE.start + BADGE.grow * fade)})`)
         },
@@ -1798,7 +1810,7 @@
       for (const [name, overlay, fade] of showing) {
         const o = (node.overlays[name] ||= overlay.make())
         overlay.draw(o, { item, b, fade, now })
-        o.el.style.opacity = fade * k
+        paint(o.el, 'opacity', fade * k)
         if (!fade) { o.el.remove(); delete node.overlays[name] }
       }
     }
@@ -1833,7 +1845,7 @@
       cx = Math.min(viewBox.x + viewBox.w - w / 2 - m, Math.max(viewBox.x + w / 2 + m, cx))
       cy = Math.min(viewBox.y + viewBox.h - h / 2 - m, Math.max(viewBox.y + h / 2 + m, cy))
       attr(o.path, 'd', bubblePath(cx, cy, w, h, Math.min(BUBBLE.corner, h / 3), side, tip))
-      o.text.style.fontSize = `${size}px`
+      paint(o.text, 'fontSize', `${size}px`)
       if (o.key !== callout.text) {
         o.key = callout.text
         o.text.replaceChildren(...lines.map((line) => {
