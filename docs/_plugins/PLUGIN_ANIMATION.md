@@ -234,7 +234,7 @@ The checks are Node scripts in `tools/anim/` (no dependencies), run from the rep
 
 - **Compare before and after:** `node tools/anim/compare.js [commit]` (default HEAD) compiles and draws every animation on the test pages with that commit's engine and the working one, and lists those that differ (compiled beats, errors and warnings, or the drawn SVG, intro, forwards and backwards at several moments). A refactor should change nothing, and a feature only its own animations.
 - **Shared shapes:** `node tools/anim/finder.js` compiles and draws every test animation in strict mode with each beat's snapshot deep-frozen, and lists any place that changes a shape a past beat shares (one that skips `own`), with its stack. Run it after any compiler change; it only finds what the test pages reach.
-- **Lint:** run ESLint on copies of the files (no project config), with `no-undef` and `no-unused-vars`.
+- **Lint:** `node tools/anim/lint.js` runs ESLint (installed globally) on the engine and these tools, with its own config (`eslint.config.js` there): names that aren't defined and names that aren't used.
 - **Browser runs:** the user's laptop struggles with headless browsers, so keep those to one small run and leave visual checks to the user.
 
 ## One day
