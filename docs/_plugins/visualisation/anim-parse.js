@@ -175,7 +175,7 @@
   const REF = /^[A-Z][\w-]*(?:\.[\w-]+|\[[^\][]*\])*$/
   // A reference or place as the engine names it, with no spaces in its [ ] ("G[ 1 ]" is "G[1]")
   const canonicalRef = (ref) => ref.replace(/\[([^\][]*)\]/g, (m, inner) => `[${inner.trim()}]`)
-  const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
+  const HEX = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i // #rgb, #rgba, #rrggbb, #rrggbbaa
 
   function tokenize(text) {
     const tokens = []

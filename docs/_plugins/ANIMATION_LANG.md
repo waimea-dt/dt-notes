@@ -105,7 +105,8 @@ A: angle +90         # a further quarter turn
 ```anim
 A: fill blue                   # a named colour
 A: fill red-bright             # variants of red … theme: -bright, -muted
-A: stroke #f80                 # hex
+A: stroke #f80                 # hex: #rgb or #rrggbb
+A: fill #00336644              # with alpha: #rgba or #rrggbbaa (here 44: about a quarter)
 A: fill rgb(255 128 0)         # red, green, blue (0-255)
 T: ink contrast                # black or white text, whichever reads on what's behind it (on a bar, each part)
 ```

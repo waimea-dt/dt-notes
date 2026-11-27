@@ -4,7 +4,7 @@ Click an animation to give it focus, then use ← / → (or scroll) to step and 
 
 ## Feature: Colours
 
-<animation name="Colours" grid="13x10">
+<animation name="Colours" grid="13x11">
 
 ```anim
 Pal: row ["red" "orange" "amber" "yellow" "green" "teal" "cyan" "blue" "purple" "pink" "magenta" "theme"] at 2.15,1.15 font 0.4 size 0.7 gap 0.3 corner 0.5
@@ -109,6 +109,12 @@ St: rect "stroke" at 3,9.5 size 2x0.8 stroke red weight 2
 Cl: rect "ink" at 6,9.5 size 2x0.8 ink amber
 Hx: text "#f80" at 9,9.5 ink #f80
 Mu: text "muted" at 12,9.5 ink muted
+Lha: text "hex alpha" at 1,10.7 font 0.45 anchor right
+Hs: rect at 7.5,10.7 size 11x0.25 fill fg stroke none
+Ha: rect "#f808" at 3,10.7 size 2x0.8 fill #f808
+Hb: rect "#00336644" at 6,10.7 size 2.8x0.8 fill #00336644 stroke #0364 weight 3
+Hc: text "#f80c" at 9,10.7 ink #f80c
+Hd: circle at 12,10.7 radius 0.4 fill #8af4 stroke #0f08 weight 3
 ```
 
 ---
