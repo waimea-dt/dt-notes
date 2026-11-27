@@ -664,7 +664,7 @@
   const cornerCheck = (value, shape) => (shape && roundBar(shape) ? `${article(roundBar(shape))} ${roundBar(shape)} is always round, so its corner doesn't show` : null)
   const maxCheck = (value) => (!value.rel && value.v <= 0 ? '"max" must be more than 0, so the bar stays empty' : null)
   const LOOKS = {
-    font: { field: 'font', unit: 1, min: 0.1, cell: true },
+    font: { field: 'font', unit: 1, min: 0.1, cell: true, byValue: true },
     width: { field: 'w', unit: CELL, min: 0, side: true },
     height: { field: 'h', unit: CELL, min: 0, side: true },
     radius: { fields: ['w', 'h'], unit: 2 * CELL, min: 0, hints: { rect: '"radius" is for circles: use corner for a rect\'s corners' } },
@@ -673,7 +673,7 @@
     fill: { field: 'fill', cell: true, kept: true, byValue: true },
     stroke: { field: 'stroke', cell: true, kept: true, byValue: true, hints: { text: '"stroke" doesn\'t apply to text: use ink' } },
     ink: { field: 'ink', cell: true, kept: true, byValue: true },
-    weight: { field: 'weight', unit: 1, min: 0, cell: true, quiet: ['text'] },
+    weight: { field: 'weight', unit: 1, min: 0, cell: true, byValue: true, quiet: ['text'] },
     anchor: { field: 'anchor', map: { clear: null } }, // a side, corner or centre (ANCHORS); clear: placed as its type is
     angle: { field: 'angle', unit: 1 },
     scale: { field: 'scale', unit: 1, min: 0 },

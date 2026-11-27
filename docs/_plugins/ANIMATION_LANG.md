@@ -558,7 +558,7 @@ B: flip                            # every bit (binary only)
 B[0..3]: flip                      # bits 0 to 3
 B[4]: flip                         # one bit
 B: powers clear                    # or decimal clear, indices clear
-B: match 1 ink green fill pink      # digits holding 1: these looks while they do
+B: match 1 ink green font 1.8     # digits holding 1: these looks while they do
 H: match 0xA..0xF fill amber        # a range of values
 D: match 1..9 ink red
 B: match 0 reset                    # 0s as the number started (muted)
@@ -568,7 +568,7 @@ B: match reset                      # every value as it started (or match clear:
 
 - `digits` (when made): binary 8 (max 32), hex 2 (max 8), denary 3 (max 10).
 - Values are numbers: denary, `0x7B` (hex) or `0b1111011` (binary), any case. One that doesn't fit wraps round.
-- `match` gives `fill` `stroke` `ink` `bold`, and follows the digits as their values change. Over the number's own look (`B: ink yellow`), under a digit's (`B[0]: ink white`, kept until `ink reset`).
+- `match` gives `fill` `stroke` `ink` `bold` `font` `weight`, and follows the digits as their values change. Over the number's own look (`B: ink yellow`), under a digit's (`B[0]: ink white`, kept until `ink reset`).
 - 0s start muted (`match 0 ink muted`).
 - Made with `faint` digit strokes and an `fg` frame round the whole number (`frame none`: off).
 - No swap, insert or remove; no `decimal` on denary. Otherwise like a row.

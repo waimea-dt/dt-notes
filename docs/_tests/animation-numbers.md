@@ -165,14 +165,14 @@ D: H                              # h's value glides over: 65535 wraps round to 
 
 ## Feature: digits by value
 
-`match` picks a number's digits by the value they hold (one value, or a range), and gives them looks while they hold it: `fill`, `stroke`, `ink` and `bold`. The rules follow the values as they change. A look on the whole number goes under them; a digit's own look goes over them. A number starts with one rule: 0s are muted.
+`match` picks a number's digits by the value they hold (one value, or a range), and gives them looks while they hold it: `fill`, `stroke`, `ink`, `bold`, `font` and `weight` (sizes blend as the values change). The rules follow the values as they change. A look on the whole number goes under them; a digit's own look goes over them. A number starts with one rule: 0s are muted.
 
 <animation name="Digits by Value" grid="14x7">
 
 ```anim
 B: binary 123 at 3,2 name "b"
 H: hex 0xA53C at 3,4 digits 4 name "h"
-D: denary 205 at 3,6 name "d"
+D: denary 205 at 3,6 name "d" frame none gap 0.2 corner 0.1
 ```
 
 ---
@@ -186,13 +186,14 @@ B: match 1 ink green fill green-muted bold
 +++
 
 ```anim
-H: match 0xA..0xF fill amber bold
+H: match 1..9 fill cyan bold font 2
+H: match 0xA..0xF fill amber bold font 2
 ```
 
 +++
 
 ```anim
-D: match 1..9 ink red
+D: match 1..9 ink red stroke red
 ```
 
 ---
@@ -232,7 +233,10 @@ D: match 0 clear                   # 0s no longer muted
 +++
 
 ```anim
-H: match reset                     # every rule as it started: 0s muted
+B: style reset match reset                     # every rule as it started: 0s muted
+then
+H: match reset
+then
 D: match clear                     # no rules at all
 ```
 

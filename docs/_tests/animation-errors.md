@@ -286,7 +286,9 @@ Dw: flip
 Eb[0][0..1]: flip
 defaults decimal
 Eb: match 2 ink red
-Eb: match 1 font 2
+Eb: match 1 corner 0.2
+Eb: match 1 font {Vv}
+Eb: match 1 ink reset
 Eb: match 1 reset ink red
 Eb: match 1
 Eb: match

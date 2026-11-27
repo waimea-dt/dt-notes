@@ -8,7 +8,7 @@
     PATTERNS, reducedMotion, FLOW_SPEED, FONT, resolveEnds, HEAD, clamp01, boxCentre, extents, LAYERS, IMAGE_FITS,
     bounds, CELL, easeFn, pointOnHops, pointOnPath, resolveAttachments, textWidth, CALLOUT_CH,
     linePoints, MONO_FONT, measure, mergeBoxes, pointAt, CHOREOGRAPHY, LERPED, kindOf, APPLIES,
-    entranceFor, XML_NS, LAYOUTS, drawsBox, LOOKS, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
+    entranceFor, XML_NS, LAYOUTS, drawsBox, LOOKS, VALUE_STYLE, fieldsOf, hasBar, roundBar, isGroup, scriptOf, scriptBlocksIn, scriptTextSize, SCRIPT_TEXT, edgeOf,
     END_MARKS, LINE_ENDS, TEXT_MARKS, textRuns, polygonPoints, roundCorners, digitSymbol, rotateAbout, arcOffset, placeFor, COLOUR_PICKS, evaluate } = window.Anim
 
   // Text centred in a shape (or a number badge) is lifted by this share of its font size: the
@@ -211,6 +211,10 @@
   // through a crossfade) while it still takes it (its number's rules: rules, setRules; shape.auto),
   // or its own
   const lookOf = (s, field, label = s.label) => (s.auto?.includes(field) ? s.rules?.[label]?.[field] : undefined) ?? s[field]
+  // A digit with its numbers from its value (font, weight: VALUE_STYLE with a unit) in place, so they
+  // blend and draw like its own: they change in size as its value does. Any other shape as it is.
+  const VALUE_NUMBERS = VALUE_STYLE.filter((key) => LOOKS[key].unit)
+  const valued = (s) => (s?.rules ? { ...s, ...Object.fromEntries(VALUE_NUMBERS.flatMap((key) => fieldsOf(LOOKS[key]).map((field) => [field, lookOf(s, field)]))) } : s)
 
   function colourCss(name, role) {
     if (!name) return 'none'
@@ -1213,7 +1217,8 @@
 
     // once / tOnce: the looks a repeated change finished in its first round, and their progress
     // (roundsOf)
-    function interpolate(a, b, t, { once = [], tOnce = t } = {}) {
+    function interpolate(rawA, rawB, t, { once = [], tOnce = t } = {}) {
+      const [a, b] = [valued(rawA), valued(rawB)] // a digit's numbers from its value (font, weight)
       const s = { ...b }
       // a layout drawing from its box (a panel or frame: drawsBox) blends its box's offset too, so
       // they follow its cells, as a polygon given new points (SHAPES: points) does, its box round them
@@ -1368,12 +1373,12 @@
             v.dy += off.y
           }
         } else if (b) {
-          shape = b
+          shape = valued(b)
           v = appear(tw?.enter || 'fade', t, b, raw)
           // a row's cell slides in from beside the row (insert)
           if (tw?.offset) { v.dx += tw.offset.x * (1 - t); v.dy += tw.offset.y * (1 - t) }
         } else {
-          shape = a
+          shape = valued(a)
           v = appear(tw?.exit || 'fade', 1 - t, a, 1 - raw)
           v.erase = true // a drawn line or typed text is erased from its start, not wound back from its end
           if (tw?.offset) { v.dx += tw.offset.x * t; v.dy += tw.offset.y * t } // and out (remove)

@@ -8,7 +8,7 @@
   const { CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
     markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, OWN_STYLE, VALUE_STYLE, digitSymbol, EDIT_WORDS, REF,
-    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS } = window.Anim
+    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, lookValue } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
@@ -365,11 +365,18 @@
       if (off && given.length) throw new Error(`"${word} … ${off}" takes no looks: give them on a line of their own`)
       if (!off && !given.length) throw new Error(`"${word}" needs the looks those digits take, e.g. "${row.id}: ${word} 1 ink green"`)
       if (values && values.to >= radix) throw new Error(`a ${noun}'s digits go from 0 to ${radix - 1}, so "${word}" can't pick ${values.to}`)
+      // a rule holds a look as it is: a number worked out (lookValue, relative to the rule's, else the
+      // digit's own), a colour or a flag, not one that follows values or "reset" (its own form)
+      for (const key of given) {
+        if (look[key]?.bind || look[key]?.fn || look[key] === 'reset') throw new Error(`"${word}" takes a look as it is, so not "${wordFor(key, look[key])} ${look[key] === 'reset' ? 'reset' : '…'}" (to put a value's looks back: "${row.id}: ${word} 1 reset")`)
+      }
+      const first = shapes.get(row.members[0])
+      const ruleOf = (rule) => Object.fromEntries(given.map((key) => [key, LOOKS[key].unit ? lookValue(LOOKS[key], look[key], rule?.[key] ?? first[LOOKS[key].field]) : look[key]]))
       const { from, to } = values || { from: 0, to: radix - 1 }
-      const rules = structuredClone(shapes.get(row.members[0]).rules)
+      const rules = structuredClone(first.rules)
       for (let value = from; value <= to; value++) {
         const symbol = digitSymbol(value)
-        const rule = off ? RULES_OFF[off](digits.looks, symbol) : { ...rules[symbol], ...look }
+        const rule = off ? RULES_OFF[off](digits.looks, symbol) : { ...rules[symbol], ...ruleOf(rules[symbol]) }
         if (rule) rules[symbol] = structuredClone(rule)
         else delete rules[symbol]
       }

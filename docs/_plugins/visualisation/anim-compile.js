@@ -67,6 +67,8 @@
     if (n.rel && known) return current + n.v * unit
     return coord ? cellToPx(n.v) : n.v * unit
   }
+  // A number look's value (LOOKS: unit, min, max), from a number as written, relative to `current`
+  const lookValue = (look, n, current) => Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(n, current, { unit: look.unit })))
 
   function createCompiler(context) {
     const shapes = new Map() // id -> current shape
@@ -105,7 +107,7 @@
           if (value === 'reset') resetLook(shape, key)
           else if (COLOUR_FUNCTIONS[value?.fn]) linkColour(shape, key, value, warn, creating) // "rgb(R G B)"
           else if (value?.bind) linkNumber(shape, key, value, warn, creating) // "weight {V1}", "angle {V1 * 2}", "x V1" (once)
-          else if (look.unit) for (const field of fieldsOf(look)) shape[field] = Math.min(look.max ?? Infinity, Math.max(look.min ?? -Infinity, numberValue(value, now(shape[field]), { unit: look.unit })))
+          else if (look.unit) for (const field of fieldsOf(look)) shape[field] = lookValue(look, value, now(shape[field]))
           else shape[look.field] = look.map && value in look.map ? look.map[value] : value
           // a digit given a look no longer takes that look from its value
           if (value !== 'reset' && shape.auto?.includes(key)) shape.auto = shape.auto.filter((field) => field !== key)
@@ -1321,5 +1323,5 @@
     return { beats, errors, warnings, issues }
   }
 
-  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, trailId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, tween })
+  Object.assign(window.Anim, { compile, COMPILER_PARTS: [], cellId, markId, indexId, nameId, decimalId, trailId, viewKey, viewId, headId, baseOf, cellRange, pick, baseShape, numberValue, lookValue, tween })
 })()
