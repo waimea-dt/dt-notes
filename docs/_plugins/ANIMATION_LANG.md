@@ -309,6 +309,7 @@ L: signal-reverse
 ```anim
 Arr: row [5 3 8 1] at 3,4          # cells Arr[0] … Arr[3]
 Col: column ["A" "B" "C"] at 12,2 gap 0.2
+Col: gap 0                         # a new gap between its cells (signed: more or less)
 Mem: row 8 at 2,6                  # 8 empty cells
 ```
 

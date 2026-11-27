@@ -8,7 +8,7 @@
   const { CELL, placeBeside, placeFor, attachPos, unionBounds, parseProps, bounds, parseAs, NUMBER, besideOf,
     offsetFrom, CHOREOGRAPHY: C, kindOf, LAYOUTS, FONT, textWidth, BARS, mergeBoxes, cellId, indexId,
     markId, NUMBERINGS, nameId, decimalId, LAYOUT_PROPS, LAYOUT_TYPES, article, viewKey, viewId, headId, baseOf, cellRange, pick, tween, baseShape, CELL_STYLE, OWN_STYLE, VALUE_STYLE, digitSymbol, EDIT_WORDS, REF,
-    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS } = window.Anim
+    LAYOUT_NOUNS, nounList, orList, LAYOUT_NAMES, GROUP, wordFor, PARTS, LOOKS, KEYWORDS, lookValue, ANCHORS, BOX_CORNERS, LERPED_CORNERS } = window.Anim
 
   window.Anim.COMPILER_PARTS.push((cx) => {
     const { shapes, defaults, newUid } = cx
@@ -838,13 +838,26 @@
       applyStagger(row, cells.map((cell) => [cell.uid]), { ...props, at: null, x: null, y: null }, meta, warn) // placing it isn't a move
     }
 
-    // A layout's cells laid out again where their sizes have changed (a round bar squares them), each
-    // moving to its new place with the line (ARRANGE: relay)
+    // "Arr: gap 0.2": the space between a layout's cells (signed: more or less than it was, never
+    // below none), its cells laid out again with the line. Takes the gap out of props.
+    function respace(row, props, meta, warn) {
+      const { gap } = props
+      delete props.gap
+      refuseView(row, wordFor('gap', gap))
+      if (gap.none) throw new Error(KEYWORDS.gap.spacing)
+      row.gap = Math.max(0, gap.v * CELL + (gap.rel ? row.gap : 0))
+      relayLayout(row, props, meta, warn)
+    }
+
+    // A layout's cells laid out again where their sizes or the gap between them have changed (a round
+    // bar squares them), each moving to its new place with the line (ARRANGE: relay)
     function relayLayout(row, props, meta, warn) {
       const cells = row.members.map((id) => shapes.get(id)).filter(Boolean)
       const before = cells.map((cell) => [cell.attach.dx, cell.attach.dy].join())
       arranged(row).relay(row, cells)
-      if (cells.every((cell, k) => [cell.attach.dx, cell.attach.dy].join() === before[k])) return
+      const moved = cells.filter((cell, k) => [cell.attach.dx, cell.attach.dy].join() !== before[k])
+      if (!moved.length) return
+      moved.forEach((cell) => schedule(meta, cell.uid, props))
       cells.forEach((cell) => Object.assign(cell, { x: row.x + cell.attach.dx, y: row.y + cell.attach.dy }))
       arranged(row).sync(row, props, meta, warn)
       if (numbered(row)) syncIndices(row, props, meta)
@@ -934,7 +947,7 @@
 
     return {
       functions: { arranged, cellsBetween, changeRange, checkParts, chunk, createLayout, drawnCorner, fitCode, fitCorners, fitLines, fitMasks, fitNumbers, fitSpans, gridLines,
-        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, relayLayout, setRules, syncIndices, transpose,
+        gridPlaceOf, layoutCells, layoutGrid, numbered, numberOf, placeOf, readLines, readList, refuseView, relayLayout, respace, setRules, syncIndices, transpose,
         rangeOf, typeInTurn, updateParts, withRowMax },
       verbs: { span: makeSpan },
       link: () => {

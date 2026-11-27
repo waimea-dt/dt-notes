@@ -111,13 +111,42 @@ B[5]: fill red font 1
 +++
 
 ```anim
+B: corner 0.3                  # rounded only at its ends, as its frame is
+S: frame pink
+```
+
++++
+
+```anim
+S: span B[2..5]
+then
+S: span B[4..7] frame none
+```
+
++++
+
+```anim
 B: style reset                    # every look back as it started (B[6] not bold)
 ```
 
 +++
 
 ```anim
+B: gap 0.25 frame none corner 0.5
+```
+
++++
+
+```anim
+S: frame magenta
+B: stroke none
+```
+
++++
+
+```anim
 B: highlight outline
+S: delete
 N: delete
 ```
 
@@ -193,7 +222,7 @@ H: match 0xA..0xF fill amber bold font 2
 +++
 
 ```anim
-D: match 1..9 ink red stroke red
+D: match 1..9 ink red stroke red fill white bold
 ```
 
 ---

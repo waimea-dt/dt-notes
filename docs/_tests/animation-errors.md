@@ -189,6 +189,8 @@ Eg5: grid [[]] at 1,1
 Eg[1]: move 2,2
 Eg.col[0]: delete
 Eg[1]: indices
+Er: gap clear
+Eg.col[0]: gap 0.2
 Eg: swap 0 9
 Eg: swap col 0 [1][1]
 Eg: insert [1 2 3 4] at 0

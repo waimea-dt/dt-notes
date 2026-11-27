@@ -317,6 +317,10 @@
       return null
     }
 
+    // Whether a line's gap places the shape beside another (at or via a point on an edge, or an
+    // attachment), rather than spacing out a layout's cells (respace)
+    const gapBeside = (shape, props) => Boolean(props.attach || shape.attach?.kind === 'beside' || props.at?.kind === 'ref' || props.via?.some((via) => via.anchor))
+
     // A boxed shape's place: where it goes (at, x, y), what it's attached to, and the route it
     // takes there (travel, follow, via), which it returns.
     function placeShape(shape, props, creating, warn) {
@@ -324,7 +328,7 @@
       const start = { x: shape.x, y: shape.y }
       setPosition(shape, props, creating, warn)
       if (props.attach || props.detach || (props.gap && shape.attach?.kind === 'beside')) attachShape(shape, props, warn) // "Lock: gap 0": a new gap
-      else if (props.gap && props.at?.kind !== 'ref' && !props.via?.some((via) => via.anchor)) warn('"gap" goes with a point on a shape\'s edge ("at B.right gap 0.5", "via B.top gap 0.5") or an attached shape, so it does nothing here')
+      else if (props.gap && !gapBeside(shape, props)) warn('"gap" goes with a point on a shape\'s edge ("at B.right gap 0.5", "via B.top gap 0.5") or an attached shape, so it does nothing here')
       if (creating && (shape.x === undefined || shape.y === undefined)) throw new Error('needs a position, e.g. "at 3,2"')
       const route = routeOf(shape, props, start)
       keepOffset(shape, props)
@@ -863,6 +867,7 @@
       }
       checkParts(existing, props)
       if (props.match) setRules(existing, props, meta) // "B: match 1 ink green": takes the rule's looks out of props
+      if (props.gap && existing.layout && !gapBeside(existing, props)) respace(existing, props, meta, warn) // "Arr: gap 0.2": takes the gap out of props
       if (props.repeat) checkRepeat(props, newValue)
       if (props.effect) warn(`"${props.effect}" only applies when a shape is created or deleted`)
       const order = isGroup(existing) ? staggerOrder(existing) : null
@@ -1166,7 +1171,7 @@
     // The compiler's other parts (COMPILER_PARTS): each is given the shared state and these
     // functions (cx), and gives its own and its verbs; then each is linked to the rest
     let addTo, assignValue, changeRange, rangeOf, editScript, numberOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitCorners, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
-      readLines, refuseView, relayLayout, setNumber, setRules, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
+      readLines, refuseView, relayLayout, respace, setNumber, setRules, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax
     const cx = { shapes, defaults, newUid, context, bound, partsOf, effectOf, layerOf, inTurn, noShape, replaced, applyDefaults, applyProps, applyStagger, busiest, delayOf,
       freezeEndsAttachedTo, numberEach, removeShape, retime, schedule, speedOf, takeBareNumber,
       warnEffect, stampOf, stampNow }
@@ -1174,7 +1179,7 @@
     for (const part of parts) Object.assign(cx, part.functions)
     const link = () => {
       ({ addTo, assignValue, changeRange, rangeOf, editScript, numberOf, checkDigit, checkParts, countUp, createLayout, exprValue, followedValue, followValue, fitCode, fitCorners, fitLinks, fitNumbers, fitSpans, holderRef, linkColour, linkNumber, linkText,
-        readLines, refuseView, relayLayout, setNumber, setRules, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
+        readLines, refuseView, relayLayout, respace, setNumber, setRules, setTrail, setValue, typeInTurn, unlink, updateParts, valueIn, valueOf, withRowMax } = cx)
     }
     for (const part of [...parts, { link }]) part.link()
 

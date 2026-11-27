@@ -41,7 +41,22 @@ Arr: move 3,3 speed slow
 +++
 
 ```anim
-Words: move Col.bottom gap 0.5 speed slow
+Words: move Mem.left gap 0.75 speed slow
+```
+
+---
+
+## The gap between cells
+
+```anim
+Col: gap 0                         # its cells close up
+Mem: gap +0.2                      # wider than it was
+```
+
++++
+
+```anim
+Mem: gap -1                        # never less than none
 ```
 
 ---
@@ -603,6 +618,24 @@ G: swap [0][0] [1][1]
 ```anim
 Arr: swap 0 4
 Col: insert "D" at end
+```
+
+---
+
+## A new gap rounds every corner, and none rounds only the outer ones
+
+```anim
+Arr: gap 0.2
+Gap: gap 0
+G: gap 0.1
+```
+
++++
+
+```anim
+Arr: gap 0
+Gap: gap 0.2
+G: gap 0
 ```
 
 ---

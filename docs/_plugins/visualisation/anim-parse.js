@@ -321,7 +321,7 @@
     }
 
     // a line that spaces things out (LINES: spaces) takes a gap of its own: a row's between its cells
-    if (props.gap && LINES[kind]?.spaces && props.gap.none) throw new Error('"gap clear" takes a gap away from a shape beside another, not the space between cells')
+    if (props.gap && LINES[kind]?.spaces && props.gap.none) throw new Error(KEYWORDS.gap.spacing)
     if (props.at && (props.x || props.y)) throw new Error('the position is given twice (at/move and x/y)')
     return props
   }

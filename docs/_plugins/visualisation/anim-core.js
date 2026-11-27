@@ -797,9 +797,13 @@
     from: { key: 'from', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
     to: { key: 'to', sigs: SPOT, build: buildPoint, help: SPOT_HELP },
     via: { ...at, key: 'via', repeat: true, help: SPOT_HELP },
-    // between the things a line spaces out (LINES: spaces); or with a point on a shape's edge, how far
-    // beside that edge a shape goes (clear: back on the point)
-    gap: { key: 'gap', sigs: [['num'], ['clear']], build: (v, sig) => (sig[0] === 'clear' ? { none: true } : v[0]), help: 'a number of cells, or clear' },
+    // between the things a line spaces out (LINES: spaces) or a layout's cells (respace); or with a
+    // point on a shape's edge, how far beside that edge a shape goes (clear: back on the point).
+    // spacing: the message for clear on the space between things, which is always some size
+    gap: {
+      key: 'gap', sigs: [['num'], ['clear']], build: (v, sig) => (sig[0] === 'clear' ? { none: true } : v[0]), help: 'a number of cells, or clear',
+      spacing: '"gap clear" takes a gap away from a shape beside another: the space between cells is a number, e.g. "gap 0"',
+    },
     travel: { key: 'travel', list: SPOT, build: buildPoint, help: 'shape ids, points on their edges and/or x,y points, e.g. "travel R1 R2.top B"' },
     // the point a turn goes round ("angle +90 about 5,5"): fixed where it is now
     about: { key: 'about', sigs: SPOT, build: buildPoint, help: `${SPOT_HELP}, after an angle, e.g. "angle +90 about 5,5"` },
