@@ -16,6 +16,7 @@
 
     --anim-highlight:   color-mix(in srgb, var(--anim-accent) 55%, transparent);
 
+    --anim-debug-font:  13px; /* the debug grid's numbers and the shapes' ids */
 
     position: relative; /* for the progress bar */
     display: flex;
@@ -89,6 +90,90 @@
         stroke-linejoin: round;
     }
 
+    /* a code block's background, as the site's code blocks */
+    .anim-panel {
+        fill: var(--code-bg-color);
+    }
+
+    /* highlight line: a band behind a text or a code line */
+    .anim-highlight-line {
+        fill: color-mix(in srgb, var(--color-important) 18%, transparent);
+    }
+
+    /* the slot a row's / column's cell leaves or lands in (insert, remove): a plain muted outline
+       (dashes would crawl as it grows and shrinks) */
+    .anim-slot {
+        fill: none;
+        stroke: var(--anim-muted);
+        stroke-width: 2px;
+    }
+
+    /* highlight outline / inside: a line in the highlight colour round a shape, or just inside its
+       stroke (the 3px is HL_LINE in anim-render.js) */
+    :is(.anim-highlight-outline, .anim-highlight-inside) {
+        fill: none;
+        stroke: var(--color-important);
+        stroke-width: 3px;
+    }
+
+    /* signal: a glowing blip running along a line, its tail made of overlapping pieces */
+    .anim-signal {
+        filter: drop-shadow(0 0 6px var(--color-important));
+
+        path {
+            stroke: var(--color-important);
+            stroke-opacity: 0.3;
+        }
+
+        circle {
+            fill: var(--color-important);
+            stroke: var(--anim-bg);
+            stroke-width: 1.5px;
+        }
+    }
+
+    /* highlight arrow: a block arrow pointing in at a shape */
+    .anim-highlight-arrow {
+        fill: var(--color-important);
+        stroke: var(--anim-bg);
+        stroke-width: 3px;
+        filter: drop-shadow(var(--box-shadow-small));
+    }
+
+    /* highlight number: a numbered disc on a shape's corner */
+    .anim-highlight-number {
+        filter: drop-shadow(var(--box-shadow-small));
+
+        circle {
+            fill: var(--color-important);
+            stroke: var(--anim-bg);
+            stroke-width: 3px;
+        }
+
+        text {
+            fill: var(--anim-bg);
+            font-weight: 700;
+        }
+    }
+
+    /* callout: a speech bubble pointing at a shape */
+    .anim-callout {
+        path {
+            fill: color-mix(in srgb, var(--color-important) 16%, var(--anim-bg));
+            stroke: var(--color-important);
+            stroke-width: 2px;
+            stroke-linejoin: round;
+        }
+
+        text {
+            fill: var(--anim-fg);
+        }
+    }
+
+    :is(.anim-highlights, .anim-callouts) {
+        pointer-events: none;
+    }
+
     /* Captions: one page per step stacked in one cell, so the panel keeps the tallest height */
 
     .anim-caption {
@@ -145,6 +230,11 @@
         pointer-events: none;
 
         button { pointer-events: auto; }
+    }
+
+    /* controls="none", or a still: no buttons or progress bar (the keys still work) */
+    &.anim-no-controls :is(.anim-controls, .anim-progress) {
+        display: none;
     }
 
     button.anim-ctrl {
@@ -204,6 +294,16 @@
         &:hover:not([aria-disabled="true"])::after { transform: translateY(1.55em) rotate(-40deg); }
         &:active:not([aria-disabled="true"])::before { transform: translateY(1.55em) rotate(36deg); }
         &:active:not([aria-disabled="true"])::after { transform: translateY(1.55em) rotate(-36deg); }
+
+        /* an upright bar: play's flat side, pause's two bars, rewind's "start" */
+        .anim-chevron-bar {
+            position: absolute;
+            top: 0.1em;
+            inline-size: 0.5em;
+            block-size: 3.4em;
+            border-radius: 0.25em;
+            background-color: currentColor;
+        }
     }
 
     /* Rewind, back and play are faded until hovered, as reveal.js's controlsBackArrows: 'faded' */
@@ -218,16 +318,7 @@
         &:hover::before { transform: translateY(1.55em) rotate(45deg); }
         &:hover::after { transform: translateY(1.55em) rotate(-45deg); }
 
-        .anim-chevron-bar {
-            position: absolute;
-            top: 0.1em;
-            left: 2.2em;
-            inline-size: 0.5em;
-            block-size: 3.4em;
-            border-radius: 0.25em;
-            background-color: currentColor;
-        }
-
+        .anim-chevron-bar { left: 2.2em; }
         .anim-pause-bar { display: none; }
     }
 
@@ -235,7 +326,7 @@
         &::before,
         &::after { display: none; }
 
-        .anim-chevron-bar { left: 2.1em; top: 0.1em; block-size: 3.4em; }
+        .anim-chevron-bar { left: 2.1em; }
         .anim-pause-bar { display: block; left: 0.9em; }
     }
 
@@ -247,22 +338,23 @@
         &::before,
         &::after { left: 1.25em; }
 
-        .anim-chevron-bar {
-            position: absolute;
-            top: 0.1em;
-            left: 0.4em;
-            inline-size: 0.5em;
-            block-size: 3.4em;
-            border-radius: 0.25em;
-            background-color: currentColor;
-        }
+        .anim-chevron-bar { left: 0.4em; }
     }
-    button.anim-next { transform: rotate(180deg); }
-    button.anim-next:active:not([aria-disabled="true"]) { transform: rotate(180deg); }
+
+    button.anim-next {
+        transform: rotate(180deg);
+
+        &:active:not([aria-disabled="true"]) { transform: rotate(180deg); }
+    }
 
     /* Until the first interaction, next nudges every 2 seconds (reveal.js's controls tutorial) */
     &[data-untouched] button.anim-next:not([aria-disabled="true"]) {
         animation: anim-bounce-next 2s ease-out 50 both;
+    }
+
+    /* Playing, but held at a `pause` until Next: next nudges, as it does before the first click */
+    &[data-waiting] button.anim-next:not([aria-disabled="true"]) {
+        animation: anim-bounce-next 2s ease-out infinite both;
     }
 
     /* Keyboard shortcuts summary (?), like reveal.js's help overlay */
@@ -398,14 +490,14 @@
 
         text {
             fill: var(--anim-muted);
-            font-size: 13px;
+            font-size: var(--anim-debug-font);
             font-family: var(--font-family-mono);
         }
     }
 
     .anim-debug-id {
         fill: var(--color-warning);
-        font-size: 13px;
+        font-size: var(--anim-debug-font);
         font-family: var(--font-family-mono);
     }
 
@@ -441,99 +533,4 @@
     0%, 10%, 25%, 40%, 50% { transform: rotate(180deg) translateX(0); }
     20% { transform: rotate(180deg) translateX(-10px); }
     30% { transform: rotate(180deg) translateX(5px); }
-}
-
-/* controls="none", or a still: no buttons or progress bar (the keys still work) */
-.markdown-section .animation.anim-no-controls :is(.anim-controls, .anim-progress) {
-    display: none;
-}
-
-/* Playing, but held at a `pause` until Next: next nudges, as it does before the first click */
-.markdown-section .animation[data-waiting] button.anim-next:not([aria-disabled="true"]) {
-    animation: anim-bounce-next 2s ease-out infinite both;
-}
-
-/* highlight outline / inside: a line in the highlight colour round a shape, or just inside its stroke
-   (the 3px is HL_LINE in anim-render.js) */
-.markdown-section .animation :is(.anim-highlight-outline, .anim-highlight-inside) {
-    fill: none;
-    stroke: var(--color-important);
-    stroke-width: 3px;
-}
-
-/* a code block's background, as the site's code blocks */
-.markdown-section .animation .anim-panel {
-    fill: var(--code-bg-color);
-}
-
-/* highlight line: a band behind a text or a code line */
-.markdown-section .animation .anim-highlight-line {
-    fill: color-mix(in srgb, var(--color-important) 18%, transparent);
-}
-
-/* the slot a row's / column's cell leaves or lands in (delete, insert, push, pop): a plain muted
-   outline (dashes would crawl as it grows and shrinks) */
-.markdown-section .animation .anim-slot {
-    fill: none;
-    stroke: var(--anim-muted);
-    stroke-width: 2px;
-}
-
-/* signal: a glowing blip running along a line, its tail made of overlapping pieces */
-.markdown-section .animation .anim-signal {
-    filter: drop-shadow(0 0 6px var(--color-important));
-
-    path {
-        stroke: var(--color-important);
-        stroke-opacity: 0.3;
-    }
-
-    circle {
-        fill: var(--color-important);
-        stroke: var(--anim-bg);
-        stroke-width: 1.5px;
-    }
-}
-
-/* highlight arrow: a block arrow pointing in at a shape */
-.markdown-section .animation .anim-highlight-arrow {
-    fill: color-mix(in srgb, var(--color-important) 40%, var(--anim-bg));
-    fill: var(--color-important);
-    stroke: var(--anim-bg);
-    stroke-width: 3px;
-    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.35));
-}
-
-/* highlight number: a numbered disc on a shape's corner */
-.markdown-section .animation .anim-highlight-number {
-    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.35));
-
-    circle {
-        fill: var(--color-important);
-        stroke: var(--anim-bg);
-        stroke-width: 3px;
-    }
-
-    text {
-        fill: var(--anim-bg);
-        font-weight: 700;
-    }
-}
-
-/* callout: a speech bubble pointing at a shape */
-.markdown-section .animation .anim-callout {
-    path {
-        fill: color-mix(in srgb, var(--color-important) 16%, var(--anim-bg));
-        stroke: var(--color-important);
-        stroke-width: 2px;
-        stroke-linejoin: round;
-    }
-
-    text {
-        fill: var(--anim-fg);
-    }
-}
-
-.markdown-section .animation :is(.anim-highlights, .anim-callouts) {
-    pointer-events: none;
 }

@@ -279,7 +279,6 @@
       })
     }
 
-    if (debug) widget.classList.add('anim-debug')
     // controls="none", or a still (one beat: nothing to step or play)
     if (opts.controls === 'none' || beats.length < 2) widget.classList.add('anim-no-controls')
     source.replaceWith(widget)
