@@ -291,6 +291,7 @@
     for (const [, probe] of probes) probe.remove()
   }
   let warmed = false // whether every named colour is in the cache
+  let palette = 0 // counts theme changes: shapes drawn before one are drawn again (passFor)
   function rgbaOf(host, css) {
     if (!css || css === 'none') return null
     if (!colourCache.has(css)) {
@@ -303,7 +304,7 @@
     return colourCache.get(css)
   }
   // before any animation redraws for the new theme (each one's listener is added later)
-  window.addEventListener?.('docsify-theme-change', () => { colourCache.clear(); cssCache.clear(); warmed = false })
+  window.addEventListener?.('docsify-theme-change', () => { colourCache.clear(); cssCache.clear(); warmed = false; palette++ })
 
   function createRenderer(svg, viewBox, debug) {
     const layers = [0, 1, 2].map(() => svg.appendChild(svgEl('g')))
@@ -1364,6 +1365,47 @@
     const DIM = 0.2 // opacity of shapes outside the spotlight
     const BLOCK_DIM = 0.45 // opacity of a script's other blocks (highlight line N): lighter, as they sit close together
 
+    // A pass: one transition drawn frame after frame (the same A, B, meta, final state and way, and
+    // the same theme). Its still shapes (stillIn) are drawn on its first frame and skipped after,
+    // since nothing about them changes (each node remembers the pass it was last drawn in: drawnIn).
+    let lastPass = null
+    function passFor(A, B, meta, final, forward) {
+      const p = lastPass
+      if (p && p.A === A && p.B === B && p.meta === meta && p.final === final && p.forward === forward && p.palette === palette) return p
+      lastPass = { A, B, meta, final, forward, palette, still: stillIn(A, B, meta) }
+      return lastPass
+    }
+    // The uids of the shapes that look the same all through a transition: the same shape in A and B
+    // (states share unchanged shapes), with no tween, dimmed and lit by a covering glow the same in
+    // both, no callout while the camera moves (it keeps to the view), and nothing it hangs off
+    // changing: what it's attached to, its line's ends and via points, a group's members, a span's
+    // cells, or the parts an outline goes round
+    function stillIn(A, B, meta) {
+      const aByUid = byUidOf(A)
+      const [litA, litB, glowA, glowB] = [litFor(A), litFor(B), glowFor(A), glowFor(B)]
+      const dimmed = (lit, id) => Boolean(lit && !lit.has(id))
+      const camera = meta.tweens.has('camera')
+      const changing = new Set() // ids whose shapes change, in either state
+      const still = new Set()
+      for (const [uid, b] of byUidOf(B)) {
+        const same = aByUid.get(uid) === b && !meta.tweens.has(uid) && dimmed(litA, b.id) === dimmed(litB, b.id)
+          && glowA.has(b.id) === glowB.has(b.id) && !(camera && b.callout)
+        if (same) still.add(b)
+        else changing.add(b.id)
+      }
+      for (const a of A.values()) if (B.get(a.id) !== a) changing.add(a.id)
+      const parts = new Map() // owner id -> its parts' ids
+      for (const shape of B.values()) if (shape.part) parts.set(shape.part, [...(parts.get(shape.part) || []), shape.id])
+      const moves = (id) => changing.has(id)
+      const hangsOff = (s) => (s.attach && moves(s.attach.ref)) || (isLine(s) && [s.from, s.to, ...(s.via || [])].some((p) => p?.ref && moves(p.ref)))
+        || s.members?.some(moves) || s.covers?.some(moves) || parts.get(s.id)?.some(moves)
+      for (let more = true; more;) {
+        more = false
+        for (const shape of still) if (hangsOff(shape)) { still.delete(shape); changing.add(shape.id); more = true }
+      }
+      return new Set([...still].map((shape) => shape.uid))
+    }
+
     /**
      * Renders the transition between two consecutive states. progress(uid) gives each shape's
      * position from A (0) to B (1); `final` is the state the transition ends on (it supplies
@@ -1376,10 +1418,18 @@
       const bByUid = byUidOf(B)
       const uids = new Set([...aByUid.keys(), ...bByUid.keys()]) // flyers are added to it below
       const items = []
+      const kept = [] // still shapes already drawn this pass: placed and layered, not drawn again
       const now = new Map() // id -> interpolated shape, for attached line ends and shapes
       const passed = passedOf(A, B)
+      const pass = passFor(A, B, meta, final, extra.forward)
 
       for (const uid of uids) {
+        if (pass.still.has(uid) && nodes.get(uid)?.drawnIn === pass) {
+          const shape = valued(bByUid.get(uid))
+          kept.push({ uid, shape, node: nodes.get(uid) })
+          if (!isLine(shape)) now.set(shape.id, shape)
+          continue
+        }
         // A copy starts as its original, so it animates away from it
         const tw = meta.tweens.get(uid)
         const a = aByUid.get(uid) || (bByUid.has(uid) ? tw?.from : undefined)
@@ -1541,7 +1591,8 @@
       const glowA = glowFor(A)
       const glowB = glowFor(B)
       const finalByUid = byUidOf(final)
-      order(items.map(({ node, shape, uid, t }) => ({ node, shape: finalByUid.get(uid) || shape, raised: meta.tweens.get(uid)?.raise && t > 0 && t < 1 })))
+      order([...items.map(({ node, shape, uid, t }) => ({ node, shape: finalByUid.get(uid) || shape, raised: meta.tweens.get(uid)?.raise && t > 0 && t < 1 })),
+        ...kept.map(({ node, shape, uid }) => ({ node, shape: finalByUid.get(uid) || shape }))])
 
       for (const item of items) {
         // colours: blended from A's to B's over the shape's progress (entering / leaving: their own)
@@ -1591,6 +1642,7 @@
         if (kindOf(item.shape).script) item.v.script = scriptStep(item, meta.tweens.get(item.uid))
         drawNode(item.node, item.shape, item.v, colours, now)
         drawOverlays(item, now)
+        if (pass.still.has(item.uid)) item.node.drawnIn = pass
       }
       drawSlots(meta, progress, now)
     }
